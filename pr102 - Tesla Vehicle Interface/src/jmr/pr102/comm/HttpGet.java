@@ -22,7 +22,7 @@ public class HttpGet {
 	public String getContent() throws Exception {
 		
 		final String strTokenValue = login.getTokenValue();
-//		final String strTokenType = login.getTokenType();
+		final String strTokenType = login.getTokenType();
 
 		final URL url = new URL( strURL );
 		
@@ -34,7 +34,8 @@ public class HttpGet {
 		conn.setRequestProperty( "Content-Type", "text/plain"); 
 		conn.setRequestProperty( "charset", "utf-8");
 //		conn.setRequestProperty( "Content-Length", Integer.toString( postDataLength ));
-		conn.setRequestProperty( "Authorization", "Bearer " + strTokenValue );
+//		conn.setRequestProperty( "Authorization", "Bearer " + strTokenValue );
+		conn.setRequestProperty( "Authorization", strTokenType + " " + strTokenValue );
 //		conn.setUseCaches( false );
 		
 		final int iCode = conn.getResponseCode();

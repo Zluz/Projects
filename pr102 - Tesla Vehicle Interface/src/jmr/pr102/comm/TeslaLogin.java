@@ -1,14 +1,6 @@
 package jmr.pr102.comm;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import com.google.gson.JsonElement;
@@ -20,11 +12,17 @@ import jmr.pr102.TeslaConstants;
 public class TeslaLogin implements TeslaConstants {
 
 	
+	public static final TeslaLogin 
+				DUMMY_LOGIN = new TeslaLogin( null, null );
+	
+	
 	private final String strUsername;
 	private final char[] arrPassword;
 	
 	private String strTokenType = null;
 	private String strTokenValue = null;
+	
+	private boolean bIsAuthenticating = false;
 	
 	
 	public TeslaLogin(	final String strUsername,
@@ -34,9 +32,13 @@ public class TeslaLogin implements TeslaConstants {
 	}
 	
 	
+	
 
 	public Map<String,String> login() throws Exception {
+		if ( DUMMY_LOGIN==this ) return null;
 
+		this.bIsAuthenticating = true;
+		
 		final String strURL =
 				URL_BASE_TESLA_API_PROD + "oauth/token"
 					+ "?grant_type=password"
@@ -46,42 +48,47 @@ public class TeslaLogin implements TeslaConstants {
 					+ "&password="  + URLEncoder.encode( 
 									new String( arrPassword ), UTF8 );
 	
+		final HttpPost post = new HttpPost( strURL, null );
 		
-		final String strPost = "";
+		final String strResponse = post.postContent( "" );
 		
-//		byte[] postData       = strURLParams.getBytes( StandardCharsets.UTF_8 );
-		byte[] postData       = strPost.getBytes( StandardCharsets.UTF_8 );
-		int    postDataLength = postData.length;
-//		String request        = "http://example.com/index.php";
-		URL    url            = new URL( strURL );
-		
-		final HttpURLConnection conn = (HttpURLConnection) url.openConnection();           
-		conn.setDoOutput( true );
-		conn.setInstanceFollowRedirects( false );
-		conn.setRequestMethod( "POST" );
-//		conn.setRequestProperty( "Content-Type", "application/x-www-form-urlencoded"); 
-		conn.setRequestProperty( "Content-Type", "text/plain"); 
-		conn.setRequestProperty( "charset", "utf-8");
-		conn.setRequestProperty( "Content-Length", Integer.toString( postDataLength ));
-		conn.setUseCaches( false );
-		
-		try( DataOutputStream wr = new DataOutputStream( conn.getOutputStream())) {
-		   wr.write( postData );
-		}
-
-        final InputStream is = conn.getInputStream();
-		final InputStreamReader isr = new InputStreamReader(is, "UTF-8");
-		final Reader in = new BufferedReader( isr );
-
-		StringBuffer strbuf = new StringBuffer();
-		
-        for (int c; (c = in.read()) >= 0;) {
-//            System.out.print((char)c);
-            strbuf.append( (char)c );
-        }
-//        System.out.println();
-        
-        final String strResponse = strbuf.toString();
+		this.bIsAuthenticating = false;
+//		
+//		final String strPost = "";
+//		
+////		byte[] postData       = strURLParams.getBytes( StandardCharsets.UTF_8 );
+//		byte[] postData       = strPost.getBytes( StandardCharsets.UTF_8 );
+//		int    postDataLength = postData.length;
+////		String request        = "http://example.com/index.php";
+//		URL    url            = new URL( strURL );
+//		
+//		final HttpURLConnection conn = (HttpURLConnection) url.openConnection();           
+//		conn.setDoOutput( true );
+//		conn.setInstanceFollowRedirects( false );
+//		conn.setRequestMethod( "POST" );
+////		conn.setRequestProperty( "Content-Type", "application/x-www-form-urlencoded"); 
+//		conn.setRequestProperty( "Content-Type", "text/plain"); 
+//		conn.setRequestProperty( "charset", "utf-8");
+//		conn.setRequestProperty( "Content-Length", Integer.toString( postDataLength ));
+//		conn.setUseCaches( false );
+//		
+//		try( DataOutputStream wr = new DataOutputStream( conn.getOutputStream())) {
+//		   wr.write( postData );
+//		}
+//
+//        final InputStream is = conn.getInputStream();
+//		final InputStreamReader isr = new InputStreamReader(is, "UTF-8");
+//		final Reader in = new BufferedReader( isr );
+//
+//		StringBuffer strbuf = new StringBuffer();
+//		
+//        for (int c; (c = in.read()) >= 0;) {
+////            System.out.print((char)c);
+//            strbuf.append( (char)c );
+//        }
+////        System.out.println();
+//        
+//        final String strResponse = strbuf.toString();
 
         // {"access_token":"05f734a521a82d664d3934c15b8f6f6afde1159fd49617d6ecf4606cf64c7c74","token_type":"bearer","expires_in":3888000,"refresh_token":"2db277d051ee66560847d432489144367f97daa046abb7fb645c930b763d3fb6","created_at":1500694326}
         // {"access_token":"55d14b8b332e8eb8ac0cdbe265c33106bd7e4839b6e0969970a6d3c8878886d0","token_type":"bearer","expires_in":3888000,"refresh_token":"555a826968f470813c91aa7ce98d237a901d4c8f3bc053c6598ef02b458fd7bd","created_at":1500694497}
@@ -110,6 +117,9 @@ public class TeslaLogin implements TeslaConstants {
 	
 
 	public synchronized String getTokenValue() throws Exception {
+		if ( DUMMY_LOGIN==this ) {
+			return TeslaConstants.DUMMY_AUTH_TOKEN_VALUE;
+		}
 		if ( null==this.strTokenValue ) {
 			this.login();
 		}
@@ -118,6 +128,9 @@ public class TeslaLogin implements TeslaConstants {
 	
 
 	public synchronized String getTokenType() throws Exception {
+		if ( DUMMY_LOGIN==this ) {
+			return TeslaConstants.DUMMY_AUTH_TOKEN_TYPE;
+		}
 		if ( null==this.strTokenType ) {
 			this.login();
 		}
@@ -135,6 +148,13 @@ public class TeslaLogin implements TeslaConstants {
 //		final Map<String, String> map = login.login();
 //		
 //		JsonUtils.print( map );
+	}
+
+
+
+
+	public boolean isAuthenticating() {
+		return bIsAuthenticating;
 	}
 	
 	

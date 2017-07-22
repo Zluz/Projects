@@ -16,6 +16,9 @@ public interface TeslaConstants {
 
 	final static String UTF8 = StandardCharsets.UTF_8.name();
 	
+
+	public static final String HEADER_AUTHORIZATION = "Authorization";
+
 	
 	/*
 	 * Controls through:
@@ -28,5 +31,13 @@ public interface TeslaConstants {
 	 * 	
 	 */
 	
+	// these can be used to avoid having to request a new key every time.
+	// they will apply if the username or the password is missing.
+	public static final String DUMMY_AUTH_TOKEN_VALUE = "";
+	public static final String DUMMY_AUTH_TOKEN_TYPE = "bearer";
+	public static final String DUMMY_VEHICLE_ID = "";
+	
+	public static final String PROPERTY_NAME_USERNAME = "teslamotors.username";
+	public static final String PROPERTY_NAME_PASSWORD = "teslamotors.password";
 	
 }

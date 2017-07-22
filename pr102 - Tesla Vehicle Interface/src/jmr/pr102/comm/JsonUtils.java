@@ -93,7 +93,7 @@ public abstract class JsonUtils {
 			final String strKey = entry.getKey();
 			final Object objValue = entry.getValue();
 			
-			str += "\t" + strKey + "=" + report( objValue ) + "\n";
+			str += "\t" + strKey + "=\"" + report( objValue ) + "\"\n";
 		}
 		str += "]";
 		return str;

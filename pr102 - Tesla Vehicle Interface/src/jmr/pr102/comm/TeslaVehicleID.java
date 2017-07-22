@@ -12,6 +12,10 @@ import jmr.pr102.TeslaConstants;
 
 public class TeslaVehicleID {
 
+
+	public static final TeslaVehicleID 
+				DUMMY_VEHICLE_ID = new TeslaVehicleID( null, 0 );
+	
 	private final TeslaLogin login;
 	
 	private final int iVehicleIndex;
@@ -53,6 +57,9 @@ public class TeslaVehicleID {
 	
 	
 	public String getVehicleID() {
+		if ( DUMMY_VEHICLE_ID==this ) {
+			return TeslaConstants.DUMMY_VEHICLE_ID;
+		}
 		if ( map.isEmpty() ) {
 			this.loadVehicleData();
 		}
