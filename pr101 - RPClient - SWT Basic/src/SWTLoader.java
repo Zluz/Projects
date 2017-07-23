@@ -11,6 +11,10 @@ import org.eclipse.swt.widgets.Display;
 
 import jmr.rpclient.SWTBasic;
 
+/*
+ * NOTE: add a User Lib containing the SWT lib for the dev environment to
+ * be able to debug. When exported the correct lib file will be loaded.
+ */
 public class SWTLoader {
 
 	public static void doPrintProperties() {
@@ -44,8 +48,12 @@ public class SWTLoader {
 		} else {
 			strOSAbbr = "UNKNOWN";
 		}
+		
+//		final String strPWD = System.getProperty( "user.dir" );
+		
 //		final String strLibDir = "lib_02/" + strOSAbbr + strOSArch;
 		final String strLibDir = strOSAbbr + strOSArch;
+//		final String strLibDir = strPWD + File.separator + strOSAbbr + strOSArch;
 		try {
 			final ClassLoader loader = ClassLoader.getSystemClassLoader();
 //			final ClassLoader loader = String.class.getClassLoader();

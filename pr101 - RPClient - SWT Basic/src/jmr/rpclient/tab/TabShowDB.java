@@ -5,6 +5,8 @@ import java.util.Map.Entry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -55,12 +57,12 @@ public class TabShowDB extends TabBase {
 		colPath.setWidth( 300 );
 		
 		colName = new TreeColumn( tree, SWT.LEFT );
-		colPath.setText( "Name" );
-		colPath.setWidth( 100 );
+		colName.setText( "Name" );
+		colName.setWidth( 100 );
 		
 		colValue = new TreeColumn( tree, SWT.LEFT );
-		colPath.setText( "Value" );
-		colPath.setWidth( 300 );
+		colValue.setText( "Value" );
+		colValue.setWidth( 300 );
 		
 		tree.setHeaderVisible( true );
 		
@@ -107,6 +109,15 @@ public class TabShowDB extends TabBase {
 	    final CTabItem tabShowDB = new CTabItem( tabs, SWT.NONE );
 	    tabShowDB.setText( TAB_PAD_PREFIX + this.getName() + TAB_PAD_SUFFIX );
 	    tabShowDB.setShowClose( false );
+
+	    tabs.addSelectionListener( new SelectionAdapter() {
+	    	@Override
+	    	public void widgetSelected( final SelectionEvent event ) {
+	    		if ( tabShowDB == event.item ) { 
+	    			drawTree();
+	    		}
+	    	}
+		});
 	    
 	    final Composite compDailyInfo = this.buildUI( tabs );
 	    tabShowDB.setControl( compDailyInfo );

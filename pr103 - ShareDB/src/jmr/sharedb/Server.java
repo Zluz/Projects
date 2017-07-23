@@ -339,7 +339,7 @@ public class Server {
 	}
 	
 	public void addListener( final Listener listener ) {
-		this.addListener( listener );
+		this.listeners.add( listener );
 	}
 	
 	

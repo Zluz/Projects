@@ -16,6 +16,8 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.ShellAdapter;
+import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -116,6 +118,14 @@ public class SWTBasic {
 	    final GridLayout gl = new GridLayout( 10, true );
 		shell.setLayout( gl );
 	    shell.setText( "Test SWT" );
+	    
+	    // should be unncessary
+	    shell.addShellListener( new ShellAdapter() {
+	    	@Override
+	    	public void shellClosed( final ShellEvent event ) {
+	    		System.exit( 0 );
+	    	}
+		});
 	
 	    
 	    
