@@ -6,6 +6,7 @@ package jmr.rpclient;
  * http://dev.eclipse.org/viewcvs/index.cgi/%7Echeckout%7E/platform-swt-home/dev.html#snippets
  */
 
+import java.util.Collections;
 import java.util.Date;
 
 import org.eclipse.swt.SWT;
@@ -29,6 +30,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import jmr.rpclient.tab.TabDailyInfo;
+import jmr.rpclient.tab.TabShowDB;
+import jmr.rpclient.tab.TabTreeDemo;
+import jmr.sharedb.ClientSession;
+import jmr.sharedb.Server;
+import jmr.util.NetUtil;
 
 /*
  * Taken from:
@@ -164,8 +170,14 @@ public class SWTBasic {
 	    	}
 	    });
 	    
+	    final ClientSession session = ClientSession.get();
+	    final Server server = new Server( session );
 
-	    final TabDailyInfo tTreeDemo = new TabDailyInfo();
+	    final TabShowDB tShowDB = new TabShowDB( server );
+	    /*final CTabItem tabShowDB = */ tShowDB.addToTabFolder( tabs );
+
+	    
+	    final TabTreeDemo tTreeDemo = new TabTreeDemo();
 	    /*final CTabItem tabTreeDemo = */ tTreeDemo.addToTabFolder( tabs );
 
 	    
@@ -205,7 +217,7 @@ public class SWTBasic {
 	    
 	    log( new Date().toString() + "\nStarted." );
 	    
-	    log( "Session ID: " + Configuration.get().getSessionID() );
+	    log( "Session ID: " + NetUtil.getSessionID() );
 	    
 	//    for ( final Display display : Display.)
 	    log( "Display Information: " );
@@ -219,7 +231,18 @@ public class SWTBasic {
 		log( "\tPrimary screen (bounds): " + report( monitor.getBounds() ) );
 		log( "\tPrimary screen (client): " + report( monitor.getClientArea() ) );
 	    
+//	    log( "ShareDB initializing.." );
+//
+//	    final ClientSession session = ClientSession.get();
+//	    final Server server = new Server( session );
 	    
+	    log( "ShareDB ready." );
+
+	    server.postData(	"/active_devices/" + NetUtil.getSessionID(), 
+	    					Collections.singletonMap( 
+	    							"session.start", 
+	    							Long.toString( System.currentTimeMillis() ) ), 
+	    					false );
 	    
 	    
 	//    shell.pack();

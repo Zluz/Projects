@@ -92,7 +92,7 @@ public abstract class NetUtil {
 			final Long lPID = Long.parseLong( strPID );
 			final String strPIDx = String.format( "%05X", lPID );
 
-			strMachineID = getMAC() + "-" + strPIDx + "-" + strMark;
+			strMachineID = getMAC() + "--" + strPIDx + "--" + strMark;
 		}
 		return strMachineID;
 	}

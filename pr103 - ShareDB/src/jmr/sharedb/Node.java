@@ -20,8 +20,14 @@ public class Node extends HashMap<String,String> {
 					final String strPath ) {
 		this.server = server;
 		this.strPath = strPath;
+		System.out.println( "New Node: " + this.toString() );
 	}
 	
+	@Override
+	public String toString() {
+		return "Peer[" + strPath + "]";
+	}
+
 	
 	public static interface Listener {
 		public void changed();
@@ -31,6 +37,11 @@ public class Node extends HashMap<String,String> {
 	public long getLastUpdated() {
 		return 0;
 	}
+	
+	public String getPath() {
+		return this.strPath;
+	}
+	
 	
 	public void addListener( final Listener listener ) {
 		this.listeners.add( listener );

@@ -13,8 +13,7 @@ public class TabTreeDemo extends TabBase {
 
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
+		return "Tree Demo";
 	}
 
 	@Override

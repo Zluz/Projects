@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 
+import jmr.rpclient.RPiTouchscreen;
 import jmr.rpclient.UI;
 
 public class TabDailyInfo extends TabBase {
@@ -132,7 +133,9 @@ public class TabDailyInfo extends TabBase {
 	    
 	    final Composite compDailyInfo = this.buildUI( tabs );
 	    tabDailyInfo.setControl( compDailyInfo );
-	    compDailyInfo.setCursor( UI.CURSOR_HIDE );
+	    if ( RPiTouchscreen.getInstance().isEnabled() ) {
+	    	compDailyInfo.setCursor( UI.CURSOR_HIDE );
+	    }
 	    return tabDailyInfo;
 	}
 	

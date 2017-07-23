@@ -15,6 +15,12 @@ public class Peer {
 		this.server = server;
 		this.fileSession = fileSession;
 		this.lLastActivity = System.currentTimeMillis();
+		System.out.println( "New Peer: " + this.toString() );
+	}
+	
+	@Override
+	public String toString() {
+		return "Peer[" + fileSession.toString() + "]";
 	}
 	
 	
@@ -23,11 +29,21 @@ public class Peer {
 	}
 
 
-	public void processFile( final File file ) {
+	public void processFile( // final String strNodePath,
+								final File file ) {
 		this.lLastActivity = System.currentTimeMillis();
+
+		final String strFilename = file.getName();
 		
-		if ( file.getName().endsWith(".tsv") ) {
+		if ( strFilename.endsWith(".tsv") ) {
 			
+			final int iLen = strFilename.length();
+			final String strFile = strFilename.substring( 0, iLen - 4 );
+			final String strNode = Server.convertFileToNodePath( strFile );
+
+			System.out.println( "New data to Node: " + strNode );
+			
+			final Node node = this.server.getNode( strNode );
 		}
 	}
 	

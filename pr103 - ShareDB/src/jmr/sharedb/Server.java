@@ -7,13 +7,19 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -25,9 +31,17 @@ public class Server {
 	private final WatchService watchEach;
 
 	private Path dirParent;
+	private File fileSession;
 	
 	private final Map<String,Peer> mapSessions = new HashMap<>();
 	private final Map<String,Node> mapNodes = new HashMap<>();
+	
+	private final List<Listener> listeners = new LinkedList<Listener>();
+	
+	public interface Listener {
+		public void changed();
+	}
+	
 	
 	public Server( final ClientSession session ) {
 
@@ -41,7 +55,7 @@ public class Server {
 	
 	
 	private WatchService[] init() {
-		final File fileSession = this.session.getSessionDir();
+		fileSession = this.session.getSessionDir();
 		final File fileParent = fileSession.getParentFile();
 		dirParent = fileParent.toPath();
 		WatchService watcherAllInit = null;
@@ -109,17 +123,10 @@ public class Server {
 		if ( null==strPath ) return;
 		if ( null==map ) return;
 		
-		final Node node;
-		if ( mapNodes.containsKey( strPath ) ) {
-			node = mapNodes.get( strPath );
-		} else {
-			node = new Node( this, strPath );
-		}
+		final Node node = this.getNode( strPath );
 		node.putAll( map );
 		
 		if ( !inbound ) { // meaning, data produced here, so share
-			
-			final String strFilename = strPath + ".new";
 			
 			final StringBuilder sb = new StringBuilder();
 			for ( final Entry<String, String> entry : map.entrySet() ) {
@@ -129,17 +136,50 @@ public class Server {
 				sb.append( "\n" );
 			}
 			
-			try (	final FileWriter fw = new FileWriter( strFilename );
+			final String strSafe = convertNodeToFilePath( strPath );
+//			String strSafe = URLEncoder.encode( strPath );
+//			strSafe = strSafe.replace( "_", "%5F" );
+//			strSafe = strSafe.replace( "%", "_" );
+			
+			fileSession.mkdirs();
+			final File fileNEW = new File( fileSession, strSafe + ".new" );
+			
+			try (	final FileWriter fw = new FileWriter( fileNEW );
 					final BufferedWriter bw = new BufferedWriter( fw ) ) {
 				
 				bw.write( sb.toString() );
+				bw.flush();
+				bw.close();
 				
 			} catch ( final IOException e ) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+
+			final File fileTSV = new File( fileSession, strSafe + ".tsv" );
+
+			fileNEW.renameTo( fileTSV );
 		}
 	}
+	
+	
+	public static String convertNodeToFilePath( final String strNodePath ) {
+		String strFile = URLEncoder.encode( strNodePath );
+		strFile = strFile.replace( "_", "%5F" );
+		strFile = strFile.replace( "%", "_" );
+		return strFile;
+	}
+	
+	
+	public static String convertFileToNodePath( final String strFilePath ) {
+		String strNode = strFilePath;
+		strNode = strNode.replace( "_", "%" );
+//		strNode = strNode.replace( "%5F", "_" );
+		strNode = URLDecoder.decode( strNode );
+		return strNode;
+	}
+	
+	
 	
 	
 	private void handleSessionEvent( final File file ) {
@@ -151,9 +191,12 @@ public class Server {
 		System.out.println( "(session event) new file: " + strFilename );
 		
 		final String strPath = file.getParentFile().getAbsolutePath();
+		
 		final Peer peer = mapSessions.get( strPath );
 		if ( null!=peer ) {
-			peer.processFile( file );
+			
+//			final String strNode = convertFileToNodePath( strFilename );
+			peer.processFile( /*strNode,*/ file );
 		}
 	}
 	
@@ -287,6 +330,38 @@ public class Server {
 		}
 		    
 	}
+
+
+	private void notifyListeners() {
+		for ( final Listener listener : listeners ) {
+			listener.changed();
+		}
+	}
+	
+	public void addListener( final Listener listener ) {
+		this.addListener( listener );
+	}
+	
+	
+	public Node getNode( final String strNode ) {
+		final Node node;
+		if ( mapNodes.containsKey( strNode ) ) {
+			node = mapNodes.get( strNode );
+		} else {
+			node = new Node( this, strNode );
+			node.addListener( new jmr.sharedb.Node.Listener() {
+				public void changed() {
+					notifyListeners();
+				}
+			} );
+		}
+		return node;
+	}
+	
+	public Collection<Node> getNodes() {
+		return Collections.unmodifiableCollection( this.mapNodes.values() );
+	}
+	
 	
 	
 }
