@@ -1,59 +1,16 @@
 package jmr.util;
 
-import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.Date;
 import java.util.Enumeration;
 
-public class NetUtil {
-
-	final public static String PATH_SHARE = 
-			( '\\'==File.separatorChar )
-					? "S:\\" 
-					: "/Share";
-	
-//	final public static String PATH_PROPERTIES =
-//			Util.isWin() 
-//					? "S:\\settings.ini" 
-////						"\\\\192.168.1.200\\Share\\settings.ini";
-////						"H:\\Share\\settings.ini";
-//					: "/Share/settings.ini";
-								
-	
-	
-//	final private Properties propSettings;
-	
-	
-	private static NetUtil instance;
+public abstract class NetUtil {
 
 
-	private NetUtil() {
-//		propSettings = new Properties();
-//		
-//		try {
-//			final FileInputStream fis = new FileInputStream( PATH_PROPERTIES );
-//			propSettings.load( fis );
-//			
-//		} catch ( final IOException e ) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-	};
 	
-	public static NetUtil get() {
-		if ( null==instance ) {
-			instance = new NetUtil();
-		}
-		return instance;
-	}
-	
-//	public String get( String strKey ) {
-//		return propSettings.getProperty( strKey );
-//	}
-	
-	
-	public String getMAC() {
+	public static String getMAC() {
 
 		String strMAC = null;
 		
@@ -119,24 +76,26 @@ public class NetUtil {
 	}
 	
 	
-//	public String getSessionID() {
-//		if ( null==strMachineID ) {
-//			
-//			final long lTime = new Date().getTime();
-////				final String strTimeNow = Long.toString( lTime );
-////				final int iLen = strTimeNow.length();
-////				final String strMark = strTimeNow.substring( iLen - 10 );
-//			final String strMark = String.format( "%011X", lTime );
-//			
-//			final String strProcessName = getProcessName();
-//			final String strPID = strProcessName.split( "@" )[0];
-//			final Long lPID = Long.parseLong( strPID );
-//			final String strPIDx = String.format( "%05X", lPID );
-//
-//			strMachineID = getMAC() + "-" + strPIDx + "-" + strMark;
-//		}
-//		return strMachineID;
-//	}
+	private static String strMachineID;
+	
+	public static String getSessionID() {
+		if ( null==strMachineID ) {
+			
+			final long lTime = new Date().getTime();
+//				final String strTimeNow = Long.toString( lTime );
+//				final int iLen = strTimeNow.length();
+//				final String strMark = strTimeNow.substring( iLen - 10 );
+			final String strMark = String.format( "%011X", lTime );
+			
+			final String strProcessName = getProcessName();
+			final String strPID = strProcessName.split( "@" )[0];
+			final Long lPID = Long.parseLong( strPID );
+			final String strPIDx = String.format( "%05X", lPID );
+
+			strMachineID = getMAC() + "-" + strPIDx + "-" + strMark;
+		}
+		return strMachineID;
+	}
 	
 	
 	public static String createFakeMAC() {
