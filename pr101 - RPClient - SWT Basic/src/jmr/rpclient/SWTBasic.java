@@ -82,6 +82,9 @@ public class SWTBasic {
     final static public int RPIT_CLIENT_WIDTH = 800 + 20;
     final static public int RPIT_CLIENT_HEIGHT = 480 + 16;
 	
+    
+    
+    
 	public static void main( final String[] args ) {
 		
 		final Display display = UI.display;
@@ -92,7 +95,12 @@ public class SWTBasic {
 //	    cursorHide = new Cursor( UI.display, idHide, 0, 0 );
 //	    idHide.transparentPixel = 0;
 	    
-	    final int iOptions = SWT.TOOL | SWT.ON_TOP | SWT.NO_TRIM;
+	    final int iOptions;
+	    if ( Util.isWin() ) {
+	    	iOptions = SWT.TOOL | SWT.SHELL_TRIM;
+	    } else {
+	    	iOptions = SWT.TOOL | SWT.ON_TOP | SWT.NO_TRIM;
+	    }
 		final Shell shell = new Shell( UI.display, iOptions );
 	    shell.setSize( RPIT_CLIENT_WIDTH, RPIT_CLIENT_HEIGHT );
 	    
@@ -197,16 +205,19 @@ public class SWTBasic {
 	    
 	    log( new Date().toString() + "\nStarted." );
 	    
+	    log( "Session ID: " + Configuration.get().getSessionID() );
+	    
 	//    for ( final Display display : Display.)
-	    log( "Display (bounds): " + report( display.getBounds() ) );
-	    log( "Display (client): " + report( display.getClientArea() ) );
-		log( "Display color depth: " + display.getDepth() );
-		log( "Display DPI: " + display.getDPI() );
-		log( "Display touch enabled: " + display.getTouchEnabled() );
+	    log( "Display Information: " );
+	    log( "\tDisplay (bounds): " + report( display.getBounds() ) );
+	    log( "\tDisplay (client): " + report( display.getClientArea() ) );
+		log( "\tDisplay color depth: " + display.getDepth() );
+		log( "\tDisplay DPI: " + display.getDPI() );
+		log( "\tDisplay touch enabled: " + display.getTouchEnabled() );
 	    
 	    final Monitor monitor = display.getPrimaryMonitor();
-		log( "Primary screen (bounds): " + report( monitor.getBounds() ) );
-		log( "Primary screen (client): " + report( monitor.getClientArea() ) );
+		log( "\tPrimary screen (bounds): " + report( monitor.getBounds() ) );
+		log( "\tPrimary screen (client): " + report( monitor.getClientArea() ) );
 	    
 	    
 	    

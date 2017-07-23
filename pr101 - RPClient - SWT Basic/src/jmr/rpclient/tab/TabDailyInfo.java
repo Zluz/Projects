@@ -100,6 +100,8 @@ public class TabDailyInfo extends TabBase {
 
 	    			    final Date now = new Date();
 	    			    
+	    			    if ( display.isDisposed() ) return;
+	    			    
 	    			    display.asyncExec( new Runnable() {
 	    			    	@Override
 	    			    	public void run() {

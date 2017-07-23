@@ -1,7 +1,6 @@
 package jmr.rpclient;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
