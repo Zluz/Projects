@@ -1,8 +1,15 @@
 package jmr.sharedb;
 
 import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Peer {
+
+	private static final Charset UTF_8 = Charset.forName( "UTF-8" );
 
 	final private Server server;
 	
@@ -28,6 +35,12 @@ public class Peer {
 		return this.lLastActivity;
 	}
 
+	
+	public String getSessionName() {
+		final String strName = this.fileSession.getName();
+		return strName;
+	}
+	
 
 	public void processFile( // final String strNodePath,
 								final File file ) {
@@ -44,6 +57,18 @@ public class Peer {
 			System.out.println( "New data to Node: " + strNode );
 			
 			final Node node = this.server.getNode( strNode );
+			
+			final Path path = file.toPath();
+			try {
+				final Map<String,String> map = new HashMap<>();
+				for ( final String strLine : Files.readAllLines( path, UTF_8 ) ) {
+					final String[] arr = strLine.split( "\t" );
+					map.put( arr[0], arr[1] );
+				}
+				node.putAll( map );
+			} catch ( final Exception e ) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

@@ -1,11 +1,14 @@
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Vector;
 
 import org.eclipse.swt.widgets.Display;
 
@@ -32,7 +35,44 @@ public class SWTLoader {
 		}
 	}
 	
+	public static void printLoadedClasses() {
+		try {
+			System.out.println( "Currently loaded classes:" );
+
+			final Field field = ClassLoader.class.getDeclaredField( "classes" );
+			field.setAccessible( true );
+			
+//			final ClassLoader ccl = Thread.currentThread().getContextClassLoader();
+			final ClassLoader ccl = ClassLoader.getSystemClassLoader();
+			@SuppressWarnings("unchecked")
+			final Vector<Class<?>> classes = (Vector<Class<?>>) field.get( ccl );
+			
+			for ( final Class<?> clazz : classes ) {
+				System.out.println( "\t" + clazz.getCanonicalName() );
+			}
+			
+			System.out.println( "Currently loaded jars:" );
+			
+			if ( ccl instanceof URLClassLoader ) {
+				for ( final URL url : ((URLClassLoader) ccl).getURLs() ) {
+					System.out.println( "\t" + url.toString() );
+				}
+			}
+			
+		} catch ( final Exception e ) {
+			System.out.println( "Exception encountered: " + e.toString() );
+		}
+	}
+	
 	public static void loadSWT() {
+		System.out.println( "SWTLoader startup - " + new Date().toString() );
+		
+		try {
+			Thread.sleep( 2000 );
+		} catch ( final InterruptedException e ) {}
+		
+		// check to see if SWT is already loaded..
+		printLoadedClasses();
 		
 		System.out.println( "Attempting to locate a SWT library." );
 		
@@ -56,6 +96,8 @@ public class SWTLoader {
 //		final String strLibDir = strPWD + File.separator + strOSAbbr + strOSArch;
 		try {
 			final ClassLoader loader = ClassLoader.getSystemClassLoader();
+			
+
 //			final ClassLoader loader = String.class.getClassLoader();
 
 			final String strLibFile = strLibDir + "/swt.jar";
@@ -89,6 +131,12 @@ public class SWTLoader {
 			//display.getDefault()
 			//     new org.eclipse.swt.graphics.DeviceData().
 
+			
+			
+			printLoadedClasses();
+
+			
+			
 			System.out.print( "\tDefining DeviceData class..." );
 			Class<?> clazz = Class.forName( "org.eclipse.swt.graphics.DeviceData", true, ucl );
 			System.out.println( "Done." );
@@ -98,6 +146,8 @@ public class SWTLoader {
 			System.out.println( "Done." );
 //			Object result = method2.invoke( instance );
 			System.out.println( "\tInstance: " + instance );
+			
+//			Display.getDefault();
 			
 //			JarClassLoader jcl = new JarClassLoader();
 //			jcl.add("myjar.jar"); // Load jar file  
@@ -134,6 +184,7 @@ public class SWTLoader {
 			System.err.println( "Unable to load SWT class for " 
 						+ strOSName + ", " + strOSArch + "." );
 			e.printStackTrace();
+			printLoadedClasses();
 		}
 	}
 	

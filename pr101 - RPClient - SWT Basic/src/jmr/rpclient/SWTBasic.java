@@ -6,7 +6,6 @@ package jmr.rpclient;
  * http://dev.eclipse.org/viewcvs/index.cgi/%7Echeckout%7E/platform-swt-home/dev.html#snippets
  */
 
-import java.util.Collections;
 import java.util.Date;
 
 import org.eclipse.swt.SWT;
@@ -36,7 +35,9 @@ import jmr.rpclient.tab.TabShowDB;
 import jmr.rpclient.tab.TabTreeDemo;
 import jmr.sharedb.ClientSession;
 import jmr.sharedb.Server;
+import jmr.util.Logging;
 import jmr.util.NetUtil;
+import jmr.util.OSUtil;
 
 /*
  * Taken from:
@@ -49,11 +50,22 @@ public class SWTBasic {
   
 //  private static Cursor cursorHide;
 
+  
+
+	
+	final static String NODE_PATH_DEVICES = "/active_devices/";
+	
+	static String NODE_PATH_THIS_SESSION;
+	
+  
+  
 
   
   public static void log( final String text ) {
 	  if ( null==txtLog ) return;
 	  if ( txtLog.isDisposed() ) return;
+	  
+	  Logging.log( text );
 	  
 	  final String strText = txtLog.getText() + Text.DELIMITER 
 			  		+ text.replace( "\n", Text.DELIMITER );
@@ -67,6 +79,7 @@ public class SWTBasic {
   public final static SelectionAdapter selClose = new SelectionAdapter() {
   	@Override
   	public void widgetSelected( final SelectionEvent arg0 ) {
+		Logging.log( "Application closing. " + new Date().toString() );
   		System.exit( 0 );
   	}
   };
@@ -104,8 +117,9 @@ public class SWTBasic {
 //	    idHide.transparentPixel = 0;
 	    
 	    final int iOptions;
-	    if ( Util.isWin() ) {
-	    	iOptions = SWT.TOOL | SWT.SHELL_TRIM;
+	    if ( OSUtil.isWin() ) {
+//	    	iOptions = SWT.TOOL | SWT.SHELL_TRIM;
+	    	iOptions = SWT.SHELL_TRIM;
 	    } else {
 	    	iOptions = SWT.TOOL | SWT.ON_TOP | SWT.NO_TRIM;
 	    }
@@ -123,6 +137,7 @@ public class SWTBasic {
 	    shell.addShellListener( new ShellAdapter() {
 	    	@Override
 	    	public void shellClosed( final ShellEvent event ) {
+	    		Logging.log( "Application closing. " + new Date().toString() );
 	    		System.exit( 0 );
 	    	}
 		});
@@ -205,6 +220,24 @@ public class SWTBasic {
 	    tabLog.setControl( txtLog );
 	
 	    tabs.setSelection( tabDailyInfo );
+	    
+	    tabs.addSelectionListener( new SelectionAdapter() {
+	    	@Override
+	    	public void widgetSelected( final SelectionEvent event ) {
+	    		if ( event.widget instanceof CTabFolder ) {
+	    			final CTabFolder tabs = (CTabFolder)(event.widget);
+					final CTabItem item = tabs.getSelection();
+					final String strName = item.getText().trim();
+					
+//	    			server.postData( NODE_PATH_THIS_SESSION + "Selection/", 
+//	    					Collections.singletonMap( "tab.selected", strName ), 
+//	    					false );
+	    			server.postData( NODE_PATH_THIS_SESSION + "Selection/", 
+	    					"tab.selected", strName,
+	    					"time", ""+System.currentTimeMillis() );
+	    		}
+	    	}
+		});
 	
 	    
 	    
@@ -224,10 +257,15 @@ public class SWTBasic {
 			}
 		});
 	    
-	    
 	    log( new Date().toString() + "\nStarted." );
-	    
+
+	    Logging.setDir( session.getSessionDir() );
+
 	    log( "Session ID: " + NetUtil.getSessionID() );
+	    
+	    shell.setText( NetUtil.getSessionID() );
+	    
+	    
 	    
 	//    for ( final Display display : Display.)
 	    log( "Display Information: " );
@@ -248,11 +286,16 @@ public class SWTBasic {
 	    
 	    log( "ShareDB ready." );
 
-	    server.postData(	"/active_devices/" + NetUtil.getSessionID(), 
-	    					Collections.singletonMap( 
-	    							"session.start", 
-	    							Long.toString( System.currentTimeMillis() ) ), 
-	    					false );
+	    NODE_PATH_THIS_SESSION = 
+	    			NODE_PATH_DEVICES + NetUtil.getSessionID() + "/";
+	    
+//	    server.postData(	NODE_PATH_THIS_SESSION, 
+//	    					Collections.singletonMap( 
+//	    							"session.start", 
+//	    							Long.toString( System.currentTimeMillis() ) ), 
+//	    					false );
+	    server.postData(	NODE_PATH_THIS_SESSION, 
+							"session.start", Long.toString( System.currentTimeMillis() ) );
 	    
 	    
 	//    shell.pack();
@@ -279,6 +322,7 @@ public class SWTBasic {
 	      }
 	    }
 	    display.dispose();
+		Logging.log( "Application closing. " + new Date().toString() );
 	}
 
 }

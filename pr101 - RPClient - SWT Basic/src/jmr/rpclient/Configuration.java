@@ -6,16 +6,17 @@ import java.util.Date;
 import java.util.Properties;
 
 import jmr.util.NetUtil;
+import jmr.util.OSUtil;
 
 public class Configuration {
 
 	final public static String PATH_SHARE = 
-			Util.isWin() 
+			OSUtil.isWin() 
 					? "S:\\" 
 					: "/Share";
 	
 	final public static String PATH_PROPERTIES =
-			Util.isWin() 
+			OSUtil.isWin() 
 					? "S:\\settings.ini" 
 //						"\\\\192.168.1.200\\Share\\settings.ini";
 //						"H:\\Share\\settings.ini";

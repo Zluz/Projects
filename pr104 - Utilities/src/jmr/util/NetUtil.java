@@ -91,8 +91,16 @@ public abstract class NetUtil {
 			final String strPID = strProcessName.split( "@" )[0];
 			final Long lPID = Long.parseLong( strPID );
 			final String strPIDx = String.format( "%05X", lPID );
+			
+			final String strOS = 
+					( OSUtil.isWin() ? "W" : "L" ) 
+					+ OSUtil.getArch();
 
-			strMachineID = getMAC() + "--" + strPIDx + "--" + strMark;
+			strMachineID = 
+					strOS + "--" 
+					+ getMAC() + "--" 
+					+ strPIDx + "--" 
+					+ strMark;
 		}
 		return strMachineID;
 	}

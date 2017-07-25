@@ -1,11 +1,10 @@
 package jmr.sharedb;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -15,6 +14,7 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.nio.file.Watchable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,9 +22,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
+
+import jmr.util.FileUtil;
+import jmr.util.Logging;
 
 public class Server {
 
+	public final static Logger 
+			LOGGER = Logger.getLogger( Server.class.getName() );
+	
+	
 	public final ClientSession session;
 	
 	private final WatchService watchAll;
@@ -83,13 +91,18 @@ public class Server {
 
 //		final String strPath = file.getAbsolutePath();
 //		final String strPath = path.toString();
-		final String strPath = file.getAbsolutePath();
+//		final String strPath = file.getAbsolutePath();
+		final String strPath = file.getName();
 		
 		if ( mapSessions.containsKey( strPath ) ) {
 			// already have it..
 			return;
 		}
 
+		
+		Logging.log( "New session (dir) monitored: " + strPath );
+		
+		
 		final Peer peer = new Peer( this, file );
 		
 		mapSessions.put( strPath, peer );
@@ -104,7 +117,7 @@ public class Server {
 //		Path path = file.toPath();
 		try {
 			path.register( watchEach, 
-					ENTRY_CREATE, /*ENTRY_DELETE,*/ ENTRY_MODIFY );
+					ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY );
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -114,6 +127,27 @@ public class Server {
 		for ( final File item : list ) {
 			handleSessionEvent( item );
 		}
+	}
+	
+	
+	public void postData(	final String strPath,
+							final String... strData ) {
+		if ( null==strPath ) return;
+		if ( null==strData ) return;
+		if ( strData.length<2 ) return;
+		
+		final Map<String,String> map = new HashMap<>();
+		boolean bKey = true;
+		String strKey = null;
+		for ( final String strValue : strData ) {
+			if ( bKey ) {
+				strKey = strValue;
+			} else {
+				map.put( strKey, strValue );
+			}
+			bKey = !bKey;
+		}
+		this.postData( strPath, map, false );
 	}
 	
 	
@@ -141,22 +175,25 @@ public class Server {
 //			strSafe = strSafe.replace( "_", "%5F" );
 //			strSafe = strSafe.replace( "%", "_" );
 			
-			fileSession.mkdirs();
+//			fileSession.mkdirs();
 			final File fileNEW = new File( fileSession, strSafe + ".new" );
 			
-			try (	final FileWriter fw = new FileWriter( fileNEW );
-					final BufferedWriter bw = new BufferedWriter( fw ) ) {
-				
-				bw.write( sb.toString() );
-				bw.flush();
-				bw.close();
-				
-			} catch ( final IOException e ) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			FileUtil.saveToFile( fileNEW, sb.toString() );
+
+//			try (	final FileWriter fw = new FileWriter( fileNEW );
+//					final BufferedWriter bw = new BufferedWriter( fw ) ) {
+//				
+//				bw.write( sb.toString() );
+//				bw.flush();
+//				bw.close();
+//				
+//			} catch ( final IOException e ) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 
 			final File fileTSV = new File( fileSession, strSafe + ".tsv" );
+			fileTSV.delete();
 
 			fileNEW.renameTo( fileTSV );
 		}
@@ -185,19 +222,25 @@ public class Server {
 	private void handleSessionEvent( final File file ) {
 //		if ( null==path ) return;
 //		final File file = path.toFile();
+//		if ( !file.isFile() ) return;
+		if ( null==file ) return;
 		if ( !file.isFile() ) return;
-		
+
+		Logging.log( "--> handleSessionEvent(), file = " + file );
+
 		final String strFilename = file.getName();
 		System.out.println( "(session event) new file: " + strFilename );
 		
-		final String strPath = file.getParentFile().getAbsolutePath();
+//		final String strPath = file.getParentFile().getAbsolutePath();
+		final String strSession = file.getParentFile().getName();
 		
-		final Peer peer = mapSessions.get( strPath );
+		final Peer peer = mapSessions.get( strSession );
 		if ( null!=peer ) {
 			
 //			final String strNode = convertFileToNodePath( strFilename );
 			peer.processFile( /*strNode,*/ file );
 		}
+		Logging.log( "<-- handleSessionEvent()" );
 	}
 	
 	
@@ -216,17 +259,24 @@ public class Server {
 						final Kind<?> kind = event.kind();
 						final Object context = event.context();
 						
-						System.out.println(	"(Each) Event: " + event + ", "
-											+ "kind: " + kind + ", "
-											+ "context: " + context );
-						if ( context instanceof Path ) {
+						if ( ENTRY_CREATE.equals( kind )
+								&& context instanceof Path 
+								&& key.watchable() instanceof Path ) {
+
 							final Path path = (Path) context;
-							
-							final Path pathFull = 
-									dirParent.toAbsolutePath().resolve( path );
-							final File file = pathFull.toFile();
-							
-							handleSessionEvent( file );
+							final String strName = path.toString();
+							if ( strName.endsWith( ".tsv" ) ) {
+								
+								System.out.println(	
+										"(Each) Event: " + event + ", "
+										+ "kind: " + kind + ", "
+										+ "context: " + context );
+
+								final Watchable watchable = key.watchable();
+								final Path pathDir = (Path)watchable;
+								final Path pathFile = pathDir.resolve( path );
+								handleSessionEvent( pathFile.toFile() );
+							}
 						}
 					}
 					
@@ -248,23 +298,32 @@ public class Server {
 
 				try { for (;;) {
 					
-					final WatchKey key = watchAll.take(); // this will block
+					Logging.log( "--- watchAllSessions() - run()" );
 					
+					final WatchKey key = watchAll.take(); // this will block
+
+					Logging.log( "--- watchAllSessions() - processing events.." );
+
 					for ( final WatchEvent<?> event : key.pollEvents() ) {
 						
 						final Kind<?> kind = event.kind();
 						final Object context = event.context();
 						
-						System.out.println(	"(All) Event: " + event + ", "
+						Logging.log(	"(All) Event: " + event + ", "
 											+ "kind: " + kind + ", "
 											+ "context: " + context );
+						
 						if ( context instanceof Path ) {
 							final Path path = (Path) context;
 							
 							final Path pathFull = 
-									dirParent.toAbsolutePath().resolve( path );
+									dirParent.resolve( path );
 							
-							watchSessionDir( pathFull );
+							if ( ENTRY_CREATE.equals( kind ) ) {
+								watchSessionDir( pathFull );
+							} else if ( ENTRY_DELETE.equals( kind ) ) {
+								
+							}
 						}
 					}
 					
@@ -321,7 +380,7 @@ public class Server {
 				final Kind<?> kind = event.kind();
 				final Object context = event.context();
 				
-				System.out.println(	"Event: " + event + ", "
+				Logging.log(	"Event: " + event + ", "
 									+ "kind: " + kind + ", "
 									+ "context: " + context );
 			}
@@ -354,6 +413,7 @@ public class Server {
 					notifyListeners();
 				}
 			} );
+			mapNodes.put( strNode, node );
 		}
 		return node;
 	}
@@ -361,6 +421,12 @@ public class Server {
 	public Collection<Node> getNodes() {
 		return Collections.unmodifiableCollection( this.mapNodes.values() );
 	}
+	
+	public Collection<Peer> getSessions() {
+		return Collections.unmodifiableCollection( this.mapSessions.values() );
+	}
+	
+	
 	
 	
 	

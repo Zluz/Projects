@@ -1,11 +1,13 @@
 package jmr.rpclient;
 
-import java.io.IOException;
+import java.io.File;
 
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Monitor;
+
+import jmr.util.FileUtil;
 
 public class RPiTouchscreen {
 	
@@ -68,26 +70,18 @@ Display is RPi touchscreen
 	}
 	
 	
+
 	public void setBrightness( final int iBrightness ) {
 		if ( !this.isEnabled() ) return;
-		
+
 		SWTBasic.log( "Setting brightness to " + iBrightness );
-		
-		final String strCommand = 
-				"echo " + iBrightness + " > "
-						+ "/sys/class/backlight/rpi_backlight/brightness";
-		try {
-			SWTBasic.log( "Running command:\n" + strCommand );
-			final Process proc = Runtime.getRuntime().exec( strCommand );
-			Thread.sleep( 500 );
-//			proc.waitFor( 1, TimeUnit.SECONDS );
-			final int iExitValue = proc.exitValue();
-			SWTBasic.log( "Exit value: " + iExitValue );
-		} catch ( final InterruptedException | IOException e ) {
-			SWTBasic.log( e.toString() );
-//			e.printStackTrace();
-		}
+
+		final File fileBrightness = 
+				new File( "/sys/class/backlight/rpi_backlight/brightness" );
+		final boolean bResult =  FileUtil.saveToFile( 
+				fileBrightness, Integer.toString( iBrightness ) );
+
+		SWTBasic.log( "Result: " + bResult );
 	}
-	
 	
 }
