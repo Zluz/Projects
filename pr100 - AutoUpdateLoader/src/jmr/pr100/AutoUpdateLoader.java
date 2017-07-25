@@ -116,6 +116,8 @@ public class AutoUpdateLoader {
 			
 			if ( bNullRunning || bNewerFound ) {
 
+				System.out.println();
+				
 				if ( bNullRunning ) {
 					System.out.println( "No progrem running, launching next.." );
 				} else if ( bNewerFound ) {
@@ -162,26 +164,30 @@ public class AutoUpdateLoader {
 				};
 				threadStdErr.start();
 
-//				final Thread threadStdOut = new Thread() {
-//					@Override
-//					public void run() {
-//						final InputStream is = proc.getInputStream();
-//						final InputStreamReader isr = new InputStreamReader( is );
-//						final BufferedReader br = new BufferedReader( isr );
-//						try {
-//							String s;
-//							while ( null != ( s = br.readLine() ) ) {
-//								System.out.println( "out> " + s );
-//							}
-//						} catch ( final IOException e ) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//						}
-//						System.out.println( "Process terminated?" );
-//						fileRunning = null;
-//					}
-//				};
-//				threadStdOut.start();
+				final Thread threadStdOut = new Thread() {
+					@Override
+					public void run() {
+						final InputStream is = proc.getInputStream();
+						final InputStreamReader isr = new InputStreamReader( is );
+						final BufferedReader br = new BufferedReader( isr );
+						Boolean bGracefulExit = null;
+						try {
+							String s;
+							while ( null != ( s = br.readLine() ) ) {
+								System.out.println( "out> " + s );
+							}
+							bGracefulExit = true;
+						} catch ( final IOException e ) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+							bGracefulExit = false;
+						}
+						System.out.println( "Process terminated?  "
+								+ "bGracefulExit = " + bGracefulExit );
+						fileRunning = null;
+					}
+				};
+				threadStdOut.start();
 
 //				final Thread threadExitCode = new Thread() {
 //					@Override
