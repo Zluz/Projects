@@ -2,6 +2,7 @@ package jmr.sharedb;
 
 import java.io.File;
 
+import jmr.util.FileUtil;
 import jmr.util.NetUtil;
 
 public class ClientSession {
@@ -36,17 +37,6 @@ public class ClientSession {
 	}
 
 	
-	public void deleteDirRecurse( final File f ) {
-		if (f.isDirectory()) {
-			for (File c : f.listFiles())
-				deleteDirRecurse(c);
-		}
-		if (!f.delete()) {
-//			throw new FileNotFoundException("Failed to delete file: " + f);
-		}
-	}
-	
-	
 	public void createSessionDirectory() {
 		if ( null==this.fileSessionDir ) {
 
@@ -64,7 +54,7 @@ public class ClientSession {
 				try {
 					final String strName = fileChild.getName();
 					if ( strName.startsWith( strSessionOldPattern ) ) {
-						deleteDirRecurse( fileChild );
+						FileUtil.deleteDirRecurse( fileChild );
 					}
 				} catch ( final Exception e ) {
 					e.printStackTrace();

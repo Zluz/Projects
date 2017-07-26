@@ -22,7 +22,6 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -30,6 +29,7 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import jmr.rpclient.tab.TabControls;
 import jmr.rpclient.tab.TabDailyInfo;
 import jmr.rpclient.tab.TabShowDB;
 import jmr.rpclient.tab.TabTreeDemo;
@@ -46,7 +46,7 @@ import jmr.util.OSUtil;
 public class SWTBasic {
 	
 	
-  private static Text txtLog;
+	private static Text txtLog;
   
 //  private static Cursor cursorHide;
 
@@ -59,44 +59,39 @@ public class SWTBasic {
 	
   
   
+	public static void log(final String text) {
+		if (null == txtLog) return;
+		if (txtLog.isDisposed()) return;
 
-  
-  public static void log( final String text ) {
-	  if ( null==txtLog ) return;
-	  if ( txtLog.isDisposed() ) return;
-	  
-	  Logging.log( text );
-	  
-	  final String strText = txtLog.getText() + Text.DELIMITER 
-			  		+ text.replace( "\n", Text.DELIMITER );
-	  txtLog.setText( strText );
-  }
-  
-  public static void close() {
-	  
-  }
-  
-  public final static SelectionAdapter selClose = new SelectionAdapter() {
-  	@Override
-  	public void widgetSelected( final SelectionEvent arg0 ) {
-		Logging.log( "Application closing. " + new Date().toString() );
-  		System.exit( 0 );
-  	}
-  };
-  
+		Logging.log(text);
 
-  
-  
-  public static String report( final Rectangle r ) {
-	  if ( null==r ) return "(null)";
-	  return "(size:" + r.width + "," + r.height 
+		final String strText = txtLog.getText() + Text.DELIMITER
+						+ text.replace("\n", Text.DELIMITER);
+		txtLog.setText(strText);
+	}
+
+	public static void close() {
+		Logging.log("Application closing. " + new Date().toString());
+		System.exit(0);
+	}
+
+	public final static SelectionAdapter selClose = new SelectionAdapter() {
+		@Override
+		public void widgetSelected(final SelectionEvent arg0) {
+			SWTBasic.close();
+		}
+	};
+
+	public static String report( final Rectangle r ) {
+		if ( null==r ) return "(null)";
+		return "(size:" + r.width + "," + r.height 
 			  + " loc:" + r.x + "," + r.y + ")";
-  }
+	}
 
-  public static String report( final Point p ) {
-	  if ( null==p ) return "(null)";
-	  return "(" + p.x + "," + p.y + ")";
-  }
+	public static String report( final Point p ) {
+		if ( null==p ) return "(null)";
+		return "(" + p.x + "," + p.y + ")";
+	}
   
 
     final static public int TRIM = 8;
@@ -133,22 +128,15 @@ public class SWTBasic {
 		shell.setLayout( gl );
 	    shell.setText( "Test SWT" );
 	    
-	    // should be unncessary
+	    // should be unnecessary
 	    shell.addShellListener( new ShellAdapter() {
 	    	@Override
 	    	public void shellClosed( final ShellEvent event ) {
-	    		Logging.log( "Application closing. " + new Date().toString() );
-	    		System.exit( 0 );
+	    		SWTBasic.close();
 	    	}
 		});
 	
 	    
-	    
-	//    final Button btnClose = new Button( shell, SWT.PUSH );
-	//    btnClose.setLayoutData( 
-	//    		new GridData( SWT.DEFAULT, SWT.DEFAULT, false, false, 1, 1 ) );
-	//    btnClose.setText( "Close" );
-	//	btnClose.addSelectionListener( selClose );
 	    
 	    final CTabFolder tabs = new CTabFolder( shell, SWT.TOP | SWT.NO_TRIM );
 	    final int iCols = gl.numColumns - 0;
@@ -164,44 +152,16 @@ public class SWTBasic {
 	    final TabDailyInfo tDailyInfo = new TabDailyInfo();
 	    final CTabItem tabDailyInfo = tDailyInfo.addToTabFolder( tabs );
 
-	
-	    final CTabItem tabControls = new CTabItem( tabs, SWT.NONE );
-	    tabControls.setText( TAB_PAD_PREFIX + "Controls" + TAB_PAD_SUFFIX );
-	    tabControls.setShowClose( false );
-	    final Composite compControls = new Composite( tabs, SWT.NONE );
-	    compControls.setLayout( new FillLayout() );
-	    tabControls.setControl( compControls );
-	
-	    
-	    final Button btnClose2 = new Button( compControls, SWT.PUSH );
-	    btnClose2.setText( "Close" );
-		btnClose2.addSelectionListener( selClose );
-
-	    final Button btnBrightnessNom = new Button( compControls, SWT.PUSH );
-	    btnBrightnessNom.setText( "Brightness Nominal" );
-	    btnBrightnessNom.addSelectionListener( new SelectionAdapter() {
-	    	@Override
-	    	public void widgetSelected( final SelectionEvent e ) {
-	    		RPiTouchscreen.getInstance().setBrightness( 60 );
-	    	}
-	    });
-
-	    final Button btnBrightnessMax = new Button( compControls, SWT.PUSH );
-	    btnBrightnessMax.setText( "Brightness Maximum" );
-	    btnBrightnessMax.addSelectionListener( new SelectionAdapter() {
-	    	@Override
-	    	public void widgetSelected( final SelectionEvent e ) {
-	    		RPiTouchscreen.getInstance().setBrightness( 255 );
-	    	}
-	    });
 	    
 	    final ClientSession session = ClientSession.get();
 	    final Server server = new Server( session );
 
+	    final TabControls tControls = new TabControls( server );
+	    /*final CTabItem tabShowDB = */ tControls.addToTabFolder( tabs );
+
 	    final TabShowDB tShowDB = new TabShowDB( server );
 	    /*final CTabItem tabShowDB = */ tShowDB.addToTabFolder( tabs );
 
-	    
 	    final TabTreeDemo tTreeDemo = new TabTreeDemo();
 	    /*final CTabItem tabTreeDemo = */ tTreeDemo.addToTabFolder( tabs );
 
@@ -229,9 +189,6 @@ public class SWTBasic {
 					final CTabItem item = tabs.getSelection();
 					final String strName = item.getText().trim();
 					
-//	    			server.postData( NODE_PATH_THIS_SESSION + "Selection/", 
-//	    					Collections.singletonMap( "tab.selected", strName ), 
-//	    					false );
 	    			server.postData( NODE_PATH_THIS_SESSION + "Selection/", 
 	    					"tab.selected", strName,
 	    					"time", ""+System.currentTimeMillis() );
@@ -289,16 +246,11 @@ public class SWTBasic {
 	    NODE_PATH_THIS_SESSION = 
 	    			NODE_PATH_DEVICES + NetUtil.getSessionID() + "/";
 	    
-//	    server.postData(	NODE_PATH_THIS_SESSION, 
-//	    					Collections.singletonMap( 
-//	    							"session.start", 
-//	    							Long.toString( System.currentTimeMillis() ) ), 
-//	    					false );
 	    server.postData(	NODE_PATH_THIS_SESSION, 
-							"session.start", Long.toString( System.currentTimeMillis() ) );
+							"session.start", 
+							Long.toString( System.currentTimeMillis() ) );
 	    
 	    
-	//    shell.pack();
 	    shell.open();
 	    
 	    if ( 800 == display.getBounds().width ) {

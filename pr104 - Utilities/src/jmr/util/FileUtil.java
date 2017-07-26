@@ -30,4 +30,19 @@ public abstract class FileUtil {
 		}
 	}
 	
+	
+
+	public static boolean deleteDirRecurse( final File file ) {
+		if ( null==file ) return false;
+		if ( file.isDirectory() ) {
+			for ( final File c : file.listFiles() ) {
+				deleteDirRecurse(c);
+			}
+		}
+		return file.delete();
+	}
+	
+	
+	
+	
 }

@@ -154,22 +154,22 @@ public class TabShowDB extends TabBase {
 	@Override
 	public CTabItem addToTabFolder( final CTabFolder tabs ) {
 
-	    final CTabItem tabShowDB = new CTabItem( tabs, SWT.NONE );
-	    tabShowDB.setText( TAB_PAD_PREFIX + this.getName() + TAB_PAD_SUFFIX );
-	    tabShowDB.setShowClose( false );
+	    final CTabItem tab = new CTabItem( tabs, SWT.NONE );
+	    tab.setText( TAB_PAD_PREFIX + this.getName() + TAB_PAD_SUFFIX );
+	    tab.setShowClose( false );
 
 	    tabs.addSelectionListener( new SelectionAdapter() {
 	    	@Override
 	    	public void widgetSelected( final SelectionEvent event ) {
-	    		if ( tabShowDB == event.item ) { 
+	    		if ( tab == event.item ) { 
 	    			drawTree();
 	    		}
 	    	}
 		});
 	    
-	    final Composite compDailyInfo = this.buildUI( tabs );
-	    tabShowDB.setControl( compDailyInfo );
-	    return tabShowDB;
+	    final Composite comp = this.buildUI( tabs );
+	    tab.setControl( comp );
+	    return tab;
 	}
 
 }

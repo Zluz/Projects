@@ -171,26 +171,11 @@ public class Server {
 			}
 			
 			final String strSafe = convertNodeToFilePath( strPath );
-//			String strSafe = URLEncoder.encode( strPath );
-//			strSafe = strSafe.replace( "_", "%5F" );
-//			strSafe = strSafe.replace( "%", "_" );
 			
 //			fileSession.mkdirs();
 			final File fileNEW = new File( fileSession, strSafe + ".new" );
 			
 			FileUtil.saveToFile( fileNEW, sb.toString() );
-
-//			try (	final FileWriter fw = new FileWriter( fileNEW );
-//					final BufferedWriter bw = new BufferedWriter( fw ) ) {
-//				
-//				bw.write( sb.toString() );
-//				bw.flush();
-//				bw.close();
-//				
-//			} catch ( final IOException e ) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
 
 			final File fileTSV = new File( fileSession, strSafe + ".tsv" );
 			fileTSV.delete();
