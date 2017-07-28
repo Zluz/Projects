@@ -11,11 +11,20 @@ import org.eclipse.swt.widgets.TreeItem;
 
 public class TabTreeDemo extends TabBase {
 
-	@Override
-	public String getName() {
-		return "Tree Demo";
-	}
 
+	public CTabItem tab = null;
+	
+	@Override
+	public CTabItem getTab() {
+		return this.tab;
+	}
+	
+
+
+	public TopSection getMenuItem() {
+		return TopSection.TREE_DEMO;
+	}
+	
 	@Override
 	public Composite buildUI(Composite parent) {
 	    final Composite comp = new Composite( parent, SWT.NONE );
@@ -59,11 +68,12 @@ public class TabTreeDemo extends TabBase {
 	public CTabItem addToTabFolder( final CTabFolder tabs ) {
 		
 	    final CTabItem tabTreeDemo = new CTabItem( tabs, SWT.NONE );
-	    tabTreeDemo.setText( TAB_PAD_PREFIX + this.getName() + TAB_PAD_SUFFIX );
+//	    tabTreeDemo.setText( TAB_PAD_PREFIX + this.getName() + TAB_PAD_SUFFIX );
 	    tabTreeDemo.setShowClose( false );
 	    
 	    final Composite compTreeDemo = this.buildUI( tabs );
 	    tabTreeDemo.setControl( compTreeDemo );
+	    this.tab = tabTreeDemo;
 	    return tabTreeDemo;
 	}
 	

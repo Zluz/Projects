@@ -39,16 +39,20 @@ public class TabControls extends TabBase {
 		}
 	}
 	
+	public CTabItem tab = null;
 	
+	@Override
+	public CTabItem getTab() {
+		return this.tab;
+	}
 	
 	public TabControls( final Server server ) {
 		this.server = server;
 	}
 	
 	
-	@Override
-	public String getName() {
-		return "Device Controls";
+	public TopSection getMenuItem() {
+		return TopSection.DEVICE_CONTROLS;
 	}
 	
 
@@ -126,7 +130,7 @@ public class TabControls extends TabBase {
 					@Override
 					public void widgetSelected( final SelectionEvent event ) {
 						final int iPos = scale.getSelection();
-						SWTBasic.log( "Brightness to " + iPos );
+						SWTBasic.get().log( "Brightness to " + iPos );
 						RPiTouchscreen.getInstance().setBrightness( iPos );
 					}
 				});
@@ -153,7 +157,7 @@ public class TabControls extends TabBase {
 	public CTabItem addToTabFolder( final CTabFolder tabs ) {
 
 	    final CTabItem tab = new CTabItem( tabs, SWT.NONE );
-	    tab.setText( TAB_PAD_PREFIX + this.getName() + TAB_PAD_SUFFIX );
+//	    tab.setText( TAB_PAD_PREFIX + this.getName() + TAB_PAD_SUFFIX );
 	    tab.setShowClose( false );
 
 //	    tabs.addSelectionListener( new SelectionAdapter() {
@@ -167,7 +171,9 @@ public class TabControls extends TabBase {
 	    
 	    final Composite comp = this.buildUI( tabs );
 	    tab.setControl( comp );
-	    return tab;	}
+	    this.tab = tab;
+	    return tab;	
+    }
 
 }
 

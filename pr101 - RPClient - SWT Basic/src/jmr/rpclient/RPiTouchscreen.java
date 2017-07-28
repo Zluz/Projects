@@ -74,14 +74,14 @@ Display is RPi touchscreen
 	public void setBrightness( final int iBrightness ) {
 		if ( !this.isEnabled() ) return;
 
-		SWTBasic.log( "Setting brightness to " + iBrightness );
+		SWTBasic.get().log( "Setting brightness to " + iBrightness );
 
 		final File fileBrightness = 
 				new File( "/sys/class/backlight/rpi_backlight/brightness" );
 		final boolean bResult =  FileUtil.saveToFile( 
 				fileBrightness, Integer.toString( iBrightness ) );
 
-		SWTBasic.log( "Result: " + bResult );
+		SWTBasic.get().log( "Result: " + bResult );
 	}
 	
 }

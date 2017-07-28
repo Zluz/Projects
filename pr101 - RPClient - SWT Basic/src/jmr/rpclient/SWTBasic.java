@@ -7,10 +7,14 @@ package jmr.rpclient;
  */
 
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -19,20 +23,22 @@ import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import jmr.rpclient.tab.TabBase;
+import jmr.rpclient.tab.TabCanvas;
 import jmr.rpclient.tab.TabControls;
 import jmr.rpclient.tab.TabDailyInfo;
+import jmr.rpclient.tab.TabLog;
 import jmr.rpclient.tab.TabShowDB;
 import jmr.rpclient.tab.TabTreeDemo;
+import jmr.rpclient.tab.TopSection;
 import jmr.sharedb.ClientSession;
 import jmr.sharedb.Server;
 import jmr.util.Logging;
@@ -46,7 +52,7 @@ import jmr.util.OSUtil;
 public class SWTBasic {
 	
 	
-	private static Text txtLog;
+	private Text txtLog;
   
 //  private static Cursor cursorHide;
 
@@ -57,9 +63,15 @@ public class SWTBasic {
 	
 	static String NODE_PATH_THIS_SESSION;
 	
+
+	private static SWTBasic instance;
+	
+	public static SWTBasic get() {
+		return instance;
+	}
+	
   
-  
-	public static void log(final String text) {
+	public void log(final String text) {
 		if (null == txtLog) return;
 		if (txtLog.isDisposed()) return;
 
@@ -99,9 +111,46 @@ public class SWTBasic {
     final static public int RPIT_CLIENT_HEIGHT = 480 + 16;
 	
     
+    public static void removeMargins( final GridLayout grid ) {
+    	grid.horizontalSpacing = 0;
+    	grid.marginTop = 0;
+    	grid.marginBottom = 0;
+    	grid.marginLeft = 0;
+    	grid.marginRight = 0;
+    	grid.verticalSpacing = 0;
+    	grid.marginHeight = 0;
+    	grid.marginWidth = 0;
+    }
+
     
     
-	public static void main( final String[] args ) {
+    public SWTBasic() {
+    	this.shell = this.buildUI();
+    	instance = this;
+	}
+
+	final Shell shell;
+
+	final List<TabBase> listTabs = new LinkedList<TabBase>();
+
+	private CTabFolder tabs;
+	
+	
+	public void activate( final TopSection item ) {
+		if ( null==item ) return;
+		
+		for ( final TabBase tab : listTabs ) {
+			if ( item.equals( tab.getMenuItem() ) ) {
+				final CTabItem cti = tab.getTab();
+				if ( null!=cti ) {
+					tabs.setSelection( cti );
+				}
+			}
+		}
+	}
+    
+    
+	public Shell buildUI() {
 		
 		final Display display = UI.display;
 	    
@@ -118,15 +167,34 @@ public class SWTBasic {
 	    } else {
 	    	iOptions = SWT.TOOL | SWT.ON_TOP | SWT.NO_TRIM;
 	    }
-		final Shell shell = new Shell( UI.display, iOptions );
+	    final Shell shell = new Shell( UI.display, iOptions );
 	    shell.setSize( RPIT_CLIENT_WIDTH, RPIT_CLIENT_HEIGHT );
 	    
-	//    new org.eclipse.swt.widgets.Shell();
 	    
-	//    shell.setLayout(new FillLayout());
+	    final GridLayout glTop = new GridLayout( 3, false );
+	    removeMargins( glTop );
+		shell.setLayout( glTop );
+
+		final GridData gdLeft = new GridData( SWT.DEFAULT, SWT.FILL, false, true );
+		gdLeft.widthHint = 30;
+		final GridData gdRight = new GridData( SWT.DEFAULT, SWT.FILL, false, true );
+		gdRight.widthHint = 10;
+		final GridData gdMain = new GridData( SWT.FILL, SWT.FILL, true, true );
+
+	    final Composite compLeft = new Composite( shell, SWT.NONE );
+	    compLeft.setLayoutData( gdLeft );
+	    compLeft.setBackground( UI.COLOR_BLACK );
+	    final Composite compMain = new Composite( shell, SWT.NONE );
+	    compMain.setLayoutData( gdMain );
+	    compMain.setBackground( UI.COLOR_BLACK );
+	    final Composite compRight = new Composite( shell, SWT.NONE );
+	    compRight.setLayoutData( gdRight );
+	    compRight.setBackground( UI.COLOR_BLACK );
+	    
 	    final GridLayout gl = new GridLayout( 10, true );
-		shell.setLayout( gl );
-	    shell.setText( "Test SWT" );
+	    removeMargins( gl );
+	    compMain.setLayout( gl );
+	    
 	    
 	    // should be unnecessary
 	    shell.addShellListener( new ShellAdapter() {
@@ -138,48 +206,57 @@ public class SWTBasic {
 	
 	    
 	    
-	    final CTabFolder tabs = new CTabFolder( shell, SWT.TOP | SWT.NO_TRIM );
+	    tabs = new CTabFolder( compMain, SWT.TOP | SWT.NO_TRIM );
 	    final int iCols = gl.numColumns - 0;
 		tabs.setLayoutData( 
 	    		new GridData( SWT.FILL, SWT.FILL, true, true, iCols, 1 ) );
 	    
-	    tabs.setSimple( false );
+	    tabs.setSimple( true );
 	    tabs.setMaximizeVisible( false );
+	    tabs.marginHeight = 0;
+	    tabs.marginWidth = 0;
+	    tabs.setBorderVisible( false );
+	    tabs.addPaintListener( new PaintListener() {
+			@Override
+			public void paintControl( final PaintEvent event ) {
+				event.gc.setBackground( UI.COLOR_BLACK );
+				event.gc.fillRectangle( tabs.getBounds() );
+			}
+		});
 	
-	    final String TAB_PAD_SUFFIX = "      ";
-	    final String TAB_PAD_PREFIX = "   ";
 	    
 	    final TabDailyInfo tDailyInfo = new TabDailyInfo();
-	    final CTabItem tabDailyInfo = tDailyInfo.addToTabFolder( tabs );
-
+	    tDailyInfo.addToTabFolder( tabs );
+	    listTabs.add( tDailyInfo );
 	    
 	    final ClientSession session = ClientSession.get();
 	    final Server server = new Server( session );
 
 	    final TabControls tControls = new TabControls( server );
-	    /*final CTabItem tabShowDB = */ tControls.addToTabFolder( tabs );
+	    tControls.addToTabFolder( tabs );
+	    listTabs.add( tControls );
 
 	    final TabShowDB tShowDB = new TabShowDB( server );
-	    /*final CTabItem tabShowDB = */ tShowDB.addToTabFolder( tabs );
+	    tShowDB.addToTabFolder( tabs );
+	    listTabs.add( tShowDB );
 
 	    final TabTreeDemo tTreeDemo = new TabTreeDemo();
-	    /*final CTabItem tabTreeDemo = */ tTreeDemo.addToTabFolder( tabs );
+	    tTreeDemo.addToTabFolder( tabs );
+	    listTabs.add( tTreeDemo );
+
+	    final TabCanvas tCanvas = new TabCanvas();
+	    tCanvas.addToTabFolder( tabs );
+	    listTabs.add( tCanvas );
+
+	    final TabLog tLog = new TabLog();
+	    tLog.addToTabFolder( tabs );
+	    listTabs.add( tLog );
+	    
+	    this.txtLog = tLog.getTextWidget();
 
 	    
-	    final CTabItem tabCanvas = new CTabItem( tabs, SWT.NONE );
-	    tabCanvas.setText( TAB_PAD_PREFIX + "Canvas" + TAB_PAD_SUFFIX );
-	    tabCanvas.setShowClose( true );
-	    final Composite compCanvas = new Composite( tabs, SWT.NONE );
-	    compCanvas.setLayout( new FillLayout() );
-	    tabCanvas.setControl( compCanvas );
 	
-	    final CTabItem tabLog = new CTabItem( tabs, SWT.NONE );
-	    tabLog.setText( TAB_PAD_PREFIX + "Log" + TAB_PAD_SUFFIX );
-	    tabLog.setShowClose( false );
-	    txtLog = new Text( tabs, SWT.MULTI | SWT.V_SCROLL );
-	    tabLog.setControl( txtLog );
-	
-	    tabs.setSelection( tabDailyInfo );
+	    tabs.setSelection( tDailyInfo.getTab() );
 	    
 	    tabs.addSelectionListener( new SelectionAdapter() {
 	    	@Override
@@ -197,22 +274,6 @@ public class SWTBasic {
 		});
 	
 	    
-	    
-	    
-	    final Canvas canvas = new Canvas( compCanvas, SWT.NONE );
-	    canvas.addPaintListener( new PaintListener() {
-			@Override
-			public void paintControl( final PaintEvent e ) {
-				final Rectangle r = canvas.getClientArea();
-				final int iXC = r.width / 2;
-				final int iYC = r.height / 2;
-				e.gc.drawOval( 0, 0, r.width, r.height );
-				e.gc.drawLine( 0, iYC, iXC, r.height );
-				e.gc.drawLine( 0, iYC, iXC, 0 );
-				e.gc.drawLine( iXC, 0, r.width, iYC );
-				e.gc.drawLine( iXC, r.height, r.width, iYC );
-			}
-		});
 	    
 	    log( new Date().toString() + "\nStarted." );
 
@@ -253,6 +314,23 @@ public class SWTBasic {
 	    
 	    shell.open();
 	    
+	    final ShellTopMenu menu = new ShellTopMenu( shell );
+
+	    compLeft.addMouseMoveListener( new MouseMoveListener() {
+			@Override
+			public void mouseMove( final MouseEvent event ) {
+				menu.show( true );
+			}
+		});
+	    compMain.addMouseMoveListener( new MouseMoveListener() {
+			@Override
+			public void mouseMove( final MouseEvent event ) {
+				if ( event.x < 80 ) {
+					menu.show( true );
+				}
+			}
+		});
+	    
 	    if ( 800 == display.getBounds().width ) {
 	    	log( "Display is RPi touchscreen" );
 	    	shell.setLocation( -TRIM, -TRIM );
@@ -267,14 +345,21 @@ public class SWTBasic {
 	//    } else {
 	//    	shell.setLocation( 0, 0 );
 	    }
+	    return shell;
+	}
+
+	public static void main( final String[] args ) {
+
+		final SWTBasic ui = new SWTBasic();
 	    
-	    while (!shell.isDisposed()) {
-	      if (!display.readAndDispatch()) {
-	        display.sleep();
+	    while (!ui.shell.isDisposed()) {
+	      if (!UI.display.readAndDispatch()) {
+	    	  UI.display.sleep();
 	      }
 	    }
-	    display.dispose();
+	    UI.display.dispose();
 		Logging.log( "Application closing. " + new Date().toString() );
 	}
 
+	
 }

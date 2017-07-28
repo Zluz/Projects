@@ -43,11 +43,19 @@ public class TabShowDB extends TabBase {
 	}
 	
 	
-	@Override
-	public String getName() {
-		return "Data Listing";
+
+	public TopSection getMenuItem() {
+		return TopSection.DATA_LISTING;
 	}
 
+	public CTabItem tab = null;
+	
+	@Override
+	public CTabItem getTab() {
+		return this.tab;
+	}
+	
+	
 	@Override
 	public Composite buildUI( final Composite parent ) {
 		display = parent.getDisplay();
@@ -155,7 +163,7 @@ public class TabShowDB extends TabBase {
 	public CTabItem addToTabFolder( final CTabFolder tabs ) {
 
 	    final CTabItem tab = new CTabItem( tabs, SWT.NONE );
-	    tab.setText( TAB_PAD_PREFIX + this.getName() + TAB_PAD_SUFFIX );
+//	    tab.setText( TAB_PAD_PREFIX + this.getName() + TAB_PAD_SUFFIX );
 	    tab.setShowClose( false );
 
 	    tabs.addSelectionListener( new SelectionAdapter() {
@@ -169,6 +177,7 @@ public class TabShowDB extends TabBase {
 	    
 	    final Composite comp = this.buildUI( tabs );
 	    tab.setControl( comp );
+	    this.tab = tab;
 	    return tab;
 	}
 
