@@ -1,1 +1,13 @@
-(placeholder file)
+
+[TO DO]
+
+Add "state" column to "page" table. 
+    Enum (char?) type.
+    Values:
+        A - Active
+        P - Pending
+        X - Expired
+
+
+[INVESTIGATE]
+
