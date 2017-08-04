@@ -11,3 +11,19 @@ Add "state" column to "page" table.
 
 [INVESTIGATE]
 
+
+[DB Object formatting]
+
+from DR:DBLookup.formatValue()
+    objects handled:
+        Date
+            format: "yyyy-MM-dd HH:mm:ss"
+            set timezone on format to TimeZone.getTimeZone("GMT")
+        Boolean
+        Number
+        UUID
+        <else>
+            replace( '"', '/' );
+            replace( '\\', '/' );
+ 
+
