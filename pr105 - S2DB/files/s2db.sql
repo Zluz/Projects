@@ -7,6 +7,7 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 -- -----------------------------------------------------
 -- Schema s2db
 -- -----------------------------------------------------
+DROP SCHEMA IF EXISTS `s2db` ;
 
 -- -----------------------------------------------------
 -- Schema s2db
@@ -17,6 +18,8 @@ USE `s2db` ;
 -- -----------------------------------------------------
 -- Table `s2db`.`path`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `s2db`.`path` ;
+
 CREATE TABLE IF NOT EXISTS `s2db`.`path` (
   `seq` BIGINT(20) NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(255) NOT NULL,
@@ -27,6 +30,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `s2db`.`device`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `s2db`.`device` ;
+
 CREATE TABLE IF NOT EXISTS `s2db`.`device` (
   `seq` BIGINT(20) NOT NULL AUTO_INCREMENT,
   `mac` VARCHAR(45) NOT NULL,
@@ -38,6 +43,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `s2db`.`session`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `s2db`.`session` ;
+
 CREATE TABLE IF NOT EXISTS `s2db`.`session` (
   `seq` BIGINT(20) NOT NULL AUTO_INCREMENT,
   `seq_device` BIGINT(20) NOT NULL,
@@ -55,6 +62,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `s2db`.`page`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `s2db`.`page` ;
+
 CREATE TABLE IF NOT EXISTS `s2db`.`page` (
   `seq` BIGINT(20) NOT NULL AUTO_INCREMENT,
   `seq_path` BIGINT(20) NOT NULL,
@@ -80,10 +89,13 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `s2db`.`prop`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `s2db`.`prop` ;
+
 CREATE TABLE IF NOT EXISTS `s2db`.`prop` (
   `seq` BIGINT(20) NOT NULL AUTO_INCREMENT,
   `seq_page` BIGINT(20) NOT NULL,
-  `propcol` VARCHAR(45) NULL,
+  `name` VARCHAR(80) NOT NULL,
+  `value` VARCHAR(1024) NULL,
   PRIMARY KEY (`seq`),
   INDEX `fk_prop_page_idx` (`seq_page` ASC),
   CONSTRAINT `fk_prop_page`
