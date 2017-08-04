@@ -39,6 +39,7 @@ import jmr.rpclient.tab.TabLog;
 import jmr.rpclient.tab.TabShowDB;
 import jmr.rpclient.tab.TabTreeDemo;
 import jmr.rpclient.tab.TopSection;
+import jmr.s2db.Client;
 import jmr.sharedb.ClientSession;
 import jmr.sharedb.Server;
 import jmr.util.Logging;
@@ -231,6 +232,10 @@ public class SWTBasic {
 	    
 	    final ClientSession session = ClientSession.get();
 	    final Server server = new Server( session );
+	    
+	    final Date now = new Date();
+	    final Client s2db = Client.get();
+	    s2db.register( NetUtil.getMAC(), NetUtil.getSessionID(), now );
 
 	    final TabControls tControls = new TabControls( server );
 	    tControls.addToTabFolder( tabs );
