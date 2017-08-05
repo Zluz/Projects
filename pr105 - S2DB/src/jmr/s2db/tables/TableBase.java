@@ -17,9 +17,9 @@ public abstract class TableBase {
 	
 	
 	public Long get(	final String strTable,
-							final String strWhere,
-							final String strInsertNames,
-							final String strInsertValues ) {
+						final String strWhere,
+						final String strInsertNames,
+						final String strInsertValues ) {
 		if ( null==strTable ) return null;
 		if ( null==strWhere ) return null;
 		if ( null==strInsertNames ) return null;

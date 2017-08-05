@@ -5,6 +5,7 @@ public enum Tables {
 	DEVICE( new Device() ),
 	SESSION( new Session() ),
 	PATH( new Path() ),
+	PAGE( new Page() ),
 	;
 	
 	

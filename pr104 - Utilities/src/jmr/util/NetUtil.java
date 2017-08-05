@@ -1,18 +1,26 @@
 package jmr.util;
 
 import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Enumeration;
 
 public abstract class NetUtil {
 
 
+	private static String strMAC = null;
+	private static String strIP = null;
+	
 	
 	public static String getMAC() {
+		if ( null!=strMAC ) {
+			return strMAC;
+		}
 
-		String strMAC = null;
+		String strEvaluatedMAC = null;
 		
 		try {
 			final Enumeration<NetworkInterface> nis = 
@@ -58,9 +66,9 @@ public abstract class NetUtil {
 			}
 			
 			if ( null!=strNIC_eth0 ) {
-				strMAC = strNIC_eth0;
+				strEvaluatedMAC = strNIC_eth0;
 			} else if ( null!=strNIC_any ) {
-				strMAC = strNIC_any;
+				strEvaluatedMAC = strNIC_any;
 			}
 
 		} catch ( final SocketException e ) {
@@ -68,8 +76,9 @@ public abstract class NetUtil {
 			e.printStackTrace();
 		}
 		
-		if ( null!=strMAC ) {
-			return strMAC;
+		if ( null!=strEvaluatedMAC ) {
+			strMAC = strEvaluatedMAC;
+			return strEvaluatedMAC;
 		} else {
 			return createFakeMAC();
 		}
@@ -114,6 +123,20 @@ public abstract class NetUtil {
 			sb.append( (char)( ('Z'-'A') * Math.random() + 'A' ) );
 		}
 		return sb.toString();
+	}
+	
+	
+	public static String getIPAddress() {
+		if ( null==strIP ) {
+			try {
+				final InetAddress ip = InetAddress.getLocalHost();
+				strIP = ip.getHostAddress();
+			} catch ( final UnknownHostException e ) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return strIP;
 	}
 	
 	

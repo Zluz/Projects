@@ -7,8 +7,10 @@ package jmr.rpclient;
  */
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -233,9 +235,24 @@ public class SWTBasic {
 	    final ClientSession session = ClientSession.get();
 	    final Server server = new Server( session );
 	    
+	    /* S2DB stuff */
 	    final Date now = new Date();
 	    final Client s2db = Client.get();
-	    s2db.register( NetUtil.getMAC(), NetUtil.getSessionID(), now );
+	    final String strIP = NetUtil.getIPAddress();
+	    final String strClass = SWTBasic.class.getName();
+	    s2db.register( 	NetUtil.getMAC(), strIP, 
+	    				NetUtil.getSessionID(), 
+	    				strClass, now );
+	    
+	    final Map<String,String> mapSessionPage = new HashMap<>();
+	    mapSessionPage.put( "page.source.class", SWTBasic.class.getName() );
+	    mapSessionPage.put( "session.start", "" + now.getTime() );
+	    mapSessionPage.put( "session.id", "" + NetUtil.getSessionID() );
+	    mapSessionPage.put( "device.mac", NetUtil.getMAC() );
+	    mapSessionPage.put( "process.name", NetUtil.getProcessName() );
+	    mapSessionPage.put( "device.ip", NetUtil.getIPAddress() );
+	    mapSessionPage.put( "device.host.port", "none" );
+	    s2db.savePage( "/Sessions/" + NetUtil.getSessionID(), mapSessionPage );
 
 	    final TabControls tControls = new TabControls( server );
 	    tControls.addToTabFolder( tabs );
