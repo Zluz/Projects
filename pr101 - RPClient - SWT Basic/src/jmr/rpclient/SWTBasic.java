@@ -38,6 +38,7 @@ import jmr.rpclient.tab.TabCanvas;
 import jmr.rpclient.tab.TabControls;
 import jmr.rpclient.tab.TabDailyInfo;
 import jmr.rpclient.tab.TabLog;
+import jmr.rpclient.tab.TabS2DB;
 import jmr.rpclient.tab.TabShowDB;
 import jmr.rpclient.tab.TabTreeDemo;
 import jmr.rpclient.tab.TopSection;
@@ -257,6 +258,10 @@ public class SWTBasic {
 	    final TabControls tControls = new TabControls( server );
 	    tControls.addToTabFolder( tabs );
 	    listTabs.add( tControls );
+	    
+	    final TabS2DB tS2DB = new TabS2DB( s2db );
+	    tS2DB.addToTabFolder( tabs );
+	    listTabs.add( tS2DB );
 
 	    final TabShowDB tShowDB = new TabShowDB( server );
 	    tShowDB.addToTabFolder( tabs );

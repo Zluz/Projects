@@ -4,6 +4,7 @@ public enum TopSection {
 	
 	DAILY_INFO( "Daily Info" ),
 	DEVICE_CONTROLS( "Device" ),
+	S2DB( "S2DB Data" ),
 	DATA_LISTING( "Data Listing" ),
 	TREE_DEMO( "Tree Demo" ),
 	CANVAS( "Calibration" ),

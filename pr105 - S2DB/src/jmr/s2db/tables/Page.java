@@ -1,13 +1,16 @@
 package jmr.s2db.tables;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import jmr.s2db.Client;
 import jmr.s2db.comm.ConnectionProvider;
+import jmr.s2db.tree.TreeModel.Node;
 
 public class Page extends TableBase {
 
@@ -22,6 +25,45 @@ public class Page extends TableBase {
 					"" + seqPath + ", " + lSession );
 		return lSeq;
 	}
+	
+	
+	public Map<String,String> getMap( final Long seqPage ) {
+		if ( null==seqPage ) throw new IllegalStateException( "Null seqPage" );
+
+		try ( final Statement 
+				stmt = ConnectionProvider.get().getStatement() ) {
+
+			final String strQuery = 
+			 "SELECT  "
+			 + "	* "
+			 + "FROM  "
+			 + "	prop "
+			 + "WHERE "
+			 + "	prop.seq_page = " + seqPage + ";";
+			 
+			stmt.executeQuery( strQuery );
+
+			final Map<String,String> map = new HashMap<>();
+			
+			try ( final ResultSet rs = stmt.executeQuery( strQuery ) ) {
+				while ( rs.next() ) {
+					final String strName = rs.getString( "name" );
+					final String strValue = rs.getString( "value" );
+					
+					map.put( strName, strValue );
+				}
+			}
+			
+			return map;
+			
+		} catch ( final SQLException e ) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+	
 	
 	public void addMap(	final Long seqPage,
 						final Map<String,String> map ) {
