@@ -50,20 +50,22 @@ public class ClientSession {
 			final String strSessionOldPattern = strSessionID.substring( 0, iPos );
 			final File fileParent = new File( PATH_SHARE 
 						+ File.separator + "Sessions" );
-			for ( final File fileChild : fileParent.listFiles() ) {
-				try {
-					final String strName = fileChild.getName();
-					if ( strName.startsWith( strSessionOldPattern ) ) {
-						FileUtil.deleteDirRecurse( fileChild );
+			if ( null!=fileParent && fileParent.isDirectory() ) {
+				for ( final File fileChild : fileParent.listFiles() ) {
+					try {
+						final String strName = fileChild.getName();
+						if ( strName.startsWith( strSessionOldPattern ) ) {
+							FileUtil.deleteDirRecurse( fileChild );
+						}
+					} catch ( final Exception e ) {
+						e.printStackTrace();
 					}
-				} catch ( final Exception e ) {
-					e.printStackTrace();
 				}
+				
+				// now create the new directory for this session
+				this.fileSessionDir = new File( strSessionDir );
+				this.fileSessionDir.mkdirs();
 			}
-			
-			// now create the new directory for this session
-			this.fileSessionDir = new File( strSessionDir );
-			this.fileSessionDir.mkdirs();
 		}
 	}
 	
