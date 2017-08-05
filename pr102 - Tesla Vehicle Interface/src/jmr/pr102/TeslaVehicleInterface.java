@@ -1,10 +1,8 @@
 
 package jmr.pr102;
 
-import java.io.FileInputStream;
 import java.util.Date;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import com.google.gson.JsonElement;
@@ -16,6 +14,8 @@ import jmr.pr102.comm.HttpPost;
 import jmr.pr102.comm.JsonUtils;
 import jmr.pr102.comm.TeslaLogin;
 import jmr.pr102.comm.TeslaVehicleID;
+import jmr.util.SUProperty;
+import jmr.util.SystemUtil;
 
 public class TeslaVehicleInterface implements TeslaConstants {
 
@@ -41,6 +41,22 @@ public class TeslaVehicleInterface implements TeslaConstants {
 		this.vehicle = TeslaVehicleID.DUMMY_VEHICLE_ID;
 	}
 
+	
+	public Map<String,String> getLoginDetails() {
+		return this.login.getLoginDetails();
+	}
+	
+	
+	public String getLoginToken() {
+		try {
+			return this.login.getTokenValue();
+		} catch ( final Exception e ) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "<no value; " + e.toString() + " encountered>";
+		}
+	}
+	
 
 	
 	
@@ -96,6 +112,16 @@ public class TeslaVehicleInterface implements TeslaConstants {
 		final String strResponse = getContent( strURL, null );
 		// {"response":{"charging_state":"Complete","charge_limit_soc":90,"charge_limit_soc_std":90,"charge_limit_soc_min":50,"charge_limit_soc_max":100,"charge_to_max_range":false,"battery_heater_on":false,"not_enough_power_to_heat":false,"max_range_charge_counter":0,"fast_charger_present":false,"fast_charger_type":"<invalid>","battery_range":225.95,"est_battery_range":223.84,"ideal_battery_range":282.19,"battery_level":90,"usable_battery_level":90,"charge_energy_added":14.04,"charge_miles_added_rated":49.0,"charge_miles_added_ideal":61.5,"charger_voltage":0,"charger_pilot_current":40,"charger_actual_current":0,"charger_power":0,"time_to_full_charge":0.0,"trip_charging":false,"charge_rate":0.0,"charge_port_door_open":true,"scheduled_charging_start_time":null,"scheduled_charging_pending":false,"user_charge_enable_request":null,"charge_enable_request":true,"charger_phases":null,"charge_port_latch":"Engaged","charge_current_request":20,"charge_current_request_max":40,"managed_charging_active":false,"managed_charging_user_canceled":false,"managed_charging_start_time":null,"motorized_charge_port":true,"eu_vehicle":false,"timestamp":1500692187430}}
 
+		/* can get:
+java.lang.Exception: HTTP code 408 received.
+	at jmr.pr102.comm.HttpGet.getContent(HttpGet.java:43)
+	at jmr.pr102.TeslaVehicleInterface.getContent(TeslaVehicleInterface.java:56)
+	at jmr.pr102.TeslaVehicleInterface.request(TeslaVehicleInterface.java:96)
+	at jmr.pr102.TeslaVehicleInterface.null(Unknown Source)
+		 */
+		
+		
+		
 		if ( null!=strResponse ) {
 			
 			final JsonElement element = new JsonParser().parse( strResponse );
@@ -149,20 +175,16 @@ public class TeslaVehicleInterface implements TeslaConstants {
 	
 	public static void main( final String[] args ) throws Exception {
 		
-		final String strPropertiesFile = 
-				"C:\\Development\\SourceRepos\\git_20170719\\Projects__20170719\\TeslaProperties.ini";
 		
 		final TeslaVehicleInterface tvi; 
 
 		{
-			final Properties properties = new Properties();
-			properties.load( new FileInputStream( strPropertiesFile ) );
-
 			final String strUsername = 
-					properties.getProperty( PROPERTY_NAME_USERNAME );
+					SystemUtil.getProperty( SUProperty.TESLA_USERNAME ); 
 			final String strPassword = 
-					properties.getProperty( PROPERTY_NAME_PASSWORD );
-	
+					SystemUtil.getProperty( SUProperty.TESLA_PASSWORD ); 
+
+			
 			if ( null!=strUsername && null!=strPassword ) {
 				tvi = new TeslaVehicleInterface( 
 								strUsername, strPassword.toCharArray() );
@@ -186,7 +208,7 @@ public class TeslaVehicleInterface implements TeslaConstants {
 		}
 		
 		
-		tvi.command( Command.FLASH_LIGHTS, "" );
+//		tvi.command( Command.FLASH_LIGHTS, "" );
 		
 		
 		while ( true ) {
@@ -198,7 +220,8 @@ public class TeslaVehicleInterface implements TeslaConstants {
 			for ( final DataRequest request : DataRequest.values() ) {
 				System.out.println( "Requesting: " + request );
 				final Map<String, String> map = tvi.request( request );
-				JsonUtils.print( map );
+//				JsonUtils.print( map );
+				System.out.println( "\t" + map.size() + " entries" );
 			}
 
 			Thread.sleep( 10 * 60 * 1000 );

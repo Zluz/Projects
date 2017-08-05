@@ -1,6 +1,7 @@
 package jmr.pr102.comm;
 
 import java.net.URLEncoder;
+import java.util.Collections;
 import java.util.Map;
 
 import com.google.gson.JsonElement;
@@ -23,6 +24,10 @@ public class TeslaLogin implements TeslaConstants {
 	private String strTokenValue = null;
 	
 	private boolean bIsAuthenticating = false;
+	
+	
+	private Map<String,String> mapLoginDetails = null;
+	
 	
 	
 	public TeslaLogin(	final String strUsername,
@@ -97,18 +102,31 @@ public class TeslaLogin implements TeslaConstants {
 		
 		final JsonElement element = new JsonParser().parse( strResponse );
 		final JsonObject jo = element.getAsJsonObject();
-		final Map<String,String> map = JsonUtils.transformJsonToMap( jo );
+		this.mapLoginDetails = JsonUtils.transformJsonToMap( jo );
 		
-		this.strTokenType = map.get( "token_type" );
-		this.strTokenValue = map.get( "access_token" );
+		this.strTokenType = mapLoginDetails.get( "token_type" );
+		this.strTokenValue = mapLoginDetails.get( "access_token" );
 		// also available:
 		// 	"created_at"
 		//	"expires_in"
 		// 	"refresh_token"
 		
-        return map;
+        return mapLoginDetails;
 	}
 
+	
+	public Map<String,String> getLoginDetails() {
+		if ( null==this.mapLoginDetails ) {
+			try {
+				this.login();
+			} catch ( final Exception e ) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return Collections.unmodifiableMap( this.mapLoginDetails );
+	}
+	
 	
 	public synchronized void invalidate() {
 		this.strTokenType = null;
