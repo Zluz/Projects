@@ -68,8 +68,10 @@ public abstract class TableBase {
 			return "" + value.toString();
 		} else if ( value instanceof Date ) {
 			return "'" + DATE_FORMATTER.format( ((Date) value) ) + "'";
+		} else {
+			return "'" + value.toString() + "'";
 		}
-		return "";
+//		return "";
 	}
 
 	

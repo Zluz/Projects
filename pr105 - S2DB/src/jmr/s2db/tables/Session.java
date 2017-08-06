@@ -4,6 +4,9 @@ import java.util.Date;
 
 public class Session extends TableBase {
 
+	private static Long seqSession = null;
+//	private static Long seqSessionPage;
+	
 	public Long get(	final Long lDevice,
 						final Date dateStart,
 						final String strIP,
@@ -19,7 +22,20 @@ public class Session extends TableBase {
 						+ strDate + ", "
 						+ "'" + strIP + "', "
 						+ "'" + strClass + "'" );
+		seqSession = lSeq;
 		return lSeq;
 	}
+	
+	public static Long getSessionSeq() {
+		return Session.seqSession;
+	}
+	
+//	public void setSessionPageSeq( final long seqPage ) {
+//		Session.seqSessionPage = seqPage;
+//	}
+//	
+//	public void expireSession() {
+//		
+//	}
 
 }

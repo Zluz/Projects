@@ -7,13 +7,27 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 import jmr.s2db.Client;
 import jmr.s2db.comm.ConnectionProvider;
-import jmr.s2db.tree.TreeModel.Node;
 
 public class Page extends TableBase {
 
+	public static enum PageState {
+		ACTIVE,
+		PENDING,
+		EXPIRED,
+		;
+	}
+	
+	@SuppressWarnings("unused")
+	private static final Logger 
+			LOGGER = Logger.getLogger( Page.class.getName() );
+
+		
+	
+	
 	public Long get( final long seqPath ) {
 		
 		final Long lSession = Client.get().getSessionSeq();
@@ -92,19 +106,52 @@ public class Page extends TableBase {
 
 			final Date now = new Date();
 			
-			final String strUpdate = "UPDATE page "
-					+ "SET last_modified=" + TableBase.format( now ) + ", "
-							+ "state='A' "
-					+ "WHERE seq=" + seqPage + ";";
+//			final String strUpdate = "UPDATE page "
+//					+ "SET last_modified=" + TableBase.format( now ) + ", "
+//							+ "state='A' "
+//					+ "WHERE seq=" + seqPage + ";";
+//
+//			stmt.executeUpdate( strUpdate );
+			
+			setState( seqPage, now, 'A' );
 
-			stmt.executeUpdate( strUpdate );
-
+//			LOGGER.log( Level.INFO, "New page saved (seq=" + seqPage+ ")" );
 			
 		} catch ( final SQLException e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
+	}
+	
+	
+	public void setState(	final long seqPage,
+							final Date dateEffective,
+							final char cState ) {
+
+		try ( final Statement 
+				stmt = ConnectionProvider.get().getStatement() ) {
+
+			final String strUpdate = "UPDATE page "
+					+ "SET last_modified=" 
+							+ TableBase.format( dateEffective ) + ", "
+							+ "state='" + cState + "' "
+					+ "WHERE seq=" + seqPage + ";";
+
+			stmt.executeUpdate( strUpdate );
+			
+		} catch ( final SQLException e ) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public void expire(	final long seqPage ) {
+		final Date now = new Date();
+		setState( seqPage, now, 'E' );
+		
+//		LOGGER.log( Level.INFO, "Existing page expired (seq=" + seqPage+ ")" );
 	}
 	
 	

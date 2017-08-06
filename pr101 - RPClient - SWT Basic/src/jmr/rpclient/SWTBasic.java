@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -54,7 +56,11 @@ import jmr.util.OSUtil;
  * http://www.java2s.com/Code/Java/SWT-JFace-Eclipse/SWTTreeWithMulticolumns.htm
  */
 public class SWTBasic {
+
 	
+	private static final Logger 
+			LOGGER = Logger.getLogger( SWTBasic.class.getName() );
+
 	
 	private Text txtLog;
   
@@ -66,6 +72,9 @@ public class SWTBasic {
 	final static String NODE_PATH_DEVICES = "/active_devices/";
 	
 	static String NODE_PATH_THIS_SESSION;
+
+	
+	private Client s2db = null;
 	
 
 	private static SWTBasic instance;
@@ -88,6 +97,8 @@ public class SWTBasic {
 
 	public static void close() {
 		Logging.log("Application closing. " + new Date().toString());
+		LOGGER.log( Level.INFO, "Session ending." );
+		get().s2db.close();
 		System.exit(0);
 	}
 
@@ -238,12 +249,18 @@ public class SWTBasic {
 	    
 	    /* S2DB stuff */
 	    final Date now = new Date();
-	    final Client s2db = Client.get();
+	    s2db = Client.get();
 	    final String strIP = NetUtil.getIPAddress();
 	    final String strClass = SWTBasic.class.getName();
-	    s2db.register( 	NetUtil.getMAC(), strIP, 
-	    				NetUtil.getSessionID(), 
+	    final String strSessionID = NetUtil.getSessionID();
+		s2db.register( 	NetUtil.getMAC(), strIP, 
+	    				strSessionID, 
 	    				strClass, now );
+		
+//		S2DBLogHandler.registerLoggers();
+		
+		LOGGER.log( Level.INFO, "Session started. "
+				+ "IP:" + strIP + ", Session:" + strSessionID );
 	    
 	    final Map<String,String> mapSessionPage = new HashMap<>();
 	    mapSessionPage.put( "page.source.class", SWTBasic.class.getName() );
@@ -253,7 +270,9 @@ public class SWTBasic {
 	    mapSessionPage.put( "process.name", NetUtil.getProcessName() );
 	    mapSessionPage.put( "device.ip", NetUtil.getIPAddress() );
 	    mapSessionPage.put( "device.host.port", "none" );
-	    s2db.savePage( "/Sessions/" + NetUtil.getSessionID(), mapSessionPage );
+	    final String strSessionPath = "/Sessions/" + NetUtil.getSessionID();
+		final long seqSessionPage = s2db.savePage( strSessionPath, mapSessionPage );
+	    s2db.setSessionPage( seqSessionPage );
 
 	    final TabControls tControls = new TabControls( server );
 	    tControls.addToTabFolder( tabs );

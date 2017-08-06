@@ -2,6 +2,8 @@ package jmr.s2db;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jmr.s2db.tables.Device;
 import jmr.s2db.tables.Page;
@@ -11,6 +13,9 @@ import jmr.s2db.tables.Tables;
 
 public class Client {
 
+
+	private static final Logger 
+			LOGGER = Logger.getLogger( Client.class.getName() );
 
 	private static Client instance;
 	
@@ -22,6 +27,7 @@ public class Client {
 	
 	public static synchronized Client get() {
 		if ( null==instance ) {
+			new S2DBLogHandler();
 			instance = new Client();
 		}
 		return instance;
@@ -41,7 +47,23 @@ public class Client {
 		final Session tSession = ( (Session)Tables.SESSION.get() );
 		seqSession = tSession.get( seqDevice, now, strIP, strClass );
 		
+		new S2DBLogHandler();
+		
 		return seqSession.longValue();
+	}
+	
+	private Long seqSessionPage = null;
+	
+	public void setSessionPage( final Long seqPage ) {
+		this.seqSessionPage = seqPage;
+	}
+	
+	
+	public void close() {
+		final Date now = new Date();
+		if ( null!=seqSessionPage ) {
+			new Page().setState( seqSessionPage, now, 'E' );
+		}
 	}
 	
 	
@@ -69,6 +91,9 @@ public class Client {
 		
 		tPage.addMap( lPage, map );
 		
+		LOGGER.log( Level.INFO, 
+				"New page saved (seq=" + lPage+ "): " + strPath );
+
 		return lPage;
 	}
 	

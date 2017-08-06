@@ -5,10 +5,17 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Logging {
 
-	private static Logging instance;
+	@SuppressWarnings("unused")
+	private static final Logger 
+			LOGGER = Logger.getLogger( Logging.class.getName() );
+
+	
+//	private static Logging instance;
 	
 	public final static String FILE_LOG = "Session.log";
 	
@@ -39,6 +46,9 @@ public class Logging {
 	}
 	
 	public static void log( final String strMessage ) {
+		
+		LOGGER.log( Level.FINE, strMessage );
+		
 		if ( null==strMessage ) return;
 		if ( null==bw ) return;
 		

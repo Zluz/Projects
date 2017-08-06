@@ -27,7 +27,7 @@ public class TeslaIngestManager {
 
 	    /* S2DB stuff */
 	    final Date now = new Date();
-	    final Client s2db = Client.get();
+	    s2db = Client.get();
 	    final String strIP = NetUtil.getIPAddress();
 	    final String strClass = TeslaIngestManager.class.getName();
 	    s2db.register( 	NetUtil.getMAC(), strIP, 

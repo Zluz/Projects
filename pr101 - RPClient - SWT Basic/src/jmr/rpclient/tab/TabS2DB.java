@@ -24,12 +24,11 @@ import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 
 import jmr.s2db.Client;
+import jmr.s2db.Watcher;
+import jmr.s2db.Watcher.Listener;
 import jmr.s2db.tree.TreeModel;
 import jmr.s2db.tree.TreeModel.Node;
-//import jmr.sharedb.Node;
-//import jmr.sharedb.Peer;
-//import jmr.sharedb.Server;
-//import jmr.sharedb.Server.Listener;
+import jmr.util.Logging;
 
 public class TabS2DB extends TabBase {
 
@@ -42,17 +41,41 @@ public class TabS2DB extends TabBase {
 	private TreeColumn colPath;
 //	private TreeColumn colName;
 //	private TreeColumn colValue;
+
+	boolean bIsVisible = false;
+
 	
 	public TabS2DB( final Client s2db ) {
-//		this.server = server;
-//		this.server.addListener( new Listener() {
-//			@Override
-//			public void changed() {
-//				drawTree();
-//			}
-//		});
+		Watcher.get().addListener( new Listener() {
+			@Override
+			public void addedPage() {
+				Logging.log( "Page added, invaliding S2DB page." );
+				invalidate();
+			}
+			@Override
+			public void addedSession() {
+				Logging.log( "Session added, invaliding S2DB page." );
+				invalidate();
+			}
+			@Override
+			public void updatedPage() {
+				Logging.log( "Page updated, invaliding S2DB page." );
+				invalidate();
+			}
+		});
 	}
 	
+	
+	private boolean valid = false;
+	
+	private void invalidate() {
+		valid = false;
+		//		if ( treeNodes.isVisible() ) {
+		if ( bIsVisible ) {
+//			treeNodes.getDisplay().asyncExec( new Runnable() { });
+			drawTree();
+		}
+	}
 	
 
 	public TopSection getMenuItem() {
@@ -109,10 +132,10 @@ public class TabS2DB extends TabBase {
 		
 		TableColumn tcolName = new TableColumn( tableDetails, SWT.LEFT );
 		tcolName.setText( "Name" );
-		tcolName.setWidth( 100 );
+		tcolName.setWidth( 200 );
 		TableColumn tcolValue = new TableColumn( tableDetails, SWT.LEFT );
 		tcolValue.setText( "Value" );
-		tcolValue.setWidth( 300 );
+		tcolValue.setWidth( 500 );
 		
 		tableDetails.showColumn( tcolName );
 		tableDetails.showColumn( tcolValue );
@@ -192,6 +215,8 @@ public class TabS2DB extends TabBase {
 		if ( null==display ) return;
 		if ( display.isDisposed() ) return;
 		
+		if ( valid ) return;
+		
 //		System.out.println( "Redrawing tree.." );
 		
 		display.asyncExec( new Runnable() {
@@ -214,6 +239,7 @@ public class TabS2DB extends TabBase {
 					}
 					
 				}
+				valid = true;
 			}
 		});
 	}
