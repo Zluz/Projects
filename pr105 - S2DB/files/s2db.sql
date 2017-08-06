@@ -49,6 +49,8 @@ CREATE TABLE IF NOT EXISTS `s2db`.`session` (
   `seq` BIGINT(20) NOT NULL AUTO_INCREMENT,
   `seq_device` BIGINT(20) NOT NULL,
   `start` DATETIME NOT NULL,
+  `ip_address` VARCHAR(15) NOT NULL,
+  `class` VARCHAR(80) NOT NULL,
   PRIMARY KEY (`seq`),
   INDEX `fk_session_device_idx` (`seq_device` ASC),
   CONSTRAINT `fk_session_device`
@@ -101,6 +103,27 @@ CREATE TABLE IF NOT EXISTS `s2db`.`prop` (
   CONSTRAINT `fk_prop_page`
     FOREIGN KEY (`seq_page`)
     REFERENCES `s2db`.`page` (`seq`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `s2db`.`log`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `s2db`.`log` ;
+
+CREATE TABLE IF NOT EXISTS `s2db`.`log` (
+  `seq` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `seq_session` BIGINT(20) NULL,
+  `time` BIGINT(20) NOT NULL,
+  `text` VARCHAR(255) NULL,
+  `value` BIGINT(20) NULL,
+  PRIMARY KEY (`seq`),
+  INDEX `fk_log_session_idx` (`seq_session` ASC),
+  CONSTRAINT `fk_log_session`
+    FOREIGN KEY (`seq_session`)
+    REFERENCES `s2db`.`session` (`seq`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
