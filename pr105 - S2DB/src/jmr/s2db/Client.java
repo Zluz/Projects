@@ -10,6 +10,7 @@ import jmr.s2db.tables.Page;
 import jmr.s2db.tables.Path;
 import jmr.s2db.tables.Session;
 import jmr.s2db.tables.Tables;
+import jmr.util.NetUtil;
 
 public class Client {
 
@@ -33,6 +34,17 @@ public class Client {
 		return instance;
 	}
 	
+
+	public long register(	final String strName,
+							final String strClass ) {
+		final Date now = new Date();
+	    final String strIP = NetUtil.getIPAddress();
+	    final String strMAC = NetUtil.getMAC();
+	    
+	    final long seqSession = 
+	    		this.register( strMAC, strIP, strName, strClass, now );
+	    return seqSession;
+	}
 	
 	
 	public long register(	final String strMAC,
@@ -73,7 +85,8 @@ public class Client {
 	
 	public Long getSessionSeq() {
 		if ( null==this.seqSession ) {
-			throw new IllegalStateException( "Client not registered." );
+			throw new IllegalStateException( "Client not registered. "
+					+ "Call Client.get().register(*) first." );
 		}
 		return this.seqSession;
 	}
@@ -89,7 +102,7 @@ public class Client {
 		final Page tPage = ( (Page)Tables.PAGE.get() );
 		final Long lPage = tPage.get( lPath );
 		
-		tPage.addMap( lPage, map );
+		tPage.addMap( lPage, map, true );
 		
 		LOGGER.log( Level.INFO, 
 				"New page saved (seq=" + lPage+ "): " + strPath );

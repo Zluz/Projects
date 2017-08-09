@@ -7,11 +7,11 @@ import java.util.concurrent.TimeUnit;
 
 import jmr.pr102.DataRequest;
 import jmr.pr102.TeslaVehicleInterface;
-import jmr.pr102.comm.JsonUtils;
 import jmr.s2db.Client;
 import jmr.util.NetUtil;
 import jmr.util.SUProperty;
 import jmr.util.SystemUtil;
+import jmr.util.report.Reporting;
 
 public class TeslaIngestManager {
 
@@ -26,13 +26,14 @@ public class TeslaIngestManager {
 		System.out.println( "Registering with S2DB" );
 
 	    /* S2DB stuff */
-	    final Date now = new Date();
 	    s2db = Client.get();
-	    final String strIP = NetUtil.getIPAddress();
+//	    final Date now = new Date();
+//	    final String strIP = NetUtil.getIPAddress();
 	    final String strClass = TeslaIngestManager.class.getName();
-	    s2db.register( 	NetUtil.getMAC(), strIP, 
-	    				NetUtil.getSessionID(), 
-	    				strClass, now );
+//	    s2db.register( 	NetUtil.getMAC(), strIP, 
+//	    				NetUtil.getSessionID(), 
+//	    				strClass, now );
+	    s2db.register( NetUtil.getSessionID(), strClass );
 
 	    
 	    
@@ -69,7 +70,8 @@ public class TeslaIngestManager {
 		
 
 		if ( null!=mapLogin ) {
-			JsonUtils.print( mapLogin );
+//			JsonUtils.print( mapLogin );
+			Reporting.print( mapLogin );
 		
 			final int iMillisExpire = 
 					Integer.parseInt( mapLogin.get( "expires_in" ) );
@@ -88,15 +90,45 @@ public class TeslaIngestManager {
 		System.out.println( "Token: " + tvi.getLoginToken() );
 		
 		for ( final DataRequest request : DataRequest.values() ) {
-			System.out.println( "Requesting: " + request );
-			final Map<String, String> map = tvi.request( request );
-//			JsonUtils.print( map );
-			System.out.println( "\t" + map.size() + " entries" );
+			
+			try {
+				
+			if ( DataRequest.VEHICLE_STATE.equals( request ) 
+					|| DataRequest.CHARGE_STATE.equals( request )
+					|| DataRequest.DRIVE_STATE.equals( request ) ) {
 
+				
+				System.out.println( "Requesting: " + request );
+				final Map<String, String> map = tvi.request( request );
+	//			JsonUtils.print( map );
+				System.out.println( "\t" + map.size() + " entries" );
+	
+	
+				final String strLoginPath = 
+								"/External/Ingest/Tesla/" + request.name();
+				s2db.savePage( strLoginPath, map );
+				
+				
+				
+				try {
+					Thread.sleep( TimeUnit.HOURS.toMillis( 1 ) );
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 
-			final String strLoginPath = 
-							"/External/Ingest/Tesla/" + request.name();
-			s2db.savePage( strLoginPath, map );
+				
+			}
+			
+			} catch ( final Exception e ) {
+				e.printStackTrace();
+				try {
+					Thread.sleep( TimeUnit.HOURS.toMillis( 4 ) );
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
 		}
 	}
 	
@@ -104,7 +136,8 @@ public class TeslaIngestManager {
 	
 	public static void main( final String[] args ) throws Exception {
 		
-		
+//		System.out.println( TimeUnit.HOURS.toMillis( 1 ) );
+
 		final TeslaIngestManager tim = new TeslaIngestManager();
 		
 		tim.login();
@@ -116,7 +149,8 @@ public class TeslaIngestManager {
 			
 			tim.scanAll();
 
-			Thread.sleep( 10 * 60 * 1000 );
+//			Thread.sleep( 10 * 60 * 1000 );
+			Thread.sleep( TimeUnit.HOURS.toMillis( 2 ) );
 		}
 	}
 }

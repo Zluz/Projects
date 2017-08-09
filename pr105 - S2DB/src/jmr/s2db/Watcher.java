@@ -108,13 +108,15 @@ public class Watcher {
 					Thread.sleep( POLLING_INTERVAL );
 					
 					final Long[] seqNowRows = readLastRows();
-					
-					for ( int i=0; i<SEQ_COUNT; i++ ) {
-						if ( !seqNowRows[i].equals( seqLastRows[i] ) ) {
-							if ( null!=seqLastRows[i] ) {
-								notifyListeners( i );
+
+					if ( null!=seqNowRows ) {
+						for ( int i=0; i<SEQ_COUNT; i++ ) {
+							if ( !seqNowRows[i].equals( seqLastRows[i] ) ) {
+								if ( null!=seqLastRows[i] ) {
+									notifyListeners( i );
+								}
+								seqLastRows[i] = seqNowRows[i];
 							}
-							seqLastRows[i] = seqNowRows[i];
 						}
 					}
 				}

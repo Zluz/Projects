@@ -80,7 +80,8 @@ public class Page extends TableBase {
 	
 	
 	public void addMap(	final Long seqPage,
-						final Map<String,String> map ) {
+						final Map<String,String> map,
+						final boolean bActivate ) {
 		if ( null==seqPage ) return;
 		if ( null==map ) return;
 
@@ -113,7 +114,9 @@ public class Page extends TableBase {
 //
 //			stmt.executeUpdate( strUpdate );
 			
-			setState( seqPage, now, 'A' );
+			if ( bActivate ) {
+				setState( seqPage, now, 'A' );
+			}
 
 //			LOGGER.log( Level.INFO, "New page saved (seq=" + seqPage+ ")" );
 			

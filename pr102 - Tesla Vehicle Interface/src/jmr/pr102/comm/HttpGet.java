@@ -19,6 +19,12 @@ public class HttpGet {
 	}
 	
 
+	
+	/*
+	 * _//TODO sometimes getting an HTTP 408
+	 * https://stackoverflow.com/questions/14594840/http-client-408-status-code
+	 */
+	
 	public String getContent() throws Exception {
 		
 		final String strTokenValue = login.getTokenValue();

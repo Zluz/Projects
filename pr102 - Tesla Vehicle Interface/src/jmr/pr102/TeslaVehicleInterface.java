@@ -11,11 +11,11 @@ import com.google.gson.JsonParser;
 
 import jmr.pr102.comm.HttpGet;
 import jmr.pr102.comm.HttpPost;
-import jmr.pr102.comm.JsonUtils;
 import jmr.pr102.comm.TeslaLogin;
 import jmr.pr102.comm.TeslaVehicleID;
 import jmr.util.SUProperty;
 import jmr.util.SystemUtil;
+import jmr.util.transform.JsonUtils;
 
 public class TeslaVehicleInterface implements TeslaConstants {
 
@@ -175,6 +175,8 @@ java.lang.Exception: HTTP code 408 received.
 	
 	public static void main( final String[] args ) throws Exception {
 		
+//		System.out.println( TimeUnit.HOURS.toMillis( 1 ) );
+		
 		
 		final TeslaVehicleInterface tvi; 
 
@@ -218,13 +220,17 @@ java.lang.Exception: HTTP code 408 received.
 			System.out.println( "Token: " + tvi.login.getTokenValue() );
 			
 			for ( final DataRequest request : DataRequest.values() ) {
+				
+//				if ( DataRequest.VEHICLE_STATE != request ) break;
+				
 				System.out.println( "Requesting: " + request );
 				final Map<String, String> map = tvi.request( request );
 //				JsonUtils.print( map );
 				System.out.println( "\t" + map.size() + " entries" );
 			}
 
-			Thread.sleep( 10 * 60 * 1000 );
+//			Thread.sleep( 10 * 60 * 1000 );1
+			Thread.sleep( TimeUnit.HOURS.toMillis( 1 ) );
 		}
 	}
 

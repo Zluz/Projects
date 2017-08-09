@@ -4,6 +4,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public abstract class FileUtil {
 
@@ -30,6 +32,18 @@ public abstract class FileUtil {
 		}
 	}
 	
+	
+	public static String readFromFile( final File file ) {
+		final Path path = file.toPath();
+		try {
+			final String strContent = new String( Files.readAllBytes( path ) );
+			return strContent;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
 	
 
 	public static boolean deleteDirRecurse( final File file ) {
