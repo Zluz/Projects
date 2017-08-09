@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import jmr.pr102.TeslaConstants;
+import jmr.util.transform.JsonUtils;
 
 public class TeslaLogin implements TeslaConstants {
 
