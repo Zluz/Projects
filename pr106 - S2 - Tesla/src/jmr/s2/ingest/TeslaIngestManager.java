@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import jmr.pr102.DataRequest;
 import jmr.pr102.TeslaVehicleInterface;
 import jmr.s2db.Client;
+import jmr.s2db.comm.JsonIngest;
 import jmr.util.NetUtil;
 import jmr.util.SUProperty;
 import jmr.util.SystemUtil;
@@ -99,15 +100,26 @@ public class TeslaIngestManager {
 
 				
 				System.out.println( "Requesting: " + request );
-				final Map<String, String> map = tvi.request( request );
-	//			JsonUtils.print( map );
-				System.out.println( "\t" + map.size() + " entries" );
-	
-	
-				final String strLoginPath = 
-								"/External/Ingest/Tesla/" + request.name();
-				s2db.savePage( strLoginPath, map );
 				
+//				final Map<String, String> map = tvi.request( request );
+				final String strResponse = tvi.request( request );
+				
+	//			JsonUtils.print( map );
+//				System.out.println( "\t" + map.size() + " entries" );
+	
+	
+//				final String strLoginPath = 
+//								"/External/Ingest/Tesla/" + request.name();
+//				s2db.savePage( strLoginPath, map );
+				
+				
+				final String strNode = 
+						"/tmp/Import_Tesla_" + request.name() 
+						+ "_" + System.currentTimeMillis();
+
+				final JsonIngest ingest = new JsonIngest();
+				final Long seq = ingest.saveJson( strNode, strResponse );
+				System.out.println( "Page saved: seq " + seq );
 				
 				
 				try {
@@ -135,6 +147,10 @@ public class TeslaIngestManager {
 	
 	
 	public static void main( final String[] args ) throws Exception {
+		
+		final String strSession = NetUtil.getSessionID();
+		final String strClass = TeslaIngestManager.class.getName();
+		Client.get().register( strSession, strClass );
 		
 //		System.out.println( TimeUnit.HOURS.toMillis( 1 ) );
 

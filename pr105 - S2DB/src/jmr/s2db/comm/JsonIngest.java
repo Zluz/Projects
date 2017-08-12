@@ -1,6 +1,5 @@
 package jmr.s2db.comm;
 
-import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -16,8 +15,8 @@ import com.google.gson.JsonParser;
 import jmr.s2db.Client;
 import jmr.s2db.tables.Page;
 import jmr.s2db.tables.Path;
-import jmr.util.FileUtil;
 import jmr.util.NetUtil;
+import jmr.util.http.ContentRetriever;
 import jmr.util.report.Reporting;
 import jmr.util.report.ZeroPad;
 
@@ -234,19 +233,29 @@ public class JsonIngest {
 	
 	
 	
-	
-	
-	
-	
-	public static void main( final String[] args ) {
+	public static void main( final String[] args ) throws Exception {
 		
-		final String strFilename = 
-				"C:\\Development\\SourceRepos\\git_20170719\\"
-				+ "Projects__20170719\\pr105 - S2DB\\files\\ingest\\"
-				+ "wunderground_forecast_example.json";
+		//--- JSON from file ------------------
 		
-		final String strContents = 
-				FileUtil.readFromFile( new File( strFilename ) );
+//		final String strFilename = 
+//				"C:\\Development\\SourceRepos\\git_20170719\\"
+//				+ "Projects__20170719\\pr105 - S2DB\\files\\ingest\\"
+//				+ "wunderground_forecast_example.json";
+//		
+//		final String strContents = 
+//				FileUtil.readFromFile( new File( strFilename ) );
+
+		
+		//--- JSON from URL --------------------
+		
+		final String strURL = 
+				"https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22glenelg%2C%20md%22)&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys";
+		
+		final ContentRetriever retriever = new ContentRetriever( strURL );
+		final String strContents = retriever.getContent();
+		
+		
+		//--- have JSON, now parse and save
 		
 		final String strNode = 
 				"/tmp/" + JsonIngest.class.getName() 

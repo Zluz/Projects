@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import jmr.pr102.TeslaConstants;
+import jmr.util.http.ContentRetriever;
 import jmr.util.transform.JsonUtils;
 
 public class TeslaLogin implements TeslaConstants {
@@ -54,9 +55,32 @@ public class TeslaLogin implements TeslaConstants {
 					+ "&password="  + URLEncoder.encode( 
 									new String( arrPassword ), UTF8 );
 	
-		final HttpPost post = new HttpPost( strURL, null );
+		final ContentRetriever retriever = new ContentRetriever( strURL );
 		
-		final String strResponse = post.postContent( "" );
+
+		final String strTokenValue;
+		if ( this.isAuthenticating() ) {
+			strTokenValue = null;
+		} else {
+			strTokenValue = this.getTokenValue();
+		}
+		
+		if ( null!=strTokenValue ) {
+			final String strTokenType = this.getTokenType();
+			final String strTokenString = 
+					strTokenType + " " + strTokenValue;
+//					HEADER_AUTHORIZATION_BEARER + " " + strTokenValue;
+			retriever.addProperty( HEADER_AUTHORIZATION, strTokenString );
+
+//			conn.getHeaderFields().put( HEADER_AUTHORIZATION, 
+//					Collections.singletonList( strTokenString ) );
+		}
+		
+		
+		
+		
+//		final String strResponse = post.postContent( "" );
+		final String strResponse = retriever.postContent( "" );
 		
 		this.bIsAuthenticating = false;
 //		
