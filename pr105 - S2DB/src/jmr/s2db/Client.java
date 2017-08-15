@@ -1,5 +1,6 @@
 package jmr.s2db;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.logging.Level;
@@ -92,6 +93,23 @@ public class Client {
 	}
 	
 	
+	
+	public static final String PATH_VARIABLES = "/var/global";
+	
+	public String getString( final String strName ) {
+		final Map<String, String> map = loadPage( PATH_VARIABLES );
+		if ( null==map ) return null;
+		return map.get( strName );
+	}
+	
+	public void setString(	final String strName,
+							final String strValue ) {
+		final Map<String, String> map = loadPage( PATH_VARIABLES );
+		if ( null==map ) throw new IllegalStateException( "null map" );
+		map.put( strName, strValue );
+	}
+	
+	
 	public Long savePage(	final String strPath,
 							final Map<String,String> map ) {
 		if ( null==strPath ) return null;
@@ -109,5 +127,22 @@ public class Client {
 
 		return lPage;
 	}
+	
+	public Map<String,String> loadPage( final String strPath ) {
+		if ( null==strPath ) return Collections.emptyMap();
+		
+		final Path tPath = ( (Path)Tables.PATH.get() );
+		final Long lPath = tPath.get( strPath );
+		if ( null==lPath ) return Collections.emptyMap();
+		
+		final Page tPage = ( (Page)Tables.PAGE.get() );
+		final Long lPage = tPage.get( lPath );
+		if ( null==lPage ) return Collections.emptyMap();
+
+		final Map<String, String> map = tPage.getMap( lPage );
+		return map;
+	}
+	
+	
 	
 }

@@ -34,7 +34,8 @@ public class Page extends TableBase {
 		if ( null==lSession ) return null;
 		
 		final Long lSeq = super.get(	"page", 
-					"seq_path = " + seqPath + " AND seq_session = " + lSession, 
+//					"seq_path = " + seqPath + " AND seq_session = " + lSession, 
+					"seq_path = " + seqPath, 
 					"seq_path, seq_session", 
 					"" + seqPath + ", " + lSession );
 		return lSeq;

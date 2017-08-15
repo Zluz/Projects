@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import jmr.pr102.comm.TeslaLogin;
+import jmr.pr102.comm.TeslaLoginSimple;
 import jmr.pr102.comm.TeslaVehicleID;
 import jmr.util.SUProperty;
 import jmr.util.SystemUtil;
@@ -25,7 +26,7 @@ public class TeslaVehicleInterface implements TeslaConstants {
 	public TeslaVehicleInterface(	final String strUsername,
 									final char[] arrPassword,
 									final int iVehicleIndex ) {
-		this.login = new TeslaLogin( strUsername, arrPassword );
+		this.login = new TeslaLoginSimple( strUsername, arrPassword );
 		this.vehicle = new TeslaVehicleID( this.login, iVehicleIndex );
 	}
 	
@@ -35,8 +36,13 @@ public class TeslaVehicleInterface implements TeslaConstants {
 		this( strUsername, arrPassword, 0 );
 	}
 
+	public TeslaVehicleInterface( final TeslaLogin login ) {
+		this.login = login;
+		this.vehicle = new TeslaVehicleID( this.login, 0 );
+	}
+
 	public TeslaVehicleInterface() {
-		this.login = TeslaLogin.DUMMY_LOGIN;
+		this.login = TeslaLoginSimple.DUMMY_LOGIN;
 		this.vehicle = TeslaVehicleID.DUMMY_VEHICLE_ID;
 	}
 

@@ -7,11 +7,10 @@ import java.util.concurrent.TimeUnit;
 
 import jmr.pr102.DataRequest;
 import jmr.pr102.TeslaVehicleInterface;
+import jmr.pr102.comm.TeslaLogin;
 import jmr.s2db.Client;
 import jmr.s2db.comm.JsonIngest;
 import jmr.util.NetUtil;
-import jmr.util.SUProperty;
-import jmr.util.SystemUtil;
 import jmr.util.report.Reporting;
 
 public class TeslaIngestManager {
@@ -47,40 +46,41 @@ public class TeslaIngestManager {
 
 		
 
-		final String strUsername = 
-				SystemUtil.getProperty( SUProperty.TESLA_USERNAME ); 
-		final String strPassword = 
-				SystemUtil.getProperty( SUProperty.TESLA_PASSWORD ); 
+//		final String strUsername = 
+//				SystemUtil.getProperty( SUProperty.TESLA_USERNAME ); 
+//		final String strPassword = 
+//				SystemUtil.getProperty( SUProperty.TESLA_PASSWORD ); 
+		final TeslaLogin login = new S2TeslaLogin( );
 
-
-		if ( null!=strUsername && null!=strPassword ) {
-			tvi = new TeslaVehicleInterface( 
-							strUsername, strPassword.toCharArray() );
-		} else {
-			tvi = new TeslaVehicleInterface();
-		}
+//		if ( null!=strUsername && null!=strPassword ) {
+//			tvi = new TeslaVehicleInterface( 
+//							strUsername, strPassword.toCharArray() );
+//		} else {
+//			tvi = new TeslaVehicleInterface();
+//		}
 		
+		tvi = new TeslaVehicleInterface( login );
 		
-		
-
-		System.out.println( "Logging in to Tesla" );
-		final Map<String, String> mapLogin = tvi.getLoginDetails();
-		
-		final String strLoginPath = "/External/Ingest/Tesla/Login";
-		s2db.savePage( strLoginPath, mapLogin );
 		
 
-		if ( null!=mapLogin ) {
-//			JsonUtils.print( mapLogin );
-			Reporting.print( mapLogin );
-		
-			final int iMillisExpire = 
-					Integer.parseInt( mapLogin.get( "expires_in" ) );
-			final long iMinutesExpire = 
-					TimeUnit.MILLISECONDS.toMinutes( iMillisExpire );
-			System.out.println( 
-					"Token may expire in " + iMinutesExpire + " minutes." );
-		}
+//		System.out.println( "Logging in to Tesla" );
+//		final Map<String, String> mapLogin = tvi.getLoginDetails();
+//		
+////		final String strLoginPath = "/External/Ingest/Tesla/Login";
+////		s2db.savePage( strLoginPath, mapLogin );
+//		
+//
+//		if ( null!=mapLogin ) {
+////			JsonUtils.print( mapLogin );
+//			Reporting.print( mapLogin );
+//		
+//			final int iMillisExpire = 
+//					Integer.parseInt( mapLogin.get( "expires_in" ) );
+//			final long iMinutesExpire = 
+//					TimeUnit.MILLISECONDS.toMinutes( iMillisExpire );
+//			System.out.println( 
+//					"Token may expire in " + iMinutesExpire + " minutes." );
+//		}
 	}
 	
 	
