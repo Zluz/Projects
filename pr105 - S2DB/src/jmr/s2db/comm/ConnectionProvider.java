@@ -1,10 +1,14 @@
 package jmr.s2db.comm;
 
+import java.lang.ref.WeakReference;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.apache.commons.dbcp.BasicDataSource;
 
 public class ConnectionProvider {
 
@@ -16,16 +20,39 @@ public class ConnectionProvider {
 			MYSQL_DRIVER = "com.mysql.jdbc.Driver";
 	
 
+	private final BasicDataSource bds;
 
 	private static ConnectionProvider instance;
 
-	private Connection conn;
+//	private Connection conn;
+	
+	
+	private final List<WeakReference<Connection>> 
+						listConnections = new LinkedList<>();
+	
 	
 	private ConnectionProvider() throws SQLException, ClassNotFoundException {
 		Class.forName( MYSQL_DRIVER );
-		this.conn = DriverManager.getConnection( 
-				MYSQL_CONNECTION, "s2_full", "s2db" );
-		this.conn.setSchema( "s2db" );
+
+//		this.conn = DriverManager.getConnection( 
+//				MYSQL_CONNECTION, "s2_full", "s2db" );
+//		this.conn.setSchema( "s2db" );
+		
+		bds = new BasicDataSource();
+		
+		bds.setDriverClassName( MYSQL_DRIVER );
+		bds.setUrl( MYSQL_CONNECTION );
+		bds.setUsername( "s2_full" );
+		bds.setPassword( "s2db" );
+		bds.setMaxActive( 10 );
+		bds.setMaxOpenPreparedStatements( 10 );
+		
+		Runtime.getRuntime().addShutdownHook( new Thread() {
+			@Override
+			public void run() {
+				close();
+			}
+		});
 	};
 	
 	
@@ -41,23 +68,56 @@ public class ConnectionProvider {
 		return instance;
 	}
 	
-	public Statement getStatement() {
+	
+
+	
+	public Connection getConnection() {
 		try {
-			final Statement result = this.conn.createStatement();
-			return result;
+//			https://stackoverflow.com/questions/7592056/am-i-using-jdbc-connection-pooling
+				
+			final Connection conn = bds.getConnection();
+			return conn;
+			
 		} catch ( final SQLException e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return null;
 		}
+
+		return null;
+	}
+	
+	
+	public void close() {
+
+		final String strCaller = 
+				Thread.currentThread().getStackTrace()[2].getMethodName();
+		System.out.print( "Closing lingering connections, "
+						+ "called from " + strCaller + "()..." );
+		
+		for ( final WeakReference<Connection> ref : listConnections ) {
+			if ( null!=ref ) {
+				final Connection conn = ref.get();
+				if ( null!=conn ) {
+					try {
+						conn.close();
+						System.out.print( "." );
+					} catch ( final Throwable t ) {
+						System.out.print( "X" );
+					}
+				}
+			}
+		}
+		System.out.println( "Done." );
 	}
 	
 	
 	@Override
 	protected void finalize() throws Throwable {
-		if ( null!=conn && !conn.isClosed() ) {
-			conn.close();
-		}
+//		if ( null!=conn && !conn.isClosed() ) {
+//			conn.close();
+//		}
+		this.close();
+		
 		super.finalize();
 	}
 	
@@ -66,23 +126,26 @@ public class ConnectionProvider {
 		
 		ConnectionProvider.get();
 		
-		final Statement stmt = ConnectionProvider.get().getStatement();
+//		final Statement stmt = ConnectionProvider.get().getStatement();
+		try (	final Connection conn = ConnectionProvider.get().getConnection();
+				final Statement stmt = conn.createStatement() ) {
 		
-//		Class.forName( MYSQL_DRIVER );
-//		final Connection conn = DriverManager.getConnection( 
-//						MYSQL_CONNECTION, "s2_full", "s2db" );
-//		final Statement stmt = conn.createStatement();
-		
-		final String strSQL = "select * from s2db.device";
-		final ResultSet rs = stmt.executeQuery( strSQL );
-		
-		if ( rs.first() ) {
-			final int iSeq = rs.getInt( "seq" );
-			System.out.println( "seq = " + iSeq );
+	//		Class.forName( MYSQL_DRIVER );
+	//		final Connection conn = DriverManager.getConnection( 
+	//						MYSQL_CONNECTION, "s2_full", "s2db" );
+	//		final Statement stmt = conn.createStatement();
+			
+			final String strSQL = "select * from s2db.device";
+			final ResultSet rs = stmt.executeQuery( strSQL );
+			
+			if ( rs.first() ) {
+				final int iSeq = rs.getInt( "seq" );
+				System.out.println( "seq = " + iSeq );
+			}
+			
+			rs.close();
+			stmt.close();
 		}
-		
-		rs.close();
-		stmt.close();
 	}
 	
 }

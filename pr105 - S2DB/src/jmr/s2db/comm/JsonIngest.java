@@ -88,6 +88,7 @@ public class JsonIngest {
     				processJsonElement( strNodePath + "/" + key, value );
 
         	if ( result.isSimple() ) {
+//        		map.put( key, DataFormatter.format( result.strValue ) );
         		map.put( key, result.strValue );
         	} else {
 //        		final Long seqElement = result.seq; // new seq

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import jmr.s2db.comm.ConnectionProvider;
 import jmr.s2db.tables.Device;
 import jmr.s2db.tables.Page;
 import jmr.s2db.tables.Path;
@@ -77,6 +78,7 @@ public class Client {
 		if ( null!=seqSessionPage ) {
 			new Page().setState( seqSessionPage, now, 'E' );
 		}
+		ConnectionProvider.get().close();
 	}
 	
 	

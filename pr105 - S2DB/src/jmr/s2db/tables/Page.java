@@ -1,5 +1,6 @@
 package jmr.s2db.tables;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -10,6 +11,7 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import jmr.s2db.Client;
+import jmr.s2db.DataFormatter;
 import jmr.s2db.comm.ConnectionProvider;
 
 public class Page extends TableBase {
@@ -26,6 +28,7 @@ public class Page extends TableBase {
 			LOGGER = Logger.getLogger( Page.class.getName() );
 
 		
+	
 	
 	
 	public Long get( final long seqPath ) {
@@ -45,8 +48,10 @@ public class Page extends TableBase {
 	public Map<String,String> getMap( final Long seqPage ) {
 		if ( null==seqPage ) throw new IllegalStateException( "Null seqPage" );
 
-		try ( final Statement 
-				stmt = ConnectionProvider.get().getStatement() ) {
+//		try ( final Statement 
+//				stmt = ConnectionProvider.get().getStatement() ) {
+		try (	final Connection conn = ConnectionProvider.get().getConnection();
+				final Statement stmt = conn.createStatement() ) {
 
 			final String strQuery = 
 			 "SELECT  "
@@ -86,8 +91,12 @@ public class Page extends TableBase {
 		if ( null==seqPage ) return;
 		if ( null==map ) return;
 
-		try ( final Statement 
-				stmt = ConnectionProvider.get().getStatement() ) {
+		String strSQL = null;
+		
+//		try ( final Statement 
+//				stmt = ConnectionProvider.get().getStatement() ) {
+		try (	final Connection conn = ConnectionProvider.get().getConnection();
+				final Statement stmt = conn.createStatement() ) {
 
 			String strInsert = "INSERT INTO prop "
 					+ "( seq_page, name, value ) "
@@ -98,13 +107,17 @@ public class Page extends TableBase {
 				final String strValue = entry.getValue();
 				
 				strInsert += "( " + seqPage + ","
-							+ " '" + strKey + "',"
-							+ " '" + strValue + "' ),";
+//							+ " '" + strKey + "',"
+//							+ " '" + strValue + "' ),";
+//							+ " " + strKey + ","
+//							+ " " + strValue + " ),";
+							+ " " + DataFormatter.format( strKey ) + ","
+							+ " " + DataFormatter.format( strValue ) + " ),";
 			}
 			
-			strInsert = strInsert.substring( 0, strInsert.length() - 1 ) + ";";
+			strSQL = strInsert.substring( 0, strInsert.length() - 1 ) + ";";
 			
-			stmt.executeUpdate( strInsert );
+			stmt.executeUpdate( strSQL );
 
 			final Date now = new Date();
 			
@@ -123,6 +136,8 @@ public class Page extends TableBase {
 			
 		} catch ( final SQLException e ) {
 			// TODO Auto-generated catch block
+			System.err.println( "SQL EXCEPTION - " + e.toString() );
+			System.err.println( "SQL: " + strSQL );
 			e.printStackTrace();
 		}
 		
@@ -133,14 +148,23 @@ public class Page extends TableBase {
 							final Date dateEffective,
 							final char cState ) {
 
-		try ( final Statement 
-				stmt = ConnectionProvider.get().getStatement() ) {
+//		try ( final Statement 
+//				stmt = ConnectionProvider.get().getStatement() ) {
+		try (	final Connection conn = ConnectionProvider.get().getConnection();
+				final Statement stmt = conn.createStatement() ) {
 
-			final String strUpdate = "UPDATE page "
-					+ "SET last_modified=" 
-							+ TableBase.format( dateEffective ) + ", "
-							+ "state='" + cState + "' "
-					+ "WHERE seq=" + seqPage + ";";
+			final String strUpdate;
+			if ( null!=dateEffective ) {
+				strUpdate = "UPDATE page "
+						+ "SET last_modified=" 
+								+ DataFormatter.format( dateEffective ) + ", "
+								+ "state='" + cState + "' "
+						+ "WHERE seq=" + seqPage + ";";
+			} else {
+				strUpdate = "UPDATE page "
+						+ "SET state='" + cState + "' "
+						+ "WHERE seq=" + seqPage + ";";
+			}
 
 			stmt.executeUpdate( strUpdate );
 			
@@ -149,6 +173,11 @@ public class Page extends TableBase {
 			e.printStackTrace();
 		}
 	}
+	
+	public void expireAll(	final String strPageRegex ) {
+		
+	}
+	
 	
 	
 	public void expire(	final long seqPage ) {

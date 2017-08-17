@@ -1,5 +1,6 @@
 package jmr.s2db;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -45,8 +46,10 @@ public class Watcher {
 	
 	
 	public Long[] readLastRows() {
-		try ( final Statement 
-				stmt = ConnectionProvider.get().getStatement() ) {
+//		try ( final Statement 
+//				stmt = ConnectionProvider.get().getStatement() ) {
+		try (	final Connection conn = ConnectionProvider.get().getConnection();
+				final Statement stmt = conn.createStatement() ) {
 
 			final String strQuery = 
 			 "SELECT "

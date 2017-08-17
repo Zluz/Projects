@@ -2,6 +2,8 @@ package jmr.s2db.tables;
 
 import java.util.Date;
 
+import jmr.s2db.DataFormatter;
+
 public class Session extends TableBase {
 
 	private static Long seqSession = null;
@@ -12,7 +14,7 @@ public class Session extends TableBase {
 						final String strIP,
 						final String strClass ) {
 		
-		final String strDate = TableBase.format( dateStart );
+		final String strDate = DataFormatter.format( dateStart );
 		
 		final Long lSeq = super.get(	"session", 
 				"seq_device = " + lDevice + " "

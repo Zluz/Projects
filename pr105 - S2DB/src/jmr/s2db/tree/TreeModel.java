@@ -1,5 +1,6 @@
 package jmr.s2db.tree;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -28,15 +29,18 @@ public class TreeModel {
 		final public String strFull;
 		final public List<Node> list = new LinkedList<Node>();
 		final Node parent;
-		long seqPath = 0;
-		long seqPage = 0;
+		final long seqPath;
+		final long seqPage;
 		
-		Date dateModified;
+		final Date dateModified;
 		
 		Object data;
 		
 		public Node( 	final String strFull,
-						final Node parent ) {
+						final Node parent,
+						final long seqPath,
+						final long seqPage,
+						final Date dateModified ) {
 			this.strFull = strFull;
 			final int iPos = strFull.lastIndexOf( DELIM );
 			if ( iPos<0 ) throw new IllegalStateException( "Missing delimiter" );
@@ -48,6 +52,10 @@ public class TreeModel {
 				parent.list.add( this );
 			}
 			
+			this.seqPath = seqPath;
+			this.seqPage = seqPage;
+			this.dateModified = dateModified;
+			
 //			System.out.println( "Node added: " + strFull );
 		}
 		
@@ -55,10 +63,17 @@ public class TreeModel {
 			final Page tPage = new Page();
 			return tPage.getMap( seqPage );
 		}
+		
+		public Long getPageSeq() {
+			return this.seqPage;
+		}
 	}
 	
 	
-	public Node findNode(	final String strFull ) {
+	public Node addNode(	final String strFull,
+							final long seqPath,
+							final long seqPage,
+							final Date dateEffective ) {
 		if ( null==strFull ) return null;
 		if ( mapAllNodes.containsKey( strFull ) ) {
 			return mapAllNodes.get( strFull );
@@ -71,7 +86,8 @@ public class TreeModel {
 			final String strCurrentPath = strFull.substring( 0, iPos );
 			final boolean bExists = mapAllNodes.containsKey( strCurrentPath );
 			if ( !bExists ) {
-				final Node node = new Node( strCurrentPath, nodeParent );
+				final Node node = new Node( strCurrentPath, nodeParent,
+						seqPath, seqPage, dateEffective );
 				mapAllNodes.put( strCurrentPath, node );
 				
 				if ( 0==strCurrentPath.lastIndexOf( DELIM ) ) {
@@ -96,8 +112,10 @@ public class TreeModel {
 		listRoots.clear();
 		mapAllNodes.clear();
 
-		try ( final Statement 
-				stmt = ConnectionProvider.get().getStatement() ) {
+//		try ( final Statement 
+//				stmt = ConnectionProvider.get().getStatement() ) {
+		try (	final Connection conn = ConnectionProvider.get().getConnection();
+				final Statement stmt = conn.createStatement() ) {
 
 			final String strQuery = 
 			 "SELECT  "
@@ -128,19 +146,20 @@ public class TreeModel {
 					final long seqPath = rs.getLong( 3 );
 					final String strName = rs.getString( 4 );
 					
-					final Node node = findNode( strName );
-					if ( null==node.dateModified ) { // new node
-						node.dateModified = dateModified;
-						node.seqPath = seqPath;
-						node.seqPage = seqPage;
-						
-						
-						System.out.print( "Node updated: " + strName ); 
-//								",  " + dateModified );
-						final Map<String, String> map = node.getMap();
-						System.out.print( "  (" + map.size() + " keys)" );
-						System.out.println();
-					}
+//					final Node node = findNode( 
+					addNode( strName, seqPath, seqPage, dateModified );
+//					if ( null==node.dateModified ) { // new node
+////						node.dateModified = dateModified;
+////						node.seqPath = seqPath;
+////						node.seqPage = seqPage;
+//						
+//						
+//						System.out.print( "Node updated: " + strName ); 
+////								",  " + dateModified );
+//						final Map<String, String> map = node.getMap();
+//						System.out.print( "  (" + map.size() + " keys)" );
+//						System.out.println();
+//					}
 				}
 			}
 			

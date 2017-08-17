@@ -1,20 +1,14 @@
 package jmr.s2db.tables;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import jmr.s2db.comm.ConnectionProvider;
 
 public abstract class TableBase {
 
-	
-	final static SimpleDateFormat DATE_FORMATTER = 
-							new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
-
-	
 	
 	public Long get(	final String strTable,
 						final String strWhere,
@@ -25,8 +19,10 @@ public abstract class TableBase {
 		if ( null==strInsertNames ) return null;
 		if ( null==strInsertValues ) return null;
 		
-		try ( final Statement 
-				stmt = ConnectionProvider.get().getStatement() ) {
+//		try ( final Statement 
+//				stmt = ConnectionProvider.get().getStatement() ) {
+		try (	final Connection conn = ConnectionProvider.get().getConnection();
+				final Statement stmt = conn.createStatement() ) {
 
 			final String strQuery = "SELECT seq FROM " + strTable + " "
 					+ "WHERE ( " + strWhere + " );";
@@ -59,20 +55,5 @@ public abstract class TableBase {
 	}
 	
 	
-
-	public static String format( final Object value ) {
-		if ( null==value ) return "''";
-		if ( value instanceof String ) {
-			return "'" + value + "'";
-		} else if ( value instanceof Number ) {
-			return "" + value.toString();
-		} else if ( value instanceof Date ) {
-			return "'" + DATE_FORMATTER.format( ((Date) value) ) + "'";
-		} else {
-			return "'" + value.toString() + "'";
-		}
-//		return "";
-	}
-
 	
 }

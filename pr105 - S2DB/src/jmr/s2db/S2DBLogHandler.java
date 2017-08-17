@@ -1,5 +1,6 @@
 package jmr.s2db;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
@@ -11,7 +12,6 @@ import java.util.logging.Logger;
 
 import jmr.s2db.comm.ConnectionProvider;
 import jmr.s2db.tables.Session;
-import jmr.s2db.tables.TableBase;
 
 public class S2DBLogHandler extends Handler {
 
@@ -56,8 +56,10 @@ public class S2DBLogHandler extends Handler {
 	public void publish( final LogRecord record ) {
 		check();
 		
-		try ( final Statement 
-				stmt = ConnectionProvider.get().getStatement() ) {
+//		try ( final Statement 
+//				stmt = ConnectionProvider.get().getStatement() ) {
+		try (	final Connection conn = ConnectionProvider.get().getConnection();
+				final Statement stmt = conn.createStatement() ) {
 			
 			final Date time = new Date( record.getMillis() );
 			final String strLevel = record.getLevel().getName();
@@ -77,10 +79,10 @@ public class S2DBLogHandler extends Handler {
 					+ "( seq_session, time, level, text, source ) "
 					+ "VALUES ( " 
 							+ Session.getSessionSeq() + ", " 
-							+ TableBase.format( time.getTime() ) + ", "
-							+ TableBase.format( strLevel ) + ", "
-							+ TableBase.format( record.getMessage() ) + ", " 
-							+ TableBase.format( strSource ) + " "
+							+ DataFormatter.format( time.getTime() ) + ", "
+							+ DataFormatter.format( strLevel ) + ", "
+							+ DataFormatter.format( record.getMessage() ) + ", " 
+							+ DataFormatter.format( strSource ) + " "
 							+ " );";
 			
 			stmt.executeUpdate( strInsert );
