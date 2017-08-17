@@ -76,6 +76,7 @@ public class ConnectionProvider {
 //			https://stackoverflow.com/questions/7592056/am-i-using-jdbc-connection-pooling
 				
 			final Connection conn = bds.getConnection();
+			listConnections.add( new WeakReference<Connection>( conn ) );
 			return conn;
 			
 		} catch ( final SQLException e ) {
@@ -93,14 +94,46 @@ public class ConnectionProvider {
 				Thread.currentThread().getStackTrace()[2].getMethodName();
 		System.out.print( "Closing lingering connections, "
 						+ "called from " + strCaller + "()..." );
-		
+
+		for ( final WeakReference<Connection> ref : listConnections ) {
+			if ( null!=ref ) {
+				final Connection conn = ref.get();
+				if ( null!=conn ) {
+					try {
+						new Thread() {
+							@Override
+							public void run() {
+								try {
+									conn.close();
+									ref.clear();
+								} catch ( final SQLException e ) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+							}
+						}.start();
+					} catch ( final Throwable t ) {
+						// ignore
+					}
+				}
+			}
+		}
+		try {
+			Thread.sleep( 100 );
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		for ( final WeakReference<Connection> ref : listConnections ) {
 			if ( null!=ref ) {
 				final Connection conn = ref.get();
 				if ( null!=conn ) {
 					try {
 						conn.close();
-						System.out.print( "." );
+						if ( conn.isClosed() ) {
+							System.out.print( "." );
+							ref.clear();
+						}
 					} catch ( final Throwable t ) {
 						System.out.print( "X" );
 					}

@@ -41,12 +41,9 @@ import jmr.rpclient.tab.TabControls;
 import jmr.rpclient.tab.TabDailyInfo;
 import jmr.rpclient.tab.TabLog;
 import jmr.rpclient.tab.TabS2DB;
-import jmr.rpclient.tab.TabShowDB;
 import jmr.rpclient.tab.TabTreeDemo;
 import jmr.rpclient.tab.TopSection;
 import jmr.s2db.Client;
-import jmr.sharedb.ClientSession;
-import jmr.sharedb.Server;
 import jmr.util.Logging;
 import jmr.util.NetUtil;
 import jmr.util.OSUtil;
@@ -244,8 +241,8 @@ public class SWTBasic {
 	    tDailyInfo.addToTabFolder( tabs );
 	    listTabs.add( tDailyInfo );
 	    
-	    final ClientSession session = ClientSession.get();
-	    final Server server = new Server( session );
+//	    final ClientSession session = ClientSession.get();
+//	    final Server server = new Server( session );
 	    
 	    /* S2DB stuff */
 	    final Date now = new Date();
@@ -274,7 +271,8 @@ public class SWTBasic {
 		final long seqSessionPage = s2db.savePage( strSessionPath, mapSessionPage );
 	    s2db.setSessionPage( seqSessionPage );
 
-	    final TabControls tControls = new TabControls( server );
+//	    final TabControls tControls = new TabControls( server );
+	    final TabControls tControls = new TabControls();
 	    tControls.addToTabFolder( tabs );
 	    listTabs.add( tControls );
 	    
@@ -282,9 +280,9 @@ public class SWTBasic {
 	    tS2DB.addToTabFolder( tabs );
 	    listTabs.add( tS2DB );
 
-	    final TabShowDB tShowDB = new TabShowDB( server );
-	    tShowDB.addToTabFolder( tabs );
-	    listTabs.add( tShowDB );
+//	    final TabShowDB tShowDB = new TabShowDB( server );
+//	    tShowDB.addToTabFolder( tabs );
+//	    listTabs.add( tShowDB );
 
 	    final TabTreeDemo tTreeDemo = new TabTreeDemo();
 	    tTreeDemo.addToTabFolder( tabs );
@@ -312,9 +310,10 @@ public class SWTBasic {
 					final CTabItem item = tabs.getSelection();
 					final String strName = item.getText().trim();
 					
-	    			server.postData( NODE_PATH_THIS_SESSION + "Selection/", 
-	    					"tab.selected", strName,
-	    					"time", ""+System.currentTimeMillis() );
+					LOGGER.fine( "Tab selected: " + strName );
+//	    			server.postData( NODE_PATH_THIS_SESSION + "Selection/", 
+//	    					"tab.selected", strName,
+//	    					"time", ""+System.currentTimeMillis() );
 	    		}
 	    	}
 		});
@@ -323,7 +322,7 @@ public class SWTBasic {
 	    
 	    log( new Date().toString() + "\nStarted." );
 
-	    Logging.setDir( session.getSessionDir() );
+//	    Logging.setDir( session.getSessionDir() );
 
 	    log( "Session ID: " + NetUtil.getSessionID() );
 	    
@@ -353,9 +352,9 @@ public class SWTBasic {
 	    NODE_PATH_THIS_SESSION = 
 	    			NODE_PATH_DEVICES + NetUtil.getSessionID() + "/";
 	    
-	    server.postData(	NODE_PATH_THIS_SESSION, 
-							"session.start", 
-							Long.toString( System.currentTimeMillis() ) );
+//	    server.postData(	NODE_PATH_THIS_SESSION, 
+//							"session.start", 
+//							Long.toString( System.currentTimeMillis() ) );
 	    
 	    
 	    shell.open();

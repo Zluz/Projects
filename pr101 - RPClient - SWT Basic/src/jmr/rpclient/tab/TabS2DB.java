@@ -25,7 +25,6 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.swt.widgets.Widget;
 
 import jmr.s2db.Client;
 import jmr.s2db.Watcher;
@@ -249,6 +248,7 @@ public class TabS2DB extends TabBase {
 			}
 		}
 	}
+	
 	
 	private void addNode(	final TreeItem parent,
 							final Node node ) {
