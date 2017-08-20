@@ -13,6 +13,7 @@ public abstract class NetUtil {
 
 	private static String strMAC = null;
 	private static String strIP = null;
+	private static int iIPConfidence = 0;
 	
 	
 	public static String getMAC() {
@@ -47,6 +48,38 @@ public abstract class NetUtil {
 						strNIC_any = sb.toString();
 						if ( strDisplayName.startsWith( "eth0" ) ) {
 							strNIC_eth0 = sb.toString();
+						}
+
+//						final InetAddress address =
+//								ni.getInetAddresses().nextElement();
+						final Enumeration<InetAddress> 
+										addresses = ni.getInetAddresses();
+
+//						strIP = address.getHostAddress();
+//						strIP = address.
+						for ( ; addresses.hasMoreElements(); ) {
+							final InetAddress next = addresses.nextElement();
+							final String strAddrText = next.toString();
+//							System.out.println( "IP Address candidate: " + strAddrText );							
+							final int iConfidence;
+//							if ( strAddrText.contains( "eth0" ) ) {
+							if ( strAddrText.contains( "192.168.1." ) ) {
+								final String strLastOct = strAddrText.split("\\.")[3];
+//								System.out.println( "\tlast oct = " + strLastOct );							
+								iConfidence = 100 
+										+ Integer.parseInt( strLastOct );
+							} else {
+								iConfidence = 10;
+							}
+//System.out.println( "\tconfidence = " + iConfidence );							
+							final String strAddress = strAddrText.split("/")[1];
+							if ( !strAddress.contains(":") ) {
+								if ( iConfidence>iIPConfidence ) {
+									strIP = strAddress;
+									iIPConfidence = iConfidence;
+								}
+//								System.out.println( "IP Address resolved to: " + strIP );
+							}
 						}
 						
 //						System.out.println( "mac: " + sb.toString() 
@@ -128,12 +161,16 @@ public abstract class NetUtil {
 	
 	public static String getIPAddress() {
 		if ( null==strIP ) {
-			try {
-				final InetAddress ip = InetAddress.getLocalHost();
-				strIP = ip.getHostAddress();
-			} catch ( final UnknownHostException e ) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			getMAC();
+			if ( null==strIP ) {
+				try {
+					final InetAddress ip = InetAddress.getLocalHost();
+					strIP = ip.getHostAddress();
+					iIPConfidence = 1;
+				} catch ( final UnknownHostException e ) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 		return strIP;
@@ -148,13 +185,15 @@ public abstract class NetUtil {
 	
 	
 //	@SuppressWarnings("deprecation")
-//	public static void main(String[] args) {
-//		
-////		System.out.println( "Fake MAC: " + createFakeMAC() );
-//		
-//		System.out.println( "Process Name: " + getProcessName() );
-//		
-//		
+	public static void main(String[] args) {
+		
+//		System.out.println( "Fake MAC: " + createFakeMAC() );
+		
+		System.out.println( "Process Name: " + getProcessName() );
+		
+		System.out.println( "IP Address: " + getIPAddress() );
+		
+		
 //		final Date now = new Date();
 //		final long lNow = now.getTime();
 //		System.out.println( "Time now: " + lNow );
@@ -174,17 +213,17 @@ public abstract class NetUtil {
 //		System.out.println( "Distance, long: " + lDistance );
 //		final Date dateBack = new Date( lNow - lDistance );
 //		System.out.println( "Past, GMT   : " + dateBack.toGMTString() );
-//		
-//		
+		
+		
 //		System.out.println( "Loading configuration.." );
 //		final Configuration config = Configuration.get();
 //		
 //		final String strUsername = config.get( "teslamotors.username" );
 //		System.out.println( "Username = " + strUsername );
-//
-////		final String strMID = config.getSessionID();
-////		System.out.println( "Machine ID: " + strMID );
-//	}
+
+//		final String strMID = config.getSessionID();
+//		System.out.println( "Machine ID: " + strMID );
+	}
 	
 	
 }

@@ -15,13 +15,12 @@ import org.eclipse.swt.widgets.Scale;
 
 import jmr.rpclient.RPiTouchscreen;
 import jmr.rpclient.SWTBasic;
-import jmr.sharedb.Server;
 
 @SuppressWarnings("unused")
 public class TabControls extends TabBase {
 
 	private Display display;
-	final private Server server;
+//	final private Server server;
 	private CTabFolder tabs;
 	
 	public enum Section {
@@ -46,9 +45,9 @@ public class TabControls extends TabBase {
 		return this.tab;
 	}
 	
-	public TabControls( final Server server ) {
-		this.server = server;
-	}
+//	public TabControls( final Server server ) {
+//		this.server = server;
+//	}
 	
 	
 	public TopSection getMenuItem() {

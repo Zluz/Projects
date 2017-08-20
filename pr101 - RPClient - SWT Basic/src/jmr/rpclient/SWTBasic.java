@@ -11,18 +11,21 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -34,17 +37,14 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import jmr.rpclient.tab.TabBase;
-import jmr.rpclient.tab.TabCanvas;
 import jmr.rpclient.tab.TabControls;
 import jmr.rpclient.tab.TabDailyInfo;
 import jmr.rpclient.tab.TabLog;
 import jmr.rpclient.tab.TabS2DB;
-import jmr.rpclient.tab.TabShowDB;
+import jmr.rpclient.tab.TabTiles;
 import jmr.rpclient.tab.TabTreeDemo;
 import jmr.rpclient.tab.TopSection;
 import jmr.s2db.Client;
-import jmr.sharedb.ClientSession;
-import jmr.sharedb.Server;
 import jmr.util.Logging;
 import jmr.util.NetUtil;
 import jmr.util.OSUtil;
@@ -54,7 +54,11 @@ import jmr.util.OSUtil;
  * http://www.java2s.com/Code/Java/SWT-JFace-Eclipse/SWTTreeWithMulticolumns.htm
  */
 public class SWTBasic {
+
 	
+	private static final Logger 
+			LOGGER = Logger.getLogger( SWTBasic.class.getName() );
+
 	
 	private Text txtLog;
   
@@ -66,6 +70,9 @@ public class SWTBasic {
 	final static String NODE_PATH_DEVICES = "/active_devices/";
 	
 	static String NODE_PATH_THIS_SESSION;
+
+	
+	private Client s2db = null;
 	
 
 	private static SWTBasic instance;
@@ -88,6 +95,8 @@ public class SWTBasic {
 
 	public static void close() {
 		Logging.log("Application closing. " + new Date().toString());
+		LOGGER.log( Level.INFO, "Session ending." );
+		get().s2db.close();
 		System.exit(0);
 	}
 
@@ -126,7 +135,7 @@ public class SWTBasic {
     	grid.marginWidth = 0;
     }
 
-    
+
     
     public SWTBasic() {
     	this.shell = this.buildUI();
@@ -172,28 +181,87 @@ public class SWTBasic {
 	    	iOptions = SWT.TOOL | SWT.ON_TOP | SWT.NO_TRIM;
 	    }
 	    final Shell shell = new Shell( UI.display, iOptions );
-	    shell.setSize( RPIT_CLIENT_WIDTH, RPIT_CLIENT_HEIGHT );
-	    
 	    
 	    final GridLayout glTop = new GridLayout( 3, false );
 	    removeMargins( glTop );
 		shell.setLayout( glTop );
 
-		final GridData gdLeft = new GridData( SWT.DEFAULT, SWT.FILL, false, true );
-		gdLeft.widthHint = 30;
+//		final GridData gdLeft = new GridData( SWT.DEFAULT, SWT.FILL, false, true );
+//		gdLeft.widthHint = 30;
 		final GridData gdRight = new GridData( SWT.DEFAULT, SWT.FILL, false, true );
-		gdRight.widthHint = 10;
+		gdRight.widthHint = 45;
+		gdRight.heightHint = 450;
 		final GridData gdMain = new GridData( SWT.FILL, SWT.FILL, true, true );
+		gdMain.widthHint = 755;
+		gdMain.heightHint = 450;
 
-	    final Composite compLeft = new Composite( shell, SWT.NONE );
-	    compLeft.setLayoutData( gdLeft );
-	    compLeft.setBackground( UI.COLOR_BLACK );
+//	    final Composite compLeft = new Composite( shell, SWT.NONE );
+//	    compLeft.setLayoutData( gdLeft );
+//	    compLeft.setBackground( UI.COLOR_BLACK );
 	    final Composite compMain = new Composite( shell, SWT.NONE );
+	    // margin between the main and right control. all the way up and down. 
+	    compMain.setBackground( UI.COLOR_BLACK ); 
 	    compMain.setLayoutData( gdMain );
-	    compMain.setBackground( UI.COLOR_BLACK );
 	    final Composite compRight = new Composite( shell, SWT.NONE );
 	    compRight.setLayoutData( gdRight );
-	    compRight.setBackground( UI.COLOR_BLACK );
+	    compRight.setBackground( UI.COLOR_DARK_BLUE );
+	    
+	    compRight.addPaintListener( new PaintListener() {
+			@Override
+			public void paintControl( final PaintEvent event ) {
+				final GC gc = event.gc;
+				if ( null==gc ) return;
+				
+				gc.setBackground( UI.COLOR_DARK_BLUE );
+				gc.fillRectangle( 0, 0, 50, 480 );
+				
+				
+				gc.setBackground( UI.COLOR_GRAY );
+				gc.setForeground( UI.COLOR_BLUE );
+				
+//				gc.drawLine( 000, 000, 050, 480 );
+				gc.drawLine(  25,   0,  50, 100 );
+				gc.drawLine(  50, 100,  25, 200 );
+				gc.drawLine(  25,   0,   0, 100 );
+				gc.drawLine(  25, 200,   0, 100 );
+				gc.drawLine(  25, 480,  50, 380 );
+				gc.drawLine(  25, 480,   0, 380 );
+				
+				gc.fillRectangle(  10,  10,  30,  80 );
+				gc.fillRectangle(  10, 110,  30,  80 );
+				gc.fillRectangle(  10, 210,  30,  80 );
+				gc.fillRectangle(  10, 310,  30,  80 );
+				gc.fillRectangle(  10, 410,  30,  40 );
+
+				gc.setForeground( UI.COLOR_BLACK );
+
+				gc.drawText( "Daily", 13, 020 );
+				gc.drawText( "Tiles", 14, 120 );
+				gc.drawText( "S2DB",  12, 220 );
+//				gc.drawText( "Calib", 005, 320 );
+				gc.drawText( "Device", 8, 320 );
+				gc.drawText( "EXIT",  15, 420 );
+			}
+		});
+	    
+	    compRight.addMouseListener( new MouseAdapter() {
+	    	@Override
+	    	public void mouseUp( final MouseEvent event ) {
+	    		final int y = event.y / 100;
+	    		TopSection ts = null;
+	    		switch ( y ) {
+//	    			case 0	: SWTBasic.get().activate( TopSection. ); 
+	    			case 0	: ts = TopSection.DAILY_INFO; break; 
+    				case 1	: ts = TopSection.TILES; break;
+    				case 2	: ts = TopSection.S2DB; break; 
+    				case 3	: ts = TopSection.DEVICE_CONTROLS; break; 
+    				case 4	: SWTBasic.close(); 
+	    		}
+				if ( null!=ts ) {
+					SWTBasic.get().activate( ts ); 
+				}
+	    	}
+		});
 	    
 	    final GridLayout gl = new GridLayout( 10, true );
 	    removeMargins( gl );
@@ -210,7 +278,8 @@ public class SWTBasic {
 	
 	    
 	    
-	    tabs = new CTabFolder( compMain, SWT.TOP | SWT.NO_TRIM );
+	    tabs = new CTabFolder( compMain, 
+	    		SWT.TOP | SWT.NO_TRIM | SWT.SINGLE | SWT.FLAT );
 	    final int iCols = gl.numColumns - 0;
 		tabs.setLayoutData( 
 	    		new GridData( SWT.FILL, SWT.FILL, true, true, iCols, 1 ) );
@@ -223,6 +292,7 @@ public class SWTBasic {
 	    tabs.addPaintListener( new PaintListener() {
 			@Override
 			public void paintControl( final PaintEvent event ) {
+				// this is the blue space immediate over the tab region
 				event.gc.setBackground( UI.COLOR_BLACK );
 				event.gc.fillRectangle( tabs.getBounds() );
 			}
@@ -233,17 +303,23 @@ public class SWTBasic {
 	    tDailyInfo.addToTabFolder( tabs );
 	    listTabs.add( tDailyInfo );
 	    
-	    final ClientSession session = ClientSession.get();
-	    final Server server = new Server( session );
+//	    final ClientSession session = ClientSession.get();
+//	    final Server server = new Server( session );
 	    
 	    /* S2DB stuff */
 	    final Date now = new Date();
-	    final Client s2db = Client.get();
+	    s2db = Client.get();
 	    final String strIP = NetUtil.getIPAddress();
 	    final String strClass = SWTBasic.class.getName();
-	    s2db.register( 	NetUtil.getMAC(), strIP, 
-	    				NetUtil.getSessionID(), 
+	    final String strSessionID = NetUtil.getSessionID();
+		s2db.register( 	NetUtil.getMAC(), strIP, 
+	    				strSessionID, 
 	    				strClass, now );
+		
+//		S2DBLogHandler.registerLoggers();
+		
+		LOGGER.log( Level.INFO, "Session started. "
+				+ "IP:" + strIP + ", Session:" + strSessionID );
 	    
 	    final Map<String,String> mapSessionPage = new HashMap<>();
 	    mapSessionPage.put( "page.source.class", SWTBasic.class.getName() );
@@ -253,9 +329,12 @@ public class SWTBasic {
 	    mapSessionPage.put( "process.name", NetUtil.getProcessName() );
 	    mapSessionPage.put( "device.ip", NetUtil.getIPAddress() );
 	    mapSessionPage.put( "device.host.port", "none" );
-	    s2db.savePage( "/Sessions/" + NetUtil.getSessionID(), mapSessionPage );
+	    final String strSessionPath = "/Sessions/" + NetUtil.getSessionID();
+		final long seqSessionPage = s2db.savePage( strSessionPath, mapSessionPage );
+	    s2db.setSessionPage( seqSessionPage );
 
-	    final TabControls tControls = new TabControls( server );
+//	    final TabControls tControls = new TabControls( server );
+	    final TabControls tControls = new TabControls();
 	    tControls.addToTabFolder( tabs );
 	    listTabs.add( tControls );
 	    
@@ -263,17 +342,21 @@ public class SWTBasic {
 	    tS2DB.addToTabFolder( tabs );
 	    listTabs.add( tS2DB );
 
-	    final TabShowDB tShowDB = new TabShowDB( server );
-	    tShowDB.addToTabFolder( tabs );
-	    listTabs.add( tShowDB );
+//	    final TabShowDB tShowDB = new TabShowDB( server );
+//	    tShowDB.addToTabFolder( tabs );
+//	    listTabs.add( tShowDB );
 
 	    final TabTreeDemo tTreeDemo = new TabTreeDemo();
 	    tTreeDemo.addToTabFolder( tabs );
 	    listTabs.add( tTreeDemo );
 
-	    final TabCanvas tCanvas = new TabCanvas();
-	    tCanvas.addToTabFolder( tabs );
-	    listTabs.add( tCanvas );
+//	    final TabCanvas tCanvas = new TabCanvas();
+//	    tCanvas.addToTabFolder( tabs );
+//	    listTabs.add( tCanvas );
+
+	    final TabTiles tTiles = new TabTiles();
+	    tTiles.addToTabFolder( tabs );
+	    listTabs.add( tTiles );
 
 	    final TabLog tLog = new TabLog();
 	    tLog.addToTabFolder( tabs );
@@ -293,9 +376,10 @@ public class SWTBasic {
 					final CTabItem item = tabs.getSelection();
 					final String strName = item.getText().trim();
 					
-	    			server.postData( NODE_PATH_THIS_SESSION + "Selection/", 
-	    					"tab.selected", strName,
-	    					"time", ""+System.currentTimeMillis() );
+					LOGGER.fine( "Tab selected: " + strName );
+//	    			server.postData( NODE_PATH_THIS_SESSION + "Selection/", 
+//	    					"tab.selected", strName,
+//	    					"time", ""+System.currentTimeMillis() );
 	    		}
 	    	}
 		});
@@ -304,7 +388,7 @@ public class SWTBasic {
 	    
 	    log( new Date().toString() + "\nStarted." );
 
-	    Logging.setDir( session.getSessionDir() );
+//	    Logging.setDir( session.getSessionDir() );
 
 	    log( "Session ID: " + NetUtil.getSessionID() );
 	    
@@ -334,38 +418,41 @@ public class SWTBasic {
 	    NODE_PATH_THIS_SESSION = 
 	    			NODE_PATH_DEVICES + NetUtil.getSessionID() + "/";
 	    
-	    server.postData(	NODE_PATH_THIS_SESSION, 
-							"session.start", 
-							Long.toString( System.currentTimeMillis() ) );
+//	    server.postData(	NODE_PATH_THIS_SESSION, 
+//							"session.start", 
+//							Long.toString( System.currentTimeMillis() ) );
 	    
 	    
 	    shell.open();
 	    
-	    final ShellTopMenu menu = new ShellTopMenu( shell );
+//	    final ShellTopMenu menu = new ShellTopMenu( shell );
 
-	    compLeft.addMouseMoveListener( new MouseMoveListener() {
-			@Override
-			public void mouseMove( final MouseEvent event ) {
-				menu.show( true );
-			}
-		});
-	    compMain.addMouseMoveListener( new MouseMoveListener() {
-			@Override
-			public void mouseMove( final MouseEvent event ) {
-				if ( event.x < 80 ) {
-					menu.show( true );
-				}
-			}
-		});
+//	    compLeft.addMouseMoveListener( new MouseMoveListener() {
+//			@Override
+//			public void mouseMove( final MouseEvent event ) {
+//				menu.show( true );
+//			}
+//		});
+//	    compMain.addMouseMoveListener( new MouseMoveListener() {
+//			@Override
+//			public void mouseMove( final MouseEvent event ) {
+//				if ( event.x < 80 ) {
+//					menu.show( true );
+//				}
+//			}
+//		});
 	    
-	    if ( 800 == display.getBounds().width ) {
+//	    if ( 800 == display.getBounds().width ) {
+		if ( RPiTouchscreen.getInstance().isEnabled() ) {
 	    	log( "Display is RPi touchscreen" );
-	    	shell.setLocation( -TRIM, -TRIM );
+		    shell.setSize( 800, 495 );
+	    	shell.setLocation( 0, 0 );
 	    
 	//    } else if ( shell.getSize().x > display.getClientArea().x ) {
 	//    } else if ( display.getBounds().x > 1000 ) {
 	    } else {
 	    	log( "Display is probably normal full-size screen" );
+		    shell.setSize( 810, 520 );
 	    	if ( shell.getLocation().x < 20 ) {
 	    		shell.setLocation( 50, 50 );
 	    	}
@@ -374,6 +461,7 @@ public class SWTBasic {
 	    }
 	    return shell;
 	}
+
 
 	public static void main( final String[] args ) {
 

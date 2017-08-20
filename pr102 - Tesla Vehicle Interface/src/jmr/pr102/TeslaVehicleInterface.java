@@ -9,13 +9,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import jmr.pr102.comm.HttpGet;
-import jmr.pr102.comm.HttpPost;
-import jmr.pr102.comm.JsonUtils;
 import jmr.pr102.comm.TeslaLogin;
+import jmr.pr102.comm.TeslaLoginSimple;
 import jmr.pr102.comm.TeslaVehicleID;
 import jmr.util.SUProperty;
 import jmr.util.SystemUtil;
+import jmr.util.http.ContentRetriever;
+import jmr.util.transform.JsonUtils;
 
 public class TeslaVehicleInterface implements TeslaConstants {
 
@@ -26,7 +26,7 @@ public class TeslaVehicleInterface implements TeslaConstants {
 	public TeslaVehicleInterface(	final String strUsername,
 									final char[] arrPassword,
 									final int iVehicleIndex ) {
-		this.login = new TeslaLogin( strUsername, arrPassword );
+		this.login = new TeslaLoginSimple( strUsername, arrPassword );
 		this.vehicle = new TeslaVehicleID( this.login, iVehicleIndex );
 	}
 	
@@ -36,8 +36,13 @@ public class TeslaVehicleInterface implements TeslaConstants {
 		this( strUsername, arrPassword, 0 );
 	}
 
+	public TeslaVehicleInterface( final TeslaLogin login ) {
+		this.login = login;
+		this.vehicle = new TeslaVehicleID( this.login, 0 );
+	}
+
 	public TeslaVehicleInterface() {
-		this.login = TeslaLogin.DUMMY_LOGIN;
+		this.login = TeslaLoginSimple.DUMMY_LOGIN;
 		this.vehicle = TeslaVehicleID.DUMMY_VEHICLE_ID;
 	}
 
@@ -63,13 +68,39 @@ public class TeslaVehicleInterface implements TeslaConstants {
 	private String getContent(	final String strURL,
 								final String strPostContent ) {
 
-		final HttpGet get = new HttpGet( strURL, this.login );
-		final HttpPost post = new HttpPost( strURL, this.login );
-
+		final ContentRetriever retriever = new ContentRetriever( strURL );
+		
 		try {
-			final String strResponse = (null!=strPostContent) 
-							? post.postContent( strPostContent ) 
-							: get.getContent();
+		
+			if ( null==strPostContent ) { // HTTP GET
+				final String strTokenValue = login.getTokenValue();
+				final String strTokenType = login.getTokenType();
+				retriever.addProperty( 
+						"Authorization", strTokenType + " " + strTokenValue );
+			} else { // HTTP POST
+
+				final String strTokenValue;
+				if ( null==this.login ) {
+//					strTokenValue = DUMMY_AUTH_TOKEN_VALUE;
+					strTokenValue = null;
+				} else if ( this.login.isAuthenticating() ) {
+					strTokenValue = null;
+				} else {
+					strTokenValue = this.login.getTokenValue();
+				}
+				
+				if ( null!=strTokenValue ) {
+					final String strTokenType = login.getTokenType();
+					final String strTokenString = 
+							strTokenType + " " + strTokenValue;
+					retriever.addProperty( 
+							HEADER_AUTHORIZATION, strTokenString );
+				}
+			}
+
+			final String strResponse = (null!=strPostContent)
+							? retriever.postContent( strPostContent )
+							: retriever.getContent();
 			return strResponse;
 		} catch ( final Exception e ) {
 			// TODO Auto-generated catch block
@@ -83,9 +114,10 @@ public class TeslaVehicleInterface implements TeslaConstants {
 		Exception cause = null;
 		
 		try {
-			final String strResponse = (null!=strPostContent) 
-					? post.postContent( strPostContent ) 
-					: get.getContent();
+			final String strResponse = (null!=strPostContent)
+					? retriever.postContent( strPostContent )
+					: retriever.getContent();
+							
 			return strResponse;
 		} catch ( final Exception e ) {
 			// TODO Auto-generated catch block
@@ -98,7 +130,20 @@ public class TeslaVehicleInterface implements TeslaConstants {
 	}
 	
 	
-	public Map<String,String> request(	final DataRequest request ) {
+	public static Map<String,String> getMapFromJson( 
+											final String strResponse ) {
+		if ( null==strResponse ) return null;
+
+		final JsonElement element = new JsonParser().parse( strResponse );
+		final JsonElement response = element.getAsJsonObject().get( "response" );
+		final JsonObject jo = response.getAsJsonObject();
+		final Map<String,String> map = JsonUtils.transformJsonToMap( jo );
+		
+        return map;
+	}
+	
+	
+	public String request(	final DataRequest request ) {
 		if ( null==request ) throw new IllegalStateException( "Null request" );
 
 		final String strVID = (null!=this.vehicle)
@@ -120,20 +165,7 @@ java.lang.Exception: HTTP code 408 received.
 	at jmr.pr102.TeslaVehicleInterface.null(Unknown Source)
 		 */
 		
-		
-		
-		if ( null!=strResponse ) {
-			
-			final JsonElement element = new JsonParser().parse( strResponse );
-			final JsonElement response = element.getAsJsonObject().get( "response" );
-			final JsonObject jo = response.getAsJsonObject();
-			final Map<String,String> map = JsonUtils.transformJsonToMap( jo );
-			
-	        return map;
-	        
-		} else {
-			return null;
-		}
+		return strResponse;
 	}
 	
 	
@@ -174,6 +206,8 @@ java.lang.Exception: HTTP code 408 received.
 	
 	
 	public static void main( final String[] args ) throws Exception {
+		
+//		System.out.println( TimeUnit.HOURS.toMillis( 1 ) );
 		
 		
 		final TeslaVehicleInterface tvi; 
@@ -218,13 +252,18 @@ java.lang.Exception: HTTP code 408 received.
 			System.out.println( "Token: " + tvi.login.getTokenValue() );
 			
 			for ( final DataRequest request : DataRequest.values() ) {
+				
+//				if ( DataRequest.VEHICLE_STATE != request ) break;
+				
 				System.out.println( "Requesting: " + request );
-				final Map<String, String> map = tvi.request( request );
+				final Map<String, String> map = 
+						getMapFromJson( tvi.request( request ) );
 //				JsonUtils.print( map );
 				System.out.println( "\t" + map.size() + " entries" );
 			}
 
-			Thread.sleep( 10 * 60 * 1000 );
+//			Thread.sleep( 10 * 60 * 1000 );1
+			Thread.sleep( TimeUnit.HOURS.toMillis( 1 ) );
 		}
 	}
 

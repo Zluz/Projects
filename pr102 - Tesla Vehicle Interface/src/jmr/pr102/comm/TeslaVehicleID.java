@@ -9,6 +9,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import jmr.pr102.TeslaConstants;
+import jmr.util.http.ContentRetriever;
+import jmr.util.transform.JsonUtils;
 
 public class TeslaVehicleID {
 
@@ -36,9 +38,14 @@ public class TeslaVehicleID {
 		final String strURL = TeslaConstants.URL_BASE_TESLA_API_PROD 
 						+ "api/1/vehicles/";
 		
-		final HttpGet get = new HttpGet( strURL, this.login );
+		final ContentRetriever get = new ContentRetriever( strURL );
 		
 		try {
+			final String strTokenValue = login.getTokenValue();
+			final String strTokenType = login.getTokenType();
+			get.addProperty( 
+					"Authorization", strTokenType + " " + strTokenValue );
+
 			final String strResponse = get.getContent();
 			
 			final JsonElement element = new JsonParser().parse( strResponse );

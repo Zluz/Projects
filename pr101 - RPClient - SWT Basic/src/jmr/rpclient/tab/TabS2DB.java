@@ -16,6 +16,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -24,12 +27,12 @@ import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 
 import jmr.s2db.Client;
+import jmr.s2db.Watcher;
+import jmr.s2db.Watcher.Listener;
+import jmr.s2db.tables.Page;
 import jmr.s2db.tree.TreeModel;
 import jmr.s2db.tree.TreeModel.Node;
-//import jmr.sharedb.Node;
-//import jmr.sharedb.Peer;
-//import jmr.sharedb.Server;
-//import jmr.sharedb.Server.Listener;
+import jmr.util.Logging;
 
 public class TabS2DB extends TabBase {
 
@@ -43,16 +46,46 @@ public class TabS2DB extends TabBase {
 //	private TreeColumn colName;
 //	private TreeColumn colValue;
 	
+	private Menu menu;
+	
+	private Page tablePage;
+	
+
+	boolean bIsVisible = false;
+
+	
 	public TabS2DB( final Client s2db ) {
-//		this.server = server;
-//		this.server.addListener( new Listener() {
-//			@Override
-//			public void changed() {
-//				drawTree();
-//			}
-//		});
+		tablePage = new Page();
+		Watcher.get().addListener( new Listener() {
+			@Override
+			public void addedPage() {
+				Logging.log( "Page added, invaliding S2DB page." );
+				invalidate();
+			}
+			@Override
+			public void addedSession() {
+				Logging.log( "Session added, invaliding S2DB page." );
+				invalidate();
+			}
+			@Override
+			public void updatedPage() {
+				Logging.log( "Page updated, invaliding S2DB page." );
+				invalidate();
+			}
+		});
 	}
 	
+	
+	private boolean valid = false;
+	
+	private void invalidate() {
+		valid = false;
+		//		if ( treeNodes.isVisible() ) {
+		if ( bIsVisible ) {
+//			treeNodes.getDisplay().asyncExec( new Runnable() { });
+			drawTree();
+		}
+	}
 	
 
 	public TopSection getMenuItem() {
@@ -87,8 +120,11 @@ public class TabS2DB extends TabBase {
 	    gdPeer.horizontalSpan = 3;
 	    compPeers.setLayoutData( gdPeer );
 
+		menu = new Menu( parent.getShell(), SWT.POP_UP );
+
 		treeNodes = new Tree( compNodes, SWT.V_SCROLL );
-		
+		treeNodes.setMenu( menu );
+
 		colPath = new TreeColumn( treeNodes, SWT.LEFT );
 		colPath.setText( "Path" );
 		colPath.setWidth( 460 );
@@ -109,10 +145,10 @@ public class TabS2DB extends TabBase {
 		
 		TableColumn tcolName = new TableColumn( tableDetails, SWT.LEFT );
 		tcolName.setText( "Name" );
-		tcolName.setWidth( 100 );
+		tcolName.setWidth( 180 );
 		TableColumn tcolValue = new TableColumn( tableDetails, SWT.LEFT );
 		tcolValue.setText( "Value" );
-		tcolValue.setWidth( 300 );
+		tcolValue.setWidth( 500 );
 		
 		tableDetails.showColumn( tcolName );
 		tableDetails.showColumn( tcolValue );
@@ -150,6 +186,42 @@ public class TabS2DB extends TabBase {
 
 		});
 	    
+
+	    final MenuItem miDeactivate = new MenuItem( menu, SWT.PUSH );
+	    miDeactivate.setText( "Deactivate" );
+	    
+
+	    // see http://www.java2s.com/Code/Java/SWT-JFace-Eclipse/Enablemenuitemsdynamicallywhenmenushown.htm
+	    menu.addListener( SWT.Show, new org.eclipse.swt.widgets.Listener() {
+			@Override
+			public void handleEvent( final Event event ) {
+	    		final TreeItem[] selection = treeNodes.getSelection();
+    			miDeactivate.setEnabled( 1==selection.length );
+			}
+	    });
+	    
+	    
+	    miDeactivate.addSelectionListener( new SelectionAdapter() {
+	    	@Override
+	    	public void widgetSelected( final SelectionEvent event ) {
+//    			if ( null==event ) return;
+//    			final Widget item = event.item;
+//    			if ( null==item ) return;
+//	    		final TreeItem[] selection = treeNodes.getSelection();
+	    		final TreeItem item = treeNodes.getSelection()[0];
+				final Object obj = item.getData();
+    			if ( obj instanceof Node ) {
+//    				showDetails( (Node) obj );
+    				final Node node = (Node)obj;
+    				final Long seqPage = node.getPageSeq();
+    				if ( null!=seqPage ) {
+    					tablePage.setState( seqPage, null, 'E' );
+    					invalidate();
+    				}
+    			}
+	    	}
+		});
+	    
 		
 		return comp;
 	}
@@ -165,15 +237,18 @@ public class TabS2DB extends TabBase {
 		tableDetails.removeAll();
 		
 		final Map<String, String> map = node.getMap();
-		for ( final Entry<String, String> entry : map.entrySet() ) {
-			final String strName = entry.getKey();
-			final String strValue = entry.getValue();
-			
-			final TableItem item = new TableItem( tableDetails, SWT.NONE );
-			item.setText( 0, strName );
-			item.setText( 1, strValue );
+		if ( null!=map ) {
+			for ( final Entry<String, String> entry : map.entrySet() ) {
+				final String strName = entry.getKey();
+				final String strValue = entry.getValue();
+				
+				final TableItem item = new TableItem( tableDetails, SWT.NONE );
+				item.setText( 0, strName );
+				item.setText( 1, strValue );
+			}
 		}
 	}
+	
 	
 	private void addNode(	final TreeItem parent,
 							final Node node ) {
@@ -191,6 +266,8 @@ public class TabS2DB extends TabBase {
 		if ( null==treeNodes ) return;
 		if ( null==display ) return;
 		if ( display.isDisposed() ) return;
+		
+		if ( valid ) return;
 		
 //		System.out.println( "Redrawing tree.." );
 		
@@ -214,6 +291,7 @@ public class TabS2DB extends TabBase {
 					}
 					
 				}
+				valid = true;
 			}
 		});
 	}

@@ -18,6 +18,9 @@ public interface TeslaConstants {
 	
 
 	public static final String HEADER_AUTHORIZATION = "Authorization";
+	
+	public static final String KEY_TOKEN_TYPE = "token_type";
+	public static final String KEY_ACCESS_TOKEN = "access_token";
 
 	
 	/*
