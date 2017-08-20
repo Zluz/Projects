@@ -68,8 +68,9 @@ public class Watcher {
 			int iIndex = 0;
 			final Long[] arr = new Long[ SEQ_COUNT ];
 			
+			if ( stmt.isClosed() ) return new Long[]{};
 			try ( final ResultSet rs = stmt.executeQuery( strQuery ) ) {
-				if ( rs.next() ) {
+				if ( null!=rs && !rs.isClosed() && rs.next() ) {
 					while ( iIndex<SEQ_COUNT ) {
 						arr[ iIndex ] = rs.getLong( iIndex + 1 );
 						iIndex++;
@@ -112,7 +113,7 @@ public class Watcher {
 					
 					final Long[] seqNowRows = readLastRows();
 
-					if ( null!=seqNowRows ) {
+					if ( null!=seqNowRows && SEQ_COUNT==seqNowRows.length ) {
 						for ( int i=0; i<SEQ_COUNT; i++ ) {
 							if ( !seqNowRows[i].equals( seqLastRows[i] ) ) {
 								if ( null!=seqLastRows[i] ) {

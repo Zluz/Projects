@@ -3,6 +3,7 @@ package jmr.rpclient.tab;
 public enum TopSection {
 	
 	DAILY_INFO( "Daily Info" ),
+	TILES( "Tiles" ),
 	DEVICE_CONTROLS( "Device" ),
 	S2DB( "S2DB Data" ),
 	DATA_LISTING( "Data Listing" ),

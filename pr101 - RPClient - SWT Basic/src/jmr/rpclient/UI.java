@@ -27,6 +27,9 @@ public abstract class UI {
 	final public static Color COLOR_BLUE = 
 					display.getSystemColor( SWT.COLOR_BLUE );
 
+	final public static Color COLOR_DARK_BLUE = 
+					display.getSystemColor( SWT.COLOR_DARK_BLUE );
+
 	final public static Color COLOR_RED = 
 					display.getSystemColor( SWT.COLOR_RED );
 

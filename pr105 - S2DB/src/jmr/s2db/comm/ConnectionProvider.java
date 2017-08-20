@@ -2,6 +2,7 @@ package jmr.s2db.comm;
 
 import java.lang.ref.WeakReference;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -9,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp.DelegatingDatabaseMetaData;
 
 public class ConnectionProvider {
 
@@ -92,9 +94,16 @@ public class ConnectionProvider {
 
 		final String strCaller = 
 				Thread.currentThread().getStackTrace()[2].getMethodName();
-		System.out.print( "Closing lingering connections, "
-						+ "called from " + strCaller + "()..." );
+		System.out.print( "Closing S2DB connection pool, "
+						+ "called from " + strCaller + "(). " );
+		if ( listConnections.isEmpty() ) {
+			System.out.println( "All connections closed." );
+			return;
+		}
+		System.out.print( "Closing S2DB connection pool, "
+				+ "called from " + strCaller + "(). Issuing threaded close()s..." );
 
+		final List<WeakReference<Connection>> listRemove = new LinkedList<>();
 		for ( final WeakReference<Connection> ref : listConnections ) {
 			if ( null!=ref ) {
 				final Connection conn = ref.get();
@@ -105,10 +114,13 @@ public class ConnectionProvider {
 							public void run() {
 								try {
 									conn.close();
-									ref.clear();
+//									ref.clear();
+									listRemove.add( ref );
 								} catch ( final SQLException e ) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
+									if ( !e.getMessage().contains( 
+											"\" is closed.") ) {
+										e.printStackTrace();
+									}
 								}
 							}
 						}.start();
@@ -118,24 +130,62 @@ public class ConnectionProvider {
 				}
 			}
 		}
+		System.out.print( "Done. " );
+		
 		try {
 			Thread.sleep( 100 );
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+//		for ( final WeakReference<Connection> ref : listRemove ) {
+//			if ( null!=ref ) {
+//				listConnections.remove( ref );
+//			}
+//		}
+		
+		if ( listConnections.isEmpty() ) {
+			System.out.println( "All connections closed." );
+			return;
+		}
+		
+		System.out.println();
+		System.out.println( "Lingering connections detected:" );
+		for ( final WeakReference<Connection> ref : listConnections ) {
+			final Connection conn = ref.get();
+			try {
+				if ( null!=conn && !conn.isClosed() ) {
+					System.out.println( "\t" + conn.toString() );
+				}
+			} catch ( final SQLException e ) {
+				// TODO Auto-generated catch block
+//				e.printStackTrace();
+			}
+		}
+		
+		System.out.print( "Closing lingering connections..." );
+
 		for ( final WeakReference<Connection> ref : listConnections ) {
 			if ( null!=ref ) {
 				final Connection conn = ref.get();
 				if ( null!=conn ) {
 					try {
-						conn.close();
+						if ( !conn.isClosed() ) {
+							conn.close();
+						}
 						if ( conn.isClosed() ) {
 							System.out.print( "." );
-							ref.clear();
 						}
+						ref.clear();
 					} catch ( final Throwable t ) {
-						System.out.print( "X" );
+						if ( !t.getMessage().contains( 
+								"\" is closed.") ) {
+							System.out.print( "X" );
+							t.printStackTrace();
+						} else {
+							System.out.print( "." );
+						}
 					}
 				}
 			}
@@ -162,18 +212,28 @@ public class ConnectionProvider {
 //		final Statement stmt = ConnectionProvider.get().getStatement();
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
 				final Statement stmt = conn.createStatement() ) {
+			
+			final DatabaseMetaData metadata = conn.getMetaData();
+			final DelegatingDatabaseMetaData 
+					ddmd = (DelegatingDatabaseMetaData)metadata;
+			final String strURL = ddmd.getURL();
+			
+			System.out.println( "Connection URL: " + strURL );
 		
 	//		Class.forName( MYSQL_DRIVER );
 	//		final Connection conn = DriverManager.getConnection( 
 	//						MYSQL_CONNECTION, "s2_full", "s2db" );
 	//		final Statement stmt = conn.createStatement();
 			
-			final String strSQL = "select * from s2db.device";
+//			final String strSQL = "select * from s2db.device";
+			final String strSQL = "select host from information_schema.processlist WHERE ID=connection_id();";
 			final ResultSet rs = stmt.executeQuery( strSQL );
 			
 			if ( rs.first() ) {
-				final int iSeq = rs.getInt( "seq" );
-				System.out.println( "seq = " + iSeq );
+//				final int iSeq = rs.getInt( "seq" );
+//				System.out.println( "seq = " + iSeq );
+				final String strValue = rs.getString( 1 );
+				System.out.println( "value = " + strValue );
 			}
 			
 			rs.close();

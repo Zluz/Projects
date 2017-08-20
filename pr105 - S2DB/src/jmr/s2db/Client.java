@@ -54,6 +54,13 @@ public class Client {
 							final String strName,
 							final String strClass,
 							final Date now ) {
+
+		System.out.println( "Registering: "
+						+ "IP=" + strIP + ", "
+						+ "Name=" + strName + ", "
+						+ "Class=" + strClass );
+
+//System.exit( 1 );		
 		
 		final Device tDevice = ( (Device)Tables.DEVICE.get() );
 		seqDevice = tDevice.get( strMAC, strName );
