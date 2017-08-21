@@ -26,11 +26,7 @@ public class ConnectionProvider {
 
 	private static ConnectionProvider instance;
 
-//	private Connection conn;
 	
-	
-//	private final List<WeakReference<Connection>> 
-//						listConnections = new LinkedList<>();
 
 	private final List<ConnectionReference> 
 						listConnections = new LinkedList<>();
@@ -127,7 +123,6 @@ public class ConnectionProvider {
 //			https://stackoverflow.com/questions/7592056/am-i-using-jdbc-connection-pooling
 				
 			final Connection conn = bds.getConnection();
-//			listConnections.add( new WeakReference<Connection>( conn ) );
 			synchronized ( listConnections ) { 
 				listConnections.add( new ConnectionReference( conn ) );
 			}
@@ -156,9 +151,7 @@ public class ConnectionProvider {
 			System.out.print( "Closing S2DB connection pool, "
 					+ "called from " + strCaller + "(). Issuing threaded close()s..." );
 	
-	//		final List<WeakReference<Connection>> listRemove = new LinkedList<>();
 			final List<ConnectionReference> listRemove = new LinkedList<>();
-	//		for ( final WeakReference<Connection> ref : listConnections ) {
 			for ( final ConnectionReference ref : listConnections ) {
 				final WeakReference<Connection> wr = ref.reference;
 				if ( null!=wr ) {
@@ -209,7 +202,6 @@ public class ConnectionProvider {
 		
 		System.out.println();
 		System.out.println( "Lingering connections detected:" );
-//		for ( final WeakReference<Connection> ref : listConnections ) {
 		synchronized ( listConnections ) {
 			for ( final ConnectionReference ref : listConnections ) {
 				final WeakReference<Connection> wr = ref.reference;
