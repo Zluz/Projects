@@ -40,11 +40,16 @@ public class Client {
 	public long register(	final String strName,
 							final String strClass ) {
 		final Date now = new Date();
-	    final String strIP = NetUtil.getIPAddress();
 	    final String strMAC = NetUtil.getMAC();
+	    final String strIP = NetUtil.getIPAddress();
+	    
+	    String strRegex = strMAC.replaceAll( "-", "." );
+	    strRegex = "/Sessions/.+" + strRegex + ".+";
 	    
 	    final long seqSession = 
-	    		this.register( strMAC, strIP, strName, strClass, now );
+	    		this.register( strMAC, strIP, strName, strClass, strRegex, 
+	    					now );
+	    
 	    return seqSession;
 	}
 	
@@ -53,6 +58,7 @@ public class Client {
 							final String strIP,
 							final String strName,
 							final String strClass,
+							final String strExpireRegex,
 							final Date now ) {
 
 		System.out.println( "Registering: "
@@ -60,16 +66,20 @@ public class Client {
 						+ "Name=" + strName + ", "
 						+ "Class=" + strClass );
 
-//System.exit( 1 );		
-		
 		final Device tDevice = ( (Device)Tables.DEVICE.get() );
-		seqDevice = tDevice.get( strMAC, strName );
+//		seqDevice = tDevice.get( strMAC, strName );
+		seqDevice = tDevice.register( strMAC, strName, strIP );
+		
+		final Page tPage = ( (Page)Tables.PAGE.get() );
+		tPage.expireAll( strExpireRegex );
 		
 		final Session tSession = ( (Session)Tables.SESSION.get() );
 		seqSession = tSession.get( seqDevice, now, strIP, strClass );
 		
 		new S2DBLogHandler();
-		
+
+//		tDevice.register( strMAC, strName, strIP );
+
 		return seqSession.longValue();
 	}
 	
@@ -150,6 +160,12 @@ public class Client {
 
 		final Map<String, String> map = tPage.getMap( lPage );
 		return map;
+	}
+
+
+	public Device getDevice() {
+		final Device tDevice = ( (Device)Tables.DEVICE.get() );
+		return tDevice;
 	}
 	
 	

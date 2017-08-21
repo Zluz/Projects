@@ -1,7 +1,9 @@
 package jmr.rpclient.tab;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -238,9 +240,10 @@ public class TabS2DB extends TabBase {
 		
 		final Map<String, String> map = node.getMap();
 		if ( null!=map ) {
-			for ( final Entry<String, String> entry : map.entrySet() ) {
-				final String strName = entry.getKey();
-				final String strValue = entry.getValue();
+			final List<String> listKeys = new LinkedList<>( map.keySet() );
+			Collections.sort( listKeys );
+			for ( final String strName : listKeys ) {
+				final String strValue = map.get( strName );
 				
 				final TableItem item = new TableItem( tableDetails, SWT.NONE );
 				item.setText( 0, strName );

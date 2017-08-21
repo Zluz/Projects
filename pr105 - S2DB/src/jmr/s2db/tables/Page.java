@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
@@ -13,6 +15,7 @@ import java.util.logging.Logger;
 import jmr.s2db.Client;
 import jmr.s2db.DataFormatter;
 import jmr.s2db.comm.ConnectionProvider;
+import jmr.util.NetUtil;
 
 public class Page extends TableBase {
 
@@ -22,6 +25,10 @@ public class Page extends TableBase {
 		EXPIRED,
 		;
 	}
+	
+	private final static Map<Long,Map<String,String>> CACHE = new HashMap<>();
+	
+	
 	
 	@SuppressWarnings("unused")
 	private static final Logger 
@@ -43,11 +50,27 @@ public class Page extends TableBase {
 					"" + seqPath + ", " + lSession );
 		return lSeq;
 	}
+
+	
+	public Long getNoSession( final long seqPath ) {
+		
+		final Long lSeq = super.get(	"page", 
+//					"seq_path = " + seqPath + " AND seq_session = " + lSession, 
+					"seq_path = " + seqPath, 
+					"seq_path", 
+					"" + seqPath );
+		return lSeq;
+	}
+	
 	
 	
 	public Map<String,String> getMap( final Long seqPage ) {
 		if ( null==seqPage ) throw new IllegalStateException( "Null seqPage" );
 
+		if ( CACHE.containsKey( seqPage ) ) {
+			return CACHE.get( seqPage );
+		}
+		
 //		try ( final Statement 
 //				stmt = ConnectionProvider.get().getStatement() ) {
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
@@ -73,6 +96,12 @@ public class Page extends TableBase {
 					map.put( strName, strValue );
 				}
 			}
+			
+			if ( CACHE.size() > 20 ) {
+				CACHE.clear();
+			}
+			
+			CACHE.put( seqPage, map );
 			
 			return map;
 			
@@ -175,7 +204,49 @@ public class Page extends TableBase {
 	}
 	
 	public void expireAll(	final String strPageRegex ) {
+		try (	final Connection conn = ConnectionProvider.get().getConnection();
+				final Statement stmtQuery = conn.createStatement();
+				final Statement stmtUpdate = conn.createStatement() ) {
 		
+			final String strQuery;
+			strQuery = "SELECT page.seq, path.name "
+					+ "FROM Page page, Path path "
+					+ "WHERE ( page.seq_path = path.seq ) "
+						+ "AND ( page.state = 'A' ) "
+					+ "ORDER BY seq ASC;";
+			stmtQuery.executeQuery( strQuery );
+			
+//			final Map<String,String> map = new HashMap<>();
+			final List<Long> listToExpire = new LinkedList<>();
+			
+			try ( final ResultSet rs = stmtQuery.executeQuery( strQuery ) ) {
+				while ( rs.next() ) {
+					final String strName = rs.getString( "name" );
+					//TODO optimize
+					if ( strName.matches( strPageRegex ) ) {
+						final long seq = rs.getLong( "seq" );
+						listToExpire.add( seq );
+					}
+				}
+			}
+			
+			if ( !listToExpire.isEmpty() ) {
+
+				String strUpdate = "UPDATE page "
+						+ "SET state='E' "
+						+ "WHERE FALSE";
+				for ( final Long seq : listToExpire ) {
+					strUpdate += " OR ( seq = " + seq + " )";
+				}
+
+				stmtUpdate.executeUpdate( strUpdate );
+			}
+			
+			
+		} catch ( final SQLException e ) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 	}
 	
 	
@@ -185,6 +256,17 @@ public class Page extends TableBase {
 		setState( seqPage, now, 'E' );
 		
 //		LOGGER.log( Level.INFO, "Existing page expired (seq=" + seqPage+ ")" );
+	}
+	
+	
+	
+	public static void main( final String[] args ) {
+
+		final String strSession = NetUtil.getSessionID();
+		final String strClass = Page.class.getName();
+		Client.get().register( strSession, strClass );
+		
+		new Page().expireAll( "/tmp/jmr.s2db.comm.JsonIngest_1502256041720/forecast/simpleforecast/forecastday/08/qpf_day" );
 	}
 	
 	

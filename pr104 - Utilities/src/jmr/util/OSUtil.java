@@ -1,6 +1,8 @@
 package jmr.util;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public abstract class OSUtil {
 
@@ -31,5 +33,37 @@ public abstract class OSUtil {
 		}
 		return iArch;
 	}
+	
+	public static String _getProgramName() {
+//		final String strPath = OSUtil.class.getProtectionDomain()
+//				  .getCodeSource().getLocation().getPath();
+//		final String strFile = new java.io.File( strPath ).getName();
+		try {
+			final URI uri = OSUtil.class.getProtectionDomain()
+					  .getCodeSource().getLocation().toURI();
+			final String strFile = new java.io.File( uri ).getName();
+			return strFile;
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return "(unknown)";
+	}
+	
+	
+
+	public static String getProgramName() {
+	    String path = OSUtil.class.getResource(
+	    		OSUtil.class.getSimpleName() + ".class" ).getFile();
+	    if(path.startsWith("/")) {
+	    	return "(not running from a jar)";
+	    }
+	    path = ClassLoader.getSystemClassLoader().getResource(path).getFile();
+
+	    final File file = new File(path.substring(0, path.lastIndexOf('!')));
+	    return file.getName();
+	}
+
+	
 	
 }

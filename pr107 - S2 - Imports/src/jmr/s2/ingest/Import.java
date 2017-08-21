@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 import jmr.s2db.Client;
 import jmr.s2db.WebImport;
+import jmr.s2db.comm.ConnectionProvider;
 import jmr.util.NetUtil;
 
 public enum Import {
@@ -73,8 +74,11 @@ public enum Import {
 	}
 	
 	
-	public static void main( final String[] args ) {
+	public static void main( final String[] args ) 
+										throws InterruptedException {
 
+		ConnectionProvider.get();
+		
 		final String strSession = NetUtil.getSessionID();
 		final String strClass = Import.class.getName();
 		Client.get().register( strSession, strClass );
@@ -85,10 +89,15 @@ public enum Import {
 		final String strURL = source.getURL();
 		final String strTitle = source.getTitle();
 
-		final WebImport wi = new WebImport( strTitle, strURL );
-		final Long seq = wi.save();
-		
-		System.out.println( "Result: seq = " + seq );
+		for (;;) {
+			
+			final WebImport wi = new WebImport( strTitle, strURL );
+			final Long seq = wi.save();
+			
+			System.out.println( "Result: seq = " + seq );
+
+			Thread.sleep( TimeUnit.HOURS.toMillis( 6 ) );
+		}
 	}
 	
 	

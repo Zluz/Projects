@@ -68,9 +68,10 @@ public class Watcher {
 			int iIndex = 0;
 			final Long[] arr = new Long[ SEQ_COUNT ];
 			
-			if ( stmt.isClosed() ) return new Long[]{};
+			if ( stmt.isClosed() || conn.isClosed() ) return new Long[]{};
 			try ( final ResultSet rs = stmt.executeQuery( strQuery ) ) {
-				if ( null!=rs && !rs.isClosed() && rs.next() ) {
+				if ( null!=rs && !rs.isClosed() && rs.next() 
+						&& !conn.isClosed() && !stmt.isClosed() ) {
 					while ( iIndex<SEQ_COUNT ) {
 						arr[ iIndex ] = rs.getLong( iIndex + 1 );
 						iIndex++;

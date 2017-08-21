@@ -29,8 +29,21 @@ public class ConnectionProvider {
 //	private Connection conn;
 	
 	
-	private final List<WeakReference<Connection>> 
+//	private final List<WeakReference<Connection>> 
+//						listConnections = new LinkedList<>();
+
+	private final List<ConnectionReference> 
 						listConnections = new LinkedList<>();
+	
+	public static class ConnectionReference {
+		final WeakReference<Connection> reference;
+		final StackTraceElement[] stack; 
+		
+		public ConnectionReference( final Connection connection ) {
+			this.reference = new WeakReference<>( connection );
+			this.stack = Thread.currentThread().getStackTrace();
+		}
+	}
 	
 	
 	private ConnectionProvider() throws SQLException, ClassNotFoundException {
@@ -49,12 +62,48 @@ public class ConnectionProvider {
 		bds.setMaxActive( 10 );
 		bds.setMaxOpenPreparedStatements( 10 );
 		
-		Runtime.getRuntime().addShutdownHook( new Thread() {
+		Runtime.getRuntime().addShutdownHook( new Thread( 
+							"Shutdown Hook - ConnectionProvider.close()" ) {
 			@Override
 			public void run() {
 				close();
 			}
 		});
+		
+		final Thread threadCleanup = new Thread( "Connection Cleaner" ) {
+			@Override
+			public void run() {
+				try {
+					for (;;) {
+						Thread.sleep( 1000 );
+						final List<ConnectionReference> 
+									listDelete = new LinkedList<>();
+						synchronized ( listConnections ) { 
+							try {
+								for ( final ConnectionReference ref : listConnections ) {
+									if ( null==ref ) {
+										// just ignore
+									} else if ( null==ref.reference 
+													|| null==ref.reference.get() ) {
+										listDelete.add( ref );
+									}
+								}
+	//						} catch ( final ConcurrentModificationException e ) {
+							} catch ( final Exception e ) {
+								// ignore, quit
+							}
+							for ( final ConnectionReference ref : listDelete ) {
+								listConnections.remove( ref );
+							}
+						}
+					}
+				} catch ( final InterruptedException e ) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}			
+		};
+		threadCleanup.start();
 	};
 	
 	
@@ -78,7 +127,10 @@ public class ConnectionProvider {
 //			https://stackoverflow.com/questions/7592056/am-i-using-jdbc-connection-pooling
 				
 			final Connection conn = bds.getConnection();
-			listConnections.add( new WeakReference<Connection>( conn ) );
+//			listConnections.add( new WeakReference<Connection>( conn ) );
+			synchronized ( listConnections ) { 
+				listConnections.add( new ConnectionReference( conn ) );
+			}
 			return conn;
 			
 		} catch ( final SQLException e ) {
@@ -96,36 +148,41 @@ public class ConnectionProvider {
 				Thread.currentThread().getStackTrace()[2].getMethodName();
 		System.out.print( "Closing S2DB connection pool, "
 						+ "called from " + strCaller + "(). " );
-		if ( listConnections.isEmpty() ) {
-			System.out.println( "All connections closed." );
-			return;
-		}
-		System.out.print( "Closing S2DB connection pool, "
-				+ "called from " + strCaller + "(). Issuing threaded close()s..." );
-
-		final List<WeakReference<Connection>> listRemove = new LinkedList<>();
-		for ( final WeakReference<Connection> ref : listConnections ) {
-			if ( null!=ref ) {
-				final Connection conn = ref.get();
-				if ( null!=conn ) {
-					try {
-						new Thread() {
-							@Override
-							public void run() {
-								try {
-									conn.close();
-//									ref.clear();
-									listRemove.add( ref );
-								} catch ( final SQLException e ) {
-									if ( !e.getMessage().contains( 
-											"\" is closed.") ) {
-										e.printStackTrace();
+		synchronized ( listConnections ) {
+			if ( listConnections.isEmpty() ) {
+				System.out.println( "All connections closed." );
+				return;
+			}
+			System.out.print( "Closing S2DB connection pool, "
+					+ "called from " + strCaller + "(). Issuing threaded close()s..." );
+	
+	//		final List<WeakReference<Connection>> listRemove = new LinkedList<>();
+			final List<ConnectionReference> listRemove = new LinkedList<>();
+	//		for ( final WeakReference<Connection> ref : listConnections ) {
+			for ( final ConnectionReference ref : listConnections ) {
+				final WeakReference<Connection> wr = ref.reference;
+				if ( null!=wr ) {
+					final Connection conn = wr.get();
+					if ( null!=conn ) {
+						try {
+							new Thread() {
+								@Override
+								public void run() {
+									try {
+										conn.close();
+	//									ref.clear();
+										listRemove.add( ref );
+									} catch ( final SQLException e ) {
+										if ( !e.getMessage().contains( 
+												"\" is closed.") ) {
+											e.printStackTrace();
+										}
 									}
 								}
-							}
-						}.start();
-					} catch ( final Throwable t ) {
-						// ignore
+							}.start();
+						} catch ( final Throwable t ) {
+							// ignore
+						}
 					}
 				}
 			}
@@ -152,44 +209,52 @@ public class ConnectionProvider {
 		
 		System.out.println();
 		System.out.println( "Lingering connections detected:" );
-		for ( final WeakReference<Connection> ref : listConnections ) {
-			final Connection conn = ref.get();
-			try {
-				if ( null!=conn && !conn.isClosed() ) {
-					System.out.println( "\t" + conn.toString() );
+//		for ( final WeakReference<Connection> ref : listConnections ) {
+		synchronized ( listConnections ) {
+			for ( final ConnectionReference ref : listConnections ) {
+				final WeakReference<Connection> wr = ref.reference;
+				final Connection conn = wr.get();
+				try {
+					if ( null!=conn && !conn.isClosed() ) {
+	//					System.out.println( "\t" + conn.toString() );
+						System.out.println( "\t" 
+									+ conn.getClass().getSimpleName() 
+									+ "-" + conn.hashCode() );
+					}
+				} catch ( final SQLException e ) {
+					// TODO Auto-generated catch block
+	//				e.printStackTrace();
 				}
-			} catch ( final SQLException e ) {
-				// TODO Auto-generated catch block
-//				e.printStackTrace();
 			}
 		}
 		
 		System.out.print( "Closing lingering connections..." );
 
-		for ( final WeakReference<Connection> ref : listConnections ) {
-			if ( null!=ref ) {
-				final Connection conn = ref.get();
-				if ( null!=conn ) {
-					try {
-						if ( !conn.isClosed() ) {
-							conn.close();
-						}
-						if ( conn.isClosed() ) {
-							System.out.print( "." );
-						}
-						ref.clear();
-					} catch ( final Throwable t ) {
-						if ( !t.getMessage().contains( 
-								"\" is closed.") ) {
-							System.out.print( "X" );
-							t.printStackTrace();
-						} else {
-							System.out.print( "." );
-						}
-					}
-				}
-			}
-		}
+		// skip for now..
+//		for ( final WeakReference<Connection> ref : listConnections ) {
+//			if ( null!=ref ) {
+//				final Connection conn = ref.get();
+//				if ( null!=conn ) {
+//					try {
+//						if ( !conn.isClosed() ) {
+//							conn.close();
+//						}
+//						if ( conn.isClosed() ) {
+//							System.out.print( "." );
+//						}
+//						ref.clear();
+//					} catch ( final Throwable t ) {
+//						if ( !t.getMessage().contains( 
+//								"\" is closed.") ) {
+//							System.out.print( "X" );
+//							t.printStackTrace();
+//						} else {
+//							System.out.print( "." );
+//						}
+//					}
+//				}
+//			}
+//		}
 		System.out.println( "Done." );
 	}
 	

@@ -36,6 +36,9 @@ public abstract class UI {
 	final public static Color COLOR_GRAY = 
 					display.getSystemColor( SWT.COLOR_GRAY );
 		
+	final public static Color COLOR_DARK_GRAY = 
+					display.getSystemColor( SWT.COLOR_DARK_GRAY );
+
   
 
     

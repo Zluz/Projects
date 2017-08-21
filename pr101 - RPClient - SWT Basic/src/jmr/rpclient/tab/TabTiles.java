@@ -13,11 +13,17 @@ public class TabTiles extends TabBase {
 	
 	private TileCanvas canvastile;
 	
+	private final String strDeviceDescription;
+	
+	public TabTiles( final String strDeviceDescription ) {
+		this.strDeviceDescription = strDeviceDescription;
+	}
+	
 	
 	@Override
 	public Composite buildUI( final Composite parent ) {
 
-		canvastile = new TileCanvas();
+		canvastile = new TileCanvas( strDeviceDescription );
 		final Composite comp = canvastile.buildUI( parent );
 		return comp;
 		

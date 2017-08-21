@@ -181,7 +181,21 @@ public class SWTBasic {
 	    	iOptions = SWT.TOOL | SWT.ON_TOP | SWT.NO_TRIM;
 	    }
 	    final Shell shell = new Shell( UI.display, iOptions );
+		if ( RPiTouchscreen.getInstance().isEnabled() ) {
+	    	log( "Display is RPi touchscreen" );
+		    shell.setSize( 800, 495 );
+	    	shell.setLocation( 0, 0 );
 	    
+	    } else {
+	    	log( "Display is probably normal full-size screen" );
+		    shell.setSize( 810, 520 );
+	    	if ( shell.getLocation().x < 20 ) {
+	    		shell.setLocation( 50, 50 );
+	    	}
+	    }
+		
+		
+		
 	    final GridLayout glTop = new GridLayout( 3, false );
 	    removeMargins( glTop );
 		shell.setLayout( glTop );
@@ -312,9 +326,12 @@ public class SWTBasic {
 	    final String strIP = NetUtil.getIPAddress();
 	    final String strClass = SWTBasic.class.getName();
 	    final String strSessionID = NetUtil.getSessionID();
-		s2db.register( 	NetUtil.getMAC(), strIP, 
-	    				strSessionID, 
-	    				strClass, now );
+//		s2db.register( 	NetUtil.getMAC(), strIP, 
+//	    				strSessionID, 
+//	    				strClass, now );
+		s2db.register( 	strSessionID, strClass );
+		
+		final String strDeviceName = s2db.getDevice().getName();
 		
 //		S2DBLogHandler.registerLoggers();
 		
@@ -329,6 +346,8 @@ public class SWTBasic {
 	    mapSessionPage.put( "process.name", NetUtil.getProcessName() );
 	    mapSessionPage.put( "device.ip", NetUtil.getIPAddress() );
 	    mapSessionPage.put( "device.host.port", "none" );
+	    mapSessionPage.put( "executable", OSUtil.getProgramName() );
+	    mapSessionPage.put( "device.name", strDeviceName );
 	    final String strSessionPath = "/Sessions/" + NetUtil.getSessionID();
 		final long seqSessionPage = s2db.savePage( strSessionPath, mapSessionPage );
 	    s2db.setSessionPage( seqSessionPage );
@@ -354,7 +373,7 @@ public class SWTBasic {
 //	    tCanvas.addToTabFolder( tabs );
 //	    listTabs.add( tCanvas );
 
-	    final TabTiles tTiles = new TabTiles();
+	    final TabTiles tTiles = new TabTiles( strDeviceName );
 	    tTiles.addToTabFolder( tabs );
 	    listTabs.add( tTiles );
 
@@ -442,23 +461,6 @@ public class SWTBasic {
 //			}
 //		});
 	    
-//	    if ( 800 == display.getBounds().width ) {
-		if ( RPiTouchscreen.getInstance().isEnabled() ) {
-	    	log( "Display is RPi touchscreen" );
-		    shell.setSize( 800, 495 );
-	    	shell.setLocation( 0, 0 );
-	    
-	//    } else if ( shell.getSize().x > display.getClientArea().x ) {
-	//    } else if ( display.getBounds().x > 1000 ) {
-	    } else {
-	    	log( "Display is probably normal full-size screen" );
-		    shell.setSize( 810, 520 );
-	    	if ( shell.getLocation().x < 20 ) {
-	    		shell.setLocation( 50, 50 );
-	    	}
-	//    } else {
-	//    	shell.setLocation( 0, 0 );
-	    }
 	    return shell;
 	}
 

@@ -7,8 +7,6 @@ import java.util.TimeZone;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
@@ -19,7 +17,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import jmr.rpclient.RPiTouchscreen;
-import jmr.rpclient.ShellTopMenu;
 import jmr.rpclient.UI;
 import jmr.util.NetUtil;
 
@@ -170,14 +167,14 @@ public class TabDailyInfo extends TabBase {
 	    threadTimer.start();
 	    
 	    
-	    comp.addMouseMoveListener( new MouseMoveListener() {
-			@Override
-			public void mouseMove( final MouseEvent event ) {
-				if ( event.x < comp.getBounds().x + 100 ) {
-					ShellTopMenu.get().show( true );
-				}
-			}
-		});
+//	    comp.addMouseMoveListener( new MouseMoveListener() {
+//			@Override
+//			public void mouseMove( final MouseEvent event ) {
+//				if ( event.x < comp.getBounds().x + 100 ) {
+//					ShellTopMenu.get().show( true );
+//				}
+//			}
+//		});
 	    
 	    
 	    return comp;
