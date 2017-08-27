@@ -1,5 +1,6 @@
 package jmr.s2.ingest;
 
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import jmr.s2db.Client;
@@ -94,9 +95,10 @@ public enum Import {
 			final WebImport wi = new WebImport( strTitle, strURL );
 			final Long seq = wi.save();
 			
-			System.out.println( "Result: seq = " + seq );
+			System.out.println( "Result: seq = " + seq + ", "
+					+ "time now is " + new Date() );
 
-			Thread.sleep( TimeUnit.HOURS.toMillis( 6 ) );
+			Thread.sleep( TimeUnit.HOURS.toMillis( 1 ) );
 		}
 	}
 	

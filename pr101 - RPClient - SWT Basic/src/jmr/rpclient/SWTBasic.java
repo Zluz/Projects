@@ -245,16 +245,16 @@ public class SWTBasic {
 				gc.fillRectangle(  10, 110,  30,  80 );
 				gc.fillRectangle(  10, 210,  30,  80 );
 				gc.fillRectangle(  10, 310,  30,  80 );
-				gc.fillRectangle(  10, 410,  30,  40 );
+				gc.fillRectangle(  10, 410,  30,  60 );
 
 				gc.setForeground( UI.COLOR_BLACK );
 
-				gc.drawText( "Daily", 13, 020 );
-				gc.drawText( "Tiles", 14, 120 );
-				gc.drawText( "S2DB",  12, 220 );
+				gc.drawText( "Daily", 12, 030 );
+				gc.drawText( "Tiles", 12, 130 );
+				gc.drawText( "S2DB",  11, 230 );
 //				gc.drawText( "Calib", 005, 320 );
-				gc.drawText( "Device", 8, 320 );
-				gc.drawText( "EXIT",  15, 420 );
+				gc.drawText( "Device", 8, 330 );
+				gc.drawText( "EXIT",  12, 430 );
 			}
 		});
 	    

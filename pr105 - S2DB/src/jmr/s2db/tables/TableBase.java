@@ -24,13 +24,15 @@ public abstract class TableBase {
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
 				final Statement stmt = conn.createStatement() ) {
 
-			final String strQuery = "SELECT seq FROM " + strTable + " "
+			final String strQuery = "SELECT MAX(seq) FROM " + strTable + " "
 					+ "WHERE ( " + strWhere + " );";
 			
 			try ( final ResultSet rs = stmt.executeQuery( strQuery ) ) {
-				if ( rs.next() ) {
+				if ( rs.next() && !rs.wasNull() ) {
 					final long lSeq = rs.getLong( 1 );
-					return lSeq;
+					if ( lSeq > 0 ) {
+						return lSeq;
+					}
 				}
 			}
 			

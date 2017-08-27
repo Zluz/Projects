@@ -63,7 +63,7 @@ public class TileCanvas {
 						new Rectangle( 0, 0, 3, 1 ) ) );
 
 		listTiles.add( new TileGeometry( new SystemInfoTile(), 
-						new Rectangle( 0, 1, 1, 1 ) ) );
+						new Rectangle( 2, 1, 1, 1 ) ) );
 		
 		listTiles.add( new TileGeometry( new CalibrationTile(), 
 						new Rectangle( 4, 0, 1, 1 ) ) ); 
@@ -73,12 +73,12 @@ public class TileCanvas {
 //						new Rectangle( 4, 2, 1, 1 ) ) );
 
 		listTiles.add( new TileGeometry( new PerformanceMonitorTile(), 
-						new Rectangle( 1, 1, 1, 1 ) ) );
+						new Rectangle( 3, 1, 1, 1 ) ) );
 		
 		listTiles.add( new TileGeometry( new BlankTile(), 
-						new Rectangle( 2, 1, 1, 1 ) ) ); 
+						new Rectangle( 0, 1, 1, 1 ) ) ); 
 		listTiles.add( new TileGeometry( new BlankTile(), 
-						new Rectangle( 3, 1, 1, 1 ) ) ); 
+						new Rectangle( 1, 1, 1, 1 ) ) ); 
 		listTiles.add( new TileGeometry( new BlankTile(), 
 						new Rectangle( 3, 0, 1, 1 ) ) ); 
 
@@ -110,22 +110,27 @@ public class TileCanvas {
 		
 	    this.canvas = new Canvas( parent, SWT.NO_BACKGROUND );
     	this.canvas.setCursor( UI.CURSOR_HIDE );
-    	final Rectangle rectCanvas = this.canvas.getClientArea();
 
 	    canvas.addPaintListener( new PaintListener() {
 			@Override
 			public void paintControl( final PaintEvent e ) {
 
 				lPaintCount++;
-				
+
+		    	final Rectangle rectCanvas = canvas.getClientArea();
+
 //				e.gc.setClipping( rectCanvas );
-				e.gc.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
+				e.gc.setBackground( UI.COLOR_BLACK );
 				e.gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
-				e.gc.fillRectangle( 0,0, 800, TRIM_Y );
 				e.gc.fillRectangle( 0,0, TRIM_X, 480 );
-				e.gc.fillRectangle( 0,480, rectCanvas.width, rectCanvas.height-480 );
-				e.gc.fillRectangle( 800,0, rectCanvas.width, 480 );
-				
+//				e.gc.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
+				e.gc.setBackground( UI.COLOR_DARK_GRAY );
+				e.gc.fillRectangle( 0,450+TRIM_Y, rectCanvas.width, rectCanvas.height-450 );
+				e.gc.fillRectangle( 750+TRIM_X,0, rectCanvas.width, 450+TRIM_Y );
+
+				e.gc.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
+
+				e.gc.fillRectangle( 0,0, 800, TRIM_Y );
 				if ( RPiTouchscreen.getInstance().isEnabled() ) {
 					e.gc.setFont( Theme.get().getFont( 6 ) );
 					e.gc.drawText( strInfo + "Frame " + lPaintCount, 10, 0 );

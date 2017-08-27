@@ -69,6 +69,8 @@ public class WebImport {
 		final JsonIngest ingest = new JsonIngest();
 		/*final Long seqData =*/ ingest.saveJson( strPath + "/data", strJSON );
 
+		saver.activate( now );
+		
 		System.out.println( "Result: seq = " + seq );
 		return seq;
 	}

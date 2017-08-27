@@ -242,7 +242,12 @@ public class TabS2DB extends TabBase {
 		if ( null!=map ) {
 			final List<String> listKeys = new LinkedList<>( map.keySet() );
 			Collections.sort( listKeys );
+			boolean bPageAttr = true;
 			for ( final String strName : listKeys ) {
+				if ( bPageAttr && !strName.startsWith( "." ) ) {
+					bPageAttr = false;
+					new TableItem( tableDetails, SWT.NONE );
+				}
 				final String strValue = map.get( strName );
 				
 				final TableItem item = new TableItem( tableDetails, SWT.NONE );

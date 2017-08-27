@@ -57,7 +57,7 @@ public class JsonIngest {
 			System.out.println( Reporting.print( map ) );
 
 			final Long seqPath = path.get( strNodePath );
-			final Long seqPage = page.get( seqPath );
+			final Long seqPage = page.create( seqPath );
 			page.addMap( seqPage, map, false );
 			listPagesToActivate.add( seqPage );
 			

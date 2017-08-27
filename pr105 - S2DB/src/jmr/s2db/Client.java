@@ -76,6 +76,8 @@ public class Client {
 		final Session tSession = ( (Session)Tables.SESSION.get() );
 		seqSession = tSession.get( seqDevice, now, strIP, strClass );
 		
+//		System.out.println( "Session seq " + seqSession );
+		
 		new S2DBLogHandler();
 
 //		tDevice.register( strMAC, strName, strIP );
@@ -133,16 +135,21 @@ public class Client {
 							final Map<String,String> map ) {
 		if ( null==strPath ) return null;
 		
+		final Date now = new Date();
+		
 		final Path tPath = ( (Path)Tables.PATH.get() );
 		final Long lPath = tPath.get( strPath );
 		
 		final Page tPage = ( (Page)Tables.PAGE.get() );
-		final Long lPage = tPage.get( lPath );
-		
-		tPage.addMap( lPage, map, true );
-		
-		LOGGER.log( Level.INFO, 
-				"New page saved (seq=" + lPage+ "): " + strPath );
+//		final Long lPage = tPage.get( lPath );
+		final Long lPage = tPage.create( lPath );
+
+		if ( null!=lPage ) {
+			tPage.addMap( lPage, map, true );
+			tPage.setState( lPage, now, 'A' );
+			LOGGER.log( Level.INFO, 
+					"New page saved (seq=" + lPage+ "): " + strPath );
+		}
 
 		return lPage;
 	}
@@ -158,6 +165,9 @@ public class Client {
 		final Long lPage = tPage.get( lPath );
 		if ( null==lPage ) return Collections.emptyMap();
 
+//		System.out.println( "Client.loadPage() - "
+//				+ "path " + lPath + ", page " + lPage + ": " + strPath );
+		
 		final Map<String, String> map = tPage.getMap( lPage );
 		return map;
 	}

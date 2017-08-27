@@ -1,5 +1,6 @@
 package jmr.s2db;
 
+import java.util.Date;
 import java.util.HashMap;
 
 import jmr.s2db.tables.Page;
@@ -20,14 +21,18 @@ public class PageSaver extends HashMap<String,String> {
 		if ( null==strPath ) throw new IllegalStateException( "null strPath" );
 //		this.strPath = strPath;
 		
+//		final Date now = new Date();
+		
 		final Path tPath = ( (Path)Tables.PATH.get() );
 		this.seqPath = tPath.get( strPath );
 
 		final Page tPage = ( (Page)Tables.PAGE.get() );
-		this.seqPage = tPage.get( seqPath );
+//		this.seqPage = tPage.get( seqPath );
+		this.seqPage = tPage.create( seqPath );
 		
 		if ( null!=seqPage ) {
 			this.putAll( tPage.getMap( this.seqPage ) );
+//			tPage.setState( seqPage, now, 'A' );
 		}
 	}
 	
@@ -42,6 +47,14 @@ public class PageSaver extends HashMap<String,String> {
 		return seqPage;
 	}
 	
+	public boolean activate( final Date now ) {
+		if ( null!=this.seqPage ) {
+			final Page tPage = ( (Page)Tables.PAGE.get() );
+			tPage.setState( seqPage, now, 'A' );
+			return true;
+		}
+		return false;
+	}
 	
 	
 }

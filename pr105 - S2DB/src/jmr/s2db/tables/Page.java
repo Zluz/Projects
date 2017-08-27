@@ -16,8 +16,17 @@ import jmr.s2db.Client;
 import jmr.s2db.DataFormatter;
 import jmr.s2db.comm.ConnectionProvider;
 import jmr.util.NetUtil;
+import jmr.util.transform.DateFormatting;
 
 public class Page extends TableBase {
+
+	public static final String ATTR_STATE = ".state";
+	public static final String ATTR_LAST_MODIFIED = ".last_modified";
+	public static final String ATTR_SEQ_SESSION = ".seq_session";
+	public static final String ATTR_SEQ_PATH = ".seq_path";
+	public static final String ATTR_SEQ_PAGE = ".seq_page";
+
+
 
 	public static enum PageState {
 		ACTIVE,
@@ -36,7 +45,34 @@ public class Page extends TableBase {
 
 		
 	
-	
+	public Long create( final long seqPath ) {
+
+		final Long lSession = Client.get().getSessionSeq();
+		if ( null==lSession ) return null;
+		
+		try (	final Connection conn = ConnectionProvider.get().getConnection();
+				final Statement stmt = conn.createStatement() ) {
+
+			final String strInsert = "INSERT INTO page "
+					+ "( seq_path, seq_session ) "
+					+ "VALUES ( " + seqPath + ", " + lSession + " );";
+			
+			stmt.executeUpdate( strInsert, Statement.RETURN_GENERATED_KEYS );
+			try ( final ResultSet rs = stmt.getGeneratedKeys() ) {
+				
+				if ( rs.next() ) {
+					final long lSeq = rs.getLong( 1 );
+					return lSeq;
+				}
+			}
+			
+		} catch ( final SQLException e ) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+
+	}
 	
 	public Long get( final long seqPath ) {
 		
@@ -45,7 +81,7 @@ public class Page extends TableBase {
 		
 		final Long lSeq = super.get(	"page", 
 //					"seq_path = " + seqPath + " AND seq_session = " + lSession, 
-					"seq_path = " + seqPath, 
+					"seq_path = " + seqPath + " AND page.state = 'A'", 
 					"seq_path, seq_session", 
 					"" + seqPath + ", " + lSession );
 		return lSeq;
@@ -71,12 +107,10 @@ public class Page extends TableBase {
 			return CACHE.get( seqPage );
 		}
 		
-//		try ( final Statement 
-//				stmt = ConnectionProvider.get().getStatement() ) {
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
 				final Statement stmt = conn.createStatement() ) {
 
-			final String strQuery = 
+			final String strQueryProperties = 
 			 "SELECT  "
 			 + "	* "
 			 + "FROM  "
@@ -84,16 +118,42 @@ public class Page extends TableBase {
 			 + "WHERE "
 			 + "	prop.seq_page = " + seqPage + ";";
 			 
-			stmt.executeQuery( strQuery );
-
 			final Map<String,String> map = new HashMap<>();
 			
-			try ( final ResultSet rs = stmt.executeQuery( strQuery ) ) {
+			try ( final ResultSet rs = stmt.executeQuery( strQueryProperties ) ) {
 				while ( rs.next() ) {
 					final String strName = rs.getString( "name" );
 					final String strValue = rs.getString( "value" );
 					
 					map.put( strName, strValue );
+				}
+			}
+
+			final String strQueryAttributes = 
+					 "SELECT  "
+					 + "	* "
+					 + "FROM  "
+					 + "	page "
+					 + "WHERE "
+					 + "	seq = " + seqPage + ";";
+					 
+			try ( final ResultSet rs = stmt.executeQuery( strQueryAttributes ) ) {
+				if ( rs.next() ) {
+					final Date dateModified = rs.getTimestamp( "last_modified" );
+					final String strState = rs.getString( "state" );
+//					final long seqPage = rs.getLong( "seq" );
+					final long seqSession = rs.getLong( "seq_session" );
+					final long seqPath = rs.getLong( "seq_path" );
+					
+					if ( null!=dateModified ) {
+						final String strDateTime = 
+								DateFormatting.getDateTime( dateModified );
+						map.put( ATTR_LAST_MODIFIED, strDateTime );
+					}
+					map.put( ATTR_SEQ_PAGE, "" + seqPage );
+					map.put( ATTR_SEQ_PATH, "" + seqPath );
+					map.put( ATTR_SEQ_SESSION, "" + seqSession );
+					map.put( ATTR_STATE, strState );
 				}
 			}
 			
