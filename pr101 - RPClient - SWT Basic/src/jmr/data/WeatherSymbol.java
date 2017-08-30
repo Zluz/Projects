@@ -12,28 +12,30 @@ import jmr.rpclient.S2Resource;
 public enum WeatherSymbol {
 
 	CHANCE_FLURRIES( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chanceflurries.png" ) ),
-	CHANCE_RAIN( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancerain.png" ) ),
+	CHANCE_RAIN( "scatteredshowers", 
+			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancerain.png" ) ),
 	CHANCE_SLEET( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancesleet.png" ) ),
 	CHANCE_SNOW( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/snow.png" ) ),
 	CHANCE_TSTORMS(	"chancetstorms", "scatteredthunderstorms",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancetstorms.png" ) ),
 	
-	CLEAR( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/clear.png" ) ),
+	CLEAR( 	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/clear.png" ) ),
 	CLOUDY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/cloudy.png" ) ),
 	FLURRIES( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/flurries.png" ) ),
-	FOG( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/fog.png" ) ),
-	HAZY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/hazy.png" ) ),
+	FOG( 	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/fog.png" ) ),
+	HAZY( 	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/hazy.png" ) ),
 	
 	MOSTLYCLOUDY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/mostlycloudy.png" ) ),
 	MOSTLYSUNNY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/mostlysunny.png" ) ),
 	
-	PARTLYCLOUDY(	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/partlycloudy.png" ) ),
+	PARTLYCLOUDY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/partlycloudy.png" ) ),
 					
 	PARTLYSUNNY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/partlysunny.png" ) ),
-	RAIN( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/rain.png" ) ),
+	RAIN( 	"showers", 
+			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/rain.png" ) ),
 	
-	SLEET( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sleet.png" ) ),
-	SNOW( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/snow.png" ) ),
+	SLEET( 	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sleet.png" ) ),
+	SNOW( 	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/snow.png" ) ),
 	
 	SUNNY(	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sunny.png" ) ),
 	
