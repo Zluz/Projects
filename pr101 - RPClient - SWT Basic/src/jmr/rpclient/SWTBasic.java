@@ -332,6 +332,7 @@ public class SWTBasic {
 		s2db.register( 	strSessionID, strClass );
 		
 		final String strDeviceName = s2db.getDevice().getName();
+		final Map<String,String> mapOptions = s2db.getDevice().getOptions();
 		
 //		S2DBLogHandler.registerLoggers();
 		
@@ -373,7 +374,7 @@ public class SWTBasic {
 //	    tCanvas.addToTabFolder( tabs );
 //	    listTabs.add( tCanvas );
 
-	    final TabTiles tTiles = new TabTiles( strDeviceName );
+	    final TabTiles tTiles = new TabTiles( strDeviceName, mapOptions );
 	    tTiles.addToTabFolder( tabs );
 	    listTabs.add( tTiles );
 

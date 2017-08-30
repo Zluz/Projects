@@ -28,7 +28,7 @@ public class WeatherForecastTile extends TileBase {
 	
 	
 	private void updatePages() {
-		synchronized ( pages ) {
+		synchronized ( pages ) { 
 
 			for ( int iDay = 0; iDay<NUMBER_OF_DAYS; iDay++ ) {
 				
@@ -72,10 +72,15 @@ public class WeatherForecastTile extends TileBase {
 
 					for (;;) {
 						
-						updatePages();
+						try {
+							updatePages();
+						} catch ( final Exception e ) {
+							// ignore.. 
+							// JDBC connection may have been dropped..
+						}
 
-//						Thread.sleep( TimeUnit.MINUTES.toMillis( 10 ) );
-						Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
+						Thread.sleep( TimeUnit.MINUTES.toMillis( 1 ) );
+//						Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
 					}
 				} catch ( final InterruptedException e ) {
 					// just quit

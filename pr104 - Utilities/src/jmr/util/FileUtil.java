@@ -34,6 +34,9 @@ public abstract class FileUtil {
 	
 	
 	public static String readFromFile( final File file ) {
+		if ( null==file ) return null;
+		if ( !file.isFile() ) return null;
+		
 		final Path path = file.toPath();
 		try {
 			final String strContent = new String( Files.readAllBytes( path ) );

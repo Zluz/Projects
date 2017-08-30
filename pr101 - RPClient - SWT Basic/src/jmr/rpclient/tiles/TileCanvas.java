@@ -58,13 +58,50 @@ public class TileCanvas {
 	}
 	
 	
+	private void build_Camera() {
+		listTiles.add( new TileGeometry( new ClockTile(), 
+						new Rectangle( 0, 0, 3, 1 ) ) );
+
+		listTiles.add( new TileGeometry( new SystemInfoTile(), 
+						new Rectangle( 1, 1, 1, 1 ) ) );
+
+		listTiles.add( new TileGeometry( new CameraTile(), 
+						new Rectangle( 3, 0, 2, 2 ) ) ); 
+
+//		listTiles.add( new TileGeometry( new CalibrationTile(), 
+//						new Rectangle( 4, 0, 1, 1 ) ) ); 
+//		listTiles.add( new TileGeometry( new CalibrationTile(), 
+//						new Rectangle( 4, 1, 1, 1 ) ) ); 
+//		listTiles.add( new TileGeometry( new CalibrationTile(), 
+//						new Rectangle( 4, 2, 1, 1 ) ) );
+
+		listTiles.add( new TileGeometry( new PerformanceMonitorTile(), 
+						new Rectangle( 2, 1, 1, 1 ) ) );
+		
+		listTiles.add( new TileGeometry( new BlankTile(), 
+						new Rectangle( 0, 1, 1, 1 ) ) ); 
+		listTiles.add( new TileGeometry( new BlankTile(), 
+						new Rectangle( 1, 1, 1, 1 ) ) ); 
+//		listTiles.add( new TileGeometry( new BlankTile(), 
+//						new Rectangle( 3, 0, 1, 1 ) ) ); 
+
+		listTiles.add( new TileGeometry( new WeatherForecastTile(), 
+						new Rectangle( 0, 2, 5, 1 ) ) ); 
+		//listTiles.add( new TileGeometry( new SystemInfoTile(), 
+		//				new Rectangle( 0, 0, 1, 1 ) ) ); 
+	}
+	
+
 	private void build_Daily() {
 		listTiles.add( new TileGeometry( new ClockTile(), 
 						new Rectangle( 0, 0, 3, 1 ) ) );
 
 		listTiles.add( new TileGeometry( new SystemInfoTile(), 
 						new Rectangle( 2, 1, 1, 1 ) ) );
-		
+
+//		listTiles.add( new TileGeometry( new CameraTile(), 
+//						new Rectangle( 3, 0, 2, 2 ) ) ); 
+
 		listTiles.add( new TileGeometry( new CalibrationTile(), 
 						new Rectangle( 4, 0, 1, 1 ) ) ); 
 		listTiles.add( new TileGeometry( new CalibrationTile(), 
@@ -90,7 +127,13 @@ public class TileCanvas {
 	
 	
 	
-	public TileCanvas( final String strDeviceDescription ) {
+	public TileCanvas(	final String strDeviceDescription, 
+						final String strPerspective ) {
+		if ( "camera".equals( strPerspective ) ) {
+			build_Camera();
+		} else {
+			build_Daily();
+		}
 		build_Daily();
 		this.strDeviceDescription = strDeviceDescription;
 	}

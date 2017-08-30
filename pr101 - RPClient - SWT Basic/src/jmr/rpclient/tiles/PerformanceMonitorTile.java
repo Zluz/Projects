@@ -55,7 +55,8 @@ public class PerformanceMonitorTile extends TileBase {
 				
 				if ( ( null!=lThisTime ) && ( null!=lLastTime ) 
 								&& ( lLastTime > 0 ) ) {
-					iTimeElapsed = lThisTime - lLastTime - TileCanvas.REFRESH_SLEEP;
+					iTimeElapsed = 
+							lThisTime - lLastTime - TileCanvas.REFRESH_SLEEP;
 					lTotal = lTotal + iTimeElapsed;
 					iSampleCount++;
 					

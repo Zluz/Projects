@@ -1,5 +1,7 @@
 package jmr.rpclient.tab;
 
+import java.util.Map;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -14,35 +16,24 @@ public class TabTiles extends TabBase {
 	private TileCanvas canvastile;
 	
 	private final String strDeviceDescription;
+
+	private final Map<String, String> mapOptions;
 	
-	public TabTiles( final String strDeviceDescription ) {
+	public TabTiles(	final String strDeviceDescription,
+						final Map<String,String> mapOptions ) {
 		this.strDeviceDescription = strDeviceDescription;
+		this.mapOptions = mapOptions;
 	}
 	
 	
 	@Override
 	public Composite buildUI( final Composite parent ) {
 
-		canvastile = new TileCanvas( strDeviceDescription );
+		final String strPerspective = mapOptions.get( "tiles.perspective" );
+		canvastile = new TileCanvas( strDeviceDescription, strPerspective );
 		final Composite comp = canvastile.buildUI( parent );
 		return comp;
 		
-//	    final Canvas canvas = new Canvas( parent, SWT.NONE );
-//	    canvas.addPaintListener( new PaintListener() {
-//			@Override
-//			public void paintControl( final PaintEvent e ) {
-//				final Rectangle r = canvas.getClientArea();
-//				final int iXC = r.width / 2;
-//				final int iYC = r.height / 2;
-//				e.gc.drawOval( 100, 100, r.width-100, r.height-100 );
-//				e.gc.drawLine( 0, iYC, iXC, r.height-1 );
-//				e.gc.drawLine( 0, iYC, iXC, 0 );
-//				e.gc.drawLine( iXC, 0, r.width-1, iYC );
-//				e.gc.drawLine( iXC, r.height-1, r.width-1, iYC );
-//			}
-//		});
-//	    
-//	    return canvas;
 	}
 
 	@Override

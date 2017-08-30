@@ -13,7 +13,7 @@ public class Device extends TableBase {
 	
 	public static Long seqDevice = null;
 	public static String strName = null;
-	public static String strOptions = null;
+	public static final Map<String,String> mapOptions = new HashMap<>();
 
 
 	public Long get(	final String strMAC,
@@ -64,12 +64,25 @@ public class Device extends TableBase {
 			 
 			stmt.executeQuery( strQuery );
 
+			mapOptions.clear();
+			String strOptions = null;
+			
 			try ( final ResultSet rs = stmt.executeQuery( strQuery ) ) {
 				while ( rs.next() ) {
 					strName = rs.getString( "name" );
 					strOptions = rs.getString( "options" );
 				}
 			}
+			
+			if ( null!=strOptions ) {
+				for ( final String strLine : strOptions.split( "\\n" ) ) {
+					final String[] parts = strLine.split( "=" );
+					if ( parts.length > 1 ) {
+						mapOptions.put( parts[0], parts[1] );
+					}
+				}
+			}
+			
 		} catch ( final SQLException e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -83,11 +96,11 @@ public class Device extends TableBase {
 		return strName;
 	}
 	
-	public String getOptions() {
-		if ( null==strOptions ) {
+	public Map<String,String> getOptions() {
+		if ( null==mapOptions ) {
 			loadDetails();
 		}
-		return strOptions;
+		return mapOptions;
 	}
 	
 	
