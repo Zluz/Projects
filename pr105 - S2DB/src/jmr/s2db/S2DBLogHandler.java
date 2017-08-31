@@ -56,49 +56,47 @@ public class S2DBLogHandler extends Handler {
 	public void publish( final LogRecord record ) {
 		check();
 		
-//		try ( final Statement 
-//				stmt = ConnectionProvider.get().getStatement() ) {
-		try (	final Connection conn = ConnectionProvider.get().getConnection();
-				final Statement stmt = conn.createStatement() ) {
-			
-			final Date time = new Date( record.getMillis() );
-			final String strLevel = record.getLevel().getName();
-			
-			final String strClass = record.getSourceClassName();
-			final String strMethod = record.getSourceMethodName();
-			final String strSource;
-			if ( null!=strClass && null!=strMethod ) {
-				strSource = strClass + "." + strMethod + "()";
-			} else if ( null!=strClass ) {
-				strSource = strClass + ".<unknown method>";
-			} else {
-				strSource = null;
+		final Thread thread = new Thread() {
+			@Override
+			public void run() {
+
+				final Date time = new Date( record.getMillis() );
+				final String strLevel = record.getLevel().getName();
+				
+				final String strClass = record.getSourceClassName();
+				final String strMethod = record.getSourceMethodName();
+				final String strSource;
+				if ( null!=strClass && null!=strMethod ) {
+					strSource = strClass + "." + strMethod + "()";
+				} else if ( null!=strClass ) {
+					strSource = strClass + ".<unknown method>";
+				} else {
+					strSource = null;
+				}
+				
+				final String strInsert = "INSERT INTO log "
+						+ "( seq_session, time, level, text, source ) "
+						+ "VALUES ( " 
+								+ Session.getSessionSeq() + ", " 
+								+ DataFormatter.format( time.getTime() ) + ", "
+								+ DataFormatter.format( strLevel ) + ", "
+								+ DataFormatter.format( record.getMessage() ) + ", " 
+								+ DataFormatter.format( strSource ) + " "
+								+ " );";
+				
+				try (	final Connection conn = ConnectionProvider.get().getConnection();
+						final Statement stmt = conn.createStatement() ) {
+					
+					stmt.executeUpdate( strInsert );
+					
+				} catch ( final SQLException e ) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
-			
-			final String strInsert = "INSERT INTO log "
-					+ "( seq_session, time, level, text, source ) "
-					+ "VALUES ( " 
-							+ Session.getSessionSeq() + ", " 
-							+ DataFormatter.format( time.getTime() ) + ", "
-							+ DataFormatter.format( strLevel ) + ", "
-							+ DataFormatter.format( record.getMessage() ) + ", " 
-							+ DataFormatter.format( strSource ) + " "
-							+ " );";
-			
-			stmt.executeUpdate( strInsert );
-//			stmt.executeUpdate( strInsert, Statement.RETURN_GENERATED_KEYS );
-//			try ( final ResultSet rs = stmt.getGeneratedKeys() ) {
-//				
-//				if ( rs.next() ) {
-//					final long lSeq = rs.getLong( 1 );
-//					return lSeq;
-//				}
-//			}
-			
-		} catch ( final SQLException e ) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		};
+		thread.start();
+		
 	}
 
 	

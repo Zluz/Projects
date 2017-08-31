@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -334,8 +335,12 @@ public class SWTBasic {
 		final String strDeviceName = s2db.getDevice().getName();
 		final Map<String,String> mapOptions = s2db.getDevice().getOptions();
 		
-//		S2DBLogHandler.registerLoggers();
-		
+	    LOGGER.info( "Device: \"" + strDeviceName + "\"" );
+	    for ( final Entry<String, String> entry : mapOptions.entrySet() ) {
+		    LOGGER.info( "Options entry: \"" + entry.getKey() + "\""
+		    		+ " = \"" + entry.getValue() + "\"" );
+	    }
+	
 		LOGGER.log( Level.INFO, "Session started. "
 				+ "IP:" + strIP + ", Session:" + strSessionID );
 	    
@@ -384,8 +389,6 @@ public class SWTBasic {
 	    
 	    this.txtLog = tLog.getTextWidget();
 
-	    
-	
 	    tabs.setSelection( tDailyInfo.getTab() );
 	    
 	    tabs.addSelectionListener( new SelectionAdapter() {

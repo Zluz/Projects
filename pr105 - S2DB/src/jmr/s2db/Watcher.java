@@ -6,11 +6,20 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jmr.s2db.comm.ConnectionProvider;
+import jmr.s2db.tree.TreeModel;
 
 public class Watcher {
 
+
+	@SuppressWarnings("unused")
+	private static final Logger 
+			LOGGER = Logger.getLogger( Watcher.class.getName() );
+
+	
 	final static int SEQ_COUNT = 3;
 	
 	final static int POLLING_INTERVAL = 500; // 500ms polling
@@ -46,23 +55,27 @@ public class Watcher {
 	
 	
 	public Long[] readLastRows() {
-//		try ( final Statement 
-//				stmt = ConnectionProvider.get().getStatement() ) {
-		try (	final Connection conn = ConnectionProvider.get().getConnection();
-				final Statement stmt = conn.createStatement() ) {
 
-			final String strQuery = 
-			 "SELECT "
-			 + "   max( ps.seq ), " 
-			 + "   max( session.seq ), "
-			 + "   unix_timestamp( max( pd.last_modified ) ) " 
-			 + "FROM " 
-			 + "	page as ps, " 
-			 + "	page as pd, " 
-			 + "    session " 
-			 + "WHERE " 
-			 + "	ps.state = 'A';"; 
-			 
+		final String strQuery = 
+		 "SELECT "
+		 + "   max( ps.seq ), " 
+		 + "   max( session.seq ), "
+		 + "   unix_timestamp( max( pd.last_modified ) ) " 
+		 + "FROM " 
+		 + "	page as ps, " 
+		 + "	page as pd, " 
+		 + "    session " 
+		 + "WHERE " 
+		 + "	ps.state = 'A';"; 
+		 
+		try (	final Connection conn = 
+							ConnectionProvider.get().getConnection();
+				final Statement stmt = 
+							null!=conn ? conn.createStatement() : null ) {
+
+			if ( null==stmt || stmt.isClosed() 
+					|| conn.isClosed() ) return new Long[]{};
+			
 			stmt.executeQuery( strQuery );
 
 			int iIndex = 0;
@@ -84,6 +97,7 @@ public class Watcher {
 		} catch ( final SQLException e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			LOGGER.log( Level.SEVERE, "Query SQL: " + strQuery, e );
 		}
 		return null;
 	}

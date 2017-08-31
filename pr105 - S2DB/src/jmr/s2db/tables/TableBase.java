@@ -4,12 +4,18 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jmr.s2db.comm.ConnectionProvider;
 
 public abstract class TableBase {
 
+	@SuppressWarnings("unused")
+	private static final Logger 
+			LOGGER = Logger.getLogger( TableBase.class.getName() );
 	
+
 	public Long get(	final String strTable,
 						final String strWhere,
 						final String strInsertNames,
@@ -19,14 +25,13 @@ public abstract class TableBase {
 		if ( null==strInsertNames ) return null;
 		if ( null==strInsertValues ) return null;
 		
-//		try ( final Statement 
-//				stmt = ConnectionProvider.get().getStatement() ) {
+
+		final String strQuery = "SELECT MAX(seq) FROM " + strTable + " "
+				+ "WHERE ( " + strWhere + " );";
+		
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
 				final Statement stmt = conn.createStatement() ) {
 
-			final String strQuery = "SELECT MAX(seq) FROM " + strTable + " "
-					+ "WHERE ( " + strWhere + " );";
-			
 			try ( final ResultSet rs = stmt.executeQuery( strQuery ) ) {
 				if ( rs.next() && !rs.wasNull() ) {
 					final long lSeq = rs.getLong( 1 );
@@ -36,10 +41,18 @@ public abstract class TableBase {
 				}
 			}
 			
-			final String strInsert = "INSERT INTO " + strTable + " "
-					+ "( " + strInsertNames + " ) "
-					+ "VALUES ( " + strInsertValues + " );";
-			
+		} catch ( final SQLException e ) {
+			e.printStackTrace();
+			LOGGER.log( Level.SEVERE, "SQL Query: " + strQuery, e );
+		}
+
+		final String strInsert = "INSERT INTO " + strTable + " "
+				+ "( " + strInsertNames + " ) "
+				+ "VALUES ( " + strInsertValues + " );";
+
+		try (	final Connection conn = ConnectionProvider.get().getConnection();
+				final Statement stmt = conn.createStatement() ) {
+
 			stmt.executeUpdate( strInsert, Statement.RETURN_GENERATED_KEYS );
 			try ( final ResultSet rs = stmt.getGeneratedKeys() ) {
 				
@@ -50,8 +63,8 @@ public abstract class TableBase {
 			}
 			
 		} catch ( final SQLException e ) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			LOGGER.log( Level.SEVERE, "SQL Insert: " + strInsert, e );
 		}
 		return null;
 	}

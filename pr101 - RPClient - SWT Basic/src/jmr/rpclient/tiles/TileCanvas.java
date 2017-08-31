@@ -2,6 +2,7 @@ package jmr.rpclient.tiles;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
@@ -18,6 +19,9 @@ import jmr.util.NetUtil;
 import jmr.util.OSUtil;
 
 public class TileCanvas {
+
+	private static final Logger 
+			LOGGER = Logger.getLogger( TileCanvas.class.getName() );
 
 	public static final int REFRESH_SLEEP = 100;
 	
@@ -130,8 +134,10 @@ public class TileCanvas {
 	public TileCanvas(	final String strDeviceDescription, 
 						final String strPerspective ) {
 		if ( "camera".equals( strPerspective ) ) {
+			LOGGER.info( "Initializing the Camera perspective" );
 			build_Camera();
 		} else {
+			LOGGER.info( "Initializing the Daily perspective" );
 			build_Daily();
 		}
 		build_Daily();

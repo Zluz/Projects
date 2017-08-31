@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jmr.s2db.Client;
@@ -49,14 +50,14 @@ public class Page extends TableBase {
 
 		final Long lSession = Client.get().getSessionSeq();
 		if ( null==lSession ) return null;
+
+		final String strInsert = "INSERT INTO page "
+				+ "( seq_path, seq_session ) "
+				+ "VALUES ( " + seqPath + ", " + lSession + " );";
 		
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
 				final Statement stmt = conn.createStatement() ) {
 
-			final String strInsert = "INSERT INTO page "
-					+ "( seq_path, seq_session ) "
-					+ "VALUES ( " + seqPath + ", " + lSession + " );";
-			
 			stmt.executeUpdate( strInsert, Statement.RETURN_GENERATED_KEYS );
 			try ( final ResultSet rs = stmt.getGeneratedKeys() ) {
 				
@@ -67,8 +68,8 @@ public class Page extends TableBase {
 			}
 			
 		} catch ( final SQLException e ) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			LOGGER.log( Level.SEVERE, "Update SQL: " + strInsert, e );
 		}
 		return null;
 
@@ -106,18 +107,18 @@ public class Page extends TableBase {
 		if ( CACHE.containsKey( seqPage ) ) {
 			return CACHE.get( seqPage );
 		}
-		
+
+		final String strQueryProperties = 
+		 "SELECT  "
+		 + "	* "
+		 + "FROM  "
+		 + "	prop "
+		 + "WHERE "
+		 + "	prop.seq_page = " + seqPage + ";";
+		 
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
 				final Statement stmt = conn.createStatement() ) {
 
-			final String strQueryProperties = 
-			 "SELECT  "
-			 + "	* "
-			 + "FROM  "
-			 + "	prop "
-			 + "WHERE "
-			 + "	prop.seq_page = " + seqPage + ";";
-			 
 			final Map<String,String> map = new HashMap<>();
 			
 			try ( final ResultSet rs = stmt.executeQuery( strQueryProperties ) ) {
@@ -166,8 +167,8 @@ public class Page extends TableBase {
 			return map;
 			
 		} catch ( final SQLException e ) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			LOGGER.log( Level.SEVERE, "Query SQL: " + strQueryProperties, e );
 		}
 
 		return null;
@@ -181,31 +182,29 @@ public class Page extends TableBase {
 		if ( null==map ) return;
 
 		String strSQL = null;
+
+		String strInsert = "INSERT INTO prop "
+				+ "( seq_page, name, value ) "
+				+ "VALUES ";
 		
-//		try ( final Statement 
-//				stmt = ConnectionProvider.get().getStatement() ) {
+		for ( final Entry<String, String> entry : map.entrySet() ) {
+			final String strKey = entry.getKey();
+			final String strValue = entry.getValue();
+			
+			strInsert += "( " + seqPage + ","
+//						+ " '" + strKey + "',"
+//						+ " '" + strValue + "' ),";
+//						+ " " + strKey + ","
+//						+ " " + strValue + " ),";
+						+ " " + DataFormatter.format( strKey ) + ","
+						+ " " + DataFormatter.format( strValue ) + " ),";
+		}
+		
+		strSQL = strInsert.substring( 0, strInsert.length() - 1 ) + ";";
+		
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
 				final Statement stmt = conn.createStatement() ) {
 
-			String strInsert = "INSERT INTO prop "
-					+ "( seq_page, name, value ) "
-					+ "VALUES ";
-			
-			for ( final Entry<String, String> entry : map.entrySet() ) {
-				final String strKey = entry.getKey();
-				final String strValue = entry.getValue();
-				
-				strInsert += "( " + seqPage + ","
-//							+ " '" + strKey + "',"
-//							+ " '" + strValue + "' ),";
-//							+ " " + strKey + ","
-//							+ " " + strValue + " ),";
-							+ " " + DataFormatter.format( strKey ) + ","
-							+ " " + DataFormatter.format( strValue ) + " ),";
-			}
-			
-			strSQL = strInsert.substring( 0, strInsert.length() - 1 ) + ";";
-			
 			stmt.executeUpdate( strSQL );
 
 			final Date now = new Date();
@@ -224,60 +223,58 @@ public class Page extends TableBase {
 //			LOGGER.log( Level.INFO, "New page saved (seq=" + seqPage+ ")" );
 			
 		} catch ( final SQLException e ) {
-			// TODO Auto-generated catch block
-			System.err.println( "SQL EXCEPTION - " + e.toString() );
-			System.err.println( "SQL: " + strSQL );
+//			System.err.println( "SQL EXCEPTION - " + e.toString() );
+//			System.err.println( "SQL: " + strSQL );
 			e.printStackTrace();
+			LOGGER.log( Level.SEVERE, "Insert SQL: " + strSQL, e );
 		}
-		
 	}
 	
 	
 	public void setState(	final long seqPage,
 							final Date dateEffective,
 							final char cState ) {
+		
+		final String strUpdate;
+		if ( null!=dateEffective ) {
+			strUpdate = "UPDATE page "
+					+ "SET last_modified=" 
+							+ DataFormatter.format( dateEffective ) + ", "
+							+ "state='" + cState + "' "
+					+ "WHERE seq=" + seqPage + ";";
+		} else {
+			strUpdate = "UPDATE page "
+					+ "SET state='" + cState + "' "
+					+ "WHERE seq=" + seqPage + ";";
+		}
 
-//		try ( final Statement 
-//				stmt = ConnectionProvider.get().getStatement() ) {
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
 				final Statement stmt = conn.createStatement() ) {
-
-			final String strUpdate;
-			if ( null!=dateEffective ) {
-				strUpdate = "UPDATE page "
-						+ "SET last_modified=" 
-								+ DataFormatter.format( dateEffective ) + ", "
-								+ "state='" + cState + "' "
-						+ "WHERE seq=" + seqPage + ";";
-			} else {
-				strUpdate = "UPDATE page "
-						+ "SET state='" + cState + "' "
-						+ "WHERE seq=" + seqPage + ";";
-			}
 
 			stmt.executeUpdate( strUpdate );
 			
 		} catch ( final SQLException e ) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			LOGGER.log( Level.SEVERE, "Update SQL: " + strUpdate, e );
 		}
 	}
 	
+	
 	public void expireAll(	final String strPageRegex ) {
-		try (	final Connection conn = ConnectionProvider.get().getConnection();
-				final Statement stmtQuery = conn.createStatement();
-				final Statement stmtUpdate = conn.createStatement() ) {
 		
-			final String strQuery;
-			strQuery = "SELECT page.seq, path.name "
-					+ "FROM Page page, Path path "
-					+ "WHERE ( page.seq_path = path.seq ) "
-						+ "AND ( page.state = 'A' ) "
-					+ "ORDER BY seq ASC;";
+		final List<Long> listToExpire = new LinkedList<>();
+
+		final String strQuery;
+		strQuery = "SELECT page.seq, path.name "
+				+ "FROM Page page, Path path "
+				+ "WHERE ( page.seq_path = path.seq ) "
+					+ "AND ( page.state = 'A' ) "
+				+ "ORDER BY seq ASC;";
+
+		try (	final Connection conn = ConnectionProvider.get().getConnection();
+				final Statement stmtQuery = conn.createStatement(); ) {
+		
 			stmtQuery.executeQuery( strQuery );
-			
-//			final Map<String,String> map = new HashMap<>();
-			final List<Long> listToExpire = new LinkedList<>();
 			
 			try ( final ResultSet rs = stmtQuery.executeQuery( strQuery ) ) {
 				while ( rs.next() ) {
@@ -289,24 +286,33 @@ public class Page extends TableBase {
 					}
 				}
 			}
-			
-			if ( !listToExpire.isEmpty() ) {
 
-				String strUpdate = "UPDATE page "
-						+ "SET state='E' "
-						+ "WHERE FALSE";
-				for ( final Long seq : listToExpire ) {
-					strUpdate += " OR ( seq = " + seq + " )";
-				}
-
-				stmtUpdate.executeUpdate( strUpdate );
-			}
-			
-			
 		} catch ( final SQLException e ) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}		
+			LOGGER.log( Level.SEVERE, "Query SQL: " + strQuery, e );
+		}
+		
+		if ( !listToExpire.isEmpty() ) {
+
+			String strUpdate = "UPDATE page "
+					+ "SET state='E' "
+					+ "WHERE FALSE";
+			for ( final Long seq : listToExpire ) {
+				strUpdate += " OR ( seq = " + seq + " )";
+			}
+
+			try (	final Connection conn = ConnectionProvider.get().getConnection();
+					final Statement stmtUpdate = conn.createStatement() ) {
+			
+				stmtUpdate.executeUpdate( strUpdate );
+
+			} catch ( final SQLException e ) {
+				e.printStackTrace();
+				LOGGER.log( Level.SEVERE, "Update SQL: " + strUpdate, e );
+			}		
+		}
+		
+		
 	}
 	
 	

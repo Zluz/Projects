@@ -8,6 +8,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.dbcp.DelegatingDatabaseMetaData;
@@ -20,7 +22,11 @@ public class ConnectionProvider {
 	
 	public final static String
 			MYSQL_DRIVER = "com.mysql.jdbc.Driver";
-	
+
+	@SuppressWarnings("unused")
+	private static final Logger 
+			LOGGER = Logger.getLogger( ConnectionProvider.class.getName() );
+
 
 	private final BasicDataSource bds;
 
@@ -123,6 +129,8 @@ public class ConnectionProvider {
 //			https://stackoverflow.com/questions/7592056/am-i-using-jdbc-connection-pooling
 				
 			final Connection conn = bds.getConnection();
+			if ( null==conn ) return null;
+			
 			synchronized ( listConnections ) { 
 				listConnections.add( new ConnectionReference( conn ) );
 			}
@@ -131,6 +139,8 @@ public class ConnectionProvider {
 		} catch ( final SQLException e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			LOGGER.log( Level.WARNING, 
+					"Exception while getting a connection", e );
 		}
 
 		return null;

@@ -2,14 +2,20 @@ package jmr.util.hardware.rpi;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import jmr.util.OSUtil;
 
 public class CameraModule {
 
+	
+	private static final Logger 
+			LOGGER = Logger.getLogger( CameraModule.class.getName() );
+
 	private static CameraModule instance;
 	
 	private Boolean bCameraPresent = null;
+	
 	
 	
 	private CameraModule() {};
@@ -32,11 +38,14 @@ public class CameraModule {
 					File.createTempFile( "raspistill_", ".jpg" );
 			final String strCommand = 
 					"/usr/bin/raspistill "
-					+ "-o " + file.getAbsolutePath() 
-					+ " -n -t 10 -q 10 -th none";
+					+ "-o \"" + file.getAbsolutePath() + "\" "
+					+ "-n -t 10 -q 10 -th none -h 300 -w 300";
+			LOGGER.info( "Exec: " + strCommand );
 			final Process process = 
 					Runtime.getRuntime().exec( strCommand );
 			final int iResult = process.waitFor();
+			
+			Thread.sleep( 200 );
 			
 			if ( 0==iResult && file.length() > 0 ) {
 				return file;
@@ -68,14 +77,18 @@ public class CameraModule {
 	public boolean isCameraPresent() {
 		if ( null==bCameraPresent ) {
 			if ( OSUtil.isWin() ) {
+				LOGGER.info( "RPi Camera Module is not present (Windows OS)" );
 				bCameraPresent = false;
 			} else {
 				final File file = capture();
 				if ( null!=file ) {
+					LOGGER.info( "RPi Camera Module available" );
 					bCameraPresent = true;
 					file.delete();
 				} else {
-					return false;
+					LOGGER.info( "RPi Camera Module is not present" );
+					bCameraPresent = false;
+//					return false;
 				}
 			}
 		}

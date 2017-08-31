@@ -9,12 +9,18 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jmr.s2db.comm.ConnectionProvider;
 import jmr.s2db.tables.Page;
 
 public class TreeModel {
-	
+
+	@SuppressWarnings("unused")
+	private static final Logger 
+			LOGGER = Logger.getLogger( TreeModel.class.getName() );
+
 	
 	final public static String DELIM = "/" ;
 	
@@ -112,32 +118,30 @@ public class TreeModel {
 		listRoots.clear();
 		mapAllNodes.clear();
 
-//		try ( final Statement 
-//				stmt = ConnectionProvider.get().getStatement() ) {
+
+		final String strQuery = 
+		 "SELECT  "
+		 + "	page.seq, "
+		 + "    page.last_modified, "
+		 + "    path.seq, "
+		 + "    path.name "
+		 + "FROM  "
+		 + "	page, "
+		 + "    path "
+		 + "WHERE "
+		 + "	TRUE "
+		 + "	AND ( page.state = \'A\' ) "
+		 + "	AND ( page.seq_path = path.seq ) "
+//		 + "GROUP BY "
+//		 + "	path.seq "
+		 + "ORDER BY "
+		 + "	path.name ASC, "
+		 + "    page.last_modified DESC ";
+		 
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
 				final Statement stmt = conn.createStatement() ) {
 
-			final String strQuery = 
-			 "SELECT  "
-			 + "	page.seq, "
-			 + "    page.last_modified, "
-			 + "    path.seq, "
-			 + "    path.name "
-			 + "FROM  "
-			 + "	page, "
-			 + "    path "
-			 + "WHERE "
-			 + "	TRUE "
-			 + "	AND ( page.state = \'A\' ) "
-			 + "	AND ( page.seq_path = path.seq ) "
-//			 + "GROUP BY "
-//			 + "	path.seq "
-			 + "ORDER BY "
-			 + "	path.name ASC, "
-			 + "    page.last_modified DESC ";
-			 
-			stmt.executeQuery( strQuery );
-
+//			stmt.executeQuery( strQuery );
 
 			try ( final ResultSet rs = stmt.executeQuery( strQuery ) ) {
 				while ( rs.next() ) {
@@ -165,8 +169,8 @@ public class TreeModel {
 			
 			
 		} catch ( final SQLException e ) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			LOGGER.log( Level.SEVERE, "Insert SQL: " + strQuery, e );
 		}
 		
 	}

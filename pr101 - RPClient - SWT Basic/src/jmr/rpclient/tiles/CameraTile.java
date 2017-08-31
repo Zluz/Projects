@@ -16,17 +16,22 @@ public class CameraTile extends TileBase {
 
 	private Image imageStill = null;
 	private Object semaphore = 1L;
+	private File fileLastImage;
 	
 	
 	public CameraTile() {
-		if ( CameraModule.get().isCameraPresent() ) {
+		final CameraModule camera = CameraModule.get();
+		if ( camera.isCameraPresent() ) {
 			final Thread thread = new Thread( "Camera Tile capture" ) {
 				@Override
 				public void run() {
 					try {
-						Thread.sleep( 400 );
-						final File file = 
-								CameraModule.get().getStillPictureFile();
+						Thread.sleep( 2000 );
+						if ( null!=fileLastImage ) {
+							fileLastImage.delete();
+							fileLastImage = null;
+						}
+						final File file = camera.getStillPictureFile();
 						if ( null!=file ) {
 							synchronized ( semaphore ) {
 								if ( null!=imageStill ) {
@@ -36,7 +41,8 @@ public class CameraTile extends TileBase {
 								imageStill = new Image( UI.display, 
 													file.getAbsolutePath() );
 							}
-							file.delete();
+//							file.delete();
+							fileLastImage = file;
 						}
 					} catch ( final InterruptedException e ) {
 						// TODO Auto-generated catch block

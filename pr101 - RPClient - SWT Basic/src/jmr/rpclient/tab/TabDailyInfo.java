@@ -153,8 +153,10 @@ public class TabDailyInfo extends TabBase {
 	    			    display.asyncExec( new Runnable() {
 	    			    	@Override
 	    			    	public void run() {
-	    	    			    updateTime( now );
-	    	    			    updateDate( now );
+	    			    		if ( lblTime.isVisible() ) {
+	    			    			updateTime( now );
+	    			    			updateDate( now );
+	    			    		}
 	    			    	}
 	    			    });
 	    			    				

@@ -6,11 +6,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jmr.s2db.comm.ConnectionProvider;
 
 public class Device extends TableBase {
 	
+
+	@SuppressWarnings("unused")
+	private static final Logger 
+			LOGGER = Logger.getLogger( Device.class.getName() );
+
 	public static Long seqDevice = null;
 	public static String strName = null;
 	public static final Map<String,String> mapOptions = new HashMap<>();
@@ -51,17 +58,17 @@ public class Device extends TableBase {
 	
 	private void loadDetails() {
 
+		final String strQuery = 
+		 "SELECT  "
+		 + "	* "
+		 + "FROM  "
+		 + "	device "
+		 + "WHERE "
+		 + "	seq = " + seqDevice + ";";
+		 
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
 				final Statement stmt = conn.createStatement() ) {
 
-			final String strQuery = 
-			 "SELECT  "
-			 + "	* "
-			 + "FROM  "
-			 + "	device "
-			 + "WHERE "
-			 + "	seq = " + seqDevice + ";";
-			 
 			stmt.executeQuery( strQuery );
 
 			mapOptions.clear();
@@ -84,8 +91,8 @@ public class Device extends TableBase {
 			}
 			
 		} catch ( final SQLException e ) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			LOGGER.log( Level.SEVERE, "Query: " + strQuery, e );
 		}
 	}
 	
