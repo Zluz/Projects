@@ -1,5 +1,6 @@
 package jmr.rpclient.tiles;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -25,6 +26,7 @@ public class WeatherForecastTile extends TileBase {
 	final PageData[] pages = new PageData[ NUMBER_OF_DAYS + 1 ];
 //	private Date dateYahooUpdate = null;
 	private String strWeatherImport = null;
+	private Thread threadUpdater;
 	
 	
 	private void updatePages() {
@@ -62,14 +64,13 @@ public class WeatherForecastTile extends TileBase {
 	
 	
 	public WeatherForecastTile() {
-		final Thread threadWeatherForecastTileUpdater 
-				= new Thread( "WeatherForecastTile Updater" ) {
+		threadUpdater = new Thread( "WeatherForecastTile Updater" ) {
 			@Override
 			public void run() {
 				try {
-
+		
 					Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
-
+		
 					for (;;) {
 						
 						try {
@@ -78,40 +79,78 @@ public class WeatherForecastTile extends TileBase {
 							// ignore.. 
 							// JDBC connection may have been dropped..
 						}
-
-						Thread.sleep( TimeUnit.MINUTES.toMillis( 1 ) );
-//						Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
+		
+						Thread.sleep( TimeUnit.MINUTES.toMillis( 10 ) );
+		//						Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
 					}
 				} catch ( final InterruptedException e ) {
 					// just quit
 				}
 			}
 		};
-		threadWeatherForecastTileUpdater.start();
+//		threadUpdater.start();
 	}
 
+	public enum Values {
+		LOW,
+		HIGH,
+		DAY,
+		TEXT
+	}
+	
 	
 	@Override
 	public void paint(	final GC gc, 
 						final Image image ) {
 
+		if ( !threadUpdater.isAlive() ) {
+			threadUpdater.start();
+		}
+		
 		synchronized ( pages ) {
-	
+
+			final EnumMap< Values, String > 
+					em = new EnumMap< WeatherForecastTile.Values, String >( 
+								Values.class );
+
 			for ( int iDay = 0; iDay<NUMBER_OF_DAYS; iDay++ ) {
+				em.clear();
 				
 				final Map<String, String> map = pages[ iDay ];
 				
+				boolean bValid = true;
+				
 				if ( null!=map && !map.isEmpty() ) {
 					
-					final int iX = ( rect.width - 20 ) * iDay / NUMBER_OF_DAYS + 15;
+					for ( final Values value : Values.values() ) {
+						final String strKey = value.name().toLowerCase();
+						final String strValue = map.get( strKey );
+						if ( null!=strValue ) {
+							em.put( value, strValue);
+						} else {
+							bValid = false;
+						}
+					}
+				} else {
+					bValid = false;
+				}
+				
+				if ( bValid ) {
 					
-					final String strRange = map.get("low") + "-" + map.get("high");
+					final int iX = ( rect.width - 20 ) * iDay 
+										/ NUMBER_OF_DAYS + 15;
+					
+					final String strRange = 
+//							map.get("low") + "-" + map.get("high");
+							em.get( Values.LOW ) + "-" + em.get( Values.HIGH );
 					
 					gc.setFont( Theme.get().getFont( 18 ) );
-					gc.drawText( map.get("day"), iX + 18, 0 );
+//					gc.drawText( map.get("day"), iX + 18, 0 );
+					gc.drawText( em.get( Values.DAY ), iX + 18, 0 );
 					gc.drawText( strRange, iX + 10, 100 );
 					
-					final String strText = "  "+map.get("text");
+//					final String strText = "  "+map.get("text");
+					final String strText = "  "+em.get( Values.TEXT );
 					gc.setFont( Theme.get().getFont( 10 ) );
 					gc.drawText( strText, iX, 82 );
 					
@@ -152,6 +191,7 @@ public class WeatherForecastTile extends TileBase {
 		}
 		
 	}
+	
 
 	@Override
 	public MouseListener getMouseListener() {
@@ -159,4 +199,10 @@ public class WeatherForecastTile extends TileBase {
 		return null;
 	}
 
+	
+	public static void main( final String[] args ) {
+		final long lDays = TimeUnit.SECONDS.toDays( 2147483647 );
+		System.out.println( "days: " + lDays );
+	}
+	
 }

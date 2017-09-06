@@ -4,8 +4,8 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import jmr.s2db.Client;
-import jmr.s2db.WebImport;
 import jmr.s2db.comm.ConnectionProvider;
+import jmr.s2db.imprt.WebImport;
 import jmr.util.NetUtil;
 
 public enum Import {

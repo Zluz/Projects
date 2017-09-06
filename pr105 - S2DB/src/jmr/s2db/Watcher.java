@@ -6,11 +6,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jmr.s2db.comm.ConnectionProvider;
-import jmr.s2db.tree.TreeModel;
 
 public class Watcher {
 
@@ -20,10 +20,11 @@ public class Watcher {
 			LOGGER = Logger.getLogger( Watcher.class.getName() );
 
 	
-	final static int SEQ_COUNT = 3;
+	final static int SEQ_COUNT = 2;
 	
-	final static int POLLING_INTERVAL = 500; // 500ms polling
+	final static long INTERVAL_POLLING = 1000; // 500ms polling
 
+	final static long INTERVAL_LONG_SLEEP = TimeUnit.MINUTES.toMillis( 10 );
 	
 	public static interface Listener {
 		public void addedPage();
@@ -54,34 +55,40 @@ public class Watcher {
 	}
 	
 	
-	public Long[] readLastRows() {
+	private Long[] readLastRows() {
 
 		final String strQuery = 
-		 "SELECT "
-		 + "   max( ps.seq ), " 
-		 + "   max( session.seq ), "
-		 + "   unix_timestamp( max( pd.last_modified ) ) " 
-		 + "FROM " 
-		 + "	page as ps, " 
-		 + "	page as pd, " 
-		 + "    session " 
-		 + "WHERE " 
-		 + "	ps.state = 'A';"; 
-		 
+//			 "SELECT "
+//			 + "   max( ps.seq ), " 
+//			 + "   max( session.seq ), "
+//			 + "   unix_timestamp( max( pd.last_modified ) ) " 
+//			 + "FROM " 
+//			 + "	page as ps, " 
+//			 + "	page as pd, " 
+//			 + "    session " 
+//			 + "WHERE " 
+//			 + "	ps.state = 'A';"; 
+
+			 "SELECT "
+			 + "   max( page.seq ), " 
+			 + "   max( session.seq ) "
+			 + "FROM " 
+			 + "	page, " 
+			 + "    session;"; 
+				
 		try (	final Connection conn = 
 							ConnectionProvider.get().getConnection();
 				final Statement stmt = 
 							null!=conn ? conn.createStatement() : null ) {
 
 			if ( null==stmt || stmt.isClosed() 
-					|| conn.isClosed() ) return new Long[]{};
+					|| conn.isClosed() ) return null;
 			
-			stmt.executeQuery( strQuery );
-
 			int iIndex = 0;
 			final Long[] arr = new Long[ SEQ_COUNT ];
 			
-			if ( stmt.isClosed() || conn.isClosed() ) return new Long[]{};
+			if ( stmt.isClosed() || conn.isClosed() ) return null;
+			
 			try ( final ResultSet rs = stmt.executeQuery( strQuery ) ) {
 				if ( null!=rs && !rs.isClosed() && rs.next() 
 						&& !conn.isClosed() && !stmt.isClosed() ) {
@@ -89,13 +96,14 @@ public class Watcher {
 						arr[ iIndex ] = rs.getLong( iIndex + 1 );
 						iIndex++;
 					}
+				} else {
+					return null;
 				}
 			}
 			
 			return arr;
 			
 		} catch ( final SQLException e ) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			LOGGER.log( Level.SEVERE, "Query SQL: " + strQuery, e );
 		}
@@ -124,7 +132,7 @@ public class Watcher {
 				final Long[] seqLastRows = new Long[ SEQ_COUNT ];
 
 				for (;;) {
-					Thread.sleep( POLLING_INTERVAL );
+					Thread.sleep( INTERVAL_POLLING );
 					
 					final Long[] seqNowRows = readLastRows();
 
@@ -137,6 +145,10 @@ public class Watcher {
 								seqLastRows[i] = seqNowRows[i];
 							}
 						}
+					}
+					
+					if ( null==seqNowRows ) {
+						Thread.sleep( INTERVAL_LONG_SLEEP );
 					}
 				}
 			} catch ( final InterruptedException e ) {

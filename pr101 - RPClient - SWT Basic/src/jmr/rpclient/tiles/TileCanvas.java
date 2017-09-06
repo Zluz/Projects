@@ -1,7 +1,5 @@
 package jmr.rpclient.tiles;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import org.eclipse.swt.SWT;
@@ -20,6 +18,7 @@ import jmr.util.OSUtil;
 
 public class TileCanvas {
 
+	@SuppressWarnings("unused")
 	private static final Logger 
 			LOGGER = Logger.getLogger( TileCanvas.class.getName() );
 
@@ -35,112 +34,14 @@ public class TileCanvas {
 	
 	private String strDeviceDescription;
 	
-	private final List<TileGeometry> 
-							listTiles = new LinkedList<TileGeometry>();
-	
-	
-	@SuppressWarnings("unused")
-	private void build_Calibration() {
-		listTiles.add( new TileGeometry( new ClockTile(), 
-						new Rectangle( 1, 0, 3, 3 ) ) );
-
-		listTiles.add( new TileGeometry( new SystemInfoTile(), 
-						new Rectangle( 0, 1, 1, 1 ) ) );
-		
-		listTiles.add( new TileGeometry( new CalibrationTile(), 
-						new Rectangle( 4, 0, 1, 1 ) ) ); 
-		listTiles.add( new TileGeometry( new CalibrationTile(), 
-						new Rectangle( 4, 1, 1, 1 ) ) ); 
-		listTiles.add( new TileGeometry( new CalibrationTile(), 
-						new Rectangle( 4, 2, 1, 1 ) ) ); 
-		listTiles.add( new TileGeometry( new CalibrationTile(), 
-						new Rectangle( 0, 0, 1, 1 ) ) ); 
-		listTiles.add( new TileGeometry( new CalibrationTile(), 
-						new Rectangle( 0, 2, 1, 1 ) ) ); 
-		//listTiles.add( new TileGeometry( new SystemInfoTile(), 
-		//				new Rectangle( 0, 0, 1, 1 ) ) ); 
-	}
-	
-	
-	private void build_Camera() {
-		listTiles.add( new TileGeometry( new ClockTile(), 
-						new Rectangle( 0, 0, 3, 1 ) ) );
-
-		listTiles.add( new TileGeometry( new SystemInfoTile(), 
-						new Rectangle( 1, 1, 1, 1 ) ) );
-
-		listTiles.add( new TileGeometry( new CameraTile(), 
-						new Rectangle( 3, 0, 2, 2 ) ) ); 
-
-//		listTiles.add( new TileGeometry( new CalibrationTile(), 
-//						new Rectangle( 4, 0, 1, 1 ) ) ); 
-//		listTiles.add( new TileGeometry( new CalibrationTile(), 
-//						new Rectangle( 4, 1, 1, 1 ) ) ); 
-//		listTiles.add( new TileGeometry( new CalibrationTile(), 
-//						new Rectangle( 4, 2, 1, 1 ) ) );
-
-		listTiles.add( new TileGeometry( new PerformanceMonitorTile(), 
-						new Rectangle( 2, 1, 1, 1 ) ) );
-		
-		listTiles.add( new TileGeometry( new BlankTile(), 
-						new Rectangle( 0, 1, 1, 1 ) ) ); 
-		listTiles.add( new TileGeometry( new BlankTile(), 
-						new Rectangle( 1, 1, 1, 1 ) ) ); 
-//		listTiles.add( new TileGeometry( new BlankTile(), 
-//						new Rectangle( 3, 0, 1, 1 ) ) ); 
-
-		listTiles.add( new TileGeometry( new WeatherForecastTile(), 
-						new Rectangle( 0, 2, 5, 1 ) ) ); 
-		//listTiles.add( new TileGeometry( new SystemInfoTile(), 
-		//				new Rectangle( 0, 0, 1, 1 ) ) ); 
-	}
-	
-
-	private void build_Daily() {
-		listTiles.add( new TileGeometry( new ClockTile(), 
-						new Rectangle( 0, 0, 3, 1 ) ) );
-
-		listTiles.add( new TileGeometry( new SystemInfoTile(), 
-						new Rectangle( 2, 1, 1, 1 ) ) );
-
-//		listTiles.add( new TileGeometry( new CameraTile(), 
-//						new Rectangle( 3, 0, 2, 2 ) ) ); 
-
-		listTiles.add( new TileGeometry( new CalibrationTile(), 
-						new Rectangle( 4, 0, 1, 1 ) ) ); 
-		listTiles.add( new TileGeometry( new CalibrationTile(), 
-						new Rectangle( 4, 1, 1, 1 ) ) ); 
-//		listTiles.add( new TileGeometry( new CalibrationTile(), 
-//						new Rectangle( 4, 2, 1, 1 ) ) );
-
-		listTiles.add( new TileGeometry( new PerformanceMonitorTile(), 
-						new Rectangle( 3, 1, 1, 1 ) ) );
-		
-		listTiles.add( new TileGeometry( new BlankTile(), 
-						new Rectangle( 0, 1, 1, 1 ) ) ); 
-		listTiles.add( new TileGeometry( new BlankTile(), 
-						new Rectangle( 1, 1, 1, 1 ) ) ); 
-		listTiles.add( new TileGeometry( new BlankTile(), 
-						new Rectangle( 3, 0, 1, 1 ) ) ); 
-
-		listTiles.add( new TileGeometry( new WeatherForecastTile(), 
-						new Rectangle( 0, 2, 5, 1 ) ) ); 
-		//listTiles.add( new TileGeometry( new SystemInfoTile(), 
-		//				new Rectangle( 0, 0, 1, 1 ) ) ); 
-	}
+	final Perspective perspective;
 	
 	
 	
 	public TileCanvas(	final String strDeviceDescription, 
 						final String strPerspective ) {
-		if ( "camera".equals( strPerspective ) ) {
-			LOGGER.info( "Initializing the Camera perspective" );
-			build_Camera();
-		} else {
-			LOGGER.info( "Initializing the Daily perspective" );
-			build_Daily();
-		}
-		build_Daily();
+		
+		this.perspective = Perspective.getPerspectiveFor( strPerspective );
 		this.strDeviceDescription = strDeviceDescription;
 	}
 	
@@ -159,6 +60,8 @@ public class TileCanvas {
 		
 	    this.canvas = new Canvas( parent, SWT.NO_BACKGROUND );
     	this.canvas.setCursor( UI.CURSOR_HIDE );
+    	
+    	final int iYLimit = 150 * perspective.getRowCount();
 
 	    canvas.addPaintListener( new PaintListener() {
 			@Override
@@ -171,11 +74,11 @@ public class TileCanvas {
 //				e.gc.setClipping( rectCanvas );
 				e.gc.setBackground( UI.COLOR_BLACK );
 				e.gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
-				e.gc.fillRectangle( 0,0, TRIM_X, 480 );
+				e.gc.fillRectangle( 0,0, TRIM_X, iYLimit + 30 );
 //				e.gc.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
 				e.gc.setBackground( UI.COLOR_DARK_GRAY );
-				e.gc.fillRectangle( 0,450+TRIM_Y, rectCanvas.width, rectCanvas.height-450 );
-				e.gc.fillRectangle( 750+TRIM_X,0, rectCanvas.width, 450+TRIM_Y );
+				e.gc.fillRectangle( 0,iYLimit+TRIM_Y, rectCanvas.width, rectCanvas.height-iYLimit );
+				e.gc.fillRectangle( 750+TRIM_X,0, rectCanvas.width, iYLimit+TRIM_Y );
 
 				e.gc.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
 
@@ -188,7 +91,7 @@ public class TileCanvas {
 					e.gc.drawText( strInfo + "Frame " + lPaintCount, 10, -2 );
 				}
 
-				for ( final TileGeometry geo : listTiles ) {
+				for ( final TileGeometry geo : perspective.getTiles() ) {
 					
 					final TileBase tile = geo.tile;
 					final Rectangle rect = geo.rect;

@@ -232,12 +232,22 @@ public class TabS2DB extends TabBase {
 
 	private void showDetails( final Node node ) {
 		if ( null==node ) return;
+		if ( null==tableDetails || tableDetails.isDisposed() ) return;
+		
+		final String strTitle = "Node:  " + node.strFull;
+		tableDetails.getShell().setText( strTitle );
+		
 		for ( final Control child : tableDetails.getChildren() ) {
 			child.dispose();
 		}
 		tableDetails.clearAll();
 		tableDetails.removeAll();
-		
+
+		final TableItem itemTitle = new TableItem( tableDetails, SWT.NONE );
+		itemTitle.setText( 0, "Node Path" );
+		itemTitle.setText( 1, node.strFull );
+		new TableItem( tableDetails, SWT.NONE ); // space
+
 		final Map<String, String> map = node.getMap();
 		if ( null!=map ) {
 			final List<String> listKeys = new LinkedList<>( map.keySet() );
@@ -246,7 +256,7 @@ public class TabS2DB extends TabBase {
 			for ( final String strName : listKeys ) {
 				if ( bPageAttr && !strName.startsWith( "." ) ) {
 					bPageAttr = false;
-					new TableItem( tableDetails, SWT.NONE );
+					new TableItem( tableDetails, SWT.NONE ); // space
 				}
 				final String strValue = map.get( strName );
 				

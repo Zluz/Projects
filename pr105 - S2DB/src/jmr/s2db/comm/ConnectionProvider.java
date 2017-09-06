@@ -23,7 +23,6 @@ public class ConnectionProvider {
 	public final static String
 			MYSQL_DRIVER = "com.mysql.jdbc.Driver";
 
-	@SuppressWarnings("unused")
 	private static final Logger 
 			LOGGER = Logger.getLogger( ConnectionProvider.class.getName() );
 

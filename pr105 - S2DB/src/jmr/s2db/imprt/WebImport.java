@@ -1,7 +1,8 @@
-package jmr.s2db;
+package jmr.s2db.imprt;
 
 import java.util.Date;
 
+import jmr.s2db.Client;
 import jmr.s2db.comm.JsonIngest;
 import jmr.util.NetUtil;
 import jmr.util.http.ContentRetriever;

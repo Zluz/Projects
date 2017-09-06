@@ -1,4 +1,4 @@
-package jmr.s2db;
+package jmr.s2db.imprt;
 
 import java.util.Date;
 import java.util.HashMap;

@@ -11,7 +11,6 @@ import jmr.pr102.comm.TeslaLogin;
 import jmr.s2db.Client;
 import jmr.s2db.comm.JsonIngest;
 import jmr.util.NetUtil;
-import jmr.util.report.Reporting;
 
 public class TeslaIngestManager {
 
@@ -90,13 +89,19 @@ public class TeslaIngestManager {
 		System.out.println( "Now: " + new Date().toString() );
 		System.out.println( "Token: " + tvi.getLoginToken() );
 		
+		boolean bIsCharging = true;
+
 		for ( final DataRequest request : DataRequest.values() ) {
 			
 			try {
 				
-			if ( DataRequest.VEHICLE_STATE.equals( request ) 
+			if ( false
+					|| DataRequest.VEHICLE_STATE.equals( request ) 
 					|| DataRequest.CHARGE_STATE.equals( request )
-					|| DataRequest.DRIVE_STATE.equals( request ) ) {
+//					|| DataRequest.DRIVE_STATE.equals( request ) 
+//					|| DataRequest.GUI_SETTINGS_STATE.equals( request )
+//					|| DataRequest.CLIMATE_STATE.equals( request )
+											) {
 
 				
 				System.out.println( "Requesting: " + request );
@@ -108,22 +113,50 @@ public class TeslaIngestManager {
 //				System.out.println( "\t" + map.size() + " entries" );
 	
 	
-//				final String strLoginPath = 
-//								"/External/Ingest/Tesla/" + request.name();
-//				s2db.savePage( strLoginPath, map );
-				
-				
 				final String strNode = 
-						"/tmp/Import_Tesla_" + request.name() 
-						+ "_" + System.currentTimeMillis();
+								"/External/Ingest/Tesla/" + request.name();
+//				s2db.savePage( strNode, map );
+				
+				
+//				final String strNode = 
+//						"/tmp/Import_Tesla_" + request.name() 
+//						+ "_" + System.currentTimeMillis();
 
 				final JsonIngest ingest = new JsonIngest();
 				final Long seq = ingest.saveJson( strNode, strResponse );
 				System.out.println( "Page saved: seq " + seq );
 				
 				
+				if ( DataRequest.CHARGE_STATE.equals( request ) ) {
+					final String strChargeState = 
+								"/External/Ingest/Tesla/CHARGE_STATE/response";
+					final Map<String, String> mapChargeState = 
+								Client.get().loadPage( strChargeState );
+					
+//					final String strKey = "time_to_full_charge";
+//					final String strValue = mapChargeState.get( strKey );
+//					if ( null!=strValue && !strValue.isEmpty() ) {
+//						final boolean bNumber = strValue.contains( "." );
+//						if ( bNumber ) {
+//							bIsCharging = !"0.0".equals( strValue.trim() );
+//						}
+//					};
+					
+					final String strKey = "charge_port_door_open";
+					final String strValue = mapChargeState.get( strKey ).trim();
+					bIsCharging = "true".equals( strValue );
+					System.out.println( 
+							"key: " + strKey + ", value: " + strValue );
+				}
+				
+				
 				try {
-					Thread.sleep( TimeUnit.HOURS.toMillis( 1 ) );
+					System.out.println( "Charging: " + bIsCharging );
+					if ( bIsCharging ) {
+						Thread.sleep( TimeUnit.MINUTES.toMillis( 30 ) );
+					} else {
+						Thread.sleep( TimeUnit.HOURS.toMillis( 2 ) );
+					}
 				} catch (InterruptedException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
