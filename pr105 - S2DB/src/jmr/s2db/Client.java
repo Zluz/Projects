@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jmr.s2db.comm.ConnectionProvider;
+import jmr.s2db.imprt.SummaryRegistry;
 import jmr.s2db.tables.Device;
 import jmr.s2db.tables.Page;
 import jmr.s2db.tables.Path;
@@ -145,6 +146,9 @@ public class Client {
 		final Long lPage = tPage.create( lPath );
 
 		if ( null!=lPage ) {
+
+			SummaryRegistry.get().summarize( strPath, map );
+			
 			tPage.addMap( lPage, map, true );
 			tPage.setState( lPage, now, 'A' );
 			LOGGER.log( Level.INFO, 

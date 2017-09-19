@@ -115,8 +115,7 @@ public class ClockTile extends TileBase {
 		gc.drawText( strTimes[1], 385, 25 );
 
 		gc.setFont( Theme.get().getFont( 25 ) );
-//		gc.drawText( strTimes[2], 30, 60 );
-		gc.drawText( strTimes[3], 90, 100 );
+		drawTextCentered( strTimes[3], 100 );
 
 		gc.setFont( Theme.get().getFont( 15 ) );
 		gc.drawText( "." + strTimes[4], 380, 65 );

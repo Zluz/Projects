@@ -13,6 +13,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import jmr.s2db.Client;
+import jmr.s2db.imprt.SummaryRegistry;
 import jmr.s2db.tables.Page;
 import jmr.s2db.tables.Path;
 import jmr.util.NetUtil;
@@ -53,15 +54,21 @@ public class JsonIngest {
 		
 		if ( !map.isEmpty() ) {
 
+			SummaryRegistry.get().summarize( strNodePath, map );
+
 			System.out.println( "Node: " + strNodePath );
 			System.out.println( Reporting.print( map ) );
 
 			final Long seqPath = path.get( strNodePath );
-			final Long seqPage = page.create( seqPath );
-			page.addMap( seqPage, map, false );
-			listPagesToActivate.add( seqPage );
+			if ( null!=seqPath ) {
+				final Long seqPage = page.create( seqPath );
+				page.addMap( seqPage, map, false );
+				listPagesToActivate.add( seqPage );
 			
-			return seqPage;
+				return seqPage;
+			} else {
+				return null;
+			}
 		} else {
 			return null;
 		}

@@ -246,23 +246,33 @@ public class TabS2DB extends TabBase {
 		final TableItem itemTitle = new TableItem( tableDetails, SWT.NONE );
 		itemTitle.setText( 0, "Node Path" );
 		itemTitle.setText( 1, node.strFull );
-		new TableItem( tableDetails, SWT.NONE ); // space
+//		new TableItem( tableDetails, SWT.NONE ); // space
 
 		final Map<String, String> map = node.getMap();
 		if ( null!=map ) {
 			final List<String> listKeys = new LinkedList<>( map.keySet() );
 			Collections.sort( listKeys );
-			boolean bPageAttr = true;
+			
+			char cLastPrefix = ' ';
+			
 			for ( final String strName : listKeys ) {
-				if ( bPageAttr && !strName.startsWith( "." ) ) {
-					bPageAttr = false;
-					new TableItem( tableDetails, SWT.NONE ); // space
+				if ( null!=strName && !strName.isEmpty() ) {
+	
+					final char cThisPrefix = strName.charAt( 0 );
+					if ( cLastPrefix != cThisPrefix ) {
+						
+						if ( !Character.isAlphabetic( cLastPrefix ) ) {
+							new TableItem( tableDetails, SWT.NONE );
+						}
+						cLastPrefix = cThisPrefix;
+					}
+					
+					final String strValue = map.get( strName );
+					
+					final TableItem item = new TableItem( tableDetails, SWT.NONE );
+					item.setText( 0, strName );
+					item.setText( 1, strValue );
 				}
-				final String strValue = map.get( strName );
-				
-				final TableItem item = new TableItem( tableDetails, SWT.NONE );
-				item.setText( 0, strName );
-				item.setText( 1, strValue );
 			}
 		}
 	}

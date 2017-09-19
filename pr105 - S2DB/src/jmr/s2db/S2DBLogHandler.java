@@ -84,10 +84,17 @@ public class S2DBLogHandler extends Handler {
 								+ DataFormatter.format( strSource ) + " "
 								+ " );";
 				
-				try (	final Connection conn = ConnectionProvider.get().getConnection();
-						final Statement stmt = conn.createStatement() ) {
+				try (	final Connection 
+								conn = ConnectionProvider.get().getConnection();
+						final Statement stmt = 
+								null!=conn ? conn.createStatement() : null ) {
 					
-					stmt.executeUpdate( strInsert );
+					if ( null!=stmt ) {
+						stmt.executeUpdate( strInsert );
+					} else {
+						System.err.println( "Failed to write to log: " 
+												+ record.getMessage() );
+					}
 					
 				} catch ( final SQLException e ) {
 					// TODO Auto-generated catch block

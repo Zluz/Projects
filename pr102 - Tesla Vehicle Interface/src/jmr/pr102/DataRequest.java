@@ -28,5 +28,12 @@ public enum DataRequest {
 		return this.strUrlSuffix;
 	}
 	
+	public String getBasePath() {
+		return "/External/Ingest/Tesla - " + this.name();
+	}
+	
+	public String getResponsePath() {
+		return this.getBasePath() + "/data/response";
+	}
 
 }

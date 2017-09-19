@@ -12,6 +12,9 @@ public enum Perspective {
 	TESLA( 5, 3, false ),
 	CAMERA( 5, 3, false ),
 	DESKTOP( 5, 5, false ),
+	DAILY_ROTATE( 3, 5, true ),
+	
+	TEST( 5, 3, false ),
 	;
 	
 	
@@ -24,6 +27,7 @@ public enum Perspective {
 	final int iCols;
 	final int iRows;
 	final boolean bRotate;
+	
 
 	private final List<TileGeometry> 
 							list = new LinkedList<TileGeometry>();
@@ -46,6 +50,10 @@ public enum Perspective {
 		return this.iRows;
 	}
 	
+	public boolean isRotated() {
+		return this.bRotate;
+	}
+	
 	
 	public List<TileGeometry> getTiles() {
 		if ( list.isEmpty() ) {
@@ -53,7 +61,9 @@ public enum Perspective {
 				case DAILY: this.build_Daily(); break;
 				case TESLA: this.build_Tesla(); break;
 				case CAMERA: this.build_Camera(); break;
+				case TEST: this.build_Test(); break;
 				case DESKTOP: this.build_Desktop(); break;
+				case DAILY_ROTATE: this.build_DailyRotate(); break;
 			}
 			validate();
 		}
@@ -86,7 +96,7 @@ public enum Perspective {
 			for ( int iCol = 0; iCol<iCols; iCol++ ) {
 				final int iCount = grid[iCol][iRow];
 				if ( 0==iCount ) {
-					list.add( new TileGeometry( new BlankTile(), 
+					list.add( new TileGeometry( new TextTile( null ),
 							new Rectangle( iCol, iRow, 1, 1 ) ) );
 				}
 			}
@@ -131,6 +141,30 @@ public enum Perspective {
 						new Rectangle( 0, 2, 1, 1 ) ) ); 
 	}
 	
+
+	private void build_Test() {
+		list.add( new TileGeometry( new ClockTile(), 
+						new Rectangle( 0, 0, 3, 1 ) ) );
+
+		list.add( new TileGeometry( new SystemInfoTile(), 
+						new Rectangle( 2, 1, 1, 1 ) ) );
+
+		list.add( new TileGeometry( new CameraTile(), 
+						new Rectangle( 3, 0, 2, 2 ) ) ); 
+
+		list.add( new TileGeometry( new TeslaTile(), 
+						new Rectangle( 0, 1, 2, 1 ) ) ); 
+
+		list.add( new TileGeometry( new CalibrationTile(), 
+						new Rectangle( 4, 0, 1, 1 ) ) ); 
+
+		list.add( new TileGeometry( new PerformanceMonitorTile(), 
+						new Rectangle( 4, 2, 1, 1 ) ) );
+		
+//		list.add( new TileGeometry( new WeatherForecastTile(), 
+//						new Rectangle( 0, 2, 5, 1 ) ) ); 
+	}
+	
 	
 	private void build_Camera() {
 		list.add( new TileGeometry( new ClockTile(), 
@@ -168,6 +202,22 @@ public enum Perspective {
 		list.add( new TileGeometry( new WeatherForecastTile(), 
 						new Rectangle( 0, 2, 5, 1 ) ) ); 
 	}
+
+	private void build_DailyRotate() {
+		list.add( new TileGeometry( new ClockTile(), 
+						new Rectangle( 0, 0, 3, 1 ) ) );
+
+		list.add( new TileGeometry( new SystemInfoTile(), 
+						new Rectangle( 1, 2, 1, 1 ) ) );
+
+		list.add( new TileGeometry( new PerformanceMonitorTile(), 
+						new Rectangle( 2, 2, 1, 1 ) ) );
+
+		list.add( new TileGeometry( new CalibrationTile(), 
+						new Rectangle( 2, 4, 1, 1 ) ) ); 
+		list.add( new TileGeometry( new CalibrationTile(), 
+						new Rectangle( 0, 4, 1, 1 ) ) ); 
+	}
 	
 
 	private void build_Tesla() {
@@ -188,9 +238,6 @@ public enum Perspective {
 		list.add( new TileGeometry( new TeslaTile(), 
 						new Rectangle( 0, 1, 2, 1 ) ) ); 
 		
-		list.add( new TileGeometry( new BlankTile(), 
-						new Rectangle( 3, 0, 1, 1 ) ) ); 
-
 		list.add( new TileGeometry( new WeatherForecastTile(), 
 						new Rectangle( 0, 2, 5, 1 ) ) ); 
 	}
@@ -213,19 +260,8 @@ public enum Perspective {
 		list.add( new TileGeometry( new TeslaTile(), 
 						new Rectangle( 0, 1, 2, 1 ) ) ); 
 		
-		list.add( new TileGeometry( new BlankTile(), 
-						new Rectangle( 3, 0, 1, 1 ) ) ); 
-
 		list.add( new TileGeometry( new WeatherForecastTile(), 
 						new Rectangle( 0, 2, 5, 1 ) ) ); 
-		
-		
-		list.add( new TileGeometry( new BlankTile(), 
-						new Rectangle( 0, 3, 1, 1 ) ) ); 
-		list.add( new TileGeometry( new BlankTile(), 
-						new Rectangle( 1, 3, 1, 1 ) ) ); 
-		list.add( new TileGeometry( new BlankTile(), 
-						new Rectangle( 2, 3, 1, 1 ) ) ); 
 		
 		list.add( new TileGeometry( new CalibrationTile(), 
 						new Rectangle( 4, 4, 1, 1 ) ) );

@@ -12,6 +12,7 @@ import org.eclipse.swt.widgets.Text;
 import jmr.pr102.DataRequest;
 import jmr.rpclient.tiles.Theme.Colors;
 import jmr.s2db.Client;
+import jmr.util.transform.DateFormatting;
 
 public class TeslaTile extends TileBase {
 
@@ -39,7 +40,7 @@ public class TeslaTile extends TileBase {
 							// JDBC connection may have been dropped..
 						}
 		
-						Thread.sleep( TimeUnit.MINUTES.toMillis( 4 ) );
+						Thread.sleep( TimeUnit.SECONDS.toMillis( 4 ) );
 		//						Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
 					}
 				} catch ( final InterruptedException e ) {
@@ -63,7 +64,8 @@ public class TeslaTile extends TileBase {
 	private void updatePage( final DataRequest type ) {
 
 		final String strPath = 
-				"/External/Ingest/Tesla/" + type.name() + "/response";
+//				"/External/Ingest/Tesla/" + type.name() + "/response";
+				type.getResponsePath();
 		
 		final Map<String, String> map = 
 					Client.get().loadPage( strPath );
@@ -129,13 +131,21 @@ public class TeslaTile extends TileBase {
 					final String strVersion = mapVehicle.get( "car_version" );
 					final String strOdometer = mapVehicle.get( "odometer" );
 					final String strRange = mapCharge.get( "battery_range" );
-					final String strTime = mapCharge.get( "time_to_full_charge" );
-	
+					final String strStatus = mapCharge.get( "+status" );
+					final String strTimestamp = mapCharge.get( ".last_modified_uxt" );
+//					final String strTime = mapCharge.get( "time_to_full_charge" );
+
 					gc.drawText( strVersion, 10, 50 );
 	
+					gc.setFont( Theme.get().getFont( 16 ) );
+//					gc.drawText( "Time to Charge:  " + strTime, 40, 112 );
+					if ( null!=strStatus ) {
+						gc.drawText( strStatus, 30, 112 );
+					} else {
+						gc.drawText( "(null status)", 30, 112 );
+					}
+					
 					gc.setFont( Theme.get().getFont( 14 ) );
-					gc.drawText( "Time to Charge:  " + strTime, 40, 112 );
-
 					gc.drawText( "Range:", 40, 86 );
 
 
@@ -146,7 +156,14 @@ public class TeslaTile extends TileBase {
 					gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
 					gc.setFont( Theme.get().getFont( 28 ) );
 					gc.drawText( strRange + " mi", 110, 70 );
+
+					final String strElapsed = 
+							DateFormatting.getSmallTime( strTimestamp );
 					
+					gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
+					gc.setFont( Theme.get().getFont( 6 ) );
+					gc.drawText( strElapsed, 265, 10 );
+
 				} else {
 					gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
 					gc.setFont( Theme.get().getFont( 16 ) );
@@ -154,6 +171,13 @@ public class TeslaTile extends TileBase {
 							+ "mapCharge: " + mapCharge + Text.DELIMITER 
 							+ "mapState: " + mapVehicle, 10, 50 );
 				}
+
+				gc.setForeground( Theme.get().getColor( Colors.LINE_FAINT ) );
+				gc.drawLine( 299, 0, 299, 10 );
+				gc.drawLine( 290, 0, 299, 0 );
+
+				gc.drawLine( 299, 140, 299, 149 );
+				gc.drawLine( 290, 149, 299, 149 );
 
 			} catch ( final Throwable t ) {
 				gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );

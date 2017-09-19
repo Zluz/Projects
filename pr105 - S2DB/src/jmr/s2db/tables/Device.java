@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jmr.s2db.comm.ConnectionProvider;
+import jmr.s2db.imprt.SummaryRegistry;
 
 public class Device extends TableBase {
 	
@@ -51,6 +52,8 @@ public class Device extends TableBase {
 //		final Long lPage = tPage.get( lPath );
 		final Long lPage = tPage.getNoSession( lPath );
 		
+		SummaryRegistry.get().summarize( strPath, map );
+
 		tPage.addMap( lPage, map, true );
 		
 	    return seq;

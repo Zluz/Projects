@@ -3,6 +3,7 @@ package jmr.util.transform;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 public class DateFormatting {
 
@@ -29,6 +30,34 @@ public class DateFormatting {
 	
 	public static String getTimestamp( final Date date ) {
 		return FORMAT_TIMESTAMP.format( date );
+	}
+	
+	public static String getSmallTime( final long ms ) {
+		final long lMinutes = TimeUnit.MILLISECONDS.toMinutes( ms );
+		if ( lMinutes < 2 ) {
+			final long lSeconds = TimeUnit.MILLISECONDS.toSeconds( ms );
+			return "" + lSeconds + " s";
+		} else if ( lMinutes < 120 ) {
+			return "" + lMinutes + " m";
+		} else {
+			final long lHours = TimeUnit.MILLISECONDS.toHours( ms );
+			return "" + lHours + " h";
+		}
+	}
+	
+	public static String getSmallTime( final String strLastTime ) {
+		if ( null==strLastTime ) return "null";
+		if ( strLastTime.isEmpty() ) return "empty";
+		
+		try {
+			final long lLastTime = Long.parseLong( strLastTime );
+			final long lNow = new Date().getTime();
+			final long lElapsed = lNow - lLastTime;
+			final String strElapsed = getSmallTime( lElapsed );
+			return strElapsed;
+		} catch ( final NumberFormatException e ) {
+			return "ex:fmt";
+		}
 	}
 	
 }

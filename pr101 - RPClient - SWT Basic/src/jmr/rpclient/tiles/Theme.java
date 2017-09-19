@@ -13,6 +13,8 @@ public class Theme {
 	
 	public enum Colors {
 		BACKGROUND,
+		LINE_FAINT,
+		LINE_BOLD,
 		TEXT,
 		TEXT_LIGHT,
 		TEXT_BOLD,
@@ -44,6 +46,8 @@ public class Theme {
 			case TEXT 			: iColor = SWT.COLOR_GRAY; break;
 			case TEXT_LIGHT 	: iColor = SWT.COLOR_GRAY; break;
 			case TEXT_BOLD  	: iColor = SWT.COLOR_WHITE; break;
+			case LINE_FAINT		: iColor = SWT.COLOR_DARK_BLUE; break;
+			case LINE_BOLD		: iColor = SWT.COLOR_GREEN; break;
 			default				: iColor = SWT.COLOR_GRAY; break;
 		}
 		return display.getSystemColor( iColor );

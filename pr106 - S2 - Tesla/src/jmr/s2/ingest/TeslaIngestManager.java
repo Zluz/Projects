@@ -9,7 +9,7 @@ import jmr.pr102.DataRequest;
 import jmr.pr102.TeslaVehicleInterface;
 import jmr.pr102.comm.TeslaLogin;
 import jmr.s2db.Client;
-import jmr.s2db.comm.JsonIngest;
+import jmr.s2db.imprt.WebImport;
 import jmr.util.NetUtil;
 
 public class TeslaIngestManager {
@@ -89,6 +89,8 @@ public class TeslaIngestManager {
 		System.out.println( "Now: " + new Date().toString() );
 		System.out.println( "Token: " + tvi.getLoginToken() );
 		
+		TeslaSummarizers.register();
+		
 		boolean bIsCharging = true;
 
 		for ( final DataRequest request : DataRequest.values() ) {
@@ -122,8 +124,15 @@ public class TeslaIngestManager {
 //						"/tmp/Import_Tesla_" + request.name() 
 //						+ "_" + System.currentTimeMillis();
 
-				final JsonIngest ingest = new JsonIngest();
-				final Long seq = ingest.saveJson( strNode, strResponse );
+//				final JsonIngest ingest = new JsonIngest();
+//				final Long seq = ingest.saveJson( strNode, strResponse );
+				
+				final WebImport ingest = new WebImport( 
+								"Tesla - " + request.name(),
+								tvi.getURL( request ),
+								strResponse );
+				final Long seq = ingest.save();
+				
 				System.out.println( "Page saved: seq " + seq );
 				
 				

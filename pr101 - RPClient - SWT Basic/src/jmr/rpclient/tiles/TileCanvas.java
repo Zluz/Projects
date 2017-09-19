@@ -5,8 +5,10 @@ import java.util.logging.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.Transform;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 
@@ -46,6 +48,11 @@ public class TileCanvas {
 	}
 	
 	
+	public void rotate( final GC gc ) {
+		
+	}
+	
+	
 	public Composite buildUI( final Composite parent ) {
 		parent.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
 
@@ -59,7 +66,9 @@ public class TileCanvas {
 				;
 		
 	    this.canvas = new Canvas( parent, SWT.NO_BACKGROUND );
-    	this.canvas.setCursor( UI.CURSOR_HIDE );
+	    if ( RPiTouchscreen.getInstance().isEnabled() ) {
+	    	this.canvas.setCursor( UI.CURSOR_HIDE );
+	    }
     	
     	final int iYLimit = 150 * perspective.getRowCount();
 
@@ -105,7 +114,20 @@ public class TileCanvas {
 					
 					tile.paint( imageBuffer );
 					
+					if ( perspective.isRotated() ) {
+						e.gc.setAdvanced( true );
+						
+						final Transform tr = new Transform( parent.getDisplay() );
+						
+				        tr.rotate( (float) 90 );
+				        tr.translate( +10l, -750l -10 );
+				        
+				        e.gc.setTransform( tr );
+					}
+					
 					e.gc.drawImage( imageBuffer, iX + TRIM_X, iY + TRIM_Y );
+					e.gc.setTransform( null );
+					
 					imageBuffer.dispose();
 				}
 			}

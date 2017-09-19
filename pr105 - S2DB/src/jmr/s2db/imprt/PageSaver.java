@@ -14,6 +14,7 @@ public class PageSaver extends HashMap<String,String> {
 	
 //	private final String strPath;
 	
+	private final String strPath;
 	private final long seqPath;
 	private Long seqPage;
 	
@@ -22,6 +23,8 @@ public class PageSaver extends HashMap<String,String> {
 //		this.strPath = strPath;
 		
 //		final Date now = new Date();
+		
+		this.strPath = strPath;
 		
 		final Path tPath = ( (Path)Tables.PATH.get() );
 		this.seqPath = tPath.get( strPath );
@@ -39,6 +42,9 @@ public class PageSaver extends HashMap<String,String> {
 	
 	public Long save() {
 		final Page tPage = ( (Page)Tables.PAGE.get() );
+		
+		SummaryRegistry.get().summarize( strPath, this );
+		
 		tPage.addMap( seqPage, this, true );
 		return seqPage;
 	}

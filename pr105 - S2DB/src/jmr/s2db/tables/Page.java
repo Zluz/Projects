@@ -23,6 +23,8 @@ public class Page extends TableBase {
 
 	public static final String ATTR_STATE = ".state";
 	public static final String ATTR_LAST_MODIFIED = ".last_modified";
+	public static final String ATTR_LAST_MODIFIED_UXT = ".last_modified_uxt";
+	public static final String ATTR_LAST_MODIFIED_ENG = ".last_modified_eng";
 	public static final String ATTR_SEQ_SESSION = ".seq_session";
 	public static final String ATTR_SEQ_PATH = ".seq_path";
 	public static final String ATTR_SEQ_PAGE = ".seq_page";
@@ -36,7 +38,8 @@ public class Page extends TableBase {
 		;
 	}
 	
-	private final static Map<Long,Map<String,String>> CACHE = new HashMap<>();
+	private final static Map<Long,Map<String,String>> 
+						CACHE = new HashMap<>();
 	
 	
 	
@@ -150,6 +153,9 @@ public class Page extends TableBase {
 						final String strDateTime = 
 								DateFormatting.getDateTime( dateModified );
 						map.put( ATTR_LAST_MODIFIED, strDateTime );
+						map.put( ATTR_LAST_MODIFIED_UXT, ""+dateModified.getTime() );
+						map.put( ATTR_LAST_MODIFIED_ENG, strDateTime );
+						
 					}
 					map.put( ATTR_SEQ_PAGE, "" + seqPage );
 					map.put( ATTR_SEQ_PATH, "" + seqPath );
@@ -183,6 +189,7 @@ public class Page extends TableBase {
 
 		String strSQL = null;
 
+		
 		String strInsert = "INSERT INTO prop "
 				+ "( seq_page, name, value ) "
 				+ "VALUES ";
