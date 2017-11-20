@@ -113,7 +113,12 @@ public class WeatherForecastTile extends TileBase {
 					em = new EnumMap< WeatherForecastTile.Values, String >( 
 								Values.class );
 
-			for ( int iDay = 0; iDay<NUMBER_OF_DAYS; iDay++ ) {
+			// 5 tiles (750) = 9 days
+			// 3 tiles (450) = 5 days 
+			final int iNumberOfDays = 
+					( rect.width >= 750 ) ? NUMBER_OF_DAYS : 5; 
+			
+			for ( int iDay = 0; iDay<iNumberOfDays; iDay++ ) {
 				em.clear();
 				
 				final Map<String, String> map = pages[ iDay ];
@@ -138,7 +143,7 @@ public class WeatherForecastTile extends TileBase {
 				if ( bValid ) {
 					
 					final int iX = ( rect.width - 20 ) * iDay 
-										/ NUMBER_OF_DAYS + 15;
+										/ iNumberOfDays + 15;
 					
 					final String strRange = 
 //							map.get("low") + "-" + map.get("high");
@@ -165,15 +170,20 @@ public class WeatherForecastTile extends TileBase {
 			if ( null!=strWeatherImport ) {
 				gc.setFont( Theme.get().getFont( 6 ) );
 				
-				final PageData pagedata = pages[ NUMBER_OF_DAYS ];
+				final PageData pagedata = pages[ iNumberOfDays ];
 				final String strTitle = pagedata.get( "title" );
 				final String strSeqPage = pagedata.get( Page.ATTR_SEQ_PAGE );
 				
-				final String strTime = pagedata.get( "timestamp" );
-				final long lTime = Long.parseLong( strTime );
-				final long lElapsed = System.currentTimeMillis() - lTime;
-				final long lMinutes = TimeUnit.MILLISECONDS.toMinutes( lElapsed );
-				final String strElapsed = "" + lMinutes + " minutes old";
+				final String strTime = pagedata.get( ".last_modified_uxt" );
+				final String strElapsed;
+				if ( null!=strTime ) {
+					final long lTime = Long.parseLong( strTime );
+					final long lElapsed = System.currentTimeMillis() - lTime;
+					final long lMinutes = TimeUnit.MILLISECONDS.toMinutes( lElapsed );
+					strElapsed = "" + lMinutes + " minutes old";
+				} else {
+					strElapsed = "(age: unknown)";
+				}
 				
 				final String strTab = "     ";
 				final String strText = strTitle + strTab 

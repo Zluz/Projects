@@ -39,9 +39,13 @@ public class DateFormatting {
 			return "" + lSeconds + " s";
 		} else if ( lMinutes < 120 ) {
 			return "" + lMinutes + " m";
-		} else {
-			final long lHours = TimeUnit.MILLISECONDS.toHours( ms );
+		}
+		final long lHours = TimeUnit.MILLISECONDS.toHours( ms );
+		if ( lHours < 48 ) {
 			return "" + lHours + " h";
+		} else {
+			final long lDays = TimeUnit.MILLISECONDS.toDays( ms );
+			return "" + lDays + " d";
 		}
 	}
 	
