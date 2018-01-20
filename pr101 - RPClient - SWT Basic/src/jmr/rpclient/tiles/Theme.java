@@ -18,6 +18,7 @@ public class Theme {
 		TEXT,
 		TEXT_LIGHT,
 		TEXT_BOLD,
+		BACK_ALERT,
 		;
 	}
 
@@ -48,6 +49,7 @@ public class Theme {
 			case TEXT_BOLD  	: iColor = SWT.COLOR_WHITE; break;
 			case LINE_FAINT		: iColor = SWT.COLOR_DARK_BLUE; break;
 			case LINE_BOLD		: iColor = SWT.COLOR_GREEN; break;
+			case BACK_ALERT		: iColor = SWT.COLOR_DARK_RED; break;
 			default				: iColor = SWT.COLOR_GRAY; break;
 		}
 		return display.getSystemColor( iColor );

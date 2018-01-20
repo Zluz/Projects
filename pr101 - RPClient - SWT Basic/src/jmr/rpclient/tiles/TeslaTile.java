@@ -78,7 +78,7 @@ public class TeslaTile extends TileBase {
 	}
 	
 	private void updatePages() {
-		synchronized ( pages ) { 
+//		synchronized ( pages ) { 
 
 			final DataRequest[] values = DataRequest.values();
 			for ( final DataRequest type : values ) {
@@ -97,7 +97,7 @@ public class TeslaTile extends TileBase {
 					}
 				}
 			}
-		}
+//		}
 	}
 	
 	
@@ -117,8 +117,6 @@ public class TeslaTile extends TileBase {
 	
 			gc.setFont( Theme.get().getFont( 25 ) );
 			gc.drawText( "Tesla", 10, 10 );
-			gc.setFont( Theme.get().getFont( 10 ) );
-
 
 			try {
 				final Map<String, String> 
@@ -133,8 +131,29 @@ public class TeslaTile extends TileBase {
 					final String strRange = mapCharge.get( "battery_range" );
 					final String strStatus = mapCharge.get( "+status" );
 					final String strTimestamp = mapCharge.get( ".last_modified_uxt" );
+					final String strHome = mapVehicle.get( "homelink_nearby" );
+					final String strLatch = mapCharge.get( "charge_port_latch" );
+					final String strPortOpen = mapCharge.get( "charge_port_door_open" );
 //					final String strTime = mapCharge.get( "time_to_full_charge" );
+					final boolean bHome = "true".equalsIgnoreCase( strHome );
+					final boolean bLatch = "Engaged".equalsIgnoreCase( strLatch );
+					final boolean bPortOpen = "true".equalsIgnoreCase( strPortOpen );
 
+					final boolean bAlertCycle = Math.floor(System.currentTimeMillis()/500) % 2 == 0;
+					final boolean bAlert = bAlertCycle && bHome && !bPortOpen;
+					if ( bAlert ) {
+//						gc.setForeground( Theme.get().getColor( Colors.BACK_ALERT ) );
+						gc.setBackground( Theme.get().getColor( Colors.BACK_ALERT ) );
+						gc.fillRectangle( 0, 0, 299, 149 );
+					}
+					
+
+					gc.setFont( Theme.get().getFont( 25 ) );
+					gc.drawText( "Tesla", 10, 10 );
+					gc.setFont( Theme.get().getFont( 10 ) );
+					
+					
+					
 					gc.drawText( strVersion, 10, 50 );
 	
 					gc.setFont( Theme.get().getFont( 16 ) );
@@ -150,8 +169,10 @@ public class TeslaTile extends TileBase {
 
 
 					gc.setFont( Theme.get().getFont( 12 ) );
-					gc.drawText( "Odometer" +Text.DELIMITER 
-									+ strOdometer + " mi", 160, 26 );
+//					gc.drawText( "Odometer" +Text.DELIMITER 
+//									+ strOdometer + " mi", 160, 26 );
+					gc.drawText( "Location" + Text.DELIMITER 
+							+ ( bHome ? "Home" : "Away" ), 160, 26 );
 
 					gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
 					gc.setFont( Theme.get().getFont( 28 ) );

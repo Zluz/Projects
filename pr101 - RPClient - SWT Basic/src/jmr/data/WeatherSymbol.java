@@ -19,7 +19,8 @@ public enum WeatherSymbol {
 	CHANCE_TSTORMS(	"chancetstorms", "scatteredthunderstorms",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancetstorms.png" ) ),
 	
-	CLEAR( 	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/clear.png" ) ),
+	CLEAR( 	"breezy", "mostlyclear", 
+			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/clear.png" ) ),
 	CLOUDY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/cloudy.png" ) ),
 	FLURRIES( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/flurries.png" ) ),
 	FOG( 	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/fog.png" ) ),
@@ -31,19 +32,34 @@ public enum WeatherSymbol {
 	PARTLYCLOUDY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/partlycloudy.png" ) ),
 					
 	PARTLYSUNNY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/partlysunny.png" ) ),
-	RAIN( 	"showers", 
+	RAIN( 	"showers", "heavyrain", 
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/rain.png" ) ),
 	
 	SLEET( 	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sleet.png" ) ),
-	SNOW( 	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/snow.png" ) ),
+	SNOW( 	"snowshowers", "rainandsnow", 
+			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/snow.png" ) ),
 	
-	SUNNY(	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sunny.png" ) ),
+	SUNNY(	"mostlysunny", 
+			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sunny.png" ) ),
 	
 	TSTORMS( "thunderstorms", 
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/tstorms.png" ) ),
 	
 	UNKNOWN( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/unknown.png" ) ),
-		
+
+	/* Query to find previously used weather names
+			SELECT * 
+			FROM s2db.prop
+			WHERE 
+				TRUE
+			    AND (name = 'text')
+			GROUP BY
+				value
+			ORDER BY
+				value;
+	*/
+	
+	
 //	SUNNY,
 //	SNOW,
 //	SLEET,
