@@ -232,25 +232,17 @@ public enum Perspective {
 		list.add( new TileGeometry( new ClockTile(), 
 						new Rectangle( 0, 0, 3, 1 ) ) );
 
-		list.add( new TileGeometry( new SystemInfoTile(), 
-						new Rectangle( 2, 1, 1, 1 ) ) );
-
-		list.add( new TileGeometry( new CalibrationTile(), 
-						new Rectangle( 4, 0, 1, 1 ) ) ); 
-		list.add( new TileGeometry( new CalibrationTile(), 
-						new Rectangle( 4, 1, 1, 1 ) ) ); 
-
 		list.add( new TileGeometry( new PerformanceMonitorTile(), 
-						new Rectangle( 3, 1, 1, 1 ) ) );
+						new Rectangle( 0, 1, 1, 1 ) ) );
 
 		list.add( new TileGeometry( new TeslaTile(), 
-						new Rectangle( 0, 2, 2, 1 ) ) );
+						new Rectangle( 1, 1, 2, 1 ) ) );
 		
 		list.add( new TileGeometry( new NetworkListTile(), 
-						new Rectangle( 0, 1, 2, 1 ) ) );
+						new Rectangle( 3, 0, 2, 3 ) ) );
 
 		list.add( new TileGeometry( new WeatherForecastTile(), 
-						new Rectangle( 2, 2, 3, 1 ) ) ); 
+						new Rectangle( 0, 2, 3, 1 ) ) ); 
 	}
 
 	private void build_Desktop() {

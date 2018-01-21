@@ -389,7 +389,8 @@ public class SWTBasic {
 	    
 	    this.txtLog = tLog.getTextWidget();
 
-	    tabs.setSelection( tDailyInfo.getTab() );
+//	    tabs.setSelection( tDailyInfo.getTab() );
+	    tabs.setSelection( tTiles.getTab() );
 	    
 	    tabs.addSelectionListener( new SelectionAdapter() {
 	    	@Override
