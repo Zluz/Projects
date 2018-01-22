@@ -238,7 +238,7 @@ public enum Perspective {
 		list.add( new TileGeometry( new TeslaTile(), 
 						new Rectangle( 1, 1, 2, 1 ) ) );
 		
-		list.add( new TileGeometry( new NetworkListTile(), 
+		list.add( new TileGeometry( new SessionListTile(), 
 						new Rectangle( 3, 0, 2, 3 ) ) );
 
 		list.add( new TileGeometry( new WeatherForecastTile(), 

@@ -17,5 +17,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/pr102 - Tesla Vehicle Interface"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/SWT_Win32"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr110 - S2 File Session"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
