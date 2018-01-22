@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.GC;
@@ -93,18 +94,25 @@ public class SessionListTile extends TileBase {
 	}
 	
 	private boolean invalidateScreenshot( final int iCount ) {
+		final Image imgRemove;
+		final int iIndex;
 		synchronized ( mapScreenshots ) {
 			if ( mapScreenshots.size() > 0 ) {
-				final int iIndex = iCount % mapScreenshots.size();
+				iIndex = iCount % mapScreenshots.size();
 				final Object[] array = mapScreenshots.keySet().toArray();
 				final String strKey = array[ iIndex ].toString();
+				imgRemove = mapScreenshots.get( strKey );
 				mapScreenshots.put( strKey, null );
-				final boolean bLongWait = 0==iIndex;
-				return bLongWait;
 			} else {
-				return false;
+				imgRemove = null;
+				iIndex = 0;
 			}
 		}
+		if ( null!=imgRemove ) {
+			imgRemove.dispose();
+		}
+		final boolean bLongWait = 0==iIndex;
+		return bLongWait;
 	}
 	
 	
@@ -192,8 +200,8 @@ public class SessionListTile extends TileBase {
 						
 						final GC gc = new GC( imgScaled );
 						if ( listScaled.isEmpty() ) {
-//							gc.setAntialias(SWT.ON);
-//							gc.setInterpolation(SWT.HIGH);
+							gc.setAntialias(SWT.ON);
+							gc.setInterpolation(SWT.HIGH);
 							listScaled.add( strMAC );
 						}
 						
@@ -256,17 +264,18 @@ public class SessionListTile extends TileBase {
 				
 				final int iY = (int)( dRowHeight * iCount );
 				
-				final Image imgScreenshot = 
-						getScreenshot( strKey, gc.getDevice(), 
-											iRowHeight, listScaled );
-
-				if ( null!=imgScreenshot ) {
-					final ImageData data = imgScreenshot.getImageData();
-					if ( data.height > 1 ) {
-						gc.drawImage( imgScreenshot, 
-							0,0, data.width, data.height,
-							0, iY,
-							iX, iRowHeight );
+				synchronized ( mapScreenshots ) {
+					final Image imgScreenshot = 
+							getScreenshot( strKey, gc.getDevice(), 
+												iRowHeight, listScaled );
+					if ( null!=imgScreenshot && !imgScreenshot.isDisposed() ) {
+						final ImageData data = imgScreenshot.getImageData();
+						if ( data.height > 1 ) {
+							gc.drawImage( imgScreenshot, 
+								0,0, data.width, data.height,
+								0, iY,
+								iX, iRowHeight );
+						}
 					}
 				}
 				
