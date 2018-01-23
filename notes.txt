@@ -1,6 +1,7 @@
 
 To do:
-  change device listing to support screenshots
   add input to warm up tesla
   add alarm controls if tesla is not charging
     add text notification
+  add sample response json from tesla
+  
