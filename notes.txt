@@ -1,7 +1,23 @@
 
-To do:
+[TO DO]
   add input to warm up tesla
   add alarm controls if tesla is not charging
     add text notification
   add sample response json from tesla
   
+
+[NOTES]
+
+  SWT resource tracking
+    (works for TX.. )
+    org.eclipse.ui.internal.misc.Policy.DEBUG_SWT_GRAPHICS = true;
+    
+    tracking is per Display
+    
+    to check if enabled (see ResourceTracking.java)
+      [L39] this.enabled = this.display.getDeviceData().tracking;
+    to get data
+      [L45] DeviceData info = display.getDeviceData();
+            Object[] objects = info.objects;
+            Error[] errors = info.errors;
+      
