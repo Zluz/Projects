@@ -1,0 +1,8 @@
+[Desktop Entry]
+Comment=System Info on the Desktop
+Terminal=false
+Name=Conky
+Exec=/Local/scripts/conky.sh
+Type=Application
+Icon=gnome-panel-launcher
+

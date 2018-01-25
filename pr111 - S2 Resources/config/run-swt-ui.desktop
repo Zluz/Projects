@@ -1,0 +1,8 @@
+[Desktop Entry]
+Comment=Run the latest SWT UI program
+Terminal=true
+Name=SWT_UI
+Exec=/Local/scripts/RunLatestUI.sh
+Type=Application
+Icon=gnome-panel-launcher
+
