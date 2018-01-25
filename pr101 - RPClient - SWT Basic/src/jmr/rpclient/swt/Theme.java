@@ -1,4 +1,4 @@
-package jmr.rpclient.tiles;
+package jmr.rpclient.swt;
 
 import java.util.EnumMap;
 import java.util.HashMap;

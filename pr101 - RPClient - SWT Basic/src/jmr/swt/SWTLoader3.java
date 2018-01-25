@@ -135,6 +135,11 @@ public class SWTLoader3 {
 	
 	
 	public static void main( final String[] args ) {
+//		org.eclipse.ui/debug=true
+//		org.eclipse.ui/trace/graphics=true
+//		System.getenv().put( "org.eclipse.ui/debug", "true" );
+//		System.getenv().put( "org.eclipse.ui//debug", "true" );
+//		System.getenv().put( "org.eclipse.ui/trace/graphics", "true" );
 		loadSWT();
 //		TestSWT.main( args );
 		SWTBasic.main( args );

@@ -1,4 +1,6 @@
-package jmr.rpclient;
+package jmr.rpclient.swt;
+
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -68,7 +70,40 @@ public abstract class UI {
     }
 	
 
+	final private static Long[] lLastUpdate = { System.currentTimeMillis() };
+
 	
+    public static void runUIWatchdog() {
+		lLastUpdate[0] = System.currentTimeMillis();
+		final Thread threadUIWatchdog = new Thread( "UI Watchdog" ) {
+			@Override
+			public void run() {
+				try {
+					while ( !UI.display.isDisposed() ) {
+						final long lNow = System.currentTimeMillis();
+						final long lElapsed = lNow - lLastUpdate[0];
+						if ( lElapsed > TimeUnit.SECONDS.toMillis( 20 ) ) {
+							System.out.println( "UI thread unresponsive." );
+							final StackTraceElement[] stack = 
+										UI.display.getThread().getStackTrace();
+							for ( final StackTraceElement frame : stack ) {
+								System.out.println( "\t" + frame.toString() );
+							}
+							System.exit( 1000 );
+						}
+						Thread.sleep( 2000 );
+					}
+				} catch ( final InterruptedException e ) {
+					System.err.println( "UI Watchdog thread interrupted." );
+				}
+			}
+		};
+		threadUIWatchdog.start();
+    }
+    
+    public static void notifyUIIdle() {
+  	  lLastUpdate[0] = System.currentTimeMillis();
+    }
 	
 	
 	public final static Cursor CURSOR_HIDE;

@@ -10,6 +10,8 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 
 import jmr.data.WeatherSymbol;
+import jmr.rpclient.swt.Theme;
+import jmr.rpclient.swt.Theme.Colors;
 import jmr.s2db.Client;
 import jmr.s2db.tables.Page;
 
@@ -80,7 +82,7 @@ public class WeatherForecastTile extends TileBase {
 							// JDBC connection may have been dropped..
 						}
 		
-						Thread.sleep( TimeUnit.MINUTES.toMillis( 10 ) );
+						Thread.sleep( TimeUnit.MINUTES.toMillis( 2 ) );
 		//						Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
 					}
 				} catch ( final InterruptedException e ) {
@@ -144,26 +146,34 @@ public class WeatherForecastTile extends TileBase {
 					
 					final int iX = ( rect.width - 20 ) * iDay 
 										/ iNumberOfDays + 15;
-					
-					final String strRange = 
-//							map.get("low") + "-" + map.get("high");
-							em.get( Values.LOW ) + "-" + em.get( Values.HIGH );
-					
+					int iY = 2;
 					gc.setFont( Theme.get().getFont( 18 ) );
-//					gc.drawText( map.get("day"), iX + 18, 0 );
-					gc.drawText( em.get( Values.DAY ), iX + 18, 0 );
-					gc.drawText( strRange, iX + 10, 100 );
-					
-//					final String strText = "  "+map.get("text");
+					gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
+					gc.drawText( em.get( Values.DAY ), iX + 20, iY );
+
+					iY = 26;
 					final String strText = "  "+em.get( Values.TEXT );
-					gc.setFont( Theme.get().getFont( 10 ) );
-					gc.drawText( strText, iX, 82 );
-					
 					final WeatherSymbol symbol = WeatherSymbol.getSymbol( strText );
 					final Image imageIcon = symbol.getIcon();
 					if ( null!=imageIcon ) {
-						gc.drawImage( imageIcon, iX + 5 , 22 );
+						gc.drawImage( imageIcon, iX + 5 , iY );
 					}
+
+					iY = 86;
+					gc.setFont( Theme.get().getFont( 10 ) );
+					gc.drawText( strText, iX, iY );
+
+					iY = 118;
+					gc.setFont( Theme.get().getFont( 10 ) );
+					gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
+					gc.drawText( em.get( Values.LOW ) + "°", iX + 10, iY );
+
+					iY = 100;
+					gc.setFont( Theme.get().getFont( 24 ) );
+					gc.drawText( em.get( Values.HIGH ) + "°", iX + 35, iY );
+					gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
+					gc.drawText( em.get( Values.HIGH ), iX + 34, iY );
+					gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 				}
 			}
 			

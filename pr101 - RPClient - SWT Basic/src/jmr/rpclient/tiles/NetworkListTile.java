@@ -9,7 +9,8 @@ import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 
-import jmr.rpclient.tiles.Theme.Colors;
+import jmr.rpclient.swt.Theme;
+import jmr.rpclient.swt.Theme.Colors;
 import jmr.s2db.tables.Page;
 import jmr.s2db.tables.Path;
 import jmr.util.transform.DateFormatting;

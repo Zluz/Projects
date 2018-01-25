@@ -9,8 +9,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
-import jmr.rpclient.UI;
-import jmr.rpclient.tiles.Theme.Colors;
+import jmr.rpclient.swt.Theme;
+import jmr.rpclient.swt.UI;
+import jmr.rpclient.swt.Theme.Colors;
 import jmr.util.hardware.rpi.CameraModule;
 
 public class CameraTile extends TileBase {

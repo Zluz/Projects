@@ -1,4 +1,4 @@
-package jmr.rpclient.tiles;
+package jmr.rpclient.swt;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;

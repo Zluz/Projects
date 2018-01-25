@@ -17,7 +17,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import jmr.rpclient.RPiTouchscreen;
-import jmr.rpclient.UI;
+import jmr.rpclient.swt.UI;
 import jmr.util.NetUtil;
 
 public class TabDailyInfo extends TabBase {

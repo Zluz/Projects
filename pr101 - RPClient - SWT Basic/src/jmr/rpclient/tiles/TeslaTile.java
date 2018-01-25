@@ -10,7 +10,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Text;
 
 import jmr.pr102.DataRequest;
-import jmr.rpclient.tiles.Theme.Colors;
+import jmr.rpclient.swt.Theme;
+import jmr.rpclient.swt.Theme.Colors;
 import jmr.s2db.Client;
 import jmr.util.transform.DateFormatting;
 

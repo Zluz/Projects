@@ -12,7 +12,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,6 +37,7 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import jmr.rpclient.swt.UI;
 import jmr.rpclient.tab.TabBase;
 import jmr.rpclient.tab.TabControls;
 import jmr.rpclient.tab.TabDailyInfo;
@@ -50,6 +50,7 @@ import jmr.s2db.Client;
 import jmr.util.Logging;
 import jmr.util.NetUtil;
 import jmr.util.OSUtil;
+
 
 /*
  * Taken from:
@@ -475,35 +476,10 @@ public class SWTBasic {
 
 		final SWTBasic ui = new SWTBasic();
 	    
-		final Long[] lLastUpdate = { System.currentTimeMillis() };
-		final Thread threadUIWatchdog = new Thread( "UI Watchdog" ) {
-			@Override
-			public void run() {
-				try {
-					while ( !UI.display.isDisposed() ) {
-						final long lNow = System.currentTimeMillis();
-						final long lElapsed = lNow - lLastUpdate[0];
-						if ( lElapsed > TimeUnit.SECONDS.toMillis( 20 ) ) {
-							System.out.println( "UI thread unresponsive." );
-							final StackTraceElement[] stack = 
-										UI.display.getThread().getStackTrace();
-							for ( final StackTraceElement frame : stack ) {
-								System.out.println( "\t" + frame.toString() );
-							}
-							System.exit( 1000 );
-						}
-						Thread.sleep( 2000 );
-					}
-				} catch ( final InterruptedException e ) {
-					System.err.println( "UI Watchdog thread interrupted." );
-				}
-			}
-		};
-		threadUIWatchdog.start();
-		
+		UI.runUIWatchdog();
 	    while (!ui.shell.isDisposed()) {
 	      if (!UI.display.readAndDispatch()) {
-	    	  lLastUpdate[0] = System.currentTimeMillis();
+	    	  UI.notifyUIIdle();
 	    	  UI.display.sleep();
 	      }
 	    }

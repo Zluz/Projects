@@ -5,7 +5,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 
-import jmr.rpclient.UI;
+import jmr.rpclient.swt.UI;
 
 public class TextTile extends TileBase {
 

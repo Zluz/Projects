@@ -13,8 +13,9 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 
 import jmr.rpclient.RPiTouchscreen;
-import jmr.rpclient.UI;
-import jmr.rpclient.tiles.Theme.Colors;
+import jmr.rpclient.swt.Theme;
+import jmr.rpclient.swt.UI;
+import jmr.rpclient.swt.Theme.Colors;
 import jmr.util.NetUtil;
 import jmr.util.OSUtil;
 
@@ -139,6 +140,7 @@ public class TileCanvas {
 			public void run() {
 				try {
 					do {
+						UI.notifyUIIdle();
 						Thread.sleep( REFRESH_SLEEP );
 						if ( !canvas.isDisposed() ) {
 							canvas.getDisplay().asyncExec( new Runnable() {

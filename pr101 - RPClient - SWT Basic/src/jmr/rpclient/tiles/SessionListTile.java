@@ -17,7 +17,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Rectangle;
 
-import jmr.rpclient.tiles.Theme.Colors;
+import jmr.rpclient.swt.GCTextUtils;
+import jmr.rpclient.swt.Theme;
+import jmr.rpclient.swt.Theme.Colors;
 import jmr.s2db.tables.Page;
 import jmr.s2db.tables.Path;
 import jmr.s2fs.FileSession;

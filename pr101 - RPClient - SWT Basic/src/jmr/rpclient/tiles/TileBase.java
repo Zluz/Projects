@@ -6,7 +6,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
-import jmr.rpclient.tiles.Theme.Colors;
+import jmr.rpclient.swt.Theme;
+import jmr.rpclient.swt.Theme.Colors;
 
 public abstract class TileBase implements Tile {
 

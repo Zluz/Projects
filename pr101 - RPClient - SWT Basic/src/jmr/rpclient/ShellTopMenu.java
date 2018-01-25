@@ -14,6 +14,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Shell;
 
+import jmr.rpclient.swt.UI;
 import jmr.rpclient.tab.TopSection;
 
 public class ShellTopMenu {

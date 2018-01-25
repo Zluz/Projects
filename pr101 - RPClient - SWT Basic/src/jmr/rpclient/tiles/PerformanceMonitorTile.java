@@ -4,8 +4,9 @@ import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 
-import jmr.rpclient.UI;
-import jmr.rpclient.tiles.Theme.Colors;
+import jmr.rpclient.swt.Theme;
+import jmr.rpclient.swt.UI;
+import jmr.rpclient.swt.Theme.Colors;
 
 public class PerformanceMonitorTile extends TileBase {
 
@@ -82,12 +83,12 @@ public class PerformanceMonitorTile extends TileBase {
 			final float fElapsedAvg;
 			if ( iSampleCount>0 ) {
 				fElapsedAvg = lTotal / iSampleCount;
-				gc.drawText( "Avg: " + (int)fElapsedAvg + " ms", 10, 10 );
+				gc.drawText( "Avg: " + (int)fElapsedAvg + " ms", 10, 10, true );
 			} else {
-				gc.drawText( "Avg: (N/A)", 10, 10 );
+				gc.drawText( "Avg: (N/A)", 10, 10, true );
 			}
 			
-			gc.drawText( "Max: " + iElapsedMax + " ms", 10, 36 );
+			gc.drawText( "Max: " + iElapsedMax + " ms", 10, 36, true );
 	//		gc.drawText( "Min: " + iElapsedMin, 10, 40 );
 
 			final boolean bDebug = gc.getDevice().getDeviceData().debug;
@@ -102,6 +103,7 @@ public class PerformanceMonitorTile extends TileBase {
 				gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
 				
 				gc.drawText( "No SWT Debug", 10, 62, true );
+				gc.drawText( "[X]  SWT Debug", 10, 80, true );
 			}
 
 	//		drawTextCentered( strText, 10 );
