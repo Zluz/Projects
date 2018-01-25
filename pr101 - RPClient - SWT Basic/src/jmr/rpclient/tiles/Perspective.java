@@ -11,7 +11,7 @@ public enum Perspective {
 	DAILY( 5, 3, false ),
 	TESLA( 5, 3, false ),
 	CAMERA( 5, 3, false ),
-	DESKTOP( 5, 5, false ),
+	DESKTOP( 5, 6, false ),
 	DAILY_ROTATE( 3, 5, true ),
 	
 	TEST( 5, 3, false ),
@@ -253,30 +253,26 @@ public enum Perspective {
 						new Rectangle( 2, 1, 1, 1 ) ) );
 
 		list.add( new TileGeometry( new CalibrationTile(), 
-						new Rectangle( 4, 0, 1, 1 ) ) ); 
-		list.add( new TileGeometry( new CalibrationTile(), 
-						new Rectangle( 4, 1, 1, 1 ) ) ); 
+						new Rectangle( 0, 3, 1, 1 ) ) ); 
 
 		list.add( new TileGeometry( new PerformanceMonitorTile(), 
-						new Rectangle( 3, 1, 1, 1 ) ) );
+						new Rectangle( 1, 3, 1, 1 ) ) );
 
 		list.add( new TileGeometry( new TeslaTile(), 
 						new Rectangle( 0, 1, 2, 1 ) ) ); 
 		
 		list.add( new TileGeometry( new NetworkListTile(), 
-						new Rectangle( 0, 4, 3, 1 ) ) ); 
+						new Rectangle( 0, 2, 3, 1 ) ) ); 
 
 		list.add( new TileGeometry( new WeatherForecastTile(), 
-						new Rectangle( 0, 2, 5, 1 ) ) ); 
+						new Rectangle( 0, 5, 5, 1 ) ) ); 
 		
 		list.add( new TileGeometry( new WeatherForecastTile(), 
-						new Rectangle( 0, 3, 3, 1 ) ) ); 
+						new Rectangle( 0, 4, 3, 1 ) ) ); 
 
-		list.add( new TileGeometry( new NetworkListTile(), 
-						new Rectangle( 3, 3, 2, 1 ) ) ); 
+		list.add( new TileGeometry( new SessionListTile(), 
+						new Rectangle( 3, 0, 2, 5 ) ) ); 
 
-		list.add( new TileGeometry( new CalibrationTile(), 
-						new Rectangle( 4, 4, 1, 1 ) ) );
 	}
 	
 	

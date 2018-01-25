@@ -28,8 +28,8 @@ public class CameraModule {
 	}
 	
 
-	
-	private File capture() {
+
+	private File _capture() {
 //		if ( OSUtil.isWin() ) return null;
 //		if ( !isCameraPresent() ) return null;
 
@@ -58,6 +58,25 @@ public class CameraModule {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch ( final InterruptedException e ) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	private File capture() {
+//		if ( OSUtil.isWin() ) return null;
+//		if ( !isCameraPresent() ) return null;
+
+		try {
+			final File file = new File( "/tmp/capture_still_now.jpg" );
+			if ( file.exists() ) {
+				return file;
+			} else {
+				return null;
+			}
+			
+		} catch ( final Exception e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

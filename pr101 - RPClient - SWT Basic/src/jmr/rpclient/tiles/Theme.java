@@ -1,5 +1,6 @@
 package jmr.rpclient.tiles;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,27 +8,41 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 
 public class Theme {
 	
 	public enum Colors {
-		BACKGROUND,
-		LINE_FAINT,
-		LINE_BOLD,
-		TEXT,
-		TEXT_LIGHT,
-		TEXT_BOLD,
-		BACK_ALERT,
+		BACKGROUND( 0,0,0 ),
+		LINE_FAINT( 0,0,70 ),
+		LINE_BOLD( 255, 255, 255 ),
+		TEXT( 180, 180, 180 ),
+		TEXT_LIGHT( 100,100,100 ),
+		TEXT_BOLD( 255, 255, 255 ),
+		BACK_ALERT( 160, 0, 0 ),
 		;
+		
+		final RGB rgb;
+		
+		private Colors( final int r, final int g, final int b ) {
+			this.rgb = new RGB( r,g,b );
+		}
 	}
 
 	private static Theme instance;
+	
+	private final static EnumMap< Colors, Color > 
+				COLORMAP = new EnumMap<>( Colors.class );
 	
 	private Display display;
 	
 	private Theme() {
 		this.display = Display.getCurrent();
+		for ( final Colors c : Colors.values() ) {
+			final Color color = new Color( display, c.rgb );
+			COLORMAP.put( c, color );
+		}
 	}
 	
 	private final Map<Integer,Font> mapFonts = new HashMap<Integer,Font>();
@@ -40,7 +55,7 @@ public class Theme {
 		return instance;
 	}
 	
-	public Color getColor( Colors color ) {
+	public Color getColor_( Colors color ) {
 		final int iColor;
 		switch ( color ) {
 			case BACKGROUND 	: iColor = SWT.COLOR_BLACK; break; 
@@ -53,6 +68,10 @@ public class Theme {
 			default				: iColor = SWT.COLOR_GRAY; break;
 		}
 		return display.getSystemColor( iColor );
+	}
+
+	public Color getColor( Colors color ) {
+		return COLORMAP.get( color );
 	}
 	
 	/**

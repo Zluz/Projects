@@ -9,11 +9,13 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.Rectangle;
 
 import jmr.rpclient.tiles.Theme.Colors;
 import jmr.s2db.tables.Page;
@@ -21,7 +23,6 @@ import jmr.s2db.tables.Path;
 import jmr.s2fs.FileSession;
 import jmr.s2fs.FileSessionManager;
 import jmr.s2fs.S2FSUtil;
-import jmr.util.transform.DateFormatting;
 
 public class SessionListTile extends TileBase {
 
@@ -193,28 +194,36 @@ public class SessionListTile extends TileBase {
 					final File file = session.getScreenshotImageFile();
 					if ( null!=file && file.isFile() ) {
 						
-						final Image imgCapture = 
-								new Image( display, file.getAbsolutePath() );
-						final Image imgScaled = 
-								new Image( display, SCREENSHOT_WIDTH, iY );
-						
-						final GC gc = new GC( imgScaled );
-						if ( listScaled.isEmpty() ) {
-							gc.setAntialias(SWT.ON);
-							gc.setInterpolation(SWT.HIGH);
-							listScaled.add( strMAC );
+						Image imgCapture = null;
+						try {
+							imgCapture = new Image( 
+									display, file.getAbsolutePath() );
+						} catch ( final SWTException e ) {
+							// potential: Unsupported or unrecognized format
 						}
-						
-						gc.drawImage(imgCapture, 0, 0,
-								imgCapture.getBounds().width, 
-								imgCapture.getBounds().height,
-								0, 0, SCREENSHOT_WIDTH, iY );
-						
-						gc.dispose();
-						imgCapture.dispose();
-						
-						image = imgScaled;
-						
+						if ( null!=imgCapture ) {
+							final Image imgScaled = 
+									new Image( display, SCREENSHOT_WIDTH, iY );
+							
+							final GC gc = new GC( imgScaled );
+							if ( listScaled.isEmpty() ) {
+								gc.setAntialias(SWT.ON);
+								gc.setInterpolation(SWT.HIGH);
+								listScaled.add( strMAC );
+							}
+							
+							gc.drawImage(imgCapture, 0, 0,
+									imgCapture.getBounds().width, 
+									imgCapture.getBounds().height,
+									0, 0, SCREENSHOT_WIDTH, iY );
+							
+							gc.dispose();
+							imgCapture.dispose();
+							
+							image = imgScaled;
+						} else {
+							image = getImageNotFound( display );
+						}
 					} else {
 						image = getImageNotFound( display );
 					}
@@ -239,10 +248,14 @@ public class SessionListTile extends TileBase {
 			threadUpdater.start();
 		}
 		
+		final GCTextUtils util = new GCTextUtils( gc );
+		
 //		gc.setAntialias( SWT.ON );
 //		gc.setInterpolation( SWT.HIGH );
 		
-		final int iX = SCREENSHOT_WIDTH;
+//		final int iX = SCREENSHOT_WIDTH;
+		
+		final int iY_screenshot_bump = 10;
 		
 		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 		
@@ -251,19 +264,41 @@ public class SessionListTile extends TileBase {
 		synchronized ( map2 ) {
 
 			final int iTotal = map2.size();
-			final double dRowHeight = (double)image.getBounds().height / iTotal;
+			final Rectangle bounds = image.getBounds();
+			final double dRowHeight = (double)bounds.height / iTotal;
+			final int iRowHeight = (int)dRowHeight;
 			
 			int iCount = 0;
+			boolean bLeft = true;
+			
 			for ( final Entry<String, Map<String, String>> 
 											entry : map2.entrySet() ) {
-				
-				final int iRowHeight = (int)dRowHeight;
-				
 				final String strKey = entry.getKey();
 				final Map<String,String> map = entry.getValue();
 				
-				final int iY = (int)( dRowHeight * iCount );
+				util.setRightAligned( !bLeft );
 				
+				final int iY = (int)( dRowHeight * iCount );
+
+				final int iX_screenshot = 
+						bLeft ? 0 : bounds.width - SCREENSHOT_WIDTH;
+				final int iY_screenshot = 
+						bLeft ? iY : iY - iY_screenshot_bump;
+
+				final Rectangle rect;
+				if ( bLeft ) {
+					rect = new Rectangle( 
+							SCREENSHOT_WIDTH + 4, iY + 4, 
+							bounds.width - SCREENSHOT_WIDTH - 6, 
+							bounds.height );
+				} else {
+					rect = new Rectangle( 
+							4, iY + iY_screenshot_bump, 
+							bounds.width - SCREENSHOT_WIDTH - 6, 
+							bounds.height );
+				}
+
+				boolean bImageDrawn = false;
 				synchronized ( mapScreenshots ) {
 					final Image imgScreenshot = 
 							getScreenshot( strKey, gc.getDevice(), 
@@ -272,40 +307,83 @@ public class SessionListTile extends TileBase {
 						final ImageData data = imgScreenshot.getImageData();
 						if ( data.height > 1 ) {
 							gc.drawImage( imgScreenshot, 
-								0,0, data.width, data.height,
-								0, iY,
-								iX, iRowHeight );
+								0,0,  data.width, data.height,
+								iX_screenshot, 
+										iY_screenshot,
+								SCREENSHOT_WIDTH, 
+										iRowHeight + iY_screenshot_bump );
+							bImageDrawn = true;
 						}
 					}
 				}
-				
-				int iY_text = iY;
-
-				final String strIP = checkNull( map.get( "device.ip" ) );
-				gc.drawText( strIP, iX, iY_text );
-				iY_text += 16;
-
-				final String strName = checkNull( map.get( "device.name" ) );
-				gc.drawText( strName, iX, iY_text );
-				iY_text += 16;
-	
-				final String strStarted = map.get( "session.start" );
-				if ( null!=strStarted ) {
-					final String strAge = DateFormatting.getSmallTime( strStarted );
-					gc.drawText( "Age: " + strAge, iX, iY_text );
-				} else {
-					gc.drawText( "Age: N/A", iX, iY_text  );
+				if ( !bImageDrawn ) {
+					gc.setForeground( Theme.get().getColor( Colors.LINE_FAINT ) );
+					gc.drawRectangle( new Rectangle( 
+							iX_screenshot, iY_screenshot, 
+							SCREENSHOT_WIDTH, iRowHeight + iY_screenshot_bump ) );
+					gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 				}
-				iY_text += 16;
-	
-	//			strText += strIPFit + "   " + strExecFit + "   " + strName + "\n";
-//				iY += 30;
+				
+				gc.setFont( Theme.get().getFont( 12 ) );
+				final String strIP = getIP( map );
+				util.drawTextJustified( strIP, rect );
+				rect.y = rect.y + 16;
+				
+				gc.setFont( Theme.get().getFont( 9 ) );
+				final String strName = getDescription( map );
+				util.drawTextJustified( strName, rect );
+				rect.y = rect.y + 16;
+
+
 				iCount++;
+				bLeft = !bLeft;
 			}
 		}
 
 //		drawTextCentered( strText, 10 );
 	}
+	
+
+	public static String getDescription( final Map<String,String> map ) {
+		if ( null==map ) return "<null>";
+		
+		final String strDeviceName = map.get( "device.name" );
+		if ( null!=strDeviceName ) return strDeviceName;
+		
+		final String str_ifconfig = map.get( "conky" );
+		if ( null!=str_ifconfig && !str_ifconfig.isEmpty() ) {
+			return str_ifconfig;
+		}
+		return "<unknown>";
+	}
+
+	public static String getIP( final Map<String,String> map ) {
+		if ( null==map ) return "<null>";
+		
+		final String strDeviceIP = map.get( "device.ip" );
+		if ( null!=strDeviceIP ) return strDeviceIP;
+		
+		final String str_ifconfig = map.get( "ifconfig" );
+		if ( null!=str_ifconfig ) {
+			final String[] strs = str_ifconfig.split( "\n" );
+			for ( final String str : strs ) {
+				if ( str.contains( "inet addr:192.168" ) ) {
+					int iStart = str.indexOf( "addr:192.168" ) + 5;
+					int iEnd = str.indexOf( " ", iStart );
+					final String strsub = str.substring( iStart, iEnd );
+					return strsub;
+				}
+				if ( str.contains( "inet 192.168" ) ) {
+					int iStart = str.indexOf( "inet 192.168" ) + 5;
+					int iEnd = str.indexOf( " ", iStart );
+					final String strsub = str.substring( iStart, iEnd );
+					return strsub;
+				}
+			}
+		}
+		return "<unknown>";
+	}
+	
 	
 	public static String checkNull( final String text ) {
 		if ( null==text ) {

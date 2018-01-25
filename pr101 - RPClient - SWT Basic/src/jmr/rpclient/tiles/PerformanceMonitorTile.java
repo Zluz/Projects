@@ -89,7 +89,21 @@ public class PerformanceMonitorTile extends TileBase {
 			
 			gc.drawText( "Max: " + iElapsedMax + " ms", 10, 36 );
 	//		gc.drawText( "Min: " + iElapsedMin, 10, 40 );
-			
+
+			final boolean bDebug = gc.getDevice().getDeviceData().debug;
+			if ( bDebug ) {
+				gc.setFont( Theme.get().getFont( 8 ) );
+				final boolean bTracking = gc.getDevice().getDeviceData().tracking;
+				final int iLength = gc.getDevice().getDeviceData().objects.length;
+				final String strResCount = "" + iLength;
+				gc.drawText( "SWT #: " + strResCount, 10, 62 );
+			} else {
+				gc.setFont( Theme.get().getFont( 8 ) );
+				gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
+				
+				gc.drawText( "No SWT Debug", 10, 62, true );
+			}
+
 	//		drawTextCentered( strText, 10 );
 		} catch ( final Throwable t ) {
 			// ignore

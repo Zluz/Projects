@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -474,8 +475,35 @@ public class SWTBasic {
 
 		final SWTBasic ui = new SWTBasic();
 	    
+		final Long[] lLastUpdate = { System.currentTimeMillis() };
+		final Thread threadUIWatchdog = new Thread( "UI Watchdog" ) {
+			@Override
+			public void run() {
+				try {
+					while ( !UI.display.isDisposed() ) {
+						final long lNow = System.currentTimeMillis();
+						final long lElapsed = lNow - lLastUpdate[0];
+						if ( lElapsed > TimeUnit.SECONDS.toMillis( 20 ) ) {
+							System.out.println( "UI thread unresponsive." );
+							final StackTraceElement[] stack = 
+										UI.display.getThread().getStackTrace();
+							for ( final StackTraceElement frame : stack ) {
+								System.out.println( "\t" + frame.toString() );
+							}
+							System.exit( 1000 );
+						}
+						Thread.sleep( 2000 );
+					}
+				} catch ( final InterruptedException e ) {
+					System.err.println( "UI Watchdog thread interrupted." );
+				}
+			}
+		};
+		threadUIWatchdog.start();
+		
 	    while (!ui.shell.isDisposed()) {
 	      if (!UI.display.readAndDispatch()) {
+	    	  lLastUpdate[0] = System.currentTimeMillis();
 	    	  UI.display.sleep();
 	      }
 	    }
