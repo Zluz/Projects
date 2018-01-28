@@ -11,7 +11,6 @@ import jmr.s2db.comm.ConnectionProvider;
 
 public abstract class TableBase {
 
-	@SuppressWarnings("unused")
 	private static final Logger 
 			LOGGER = Logger.getLogger( TableBase.class.getName() );
 	
@@ -22,10 +21,7 @@ public abstract class TableBase {
 						final String strInsertValues ) {
 		if ( null==strTable ) return null;
 		if ( null==strWhere ) return null;
-		if ( null==strInsertNames ) return null;
-		if ( null==strInsertValues ) return null;
 		
-
 		final String strQuery = "SELECT MAX(seq) FROM " + strTable + " "
 				+ "WHERE ( " + strWhere + " );";
 		
@@ -45,6 +41,9 @@ public abstract class TableBase {
 			e.printStackTrace();
 			LOGGER.log( Level.SEVERE, "SQL Query: " + strQuery, e );
 		}
+
+		if ( null==strInsertNames ) return null;
+		if ( null==strInsertValues ) return null;
 
 		final String strInsert = "INSERT INTO " + strTable + " "
 				+ "( " + strInsertNames + " ) "

@@ -14,14 +14,14 @@ import jmr.s2db.imprt.SummaryRegistry;
 
 public class Device extends TableBase {
 	
-
-	@SuppressWarnings("unused")
 	private static final Logger 
 			LOGGER = Logger.getLogger( Device.class.getName() );
 
-	public static Long seqDevice = null;
-	public static String strName = null;
-	public static final Map<String,String> mapOptions = new HashMap<>();
+	private static Device deviceThis = null;
+	
+	private static Long seqDevice = null;
+	private static String strName = null;
+	private static final Map<String,String> mapOptions = new HashMap<>();
 
 
 	public Long get(	final String strMAC,
@@ -31,6 +31,8 @@ public class Device extends TableBase {
 										"mac, name", 
 										"'" + strMAC + "', '" + strName + "'" );
 		seqDevice = lSeq;
+		final Device device = new Device();
+		deviceThis = device;
 		return lSeq;
 	}
 	
@@ -111,6 +113,10 @@ public class Device extends TableBase {
 			loadDetails();
 		}
 		return mapOptions;
+	}
+	
+	public static Device getDevice( final long seqDevice ) {
+		return null;
 	}
 	
 	
