@@ -40,8 +40,14 @@ public class SessionListTile extends TileBase {
 	private Image imgNoImage;
 
 	private Thread threadUpdater;
+	
+	private final boolean bAlternating;
+	
 
-	public SessionListTile() {
+	public SessionListTile( final boolean bAlternating ) {
+		
+		this.bAlternating = bAlternating;
+		
 		threadUpdater = new Thread( "NetworkList Updater" ) {
 			@Override
 			public void run() {
@@ -133,6 +139,9 @@ public class SessionListTile extends TileBase {
 
 		final Map<String, Long> mapSessions = 
 						new Path().getChildPages( strPath, true );
+		if ( null==mapSessions ) {
+			return; // something bad happened, just quit.
+		}
 		
 //		map.clear();
 //		map.putAll( mapSessions );
@@ -143,7 +152,7 @@ public class SessionListTile extends TileBase {
 		
 		for ( final Entry<String, Long> entry : mapSessions.entrySet() ) {
 
-			final String strSession = entry.getKey();
+//			final String strSession = entry.getKey();
 			final long lPageSeq = entry.getValue();
 			
 			final Map<String, String> map = 
@@ -257,7 +266,7 @@ public class SessionListTile extends TileBase {
 		
 //		final int iX = SCREENSHOT_WIDTH;
 		
-		final int iY_screenshot_bump = 10;
+		final int iY_screenshot_bump = this.bAlternating ? 10 : -4;
 		
 		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 		
@@ -278,6 +287,10 @@ public class SessionListTile extends TileBase {
 				final String strKey = entry.getKey();
 				final Map<String,String> map = entry.getValue();
 				
+				if ( !this.bAlternating ) {
+					bLeft = true;
+				}
+				
 				util.setRightAligned( !bLeft );
 				
 				final int iY = (int)( dRowHeight * iCount );
@@ -291,7 +304,8 @@ public class SessionListTile extends TileBase {
 				if ( bLeft ) {
 					rect = new Rectangle( 
 							SCREENSHOT_WIDTH + 4, iY + 4, 
-							bounds.width - SCREENSHOT_WIDTH - 6, 
+//							bounds.width - SCREENSHOT_WIDTH - 6, 
+							bounds.width, 
 							bounds.height );
 				} else {
 					rect = new Rectangle( 
@@ -304,7 +318,7 @@ public class SessionListTile extends TileBase {
 				synchronized ( mapScreenshots ) {
 					final Image imgScreenshot = 
 							getScreenshot( strKey, gc.getDevice(), 
-												iRowHeight, listScaled );
+								iRowHeight + iY_screenshot_bump, listScaled );
 					if ( null!=imgScreenshot && !imgScreenshot.isDisposed() ) {
 						final ImageData data = imgScreenshot.getImageData();
 						if ( data.height > 1 ) {
@@ -326,15 +340,29 @@ public class SessionListTile extends TileBase {
 					gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 				}
 				
-				gc.setFont( Theme.get().getFont( 12 ) );
 				final String strIP = getIP( map );
+				gc.setFont( Theme.get().getFont( 12 ) );
 				util.drawTextJustified( strIP, rect );
-				rect.y = rect.y + 16;
+				rect.y = rect.y + 18;
 				
-				gc.setFont( Theme.get().getFont( 9 ) );
 				final String strName = getDescription( map );
+				gc.setFont( Theme.get().getFont( 10 ) );
 				util.drawTextJustified( strName, rect );
-				rect.y = rect.y + 16;
+				rect.y = rect.y + 18;
+				
+				if ( !this.bAlternating ) {
+					final String[] strs = getMAC( map );
+					final String strMAC = strs[ 0 ];
+					final String strNIC = strs[ 1 ];
+					gc.setFont( Theme.get().getFont( 11 ) );
+					util.drawTextJustified( "  " + strMAC, rect );
+					rect.y = rect.y + 3;
+					gc.setFont( Theme.get().getFont( 8 ) );
+					util.setRightAligned( true );
+					util.drawTextJustified( strNIC, rect );
+					rect.y = rect.y + 20;
+					util.setRightAligned( false );
+				}
 
 
 				iCount++;
@@ -384,6 +412,51 @@ public class SessionListTile extends TileBase {
 			}
 		}
 		return "<unknown>";
+	}
+
+	public static String[] getMAC( final Map<String,String> map ) {
+		if ( null==map ) return new String[]{ "<null>", "<?>" };
+		
+		final String str_ifconfig = map.get( "ifconfig" );
+		String strNIC = "<?>";
+		if ( null!=str_ifconfig ) {
+			final String[] strs = str_ifconfig.split( "\n" );
+			for ( final String str : strs ) {
+				if ( !str.isEmpty() && !str.startsWith( " " ) ) {
+					final String strsub = str.substring( 0, 8 );
+					final int iPos = strsub.indexOf( ":" );
+					if ( iPos > 0 ) {
+						strNIC = strsub.substring( 0, iPos );
+					} else {
+						strNIC = strsub.trim();
+					}
+				}
+				if ( str.contains( "HWaddr " ) ) {
+					int iStart = str.indexOf( "HWaddr " ) + 7;
+					int iEnd = str.length();
+					final String strsub = str.substring( iStart, iEnd ).trim();
+					final String strMAC = S2FSUtil.normalizeMAC( strsub );
+					return new String[]{ strMAC, strNIC };
+				}
+				if ( str.trim().startsWith( "ether " ) ) {
+					int iStart = str.indexOf( "ether " ) + 6;
+					int iEnd = str.indexOf( "  ", iStart );
+					final String strsub = str.substring( iStart, iEnd ).trim();
+					final String strMAC = S2FSUtil.normalizeMAC( strsub );
+					return new String[] { strMAC, strNIC };
+				}
+			}
+		}
+		
+		strNIC = "<session>";
+		final String strSession = map.get( "session.id" );
+		if ( null!=strSession ) {
+			final String strsub = strSession.substring( 5, 22 );
+			final String strMAC = S2FSUtil.normalizeMAC( strsub );
+			return new String[] { strMAC, strNIC };
+		}
+		
+		return new String[]{ "<unknown>", "<?>" };
 	}
 	
 	
