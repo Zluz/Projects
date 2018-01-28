@@ -334,8 +334,8 @@ public class SWTBasic {
 //	    				strClass, now );
 		s2db.register( 	strSessionID, strClass );
 		
-		final String strDeviceName = s2db.getDevice().getName();
-		final Map<String,String> mapOptions = s2db.getDevice().getOptions();
+		final String strDeviceName = s2db.getThisDevice().getName();
+		final Map<String,String> mapOptions = s2db.getThisDevice().getOptions();
 		
 	    LOGGER.info( "Device: \"" + strDeviceName + "\"" );
 	    for ( final Entry<String, String> entry : mapOptions.entrySet() ) {

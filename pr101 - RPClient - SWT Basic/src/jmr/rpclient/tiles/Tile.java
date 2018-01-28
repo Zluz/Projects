@@ -1,8 +1,8 @@
 package jmr.rpclient.tiles;
 
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 
 
 /*
@@ -18,6 +18,8 @@ public interface Tile {
 	public void paint(	final GC gc,
 						final Image imageBuffer );
 
-	public MouseListener getMouseListener();
+//	public MouseListener getMouseListener();
 	
+	public void click( final Point point );
+
 }

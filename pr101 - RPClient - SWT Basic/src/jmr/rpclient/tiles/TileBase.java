@@ -1,6 +1,5 @@
 package jmr.rpclient.tiles;
 
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -36,8 +35,9 @@ public abstract class TileBase implements Tile {
 	@Override
 	public abstract void paint( final GC gc, Image imageBuffer );
 	
+	
 	@Override
-	public abstract MouseListener getMouseListener();
+	public abstract void click( final Point point );
 	
 	
 

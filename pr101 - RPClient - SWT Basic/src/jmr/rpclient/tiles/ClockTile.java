@@ -4,9 +4,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 import jmr.rpclient.swt.Theme;
@@ -89,10 +89,6 @@ public class ClockTile extends TileBase {
 	}
 		
 	
-	@Override
-	public MouseListener getMouseListener() {
-		return null;
-	}
 
 	@Override
 	public void paint( 	final GC gc, 
@@ -141,4 +137,9 @@ public class ClockTile extends TileBase {
 
 	}
 
+	@Override
+	public void click( final Point point ) {
+		// TODO Auto-generated method stub
+	}
+	
 }

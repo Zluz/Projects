@@ -3,19 +3,24 @@ package jmr.rpclient.tiles;
 import java.util.logging.Logger;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.Transform;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 
 import jmr.rpclient.RPiTouchscreen;
 import jmr.rpclient.swt.Theme;
-import jmr.rpclient.swt.UI;
 import jmr.rpclient.swt.Theme.Colors;
+import jmr.rpclient.swt.UI;
 import jmr.util.NetUtil;
 import jmr.util.OSUtil;
 
@@ -71,9 +76,87 @@ public class TileCanvas {
 	    	this.canvas.setCursor( UI.CURSOR_HIDE );
 	    }
     	
+	    final Display display = parent.getDisplay();
+	    canvas.addPaintListener( getPaintListener( display, strInfo ) );
+	    
+	    canvas.addMouseListener( getMouseListener() );
+	    
+
+		final Thread threadRefresh = new Thread() {
+			@Override
+			public void run() {
+				try {
+					do {
+						UI.notifyUIIdle();
+						Thread.sleep( REFRESH_SLEEP );
+						if ( !canvas.isDisposed() ) {
+							canvas.getDisplay().asyncExec( new Runnable() {
+								@Override
+								public void run() {
+									canvas.redraw();
+								}
+							});
+						}
+					} while ( !parent.isDisposed() );
+				} catch ( final InterruptedException e ) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		};
+		threadRefresh.start();
+	    
+	    return canvas;
+	}
+
+
+	private MouseListener getMouseListener() {
+		final MouseListener listenerCanvas = new MouseAdapter() {
+			@Override
+			public void mouseDown( final MouseEvent event ) {
+				if ( null==event ) return;
+				
+				for ( final TileGeometry geo : perspective.getTiles() ) {
+					
+//					final TileBase tile = geo.tile;
+					final Rectangle rect = geo.rect;
+					
+					final int iX = rect.x * 150;
+					final int iY = rect.y * 150;
+					final int iW = rect.width * 150;
+					final int iH = rect.height * 150;
+
+//					if ( perspective.isRotated() ) { //TODO .. ?
+					
+					if ( ( event.x > iX ) && ( event.x < iX + iW )
+							&& ( event.y > iY ) && ( event.y < iY + iH ) ) {
+						
+//						final MouseListener listenerTile = 
+//										geo.tile.getMouseListener();
+//						if ( null!=listenerTile ) {
+//							listenerTile.mouseDown( event );
+//						}
+						
+						final Point point = 
+//								new Point( event.x, event.y );
+								new Point( event.x - iX, event.y - iY - TRIM_Y );
+						
+						geo.tile.click( point );
+					}
+				}
+				
+			}
+		};
+		return listenerCanvas;
+	}
+
+
+	private PaintListener getPaintListener(	final Display display,
+											final String strInfo ) {
+
     	final int iYLimit = 150 * perspective.getRowCount();
 
-	    canvas.addPaintListener( new PaintListener() {
+		return new PaintListener() {
 			@Override
 			public void paintControl( final PaintEvent e ) {
 
@@ -118,7 +201,7 @@ public class TileCanvas {
 					if ( perspective.isRotated() ) {
 						e.gc.setAdvanced( true );
 						
-						final Transform tr = new Transform( parent.getDisplay() );
+						final Transform tr = new Transform( display );
 						
 				        tr.rotate( (float) 90 );
 				        tr.translate( +10l, -750l -10 );
@@ -132,34 +215,7 @@ public class TileCanvas {
 					imageBuffer.dispose();
 				}
 			}
-		});
-	    
-
-		final Thread threadRefresh = new Thread() {
-			@Override
-			public void run() {
-				try {
-					do {
-						UI.notifyUIIdle();
-						Thread.sleep( REFRESH_SLEEP );
-						if ( !canvas.isDisposed() ) {
-							canvas.getDisplay().asyncExec( new Runnable() {
-								@Override
-								public void run() {
-									canvas.redraw();
-								}
-							});
-						}
-					} while ( !parent.isDisposed() );
-				} catch ( final InterruptedException e ) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
 		};
-		threadRefresh.start();
-	    
-	    return canvas;
 	}
 
 	

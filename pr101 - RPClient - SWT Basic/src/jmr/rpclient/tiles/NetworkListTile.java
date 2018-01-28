@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
@@ -137,9 +137,8 @@ public class NetworkListTile extends TileBase {
 	}
 
 	@Override
-	public MouseListener getMouseListener() {
+	public void click( final Point point ) {
 		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

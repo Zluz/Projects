@@ -3,15 +3,14 @@ package jmr.rpclient.tiles;
 import java.io.File;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 import jmr.rpclient.swt.Theme;
-import jmr.rpclient.swt.UI;
 import jmr.rpclient.swt.Theme.Colors;
+import jmr.rpclient.swt.UI;
 import jmr.util.hardware.rpi.CameraModule;
 
 public class CameraTile extends TileBase {
@@ -123,9 +122,8 @@ public class CameraTile extends TileBase {
 	}
 
 	@Override
-	public MouseListener getMouseListener() {
+	public void click( final Point point ) {
 		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

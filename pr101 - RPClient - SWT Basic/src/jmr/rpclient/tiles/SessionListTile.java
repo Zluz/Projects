@@ -10,11 +10,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 import jmr.rpclient.swt.GCTextUtils;
@@ -469,9 +469,8 @@ public class SessionListTile extends TileBase {
 	}
 
 	@Override
-	public MouseListener getMouseListener() {
+	public void click( final Point point ) {
 		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

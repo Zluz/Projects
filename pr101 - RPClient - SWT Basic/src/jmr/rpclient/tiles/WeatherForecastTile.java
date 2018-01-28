@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 
 import jmr.data.WeatherSymbol;
 import jmr.rpclient.swt.Theme;
@@ -214,10 +214,10 @@ public class WeatherForecastTile extends TileBase {
 	
 
 	@Override
-	public MouseListener getMouseListener() {
+	public void click( final Point point ) {
 		// TODO Auto-generated method stub
-		return null;
 	}
+
 
 	
 	public static void main( final String[] args ) {

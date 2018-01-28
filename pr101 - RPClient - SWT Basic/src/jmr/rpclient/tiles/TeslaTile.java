@@ -4,15 +4,16 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Text;
 
 import jmr.pr102.DataRequest;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.s2db.Client;
+import jmr.s2db.tables.Job;
 import jmr.util.transform.DateFormatting;
 
 public class TeslaTile extends TileBase {
@@ -25,6 +26,8 @@ public class TeslaTile extends TileBase {
 							updated = new EnumMap<>( DataRequest.class );
 
 	private Thread threadUpdater;
+	
+	private Point pointClick = null;
 
 	public TeslaTile() {
 		threadUpdater = new Thread( "TeslaTile Updater" ) {
@@ -53,13 +56,6 @@ public class TeslaTile extends TileBase {
 	}
 	
 	
-	
-	
-	@Override
-	public MouseListener getMouseListener() {
-		return null;
-	}
-
 	
 
 	private void updatePage( final DataRequest type ) {
@@ -128,16 +124,16 @@ public class TeslaTile extends TileBase {
 				if ( null!=mapCharge && null!=mapVehicle ) {
 				
 					final String strVersion = mapVehicle.get( "car_version" );
-					final String strOdometer = mapVehicle.get( "odometer" );
+//					final String strOdometer = mapVehicle.get( "odometer" );
 					final String strRange = mapCharge.get( "battery_range" );
 					final String strStatus = mapCharge.get( "+status" );
 					final String strTimestamp = mapCharge.get( ".last_modified_uxt" );
 					final String strHome = mapVehicle.get( "homelink_nearby" );
-					final String strLatch = mapCharge.get( "charge_port_latch" );
+//					final String strLatch = mapCharge.get( "charge_port_latch" );
 					final String strPortOpen = mapCharge.get( "charge_port_door_open" );
 //					final String strTime = mapCharge.get( "time_to_full_charge" );
 					final boolean bHome = "true".equalsIgnoreCase( strHome );
-					final boolean bLatch = "Engaged".equalsIgnoreCase( strLatch );
+//					final boolean bLatch = "Engaged".equalsIgnoreCase( strLatch );
 					final boolean bPortOpen = "true".equalsIgnoreCase( strPortOpen );
 
 					final boolean bAlertCycle = Math.floor(System.currentTimeMillis()/500) % 2 == 0;
@@ -207,7 +203,26 @@ public class TeslaTile extends TileBase {
 				gc.drawText( t.toString(), 10, 50 );
 			}
 		}
+		
+		if ( null!=pointClick ) {
+			final int x = pointClick.x;
+			final int y = pointClick.y;
+			gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
+//			gc.drawOval( x-2, y-2, x+2, y+2 );
+			gc.drawOval( x-10, y-10, 20, 20 );
+//			gc.drawOval( x, y, 20, 20 );
+		}
 
 	}
 
+
+	@Override
+	public void click( final Point point ) {
+		this.pointClick = point;
+		
+		Job.add( "TESLA:" + DataRequest.CHARGE_STATE.name() );
+		Job.add( "TESLA:" + DataRequest.VEHICLE_STATE.name() );
+	}
+	
+	
 }

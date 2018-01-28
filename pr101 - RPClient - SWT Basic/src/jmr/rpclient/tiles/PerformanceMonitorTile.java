@@ -1,12 +1,12 @@
 package jmr.rpclient.tiles;
 
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 
 import jmr.rpclient.swt.Theme;
-import jmr.rpclient.swt.UI;
 import jmr.rpclient.swt.Theme.Colors;
+import jmr.rpclient.swt.UI;
 
 public class PerformanceMonitorTile extends TileBase {
 
@@ -94,7 +94,7 @@ public class PerformanceMonitorTile extends TileBase {
 			final boolean bDebug = gc.getDevice().getDeviceData().debug;
 			if ( bDebug ) {
 				gc.setFont( Theme.get().getFont( 8 ) );
-				final boolean bTracking = gc.getDevice().getDeviceData().tracking;
+//				final boolean bTracking = gc.getDevice().getDeviceData().tracking;
 				final int iLength = gc.getDevice().getDeviceData().objects.length;
 				final String strResCount = "" + iLength;
 				gc.drawText( "SWT #: " + strResCount, 10, 62 );
@@ -113,9 +113,8 @@ public class PerformanceMonitorTile extends TileBase {
 	}
 
 	@Override
-	public MouseListener getMouseListener() {
+	public void click( final Point point ) {
 		// TODO Auto-generated method stub
-		return null;
 	}
 
 }
