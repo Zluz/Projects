@@ -35,5 +35,24 @@ public enum DataRequest {
 	public String getResponsePath() {
 		return this.getBasePath() + "/data/response";
 	}
+	
+	public static DataRequest getDataRequest( final String str ) {
+		if ( null==str ) return null;
+		if ( str.isEmpty() ) return null;
+		
+		final String strName = str.trim().toUpperCase();
+		final String strSuffix = str.trim().toLowerCase();
+		
+		for ( final DataRequest request : DataRequest.values() ) {
+			if ( strName.startsWith( request.name() ) ) {
+				return request;
+			}
+			if ( strSuffix.startsWith( request.getUrlSuffix() ) ) {
+				return request;
+			}
+		}
+		
+		return null;
+	}
 
 }

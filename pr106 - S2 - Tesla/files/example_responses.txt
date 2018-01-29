@@ -1,0 +1,157 @@
+Registering: IP=10.0.2.15, Name=W32--08-00-27-D7-DE-79--00DEC--1614004F2CA, Class=jmr.s2.ingest.TeslaIngestManager
+Sun Jan 28 22:45:22 EST 2018 WARN: Establishing SSL connection without server's identity verification is not recommended. According to MySQL 5.5.45+, 5.6.26+ and 5.7.6+ requirements SSL connection must be established by default if explicit option isn't set. For compliance with existing applications not using SSL the verifyServerCertificate property is set to 'false'. You need either to explicitly disable SSL by setting useSSL=false, or set useSSL=true and provide truststore for server certificate verification.
+Sun Jan 28 22:45:22 EST 2018 WARN: Establishing SSL connection without server's identity verification is not recommended. According to MySQL 5.5.45+, 5.6.26+ and 5.7.6+ requirements SSL connection must be established by default if explicit option isn't set. For compliance with existing applications not using SSL the verifyServerCertificate property is set to 'false'. You need either to explicitly disable SSL by setting useSSL=false, or set useSSL=true and provide truststore for server certificate verification.
+Sun Jan 28 22:45:22 EST 2018 WARN: Establishing SSL connection without server's identity verification is not recommended. According to MySQL 5.5.45+, 5.6.26+ and 5.7.6+ requirements SSL connection must be established by default if explicit option isn't set. For compliance with existing applications not using SSL the verifyServerCertificate property is set to 'false'. You need either to explicitly disable SSL by setting useSSL=false, or set useSSL=true and provide truststore for server certificate verification.
+Registering with S2DB
+Registering: IP=10.0.2.15, Name=W32--08-00-27-D7-DE-79--00DEC--1614004F2CA, Class=jmr.s2.ingest.TeslaIngestManager
+Jan 28, 2018 10:45:24 PM jmr.s2db.Client savePage
+INFO: New page saved (seq=616887): /External/Ingest/Tesla
+------ ----------------------------------------------------------------
+Now: Sun Jan 28 22:45:24 EST 2018
+------ ----------------------------------------------------------------
+Requesting: CHARGE_STATE
+Requesting: CHARGE_STATE
+Node: /External/Ingest/Tesla - CHARGE_STATE/data/response
+Map (41 entries)
+	"battery_range" = "221.2"
+	"scheduled_charging_pending" = "false"
+	"charge_current_request" = "26"
+	"charge_energy_added" = "6.55"
+	"charging_state" = "Complete"
+	"max_range_charge_counter" = "0"
+	"user_charge_enable_request" = "(null)"
+	"managed_charging_active" = "false"
+	"charge_current_request_max" = "40"
+	"charge_port_door_open" = "(null)"
+	"charge_miles_added_rated" = "23.0"
+	"charger_phases" = "(null)"
+	"charger_power" = "(null)"
+	"scheduled_charging_start_time" = "(null)"
+	"charge_limit_soc" = "90"
+	"charge_port_latch" = "<invalid>"
+	"est_battery_range" = "157.62"
+	"conn_charge_cable" = "<invalid>"
+	"timestamp" = "1517197529602"
+	"battery_level" = "89"
+	"charge_miles_added_ideal" = "28.5"
+	"charger_pilot_current" = "(null)"
+	"charger_actual_current" = "(null)"
+	"usable_battery_level" = "88"
+	"fast_charger_present" = "false"
+	"not_enough_power_to_heat" = "(null)"
+	"fast_charger_type" = "<invalid>"
+	"managed_charging_start_time" = "(null)"
+	"trip_charging" = "(null)"
+	"charge_rate" = "0.0"
+	"fast_charger_brand" = "<invalid>"
+	"charge_limit_soc_max" = "100"
+	"ideal_battery_range" = "276.26"
+	"charge_limit_soc_std" = "90"
+	"charger_voltage" = "(null)"
+	"managed_charging_user_canceled" = "false"
+	"time_to_full_charge" = "0.0"
+	"charge_to_max_range" = "false"
+	"charge_limit_soc_min" = "50"
+	"battery_heater_on" = "false"
+	"charge_enable_request" = "true"
+
+Result: seq = 616888
+Page saved: seq 616888
+key: charge_port_door_open, value: null
+------ ----------------------------------------------------------------
+Requesting: CLIMATE_STATE
+Requesting: CLIMATE_STATE
+Node: /External/Ingest/Tesla - CLIMATE_STATE/data/response
+Map (25 entries)
+	"is_auto_conditioning_on" = "(null)"
+	"is_climate_on" = "false"
+	"outside_temp" = "(null)"
+	"min_avail_temp" = "15.0"
+	"max_avail_temp" = "28.0"
+	"seat_heater_rear_right_back" = "0"
+	"is_front_defroster_on" = "false"
+	"smart_preconditioning" = "false"
+	"inside_temp" = "(null)"
+	"seat_heater_rear_center" = "0"
+	"timestamp" = "1517197530590"
+	"driver_temp_setting" = "26.1"
+	"battery_heater_no_power" = "false"
+	"right_temp_direction" = "(null)"
+	"left_temp_direction" = "(null)"
+	"passenger_temp_setting" = "26.1"
+	"fan_status" = "0"
+	"is_rear_defroster_on" = "false"
+	"seat_heater_rear_left" = "0"
+	"seat_heater_rear_left_back" = "0"
+	"seat_heater_rear_right" = "0"
+	"battery_heater" = "false"
+	"seat_heater_right" = "0"
+	"seat_heater_left" = "1"
+	"is_preconditioning" = "false"
+
+Result: seq = 616890
+Page saved: seq 616890
+------ ----------------------------------------------------------------
+Requesting: DRIVE_STATE
+Requesting: DRIVE_STATE
+Node: /External/Ingest/Tesla - DRIVE_STATE/data/response
+Map (8 entries)
+	"shift_state" = "(null)"
+	"heading" = "17"
+	"latitude" = "39.274426"
+	"power" = "0"
+	"speed" = "(null)"
+	"gps_as_of" = "1517197150"
+	"longitude" = "-76.989342"
+	"timestamp" = "1517197531322"
+
+Result: seq = 616892
+Page saved: seq 616892
+------ ----------------------------------------------------------------
+Requesting: GUI_SETTINGS_STATE
+Requesting: GUI_SETTINGS_STATE
+Node: /External/Ingest/Tesla - GUI_SETTINGS_STATE/data/response
+Map (6 entries)
+	"gui_distance_units" = "mi/hr"
+	"gui_range_display" = "Rated"
+	"gui_24_hour_time" = "false"
+	"gui_charge_rate_units" = "mi/hr"
+	"gui_temperature_units" = "F"
+	"timestamp" = "1517197532515"
+
+Result: seq = 616894
+Page saved: seq 616894
+------ ----------------------------------------------------------------
+Requesting: VEHICLE_STATE
+Requesting: VEHICLE_STATE
+Node: /External/Ingest/Tesla - VEHICLE_STATE/data/response
+Map (26 entries)
+	"autopark_style" = "dead_man"
+	"df" = "0"
+	"pr" = "0"
+	"rt" = "0"
+	"dr" = "0"
+	"ft" = "0"
+	"valet_mode" = "false"
+	"autopark_state_v2" = "standby"
+	"sun_roof_percent_open" = "0"
+	"homelink_nearby" = "true"
+	"notifications_supported" = "true"
+	"locked" = "true"
+	"parsed_calendar_supported" = "true"
+	"timestamp" = "1517197533269"
+	"autopark_state" = "unavailable"
+	"odometer" = "7885.727668"
+	"remote_start" = "false"
+	"sun_roof_state" = "unknown"
+	"last_autopark_error" = "no_error"
+	"api_version" = "3"
+	"remote_start_supported" = "true"
+	"car_version" = "2017.50.1 ceae3b8"
+	"center_display_state" = "0"
+	"pf" = "0"
+	"calendar_supported" = "true"
+	"vehicle_name" = "No Time To Explain"
+
+Result: seq = 616896
+Page saved: seq 616896
