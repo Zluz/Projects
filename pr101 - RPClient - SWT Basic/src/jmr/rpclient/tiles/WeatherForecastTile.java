@@ -117,8 +117,10 @@ public class WeatherForecastTile extends TileBase {
 
 			// 5 tiles (750) = 9 days
 			// 3 tiles (450) = 5 days 
+			final int iTileWidth = rect.width / 150;
 			final int iNumberOfDays = 
-					( rect.width >= 750 ) ? NUMBER_OF_DAYS : 5; 
+//					( rect.width >= 750 ) ? NUMBER_OF_DAYS : 5;
+					1 + (int)Math.floor( iTileWidth * 7 / 5 );
 			
 			for ( int iDay = 0; iDay<iNumberOfDays; iDay++ ) {
 				em.clear();

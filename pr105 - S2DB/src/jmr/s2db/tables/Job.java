@@ -9,9 +9,16 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jmr.s2db.Client;
 import jmr.s2db.comm.ConnectionProvider;
 
+
+/*
+ * state values:
+ * 		R - request
+ * 		W - working
+ * 		C - complete
+ * 		F - failure
+ */
 public class Job extends TableBase {
 
 	private static final Logger 
@@ -197,6 +204,27 @@ public class Job extends TableBase {
 			this.strMAC = "<?,seqSession=" + this.seqSession + ">";
 		}
 		return this.strMAC;
+	}
+	
+	public boolean setState( final char state ) {
+		if ( null==this.getJobSeq() ) return false;
+		
+		final String strUpdate;
+		strUpdate = "UPDATE job "
+				+ "SET state=\"" + state + "\" " 
+				+ "WHERE seq=" + this.getJobSeq() + ";";
+
+		try (	final Connection conn = ConnectionProvider.get().getConnection();
+				final Statement stmt = conn.createStatement() ) {
+
+			stmt.executeUpdate( strUpdate );
+			
+			return true;
+		} catch ( final SQLException e ) {
+			e.printStackTrace();
+			LOGGER.log( Level.SEVERE, "Update SQL: " + strUpdate, e );
+			return false;
+		}
 	}
 	
 }

@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import jmr.s2db.comm.ConnectionProvider;
 import jmr.s2db.imprt.SummaryRegistry;
+import jmr.s2db.job.JobManager;
 import jmr.s2db.tables.Device;
 import jmr.s2db.tables.Page;
 import jmr.s2db.tables.Path;
@@ -177,11 +178,14 @@ public class Client {
 	}
 
 
-	public Device getDevice() {
+	public Device getThisDevice() {
 		final Device tDevice = ( (Device)Tables.DEVICE.get() );
 		return tDevice;
 	}
 	
-	
+	public JobManager getJobManager() {
+		final JobManager manager = JobManager.getInstance();
+		return manager;
+	}
 	
 }

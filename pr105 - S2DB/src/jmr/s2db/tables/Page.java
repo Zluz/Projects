@@ -43,7 +43,6 @@ public class Page extends TableBase {
 	
 	
 	
-	@SuppressWarnings("unused")
 	private static final Logger 
 			LOGGER = Logger.getLogger( Page.class.getName() );
 

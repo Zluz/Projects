@@ -8,6 +8,9 @@ public class GCTextUtils {
 
 	private final GC gc;
 	private boolean bRightAligned = false;
+	private Rectangle rect = null;
+	private int iY = 2;
+	private int iX = 2;
 	
 	public GCTextUtils( final GC gc ) {
 		this.gc = gc;
@@ -17,7 +20,30 @@ public class GCTextUtils {
 		this.bRightAligned = bRightAligned;
 	}
 	
+	public void setRect( final Rectangle rect ) {
+		this.rect = rect;
+	}
 	
+	public void println( final String strText ) {
+		if ( null==strText ) return;
+		if ( null==rect ) return;
+		if ( gc.isDisposed() ) return;
+		
+		final Point ptSize = gc.stringExtent( strText );
+		
+		if ( bRightAligned ) {
+			gc.drawText( strText, rect.width - ptSize.x, rect.y + iY );
+		} else {
+			gc.drawText( strText, rect.x + iX, rect.y + iY );
+		}
+		iY = iY + ptSize.y;
+	}
+	
+	public void println(	final boolean bValue,
+							final String strText ) {
+		final String strValue = bValue ? "[X]" : "[_]";
+		println( strValue + " " + strText );
+	}
 
 	
 	public void drawTextJustified(	final String strText,
@@ -30,7 +56,7 @@ public class GCTextUtils {
 			final Point ptSize = gc.stringExtent( strText );
 			gc.drawText( strText, rect.width - ptSize.x, rect.y );
 		} else {
-			gc.drawText( strText, rect.x, rect.y );
+			gc.drawText( strText, rect.x + iX, rect.y );
 		}
 	}
 	
