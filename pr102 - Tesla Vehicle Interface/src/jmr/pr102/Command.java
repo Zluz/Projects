@@ -45,4 +45,24 @@ public enum Command {
 	}
 	
 
+	public static Command getCommand( final String str ) {
+		if ( null==str ) return null;
+		if ( str.isEmpty() ) return null;
+		
+		final String strName = str.trim().toUpperCase();
+		final String strSuffix = str.trim().toLowerCase();
+		
+		for ( final Command command : Command.values() ) {
+			if ( strName.startsWith( command.name() ) ) {
+				return command;
+			}
+			if ( strSuffix.startsWith( command.getUrlSuffix() ) ) {
+				return command;
+			}
+		}
+		
+		return null;
+	}
+
+
 }

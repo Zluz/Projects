@@ -10,6 +10,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Text;
 
+import jmr.pr102.Command;
 import jmr.pr102.DataRequest;
 import jmr.rpclient.swt.GCTextUtils;
 import jmr.rpclient.swt.Theme;
@@ -27,36 +28,48 @@ public class TeslaTile extends TileBase {
 	final static EnumMap< DataRequest, Long > 
 							updated = new EnumMap<>( DataRequest.class );
 
-	private Thread threadUpdater;
+	
+	private final boolean bClimateControl;
+	
+	private static Thread threadUpdater;
 	
 	private Point pointClick = null;
 	
 	private static boolean bRefreshRequest = false;
 	private static long lLastRefresh = 0;
 
+	
 	public TeslaTile() {
-		threadUpdater = new Thread( "TeslaTile Updater" ) {
-			@Override
-			public void run() {
-				try {
-					Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
-		
-					for (;;) {
-						try {
-							updatePages();
-						} catch ( final Exception e ) {
-							// ignore.. 
-							// JDBC connection may have been dropped..
+		this( false );
+	}
+
+	
+	public TeslaTile( final boolean bClimateControl ) {
+		this.bClimateControl = bClimateControl;
+		if ( null==threadUpdater ) {
+			threadUpdater = new Thread( "TeslaTile Updater" ) {
+				@Override
+				public void run() {
+					try {
+						Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
+			
+						for (;;) {
+							try {
+								updatePages();
+							} catch ( final Exception e ) {
+								// ignore.. 
+								// JDBC connection may have been dropped..
+							}
+			
+							Thread.sleep( TimeUnit.SECONDS.toMillis( 4 ) );
+			//						Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
 						}
-		
-						Thread.sleep( TimeUnit.SECONDS.toMillis( 4 ) );
-		//						Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
+					} catch ( final InterruptedException e ) {
+						// just quit
 					}
-				} catch ( final InterruptedException e ) {
-					// just quit
 				}
-			}
-		};
+			};
+		}
 //		threadUpdater.start();
 	}
 	
@@ -149,6 +162,7 @@ public class TeslaTile extends TileBase {
 				final boolean bHome = "true".equalsIgnoreCase( strHome );
 //					final boolean bLatch = "Engaged".equalsIgnoreCase( strLatch );
 				final boolean bPortOpen = "true".equalsIgnoreCase( strPortOpen );
+				final String strInsideTemp = mapClimate.get( "inside_temp" );
 
 				final boolean bClimateOn = "true".equalsIgnoreCase( 
 										mapClimate.get( "is_climate_on" ) );
@@ -187,13 +201,36 @@ public class TeslaTile extends TileBase {
 					final GCTextUtils text = new GCTextUtils( gc );
 					text.setRect( gc.getClipping() );
 					
-					text.println( bHome, "Location: Home" );
-					text.println( bPortOpen, "Port open" );
-					text.println( bChargeComplete, "Charging complete" );
-					text.println( bClimateOn, "Climate On" );
-					text.println( bFanOn, "    Fan On" );
-					text.println( bRefreshRequest, "Refresh requested" );
-					text.println( bAlert, "Alert" );
+					if ( this.bClimateControl ) {
+						
+						String strInsideTempF = "<?>";
+						try {
+							final float fTempC = Float.parseFloat( strInsideTemp );
+							final float fTempF = (fTempC * 9f / 5f ) + 32f;
+							strInsideTempF = String.format( "%.1f", fTempF );
+						} catch ( final NumberFormatException e ) {
+							// ignore
+						}
+						
+						text.println( "Inside temp: " + strInsideTempF + " °F" );
+						
+						gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
+
+						super.addButton( gc, 1, 10, 30, 125, 55, "Climate ON" );
+						super.addButton( gc, 2, 10, 100, 60, 40, "C OFF" );
+						super.addButton( gc, 3, 85, 100, 50, 40, "Flash" );
+						
+					} else {
+
+						
+						text.println( bHome, "Location: Home" );
+						text.println( bPortOpen, "Port open" );
+						text.println( bChargeComplete, "Charging complete" );
+						text.println( bClimateOn, "Climate On" );
+						text.println( bFanOn, "    Fan On" );
+						text.println( bRefreshRequest, "Refresh requested" );
+						text.println( bAlert, "Alert" );
+					}
 					
 				} else {
 	
@@ -268,13 +305,35 @@ public class TeslaTile extends TileBase {
 
 
 	@Override
-	public void click( final Point point ) {
+	public boolean clickCanvas( final Point point ) {
 		this.pointClick = point;
-		
-		bRefreshRequest = true;
-		Job.add( "TESLA:" + DataRequest.CHARGE_STATE.name() );
-		Job.add( "TESLA:" + DataRequest.VEHICLE_STATE.name() );
-		Job.add( "TESLA:" + DataRequest.CLIMATE_STATE.name() );
+
+		if ( !this.bClimateControl ) {
+			bRefreshRequest = true;
+			Job.add( "TESLA_READ:" + DataRequest.CHARGE_STATE.name() );
+			Job.add( "TESLA_READ:" + DataRequest.VEHICLE_STATE.name() );
+			Job.add( "TESLA_READ:" + DataRequest.CLIMATE_STATE.name() );
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+
+	@Override
+	protected void activateButton( final int iIndex ) {
+		if ( 1==iIndex ) {
+			System.out.println( "Climate ON" );
+			Job.add( "TESLA_WRITE:" + Command.HVAC_START );
+			Job.add( "TESLA_READ:" + DataRequest.CLIMATE_STATE.name() );
+		} else if ( 2==iIndex ) {
+			System.out.println( "Climate OFF" );
+			Job.add( "TESLA_WRITE:" + Command.HVAC_STOP );
+			Job.add( "TESLA_READ:" + DataRequest.CLIMATE_STATE.name() );
+		} else if ( 3==iIndex ) {
+			System.out.println( "Flash lights" );
+			Job.add( "TESLA_WRITE:" + Command.FLASH_LIGHTS );
+		}
 	}
 	
 	

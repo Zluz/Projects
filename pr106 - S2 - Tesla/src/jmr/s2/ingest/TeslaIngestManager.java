@@ -5,9 +5,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import jmr.pr102.Command;
 import jmr.pr102.DataRequest;
 import jmr.pr102.TeslaVehicleInterface;
 import jmr.pr102.comm.TeslaLogin;
@@ -92,32 +94,58 @@ public class TeslaIngestManager {
 
 		final List<Job> jobs = 
 				Job.get( "( ( state=\"R\" ) "
-						+ "AND ( request LIKE \"TESLA:%\" ) )" );
+						+ "AND ( request LIKE \"TESLA_%\" ) )" );
 		
 		if ( null!=jobs && !jobs.isEmpty() ) {
 		
-			final Set<DataRequest> set = new HashSet<>();
+			final Set<DataRequest> setRequests = new HashSet<>();
+			final Map<Command,String> mapCommands = new HashMap<>();
 			
 			for ( final Job job : jobs ) {
 				final String strRequest = job.getRequest();
-				final String strSub = strRequest.substring( 6 ).trim();
-				final DataRequest request = DataRequest.getDataRequest( strSub );
-				if ( null!=request ) {
-					set.add( request );
+				final boolean bRead = strRequest.startsWith( "TESLA_READ" );
+				final boolean bWrite = strRequest.startsWith( "TESLA_WRITE" );
+
+				if ( bRead ) {
+					final int iPos = strRequest.indexOf(":");
+					final String strSub = strRequest.substring( iPos+1 ).trim();
+					final DataRequest request = DataRequest.getDataRequest( strSub );
+					if ( null!=request ) {
+						setRequests.add( request );
+					}
+				} else if ( bWrite ) {
+					final int iPos = strRequest.indexOf(":");
+					final String strSub = strRequest.substring( iPos+1 ).trim();
+					final Command command = Command.getCommand( strSub );
+					if ( null!=command ) {
+						mapCommands.put( command, "" );
+					}
+
+				}
+			}
+
+			if ( !mapCommands.isEmpty() ) {
+				for ( final Entry<Command, String> 
+								entry : mapCommands.entrySet() ) {
+					final Command command = entry.getKey();
+					final String strPost = entry.getValue();
+					tvi.command( command, strPost );
 				}
 			}
 			
-			final Boolean[] arrFlags = { true };
-			
-			for ( final DataRequest request : set ) {
-				requestToWebService( request, arrFlags );
+			if ( !setRequests.isEmpty() ) {
+				final Boolean[] arrFlags = { true };
+				
+				for ( final DataRequest request : setRequests ) {
+					requestToWebService( request, arrFlags );
+				}
 			}
 			
 			for ( final Job job : jobs ) {
 				job.setState( 'C' );
 			}
 
-			return !set.isEmpty();
+			return !setRequests.isEmpty() || !mapCommands.isEmpty();
 			
 		} else {
 			return false;

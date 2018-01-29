@@ -2,7 +2,6 @@ package jmr.rpclient.tiles;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 import jmr.rpclient.swt.UI;
@@ -48,9 +47,9 @@ public class TextTile extends TileBase {
 		drawTextCentered( strText, 65 );
 	}
 
+	
 	@Override
-	public void click( final Point point ) {
-		// TODO Auto-generated method stub
-	}
+	protected void activateButton( final int iIndex ) {}
+	
 
 }

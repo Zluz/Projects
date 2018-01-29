@@ -2,7 +2,6 @@ package jmr.rpclient.tiles;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 import jmr.rpclient.swt.UI;
@@ -26,10 +25,9 @@ public class CalibrationTile extends TileBase {
 		gc.drawRectangle( 2, 2, r.width - 4 - 1, r.height - 4 - 1 );
 		gc.drawRoundRectangle( 0, 0, r.width - 1, r.height - 1, 30, 30 );
 	}
-
+	
 	@Override
-	public void click( final Point point ) {
-		// TODO Auto-generated method stub
-	}
+	protected void activateButton( final int iIndex ) {}
+	
 
 }

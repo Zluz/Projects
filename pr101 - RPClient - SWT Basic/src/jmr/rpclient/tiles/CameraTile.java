@@ -120,10 +120,9 @@ public class CameraTile extends TileBase {
 //		}
 		
 	}
-
+	
 	@Override
-	public void click( final Point point ) {
-		// TODO Auto-generated method stub
-	}
+	protected void activateButton( final int iIndex ) {}
+	
 
 }

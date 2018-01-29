@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 
 import jmr.data.WeatherSymbol;
 import jmr.rpclient.swt.Theme;
@@ -120,7 +119,7 @@ public class WeatherForecastTile extends TileBase {
 			final int iTileWidth = rect.width / 150;
 			final int iNumberOfDays = 
 //					( rect.width >= 750 ) ? NUMBER_OF_DAYS : 5;
-					1 + (int)Math.floor( iTileWidth * 7 / 5 );
+					0 + (int)Math.floor( iTileWidth * 8 / 5 );
 			
 			for ( int iDay = 0; iDay<iNumberOfDays; iDay++ ) {
 				em.clear();
@@ -214,11 +213,10 @@ public class WeatherForecastTile extends TileBase {
 		
 	}
 	
-
 	@Override
-	public void click( final Point point ) {
-		// TODO Auto-generated method stub
-	}
+	protected void activateButton( final int iIndex ) {}
+	
+
 
 
 	

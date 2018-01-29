@@ -20,6 +20,7 @@ public interface Tile {
 
 //	public MouseListener getMouseListener();
 	
-	public void click( final Point point );
+	public boolean clickButtons( final Point point );
+	public boolean clickCanvas( final Point point );
 
 }

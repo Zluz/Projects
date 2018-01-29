@@ -141,7 +141,13 @@ public class TileCanvas {
 //								new Point( event.x, event.y );
 								new Point( event.x - iX, event.y - iY - TRIM_Y );
 						
-						geo.tile.click( point );
+						final boolean bButton = geo.tile.clickButtons( point );
+						if ( bButton ) return;
+
+						final boolean bCanvas = geo.tile.clickCanvas( point );
+						if ( bCanvas ) return;
+						
+						return;
 					}
 				}
 				

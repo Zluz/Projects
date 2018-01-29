@@ -6,7 +6,6 @@ import java.util.TimeZone;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 import jmr.rpclient.swt.Theme;
@@ -136,10 +135,9 @@ public class ClockTile extends TileBase {
 		gc.drawText( strTimeMin, 31, 0 );
 
 	}
-
-	@Override
-	public void click( final Point point ) {
-		// TODO Auto-generated method stub
-	}
 	
+	@Override
+	protected void activateButton( final int iIndex ) {}
+	
+
 }

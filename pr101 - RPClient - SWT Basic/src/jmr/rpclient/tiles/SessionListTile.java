@@ -14,7 +14,6 @@ import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 import jmr.rpclient.swt.GCTextUtils;
@@ -467,10 +466,9 @@ public class SessionListTile extends TileBase {
 			return text;
 		}
 	}
-
+	
 	@Override
-	public void click( final Point point ) {
-		// TODO Auto-generated method stub
-	}
+	protected void activateButton( final int iIndex ) {}
+	
 
 }

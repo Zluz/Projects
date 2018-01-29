@@ -2,7 +2,6 @@ package jmr.rpclient.tiles;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
@@ -112,9 +111,9 @@ public class PerformanceMonitorTile extends TileBase {
 		}
 	}
 
+	
 	@Override
-	public void click( final Point point ) {
-		// TODO Auto-generated method stub
-	}
+	protected void activateButton( final int iIndex ) {}
+	
 
 }
