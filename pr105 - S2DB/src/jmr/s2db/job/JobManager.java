@@ -44,25 +44,28 @@ public class JobManager {
 	}
 	
 	
-	public List<Job> getJobListing( final String strCondition ) {
+	public List<Job> getJobListing(	final String strCondition,
+									final int iLimit ) {
 		final long lNow = System.currentTimeMillis();
+		
+		final String strKey = ""+iLimit+"/" + strCondition;
 		
 		final JobListing listing;
 		final boolean bRefresh;
 		
-		if ( !JOB_LISTINGS.containsKey( strCondition ) ) {
+		if ( !JOB_LISTINGS.containsKey( strKey ) ) {
 			final JobListing listingEmpty = new JobListing();
 			listingEmpty.lLastRequest = lNow;
 			listingEmpty.thread = null;
 			listing = listingEmpty;
 			bRefresh = true;
 		} else {
-			listing = JOB_LISTINGS.get( strCondition );
+			listing = JOB_LISTINGS.get( strKey );
 			bRefresh = ( listing.lLastRequest + MIN_RE_QUERY_TIME ) < lNow;
 		}
 		
 		if ( bRefresh ) {
-			final List<Job> listingNew = Job.get( strCondition );
+			final List<Job> listingNew = Job.get( strCondition, iLimit );
 			listing.listJob.addAll( listingNew );
 		}
 		

@@ -1,5 +1,7 @@
 package jmr.rpclient.swt;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.swt.SWT;
@@ -10,12 +12,15 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Display;
 
 public abstract class UI {
 
 	final public static Display display = new Display();
 
+	public static final int REFRESH_SLEEP = 100;
+	
 	
 	final public static Color COLOR_WHITE = 
 					display.getSystemColor( SWT.COLOR_WHITE );
@@ -100,6 +105,39 @@ public abstract class UI {
 		};
 		threadUIWatchdog.start();
     }
+    
+    
+    public static final List<Canvas> listRefreshCanvases = new LinkedList<>();
+    
+    
+    public static void runUIRefresh() {
+    	final Thread threadUIRefresh = new Thread( "UI Refresh" ) {
+    		@Override
+    		public void run() {
+				try {
+					while ( !display.isDisposed() ) {
+						UI.notifyUIIdle();
+						Thread.sleep( REFRESH_SLEEP );
+						display.asyncExec( new Runnable() {
+							@Override
+							public void run() {
+								for ( final Canvas canvas : listRefreshCanvases ) {
+									if ( !canvas.isDisposed() ) {
+										canvas.redraw();
+									}
+								}
+							}
+						});
+					};
+				} catch ( final InterruptedException e ) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+    		}
+    	};
+    	threadUIRefresh.start();
+    }
+    
     
     public static void notifyUIIdle() {
   	  lLastUpdate[0] = System.currentTimeMillis();

@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 
@@ -57,13 +58,19 @@ public class JobListingTile extends TileBase {
 
 		final JobManager manager = Client.get().getJobManager();
 		
-		final List<Job> listingRefresh = manager.getJobListing( 
+		final List<Job> listingActive = manager.getJobListing( 
 //				"( job.request LIKE \"%\" )" );
-				"( job.state = \"R\" )" );
+				"( job.state = \"R\" )", 10 );
+
+		final List<Job> listingCompleted = manager.getJobListing( 
+//				"( job.request LIKE \"%\" )" );
+				"( ( job.state = \"C\" ) OR ( job.state = \"F\" ) "
+				+ "OR ( job.state = \"W\" ) )", 8 );
 
 		synchronized (listing) {
 			listing.clear();
-			listing.addAll( listingRefresh );
+			listing.addAll( listingActive );
+			listing.addAll( listingCompleted );
 		}
 	}
 
@@ -87,26 +94,37 @@ public class JobListingTile extends TileBase {
 		final int iX_RequestText;
 //		final int iX_MAC;
 		final int iX_RequestTime;
+		final char iX_State;
 		
 //		if ( 450 == rect.width ) {
 //			iX_MAC = 10;	iX_Exec = 10;	iX_Desc = 290;
 //		} else {
-			iX_RequestTime = 10;	
+			iX_State = 5;	
+			iX_RequestTime = 20;	
 //			iX_MAC = 10;	
-			iX_RequestText = 60;
+			iX_RequestText = 80;
 //		}
 		
-		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
-
 		synchronized ( listing ) {
 			for ( final Job job : listing ) {
 //			for ( final Map<String, String> map : map2.values() ) {
+
+				final char cState = job.getState();
+
+				final Color color;
+				if ( 'R'==cState ) {
+					color = Theme.get().getColor( Colors.TEXT_BOLD );
+				} else {
+					color = Theme.get().getColor( Colors.TEXT_LIGHT );
+				}
+				gc.setForeground( color );
 				
 				final long lRequestTime = job.getRequestTime();
 				final long lElapsed = lNow - lRequestTime;
 //				final String strElapsed = String.format( "%.2f s", lElapsed );
 				final String strElapsed = DateFormatting.getSmallTime( lElapsed );
 				gc.setFont( Theme.get().getFont( 8 ) );
+				gc.drawText( ""+cState, iX_State, iY );
 				gc.drawText( strElapsed, iX_RequestTime, iY );
 
 				final String strRequest = job.getRequest();

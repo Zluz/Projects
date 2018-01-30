@@ -44,6 +44,10 @@ public class TileCanvas {
 	
 	final Perspective perspective;
 	
+//	
+//	// fixed tiles
+//	final PerformanceMonitorTile tilePerf = new PerformanceMonitorTile();
+//	
 	
 	
 	public TileCanvas(	final String strDeviceDescription, 
@@ -82,29 +86,31 @@ public class TileCanvas {
 	    canvas.addMouseListener( getMouseListener() );
 	    
 
-		final Thread threadRefresh = new Thread() {
-			@Override
-			public void run() {
-				try {
-					do {
-						UI.notifyUIIdle();
-						Thread.sleep( REFRESH_SLEEP );
-						if ( !canvas.isDisposed() ) {
-							canvas.getDisplay().asyncExec( new Runnable() {
-								@Override
-								public void run() {
-									canvas.redraw();
-								}
-							});
-						}
-					} while ( !parent.isDisposed() );
-				} catch ( final InterruptedException e ) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		};
-		threadRefresh.start();
+//		final Thread threadRefresh = new Thread() {
+//			@Override
+//			public void run() {
+//				try {
+//					do {
+//						UI.notifyUIIdle();
+//						Thread.sleep( REFRESH_SLEEP );
+//						if ( !canvas.isDisposed() ) {
+//							canvas.getDisplay().asyncExec( new Runnable() {
+//								@Override
+//								public void run() {
+//									canvas.redraw();
+//								}
+//							});
+//						}
+//					} while ( !parent.isDisposed() );
+//				} catch ( final InterruptedException e ) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//			}
+//		};
+//		threadRefresh.start();
+	    
+	    UI.listRefreshCanvases.add( canvas );
 	    
 	    return canvas;
 	}
@@ -220,6 +226,7 @@ public class TileCanvas {
 					
 					imageBuffer.dispose();
 				}
+				
 			}
 		};
 	}

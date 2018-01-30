@@ -38,7 +38,7 @@ public class Job extends TableBase {
 	
 	public static Job get( final long seqJob ) {
 		final String strWhere = "job.seq = " + seqJob;
-		final List<Job> listJob = Job.get( strWhere );
+		final List<Job> listJob = Job.get( strWhere, 100 );
 		
 		if ( null==listJob || listJob.isEmpty() ) {
 			LOGGER.log( Level.WARNING, 
@@ -55,19 +55,19 @@ public class Job extends TableBase {
 		final String strWhere = 
 				"( ( job.state = \"R\" ) "
 				+ "&& ( job.request LIKE \"" + strRequestContains + "\" ) )";
-		final List<Job> listJob = Job.get( strWhere );
+		final List<Job> listJob = Job.get( strWhere, 100 );
 		return listJob;
 	}
 	
-	public static List<Job> get( final String strWhere ) {
+	public static List<Job> get( 	final String strWhere,
+									final int iLimit ) {
 
 		final String strQueryProperties = 
-		 "SELECT  "
-		 + "	* "
-		 + "FROM  "
-		 + "	job "
-		 + "WHERE "
-		 + "	" + strWhere + ";";
+						 "SELECT * "
+						 + " FROM job "
+						 + " WHERE " + strWhere + " "
+				 		 + " ORDER BY request_time DESC "
+				 		 + " LIMIT " + iLimit + ";";
 		 
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
 				final Statement stmt = conn.createStatement() ) {

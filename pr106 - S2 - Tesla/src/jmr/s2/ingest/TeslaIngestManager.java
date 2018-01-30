@@ -94,7 +94,7 @@ public class TeslaIngestManager {
 
 		final List<Job> jobs = 
 				Job.get( "( ( state=\"R\" ) "
-						+ "AND ( request LIKE \"TESLA_%\" ) )" );
+						+ "AND ( request LIKE \"TESLA_%\" ) )", 100 );
 		
 		if ( null!=jobs && !jobs.isEmpty() ) {
 		

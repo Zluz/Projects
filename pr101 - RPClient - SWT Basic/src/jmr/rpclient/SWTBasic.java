@@ -26,11 +26,14 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Monitor;
@@ -46,6 +49,8 @@ import jmr.rpclient.tab.TabS2DB;
 import jmr.rpclient.tab.TabTiles;
 import jmr.rpclient.tab.TabTreeDemo;
 import jmr.rpclient.tab.TopSection;
+import jmr.rpclient.tiles.PerformanceMonitorTile;
+import jmr.rpclient.tiles.TileBase;
 import jmr.s2db.Client;
 import jmr.util.Logging;
 import jmr.util.NetUtil;
@@ -76,6 +81,17 @@ public class SWTBasic {
 
 	
 	private Client s2db = null;
+	
+	
+	
+	
+
+	// fixed tiles
+	final PerformanceMonitorTile tilePerf = new PerformanceMonitorTile();
+	
+	
+	
+	
 	
 
 	private static SWTBasic instance;
@@ -219,10 +235,31 @@ public class SWTBasic {
 	    // margin between the main and right control. all the way up and down. 
 	    compMain.setBackground( UI.COLOR_BLACK ); 
 	    compMain.setLayoutData( gdMain );
-	    final Composite compRight = new Composite( shell, SWT.NONE );
-	    compRight.setLayoutData( gdRight );
-	    compRight.setBackground( UI.COLOR_DARK_BLUE );
 	    
+//	    final Composite compRight = new Composite( shell, SWT.NONE );
+	    final Canvas compRight = new Canvas( shell, SWT.NONE );
+	    compRight.setLayoutData( gdRight );
+//	    compRight.setBackground( UI.COLOR_DARK_BLUE );
+	    compRight.setBackground( UI.COLOR_BLACK );
+	    
+	    
+	    final Canvas canvasMonitor = new Canvas( compRight, SWT.NONE );
+	    final GridData gdCanvas = new GridData();
+	    gdCanvas.heightHint = 180;
+	    gdCanvas.widthHint = 50;
+		canvasMonitor.setLayoutData( gdCanvas );
+		canvasMonitor.setLocation( 0, 0 );
+		canvasMonitor.setSize( 50, 180 );
+		canvasMonitor.addPaintListener( new PaintListener() {
+			@Override
+			public void paintControl( final PaintEvent event ) {
+				paintMonitorCanvas( event.gc );
+			}
+		});
+		UI.listRefreshCanvases.add( canvasMonitor );
+	    
+		
+	    final int iH = 60;
 	    compRight.addPaintListener( new PaintListener() {
 			@Override
 			public void paintControl( final PaintEvent event ) {
@@ -230,41 +267,44 @@ public class SWTBasic {
 				if ( null==gc ) return;
 				
 				gc.setBackground( UI.COLOR_DARK_BLUE );
-				gc.fillRectangle( 0, 0, 50, 480 );
+//				gc.fillRectangle( 0, 180, 50, 300 );
 				
 				
 				gc.setBackground( UI.COLOR_GRAY );
 				gc.setForeground( UI.COLOR_BLUE );
 				
 //				gc.drawLine( 000, 000, 050, 480 );
-				gc.drawLine(  25,   0,  50, 100 );
-				gc.drawLine(  50, 100,  25, 200 );
-				gc.drawLine(  25,   0,   0, 100 );
-				gc.drawLine(  25, 200,   0, 100 );
+//				gc.drawLine(  25,   0,  50, 100 );
+//				gc.drawLine(  50, 100,  25, 200 );
+//				gc.drawLine(  25,   0,   0, 100 );
+//				gc.drawLine(  25, 200,   0, 100 );
 				gc.drawLine(  25, 480,  50, 380 );
 				gc.drawLine(  25, 480,   0, 380 );
 				
-				gc.fillRectangle(  10,  10,  30,  80 );
-				gc.fillRectangle(  10, 110,  30,  80 );
-				gc.fillRectangle(  10, 210,  30,  80 );
-				gc.fillRectangle(  10, 310,  30,  80 );
-				gc.fillRectangle(  10, 410,  30,  60 );
+				int iY = 0; iY = 3 * iH;
+				final int iRH = iH - 20;
+				gc.fillRectangle(  10, iY + 10, 30, iRH ); iY += iH;
+				gc.fillRectangle(  10, iY + 10, 30, iRH ); iY += iH;
+				gc.fillRectangle(  10, iY + 10, 30, iRH ); iY += iH;
+				gc.fillRectangle(  10, iY + 10, 30, iRH ); iY += iH;
+				gc.fillRectangle(  10, iY + 10, 30, iRH ); iY += iH;
 
 				gc.setForeground( UI.COLOR_BLACK );
 
-				gc.drawText( "Daily", 12, 030 );
-				gc.drawText( "Tiles", 12, 130 );
-				gc.drawText( "S2DB",  11, 230 );
-//				gc.drawText( "Calib", 005, 320 );
-				gc.drawText( "Device", 8, 330 );
-				gc.drawText( "EXIT",  12, 430 );
+				iY = 3 * iH - 8;
+				gc.drawText( "Daily", 12, iY + 30 ); iY += iH;
+				gc.drawText( "Tiles", 12, iY + 30 ); iY += iH;
+				gc.drawText( "S2DB",  11, iY + 30 ); iY += iH;
+//				gc.drawText( "Calib", 005, iY + 30 ); iY += iH;
+				gc.drawText( "Device", 8, iY + 30 ); iY += iH;
+				gc.drawText( "EXIT",  12, iY + 30 ); iY += iH;
 			}
 		});
 	    
 	    compRight.addMouseListener( new MouseAdapter() {
 	    	@Override
 	    	public void mouseUp( final MouseEvent event ) {
-	    		final int y = event.y / 100;
+	    		final int y = event.y / iH - 3;
 	    		TopSection ts = null;
 	    		switch ( y ) {
 //	    			case 0	: SWTBasic.get().activate( TopSection. ); 
@@ -471,12 +511,33 @@ public class SWTBasic {
 	    return shell;
 	}
 
+	
+	public void paintMonitorCanvas( final GC gc ) {
+		
+		// draw the performance tile at the edge of the nav pane
+		final TileBase tile = tilePerf;
+		
+		final Device device = gc.getDevice();
+		
+		final int iX = 0; // 750; // 5 * 150;
+		final int iY = 0; // 0 * 150;
+		final int iW = 50;
+		final int iH = 180;
+
+		final Image imageBuffer = new Image( device, iW, iH );
+		tile.paint( imageBuffer );
+		gc.drawImage( imageBuffer, iX, iY );
+//		gc.fillOval( 750, 100, 20, 20 );
+		imageBuffer.dispose();
+	}
+	
 
 	public static void main( final String[] args ) {
 
 		final SWTBasic ui = new SWTBasic();
 	    
 		UI.runUIWatchdog();
+		UI.runUIRefresh();
 	    while (!ui.shell.isDisposed()) {
 	      if (!UI.display.readAndDispatch()) {
 	    	  UI.notifyUIIdle();
