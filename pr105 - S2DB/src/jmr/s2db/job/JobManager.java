@@ -19,6 +19,8 @@ public class JobManager {
 	private static final Map<String,JobListing> 
 							JOB_LISTINGS = new HashMap<>();
 	
+	private final Map<String,String> mapOptions = new HashMap<>();
+	
 	
 	public static class JobListing {
 
@@ -34,13 +36,17 @@ public class JobManager {
 	
 	private static JobManager instance = null;
 	
-	private JobManager() {};
+	private JobManager() {}
 
 	public static JobManager getInstance() {
 		if ( null==instance ) {
 			instance = new JobManager();
 		}
 		return instance;
+	}
+	
+	public void setOptions( final Map<String,String> mapOptions ) {
+		this.mapOptions.putAll( mapOptions );
 	}
 	
 	

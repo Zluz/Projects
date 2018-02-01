@@ -2,19 +2,21 @@ package jmr.rpclient.tiles;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.eclipse.swt.graphics.Rectangle;
 
 public enum Perspective {
 
-	DAILY( 5, 3, false ),
-	TESLA( 5, 3, false ),
-	CAMERA( 5, 3, false ),
-	DESKTOP( 5, 6, false ),
-	DAILY_ROTATE( 3, 5, true ),
+	DAILY( 5, 3, true, false ),
+	TESLA( 5, 3, true, false ),
+	CAMERA( 5, 3, true, false ),
+	DESKTOP( 5, 6, false, false ),
+	DAILY_ROTATE( 3, 5, true, true ),
+	REMOTE( 3, 2, false, false ),
 	
-	TEST( 5, 3, false ),
+	TEST( 5, 3, false, false ),
 	;
 	
 	
@@ -26,6 +28,7 @@ public enum Perspective {
 	
 	final int iCols;
 	final int iRows;
+	final boolean bFullscreen;
 	final boolean bRotate;
 	
 
@@ -35,9 +38,11 @@ public enum Perspective {
 	
 	Perspective(	final int iCols,
 					final int iRows,
+					final boolean bFullscreen,
 					final boolean bRotate ) {
 		this.iCols = iCols;
 		this.iRows = iRows;
+		this.bFullscreen = bFullscreen;
 		this.bRotate = bRotate;
 	}
 	
@@ -54,16 +59,23 @@ public enum Perspective {
 		return this.bRotate;
 	}
 	
+	public boolean isFullscreen() {
+		return this.bFullscreen;
+	}
+
+
 	
-	public List<TileGeometry> getTiles() {
+	
+	public List<TileGeometry> getTiles( final Map<String, String> mapOptions ) {
 		if ( list.isEmpty() ) {
 			switch ( this ) {
 				case DAILY: this.build_Daily(); break;
-				case TESLA: this.build_Tesla(); break;
+				case TESLA: this.build_Tesla( mapOptions ); break;
 				case CAMERA: this.build_Camera(); break;
 				case TEST: this.build_Test(); break;
-				case DESKTOP: this.build_Desktop(); break;
+				case DESKTOP: this.build_Desktop( mapOptions ); break;
 				case DAILY_ROTATE: this.build_DailyRotate(); break;
+				case REMOTE: this.build_Remote( mapOptions ); break;
 			}
 			validate();
 		}
@@ -81,13 +93,14 @@ public enum Perspective {
 			}
 		}
 		
+		//TODO add  java.lang.ArrayIndexOutOfBoundsException check
 		for ( final TileGeometry tile : list ) {
 			final Rectangle r = tile.rect;
 			for ( int iTX = 0; iTX<r.width; iTX++ ) {
 				for ( int iTY = 0; iTY<r.height; iTY++ ) {
 					final int iX = r.x + iTX;
 					final int iY = r.y + iTY;
-					grid[iX][iY]++;
+					grid[iX][iY]++; 
 				}
 			}
 		}
@@ -170,8 +183,11 @@ public enum Perspective {
 		list.add( new TileGeometry( new ClockTile(), 
 						new Rectangle( 0, 0, 3, 1 ) ) );
 
-		list.add( new TileGeometry( new SystemInfoTile(), 
-						new Rectangle( 1, 1, 1, 1 ) ) );
+//		list.add( new TileGeometry( new SystemInfoTile(), 
+//						new Rectangle( 1, 1, 1, 1 ) ) );
+		
+		list.add( new TileGeometry( new AudioSelectionTile(), 
+						new Rectangle( 0, 1, 2, 1 ) ) ); 
 
 		list.add( new TileGeometry( new CameraTile(), 
 						new Rectangle( 3, 0, 2, 2 ) ) ); 
@@ -228,29 +244,41 @@ public enum Perspective {
 	}
 	
 
-	private void build_Tesla() {
+	private void build_Remote( final Map<String, String> mapOptions ) {
+		
+		list.add( new TileGeometry( new JobListingTile( mapOptions ), 
+						new Rectangle( 0, 0, 3, 1 ) ) ); 
+
+		list.add( new TileGeometry( new SystemInfoTile(), 
+						new Rectangle( 0, 1, 1, 1 ) ) );
+
+		list.add( new TileGeometry( new PerformanceMonitorTile(), 
+						new Rectangle( 1, 1, 1, 1 ) ) );
+
+		list.add( new TileGeometry( new CalibrationTile(), 
+						new Rectangle( 2, 1, 1, 1 ) ) ); 
+	}
+
+	private void build_Tesla( final Map<String, String> mapOptions ) {
 		list.add( new TileGeometry( new ClockTile(), 
 						new Rectangle( 0, 0, 3, 1 ) ) );
 
 		list.add( new TileGeometry( new TeslaTile(), 
-						new Rectangle( 0, 1, 1, 2 ) ) );
-
-		list.add( new TileGeometry( new PerformanceMonitorTile(), 
-						new Rectangle( 2, 2, 1, 1 ) ) );
+						new Rectangle( 4, 0, 1, 2 ) ) );
 
 		list.add( new TileGeometry( new TeslaTile(), 
-						new Rectangle( 1, 1, 2, 1 ) ) );
+						new Rectangle( 2, 1, 2, 1 ) ) );
 		list.add( new TileGeometry( new TeslaTile( true ), 
-						new Rectangle( 1, 2, 1, 1 ) ) );
+						new Rectangle( 3, 0, 1, 1 ) ) );
 		
-		list.add( new TileGeometry( new SessionListTile( true ), 
-						new Rectangle( 3, 0, 2, 3 ) ) );
-
-//		list.add( new TileGeometry( new WeatherForecastTile(), 
-//						new Rectangle( 0, 2, 1, 1 ) ) ); 
+		list.add( new TileGeometry( new JobListingTile( mapOptions ), 
+						new Rectangle( 0, 1, 2, 1 ) ) ); 
+		
+		list.add( new TileGeometry( new WeatherForecastTile(), 
+						new Rectangle( 0, 2, 5, 1 ) ) ); 
 	}
 
-	private void build_Desktop() {
+	private void build_Desktop( final Map<String, String> mapOptions ) {
 		list.add( new TileGeometry( new ClockTile(), 
 						new Rectangle( 0, 0, 3, 1 ) ) );
 
@@ -273,7 +301,7 @@ public enum Perspective {
 						new Rectangle( 0, 1, 2, 1 ) ) ); 
 		
 //		list.add( new TileGeometry( new NetworkListTile(), 
-		list.add( new TileGeometry( new JobListingTile(), 
+		list.add( new TileGeometry( new JobListingTile( mapOptions ), 
 						new Rectangle( 0, 2, 2, 1 ) ) ); 
 
 		list.add( new TileGeometry( new WeatherForecastTile(), 
@@ -286,8 +314,7 @@ public enum Perspective {
 						new Rectangle( 3, 0, 2, 5 ) ) ); 
 
 	}
-	
-	
+
 	
 	
 	

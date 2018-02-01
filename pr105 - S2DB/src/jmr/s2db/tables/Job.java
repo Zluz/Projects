@@ -4,12 +4,17 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import jmr.s2db.DataFormatter;
 import jmr.s2db.comm.ConnectionProvider;
+import jmr.s2db.job.JobType;
 
 
 /*
@@ -107,13 +112,34 @@ public class Job extends TableBase {
 	}
 	
 	
-	public static Job add( final String strRequest ) {
-		return Job.add( null, strRequest );
+//	public static Job add( final String strRequest ) {
+//		return Job.add( null, strRequest );
+//	}
+	
+	public static Job add(	final JobType type,
+							final String strOptions ) {
+		return Job.add( null, type, strOptions );
+	}
+	
+
+	public static Job add(	final JobType type,
+							final Map<String,String> map ) {
+		final StringBuilder strOptions = new StringBuilder();
+		if ( null!=map ) {
+			for ( final Entry<String, String> entry : map.entrySet() ) {
+				final String strKey = entry.getKey();
+				final String strValue = entry.getValue();
+				
+				strOptions.append( strKey + "=" + strValue + "\\" );
+			}
+		}
+		return Job.add( null, type, strOptions.toString() );
 	}
 	
 	
 	public static Job add(	final Long seqDeviceTarget,
-							final String strRequest ) {
+							final JobType type,
+							final String strOptions ) {
 		final Long lSession = Session.getSessionSeq();
 		if ( null==lSession ) {
 			LOGGER.log( Level.SEVERE, 
@@ -124,11 +150,13 @@ public class Job extends TableBase {
 		final Job job = new Job();
 		job.seqSession = lSession;
 		job.lRequestTime = System.currentTimeMillis();
-		job.strRequest = strRequest;
+		job.strRequest = type.name() + ":" + strOptions;
 		job.cState = 'R';
 		job.seqDeviceTarget = seqDeviceTarget;
 
-		final String strInsert; 
+		final String strInsert;
+		
+		final String strFormatted = DataFormatter.format( job.strRequest );
 
 		if ( null==seqDeviceTarget ) {
 			strInsert = 
@@ -137,7 +165,7 @@ public class Job extends TableBase {
 					+ "VALUES ( " 
 							+ job.seqSession.longValue() + ", "
 							+ "\"" + job.cState + "\", "
-							+ "\"" + job.strRequest + "\", " 
+							+ strFormatted + ", " 
 							+ job.lRequestTime + " );";
 		} else {
 			strInsert = 
@@ -147,7 +175,7 @@ public class Job extends TableBase {
 					+ "VALUES ( " 
 							+ job.seqSession.longValue() + ", "
 							+ "\"" + job.cState + "\", "
-							+ "\"" + job.strRequest + "\", " 
+							+ strFormatted + ", " 
 							+ job.lRequestTime + ","
 							+ job.seqDeviceTarget + " );";
 		}
@@ -182,6 +210,20 @@ public class Job extends TableBase {
 		return this.strRequest;
 	}
 	
+	public JobType getJobType() {
+		final JobType type = JobType.getType( this.getRequest() );
+		return type;
+	}
+	
+	public Map<String,String> getJobDetails() {
+		if ( !this.strRequest.contains( ":" ) ) return Collections.emptyMap();
+		
+		final int iPos = this.strRequest.indexOf( ':' );
+		final String strDetails = strRequest.substring( iPos + 1 ).trim();
+		final Map<String,String> map = JobType.getDetails( strDetails );
+		return map;
+	}
+	
 	public Long getDeviceTargetSeq() {
 		return this.seqDeviceTarget;
 	}
@@ -206,12 +248,21 @@ public class Job extends TableBase {
 		return this.strMAC;
 	}
 	
+
 	public boolean setState( final char state ) {
+		return setState( state, null );
+	}
+	
+	public boolean setState(	final char state,
+								final String strResult ) {
 		if ( null==this.getJobSeq() ) return false;
 		
 		final String strUpdate;
 		strUpdate = "UPDATE job "
 				+ "SET state=\"" + state + "\" " 
+				+ ( null!=strResult 
+					? ", result=" + DataFormatter.format( strResult ) + " " 
+					: "" )	
 				+ "WHERE seq=" + this.getJobSeq() + ";";
 
 		try (	final Connection conn = ConnectionProvider.get().getConnection();

@@ -1,5 +1,6 @@
 package jmr.rpclient.tiles;
 
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.eclipse.swt.SWT;
@@ -8,7 +9,6 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -58,12 +58,15 @@ public class TileCanvas {
 	}
 	
 	
-	public void rotate( final GC gc ) {
-		
+//	public void rotate( final GC gc ) {}
+	
+	public Perspective getPerspective() {
+		return this.perspective;
 	}
 	
 	
-	public Composite buildUI( final Composite parent ) {
+	public Composite buildUI( 	final Composite parent,
+								final Map<String,String> mapOptions ) {
 		parent.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
 
 		final String strPad = "              ";
@@ -81,9 +84,9 @@ public class TileCanvas {
 	    }
     	
 	    final Display display = parent.getDisplay();
-	    canvas.addPaintListener( getPaintListener( display, strInfo ) );
+	    canvas.addPaintListener( getPaintListener( display, strInfo, mapOptions ) );
 	    
-	    canvas.addMouseListener( getMouseListener() );
+	    canvas.addMouseListener( getMouseListener( mapOptions ) );
 	    
 
 //		final Thread threadRefresh = new Thread() {
@@ -116,13 +119,15 @@ public class TileCanvas {
 	}
 
 
-	private MouseListener getMouseListener() {
+	private MouseListener getMouseListener(
+										final Map<String,String> mapOptions ) {
 		final MouseListener listenerCanvas = new MouseAdapter() {
 			@Override
 			public void mouseDown( final MouseEvent event ) {
 				if ( null==event ) return;
 				
-				for ( final TileGeometry geo : perspective.getTiles() ) {
+				for ( final TileGeometry geo : 
+									perspective.getTiles( mapOptions ) ) {
 					
 //					final TileBase tile = geo.tile;
 					final Rectangle rect = geo.rect;
@@ -163,8 +168,10 @@ public class TileCanvas {
 	}
 
 
-	private PaintListener getPaintListener(	final Display display,
-											final String strInfo ) {
+	private PaintListener getPaintListener(	
+									final Display display,
+									final String strInfo,
+									final Map<String,String> mapOptions ) {
 
     	final int iYLimit = 150 * perspective.getRowCount();
 
@@ -196,7 +203,8 @@ public class TileCanvas {
 					e.gc.drawText( strInfo + "Frame " + lPaintCount, 10, -2 );
 				}
 
-				for ( final TileGeometry geo : perspective.getTiles() ) {
+				for ( final TileGeometry geo : 
+									perspective.getTiles( mapOptions ) ) {
 					
 					final TileBase tile = geo.tile;
 					final Rectangle rect = geo.rect;

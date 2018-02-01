@@ -7,33 +7,39 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.widgets.Composite;
 
+import jmr.rpclient.tiles.Perspective;
 import jmr.rpclient.tiles.TileCanvas;
 
 public class TabTiles extends TabBase {
 
 	public CTabItem tab = null;
 	
-	private TileCanvas canvastile;
+	private final TileCanvas canvastile;
 	
 	private final String strDeviceDescription;
 
+	private final String strPerspective; 
+	
 	private final Map<String, String> mapOptions;
 	
 	public TabTiles(	final String strDeviceDescription,
 						final Map<String,String> mapOptions ) {
 		this.strDeviceDescription = strDeviceDescription;
 		this.mapOptions = mapOptions;
+		this.strPerspective = mapOptions.get( "tiles.perspective" );
+		
+		this.canvastile = new TileCanvas( strDeviceDescription, strPerspective );
 	}
 	
 	
 	@Override
 	public Composite buildUI( final Composite parent ) {
-
-		final String strPerspective = mapOptions.get( "tiles.perspective" );
-		canvastile = new TileCanvas( strDeviceDescription, strPerspective );
-		final Composite comp = canvastile.buildUI( parent );
+		final Composite comp = canvastile.buildUI( parent, mapOptions );
 		return comp;
-		
+	}
+	
+	public Perspective getPerspective() {
+		return this.canvastile.getPerspective();
 	}
 
 	@Override

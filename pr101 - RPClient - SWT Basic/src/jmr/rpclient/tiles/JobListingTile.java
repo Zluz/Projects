@@ -2,6 +2,7 @@ package jmr.rpclient.tiles;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.swt.graphics.Color;
@@ -12,6 +13,7 @@ import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.s2db.Client;
 import jmr.s2db.job.JobManager;
+import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
 import jmr.util.transform.DateFormatting;
 
@@ -24,8 +26,11 @@ public class JobListingTile extends TileBase {
 
 
 	private Thread threadUpdater;
+	private final String strName;
 
-	public JobListingTile() {
+	public JobListingTile(  final Map<String, String> mapOptions  ) {
+		this.strName = mapOptions.get( "remote" );
+		
 		threadUpdater = new Thread( "NetworkList Updater" ) {
 			@Override
 			public void run() {
@@ -60,7 +65,7 @@ public class JobListingTile extends TileBase {
 		
 		final List<Job> listingActive = manager.getJobListing( 
 //				"( job.request LIKE \"%\" )" );
-				"( job.state = \"R\" )", 10 );
+				"( job.state = \"R\" )", 100 );
 
 		final List<Job> listingCompleted = manager.getJobListing( 
 //				"( job.request LIKE \"%\" )" );
@@ -72,7 +77,61 @@ public class JobListingTile extends TileBase {
 			listing.addAll( listingActive );
 			listing.addAll( listingCompleted );
 		}
+		
+		doWorkJobs( listingActive );
 	}
+
+	
+	private void runRemoteExecute( final Job job ) {
+		final Map<String,String> map = job.getJobDetails();
+		
+		if ( this.strName.equals( map.get( "remote" ) ) ) {
+
+			job.setState( 'W' );
+
+			final String strCommand = map.get( "command" );
+			
+			System.out.println( "Running command: " + strCommand );
+			
+			try {
+				final Process process = 
+								Runtime.getRuntime().exec( strCommand );
+				process.waitFor();
+				
+				String strResult = "Exit value = " + process.exitValue();
+				
+				job.setState( 'C', strResult );
+			} catch ( final Exception e ) {
+				job.setState( 'F', e.toString() );
+			}
+			
+		}
+		
+	}
+	
+	private void doWorkJobs( final List<Job> jobs ) {
+		if ( jobs.isEmpty() ) return;
+		
+		final Thread threadWorkJobs = new Thread( "Work Jobs" ) {
+			@Override
+			public void run() {
+				for ( final Job job : jobs ) {
+					final JobType type = job.getJobType();
+
+					// execute job?
+					if ( JobType.REMOTE_EXECUTE.equals( type ) ) {
+						runRemoteExecute( job );
+					}
+				}
+			}
+		};
+		threadWorkJobs.start();
+	}
+	
+	
+
+
+
 
 	@Override
 	public void paint(	final GC gc, 
@@ -89,7 +148,7 @@ public class JobListingTile extends TileBase {
 //			strText += strSession + "\n";
 //		}
 		
-		int iY = 2;
+		int iY = 20;
 
 		final int iX_RequestText;
 //		final int iX_MAC;
@@ -104,6 +163,10 @@ public class JobListingTile extends TileBase {
 //			iX_MAC = 10;	
 			iX_RequestText = 80;
 //		}
+			
+		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
+		gc.setFont( Theme.get().getFont( 8 ) );
+		gc.drawText( "Local remote name: " + this.strName, 15, 4 );
 		
 		synchronized ( listing ) {
 			for ( final Job job : listing ) {

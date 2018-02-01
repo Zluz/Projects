@@ -15,6 +15,7 @@ import jmr.pr102.TeslaVehicleInterface;
 import jmr.pr102.comm.TeslaLogin;
 import jmr.s2db.Client;
 import jmr.s2db.imprt.WebImport;
+import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
 import jmr.util.NetUtil;
 
@@ -103,8 +104,9 @@ public class TeslaIngestManager {
 			
 			for ( final Job job : jobs ) {
 				final String strRequest = job.getRequest();
-				final boolean bRead = strRequest.startsWith( "TESLA_READ" );
-				final boolean bWrite = strRequest.startsWith( "TESLA_WRITE" );
+				final JobType type = job.getJobType();
+				final boolean bRead = JobType.TESLA_READ.equals( type );
+				final boolean bWrite = JobType.TESLA_WRITE.equals( type );
 
 				if ( bRead ) {
 					final int iPos = strRequest.indexOf(":");

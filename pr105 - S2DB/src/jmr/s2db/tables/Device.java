@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -112,7 +113,7 @@ public class Device extends TableBase {
 		if ( null==mapOptions ) {
 			loadDetails();
 		}
-		return mapOptions;
+		return Collections.unmodifiableMap( mapOptions );
 	}
 	
 	public static Device getDevice( final long seqDevice ) {

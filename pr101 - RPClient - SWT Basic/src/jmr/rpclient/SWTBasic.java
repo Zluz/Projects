@@ -50,8 +50,10 @@ import jmr.rpclient.tab.TabTiles;
 import jmr.rpclient.tab.TabTreeDemo;
 import jmr.rpclient.tab.TopSection;
 import jmr.rpclient.tiles.PerformanceMonitorTile;
+import jmr.rpclient.tiles.Perspective;
 import jmr.rpclient.tiles.TileBase;
 import jmr.s2db.Client;
+import jmr.s2db.job.JobManager;
 import jmr.util.Logging;
 import jmr.util.NetUtil;
 import jmr.util.OSUtil;
@@ -184,6 +186,51 @@ public class SWTBasic {
     
 	public Shell buildUI() {
 		
+		
+		
+		
+		
+		
+
+	    /* S2DB stuff */
+	    final Date now = new Date();
+	    s2db = Client.get();
+	    final String strIP = NetUtil.getIPAddress();
+	    final String strClass = SWTBasic.class.getName();
+	    final String strSessionID = NetUtil.getSessionID();
+//		s2db.register( 	NetUtil.getMAC(), strIP, 
+//	    				strSessionID, 
+//	    				strClass, now );
+		s2db.register( 	strSessionID, strClass );
+		
+		final String strDeviceName = s2db.getThisDevice().getName();
+		final Map<String,String> mapOptions = s2db.getThisDevice().getOptions();
+		
+	    LOGGER.info( "Device: \"" + strDeviceName + "\"" );
+	    for ( final Entry<String, String> entry : mapOptions.entrySet() ) {
+		    LOGGER.info( "Options entry: \"" + entry.getKey() + "\""
+		    		+ " = \"" + entry.getValue() + "\"" );
+	    }
+	
+	    JobManager.getInstance().setOptions( mapOptions );
+	    
+		LOGGER.log( Level.INFO, "Session started. "
+				+ "IP:" + strIP + ", Session:" + strSessionID );
+	    
+		
+	    final TabTiles tTiles = new TabTiles( strDeviceName, mapOptions );
+
+		final Perspective perspective = tTiles.getPerspective();
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		final Display display = UI.display;
 	    
 //	    final PaletteData palette = new PaletteData(
@@ -193,7 +240,7 @@ public class SWTBasic {
 //	    idHide.transparentPixel = 0;
 	    
 	    final int iOptions;
-	    if ( OSUtil.isWin() ) {
+	    if ( OSUtil.isWin() || !perspective.isFullscreen() ) {
 //	    	iOptions = SWT.TOOL | SWT.SHELL_TRIM;
 	    	iOptions = SWT.SHELL_TRIM;
 	    } else {
@@ -207,7 +254,12 @@ public class SWTBasic {
 	    
 	    } else {
 	    	log( "Display is probably normal full-size screen" );
-		    shell.setSize( 810, 520 );
+	    	
+//		    shell.setSize( 810, 520 );
+	    	final int iX = perspective.getColCount() * 150 + 60;
+	    	final int iY = perspective.getRowCount() * 150 + 70;
+	    	shell.setSize( iX, iY );
+	    	
 	    	if ( shell.getLocation().x < 20 ) {
 	    		shell.setLocation( 50, 50 );
 	    	}
@@ -278,8 +330,10 @@ public class SWTBasic {
 //				gc.drawLine(  50, 100,  25, 200 );
 //				gc.drawLine(  25,   0,   0, 100 );
 //				gc.drawLine(  25, 200,   0, 100 );
-				gc.drawLine(  25, 480,  50, 380 );
-				gc.drawLine(  25, 480,   0, 380 );
+//				gc.drawLine(  25, 480,  50, 380 );
+//				gc.drawLine(  25, 480,   0, 380 );
+				gc.drawLine(  30, 480,  50, 480 );
+				gc.drawLine(  44, 480,  44, 470 );
 				
 				int iY = 0; iY = 3 * iH;
 				final int iRH = iH - 20;
@@ -362,30 +416,30 @@ public class SWTBasic {
 	    
 //	    final ClientSession session = ClientSession.get();
 //	    final Server server = new Server( session );
-	    
-	    /* S2DB stuff */
-	    final Date now = new Date();
-	    s2db = Client.get();
-	    final String strIP = NetUtil.getIPAddress();
-	    final String strClass = SWTBasic.class.getName();
-	    final String strSessionID = NetUtil.getSessionID();
-//		s2db.register( 	NetUtil.getMAC(), strIP, 
-//	    				strSessionID, 
-//	    				strClass, now );
-		s2db.register( 	strSessionID, strClass );
-		
-		final String strDeviceName = s2db.getThisDevice().getName();
-		final Map<String,String> mapOptions = s2db.getThisDevice().getOptions();
-		
-	    LOGGER.info( "Device: \"" + strDeviceName + "\"" );
-	    for ( final Entry<String, String> entry : mapOptions.entrySet() ) {
-		    LOGGER.info( "Options entry: \"" + entry.getKey() + "\""
-		    		+ " = \"" + entry.getValue() + "\"" );
-	    }
-	
-		LOGGER.log( Level.INFO, "Session started. "
-				+ "IP:" + strIP + ", Session:" + strSessionID );
-	    
+//	    
+//	    /* S2DB stuff */
+//	    final Date now = new Date();
+//	    s2db = Client.get();
+//	    final String strIP = NetUtil.getIPAddress();
+//	    final String strClass = SWTBasic.class.getName();
+//	    final String strSessionID = NetUtil.getSessionID();
+////		s2db.register( 	NetUtil.getMAC(), strIP, 
+////	    				strSessionID, 
+////	    				strClass, now );
+//		s2db.register( 	strSessionID, strClass );
+//		
+//		final String strDeviceName = s2db.getThisDevice().getName();
+//		final Map<String,String> mapOptions = s2db.getThisDevice().getOptions();
+//		
+//	    LOGGER.info( "Device: \"" + strDeviceName + "\"" );
+//	    for ( final Entry<String, String> entry : mapOptions.entrySet() ) {
+//		    LOGGER.info( "Options entry: \"" + entry.getKey() + "\""
+//		    		+ " = \"" + entry.getValue() + "\"" );
+//	    }
+//	
+//		LOGGER.log( Level.INFO, "Session started. "
+//				+ "IP:" + strIP + ", Session:" + strSessionID );
+//	    
 	    final Map<String,String> mapSessionPage = new HashMap<>();
 	    mapSessionPage.put( "page.source.class", SWTBasic.class.getName() );
 	    mapSessionPage.put( "session.start", "" + now.getTime() );
@@ -421,7 +475,7 @@ public class SWTBasic {
 //	    tCanvas.addToTabFolder( tabs );
 //	    listTabs.add( tCanvas );
 
-	    final TabTiles tTiles = new TabTiles( strDeviceName, mapOptions );
+//	    final TabTiles tTiles = new TabTiles( strDeviceName, mapOptions );
 	    tTiles.addToTabFolder( tabs );
 	    listTabs.add( tTiles );
 

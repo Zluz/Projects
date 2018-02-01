@@ -16,6 +16,7 @@ import jmr.rpclient.swt.GCTextUtils;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.s2db.Client;
+import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
 import jmr.util.transform.DateFormatting;
 
@@ -327,9 +328,9 @@ public class TeslaTile extends TileBase {
 
 		if ( !this.bClimateControl ) {
 			bRefreshRequest = true;
-			Job.add( "TESLA_READ:" + DataRequest.CHARGE_STATE );
-			Job.add( "TESLA_READ:" + DataRequest.VEHICLE_STATE );
-			Job.add( "TESLA_READ:" + DataRequest.CLIMATE_STATE );
+			Job.add( JobType.TESLA_READ, DataRequest.CHARGE_STATE.name() );
+			Job.add( JobType.TESLA_READ, DataRequest.VEHICLE_STATE.name() );
+			Job.add( JobType.TESLA_READ, DataRequest.CLIMATE_STATE.name() );
 			return true;
 		} else {
 			return false;
@@ -344,17 +345,17 @@ public class TeslaTile extends TileBase {
 				try {
 					if ( BUTTON_CLIMATE_ON==iIndex ) {
 						System.out.println( "Climate ON" );
-						Job.add( "TESLA_WRITE:" + Command.HVAC_START );
+						Job.add( JobType.TESLA_WRITE, Command.HVAC_START.name() );
 						Thread.sleep( 1000 );
-						Job.add( "TESLA_READ:" + DataRequest.CLIMATE_STATE );
+						Job.add( JobType.TESLA_READ, DataRequest.CLIMATE_STATE.name() );
 					} else if ( BUTTON_CLIMATE_OFF==iIndex ) {
 						System.out.println( "Climate OFF" );
-						Job.add( "TESLA_WRITE:" + Command.HVAC_STOP );
+						Job.add( JobType.TESLA_WRITE, Command.HVAC_STOP.name() );
 						Thread.sleep( 1000 );
-						Job.add( "TESLA_READ:" + DataRequest.CLIMATE_STATE );
+						Job.add( JobType.TESLA_READ, DataRequest.CLIMATE_STATE.name() );
 					} else if ( BUTTON_FLASH_LIGHTS==iIndex ) {
 						System.out.println( "Flash lights" );
-						Job.add( "TESLA_WRITE:" + Command.FLASH_LIGHTS );
+						Job.add( JobType.TESLA_WRITE, Command.FLASH_LIGHTS.name() );
 					}
 				} catch ( final InterruptedException e ) {
 					// just quit
