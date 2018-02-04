@@ -44,6 +44,10 @@ public class GCTextUtils {
 		final String strValue = bValue ? "[X]" : "[_]";
 		println( strValue + " " + strText );
 	}
+	
+	public void addSpace( final int iAdvanceY ) {
+		this.iY = this.iY + iAdvanceY;
+	}
 
 	
 	public void drawTextJustified(	final String strText,

@@ -16,7 +16,7 @@ public class TabTiles extends TabBase {
 	
 	private final TileCanvas canvastile;
 	
-	private final String strDeviceDescription;
+//	private final String strDeviceDescription;
 
 	private final String strPerspective; 
 	
@@ -24,7 +24,7 @@ public class TabTiles extends TabBase {
 	
 	public TabTiles(	final String strDeviceDescription,
 						final Map<String,String> mapOptions ) {
-		this.strDeviceDescription = strDeviceDescription;
+//		this.strDeviceDescription = strDeviceDescription;
 		this.mapOptions = mapOptions;
 		this.strPerspective = mapOptions.get( "tiles.perspective" );
 		

@@ -3,6 +3,7 @@ package jmr.rpclient.tiles;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 
+import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.rpclient.swt.UI;
@@ -86,20 +87,28 @@ public class PerformanceMonitorTile extends TileBase {
 					iXTime = 0;
 				}
 			}
+			
+			final int iAvg;
+			if ( iSampleCount>0 ) {
+				iAvg = (int) ( lTotal / iSampleCount ) /10;
+			} else {
+				iAvg = 0;
+			}
 
 			if ( !bBar ) {
 				
 				gc.setFont( Theme.get().getFont( 16 ) );
 				gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 	
-				final float fElapsedAvg;
-				if ( iSampleCount>0 ) {
-					fElapsedAvg = lTotal / iSampleCount;
-					gc.drawText( "Avg: " + (int)fElapsedAvg/10 + " ms", 10, 10, true );
-				} else {
-					gc.drawText( "Avg: (N/A)", 10, 10, true );
-				}
-				
+//				final float fElapsedAvg;
+//				if ( iSampleCount>0 ) {
+//					fElapsedAvg = lTotal / iSampleCount;
+//					gc.drawText( "Avg: " + (int)fElapsedAvg/10 + " ms", 10, 10, true );
+//				} else {
+//					gc.drawText( "Avg: (N/A)", 10, 10, true );
+//				}
+				gc.drawText( "Avg: " + iAvg + " ms", 10, 10, true );
+
 //				gc.drawText( "Max: " + iElapsedMax/2 + " ms", 10, 36, true );
 		//		gc.drawText( "Min: " + iElapsedMin, 10, 40 );
 	
@@ -120,6 +129,11 @@ public class PerformanceMonitorTile extends TileBase {
 			} else {
 				gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
 				gc.drawLine( 0, 179, 50, 179 );
+				
+
+				gc.setFont( Theme.get().getFont( 10 ) );
+				gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
+				gc.drawText( "" + iAvg + " ms", 2, 30, true );
 			}
 
 	//		drawTextCentered( strText, 10 );
@@ -130,7 +144,7 @@ public class PerformanceMonitorTile extends TileBase {
 
 	
 	@Override
-	protected void activateButton( final int iIndex ) {}
+	protected void activateButton( final S2Button button ) {}
 	
 
 }

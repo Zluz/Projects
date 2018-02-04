@@ -8,6 +8,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import jmr.rpclient.swt.GCTextUtils;
+import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.s2db.job.JobType;
@@ -18,7 +19,7 @@ public class AudioSelectionTile extends TileBase {
 	
 	public static enum AudioProgram {
 		PLAY_SPOTIFY( "Spotify (ext)", "/Local/scripts/play_stop.sh" ),
-		PLAY_LOVELINE( "Classic Loveline", "/Local/scripts/play_loveline.sh" ),
+		PLAY_LOVELINE( "Classic Loveline", "/Local/scripts/play_vlc.sh" ),
 		PLAY_TWIT( "TWiT (Twitch)", "/Local/scripts/play_twit.sh" ),
 		PLAY_NPR( "NPR stream", "/Local/scripts/play_npr.sh" ),
 		;
@@ -127,9 +128,9 @@ public class AudioSelectionTile extends TileBase {
 	
 	
 	@Override
-	protected void activateButton( final int iIndex ) {
+	protected void activateButton( final S2Button button ) {
 		for ( final AudioProgram program : AudioProgram.values() ) {
-			if ( program.ordinal()==iIndex ) {
+			if ( program.ordinal()==button.getIndex() ) {
 				play( program );
 			}
 		}

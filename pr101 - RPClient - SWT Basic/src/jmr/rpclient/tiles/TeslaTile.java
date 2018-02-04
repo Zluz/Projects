@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Text;
 import jmr.pr102.Command;
 import jmr.pr102.DataRequest;
 import jmr.rpclient.swt.GCTextUtils;
+import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.s2db.Client;
@@ -42,7 +43,7 @@ public class TeslaTile extends TileBase {
 	private Point pointClick = null;
 	
 	private static boolean bRefreshRequest = false;
-	private static long lLastRefresh = 0;
+	private long lLastRefresh = 0;
 
 	
 	public TeslaTile() {
@@ -143,6 +144,9 @@ public class TeslaTile extends TileBase {
 
 		try {
 
+			String strError = null;
+			String strAlert = null;
+
 			final Map<String, String> mapCharge = new HashMap<>();
 			final Map<String, String> mapVehicle = new HashMap<>(); 
 			final Map<String, String> mapClimate = new HashMap<>(); 
@@ -154,12 +158,12 @@ public class TeslaTile extends TileBase {
 			}
 
 			if ( null!=mapCharge && null!=mapVehicle ) {
-			
+				
 				final String strVersion = mapVehicle.get( "car_version" );
 //					final String strOdometer = mapVehicle.get( "odometer" );
 				final String strRange = mapCharge.get( "battery_range" );
 				final String strStatus = mapCharge.get( "+status" );
-				final String strTimestamp = mapCharge.get( ".last_modified_uxt" );
+				final String strTimestampCharge = mapCharge.get( ".last_modified_uxt" );
 				final String strHome = mapVehicle.get( "homelink_nearby" );
 				final String strAPIVersion = mapVehicle.get( "api_version" );
 			
@@ -177,15 +181,37 @@ public class TeslaTile extends TileBase {
 										mapClimate.get( "is_climate_on" ) );
 				final boolean bFanOn = !"0".equalsIgnoreCase( 
 										mapClimate.get( "fan_status" ) );
+				
+				final String strBatteryLevel = mapCharge.get( "battery_level" );
+				boolean bLowBattery = false;
+				try {
+					final int iBatteryLevel = 
+							Integer.parseInt( strBatteryLevel );
+					bLowBattery = iBatteryLevel < 70;
+				} catch ( final NumberFormatException e ) {
+					bLowBattery = true;
+					strError = "Invalid battery_level";
+				}
 
 				final String strChargeState = mapCharge.get( "charging_state" );
 				final String strChargerPower = mapCharge.get( "charger_power" );
 				final boolean bChargeComplete = 
 							"Complete".equalsIgnoreCase( strChargeState );
+				final boolean bCharging = 
+							"Charging".equalsIgnoreCase( strChargeState );
 
 				final boolean bAlertCycle = Math.floor(System.currentTimeMillis()/500) % 2 == 0;
 //				final boolean bAlert = bAlertCycle && bHome && !bPortOpen;
-				final boolean bAlert = bHome && !bPortOpen;
+//				final boolean bAlert = bHome && !bPortOpen;
+//				final boolean bError = null!=strError;
+//				if ( null!=strError ) {
+//					strAlert = "(See Error)";
+//				}
+				if ( bHome && bLowBattery && !bCharging ) {
+					strAlert = "Not charging (" + strBatteryLevel + "%)";
+				}
+				
+				final boolean bAlert = ( null!=strError || null!=strAlert ); 
 				if ( bAlert && bAlertCycle ) {
 //						gc.setForeground( Theme.get().getColor( Colors.BACK_ALERT ) );
 					gc.setBackground( Theme.get().getColor( Colors.BACK_ALERT ) );
@@ -193,10 +219,13 @@ public class TeslaTile extends TileBase {
 				}
 
 				try {
-					final Long lLastModified = Long.parseLong( strTimestamp );
+					final Long lLastModified = Long.parseLong( strTimestampCharge );
 					if ( lLastRefresh != lLastModified ) {
 						bRefreshRequest = false;
 						lLastRefresh = lLastModified;
+						setButtonState( TeslaTile.BUTTON_CLIMATE_OFF, ButtonState.READY );
+						setButtonState( TeslaTile.BUTTON_CLIMATE_ON, ButtonState.READY );
+						setButtonState( TeslaTile.BUTTON_FLASH_LIGHTS, ButtonState.READY );
 					}
 				} catch ( final NumberFormatException e ) {
 					// just ignore
@@ -241,13 +270,22 @@ public class TeslaTile extends TileBase {
 						text.println( bHome, "Location: Home" );
 						text.println( bPortOpen, "Port open" );
 						text.println( bLatched, "   Port latched" );
+						text.addSpace( 4 );
 						text.println( bChargeComplete, "Charging complete" );
+						text.println( bCharging, "   Charging" );
+						text.println( bLowBattery, "   Low battery: " + strBatteryLevel );
 						text.println( "        State: " + strChargeState );
 						text.println( "        Power: " + strChargerPower );
+						text.addSpace( 4 );
 						text.println( bClimateOn, "Climate On" );
 						text.println( bFanOn, "   Fan On" );
 						text.println( bRefreshRequest, "Refresh request" );
-						text.println( bAlert, "Alert" );
+						text.addSpace( 10 );
+						
+						text.println( null!=strError, "Error" 
+								+ ( null!=strError ? ": " + strError : " -" ) );
+						text.println( null!=strAlert, "Alert" 
+								+ ( null!=strAlert ? ": " + strAlert : " -" ) );
 					}
 					
 				} else {
@@ -261,7 +299,9 @@ public class TeslaTile extends TileBase {
 	
 					gc.setFont( Theme.get().getFont( 16 ) );
 	//					gc.drawText( "Time to Charge:  " + strTime, 40, 112 );
-					if ( null!=strStatus ) {
+					if ( null!=strError ) {
+						gc.drawText( strError, 30, 112 );
+					} else if ( null!=strStatus ) {
 						gc.drawText( strStatus, 30, 112 );
 					} else {
 						gc.drawText( "(null status)", 30, 112 );
@@ -282,7 +322,7 @@ public class TeslaTile extends TileBase {
 					gc.drawText( strRange + " mi", 110, 70 );
 	
 					final String strElapsed = 
-							DateFormatting.getSmallTime( strTimestamp );
+							DateFormatting.getSmallTime( strTimestampCharge );
 					
 					gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 					gc.setFont( Theme.get().getFont( 6 ) );
@@ -338,25 +378,48 @@ public class TeslaTile extends TileBase {
 	}
 
 
+	private void activateButtonThreaded( final S2Button button ) 
+									throws InterruptedException {
+		if ( null!=button ) {
+			button.setState( ButtonState.WORKING );
+		}
+		Job job = null;
+		switch ( button.getIndex() ) {
+			case BUTTON_CLIMATE_ON: {
+				System.out.println( "Climate ON" );
+				Job.add( JobType.TESLA_WRITE, Command.HVAC_START.name() );
+				Thread.sleep( 1000 );
+				job = Job.add( JobType.TESLA_READ, DataRequest.CLIMATE_STATE.name() );
+				
+				break;
+			}
+			
+			case BUTTON_CLIMATE_OFF: {
+				System.out.println( "Climate OFF" );
+				Job.add( JobType.TESLA_WRITE, Command.HVAC_STOP.name() );
+				Thread.sleep( 1000 );
+				Job.add( JobType.TESLA_READ, DataRequest.CLIMATE_STATE.name() );
+				break;
+			}
+			case BUTTON_FLASH_LIGHTS: {
+				System.out.println( "Flash lights" );
+				Job.add( JobType.TESLA_WRITE, Command.FLASH_LIGHTS.name() );
+				break;
+			}
+		}
+		if ( null!=button ) {
+			button.setJob( job );
+		}
+	}
+	
+	
+	
 	@Override
-	protected void activateButton( final int iIndex ) {
+	protected void activateButton( final S2Button button ) {
 		final Thread thread = new Thread( "Button action (TeslaTile)" ) {
 			public void run() {
 				try {
-					if ( BUTTON_CLIMATE_ON==iIndex ) {
-						System.out.println( "Climate ON" );
-						Job.add( JobType.TESLA_WRITE, Command.HVAC_START.name() );
-						Thread.sleep( 1000 );
-						Job.add( JobType.TESLA_READ, DataRequest.CLIMATE_STATE.name() );
-					} else if ( BUTTON_CLIMATE_OFF==iIndex ) {
-						System.out.println( "Climate OFF" );
-						Job.add( JobType.TESLA_WRITE, Command.HVAC_STOP.name() );
-						Thread.sleep( 1000 );
-						Job.add( JobType.TESLA_READ, DataRequest.CLIMATE_STATE.name() );
-					} else if ( BUTTON_FLASH_LIGHTS==iIndex ) {
-						System.out.println( "Flash lights" );
-						Job.add( JobType.TESLA_WRITE, Command.FLASH_LIGHTS.name() );
-					}
+					activateButtonThreaded( button );
 				} catch ( final InterruptedException e ) {
 					// just quit
 				}

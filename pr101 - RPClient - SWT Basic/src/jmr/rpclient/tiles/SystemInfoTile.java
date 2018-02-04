@@ -3,6 +3,7 @@ package jmr.rpclient.tiles;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 
+import jmr.rpclient.swt.S2Button;
 import jmr.util.NetUtil;
 
 public class SystemInfoTile extends TileBase {
@@ -23,7 +24,7 @@ public class SystemInfoTile extends TileBase {
 
 	
 	@Override
-	protected void activateButton( final int iIndex ) {}
+	protected void activateButton( final S2Button button ) {}
 	
 
 }

@@ -1,19 +1,25 @@
 package jmr.rpclient.tiles;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
+import jmr.rpclient.swt.ColorCache;
+import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
+import jmr.rpclient.swt.UI;
 
 public abstract class TileBase implements Tile {
 
-	private final List<Button> buttons = new LinkedList<>();
+//	private final List<Button> buttons = new LinkedList<>();
+	private final Map<Integer,S2Button> buttons = new HashMap<>();
 	
 	
 	protected GC gc = null;
@@ -23,11 +29,14 @@ public abstract class TileBase implements Tile {
 
 
 	
-	private static class Button {
-		Rectangle rect;
-		int iIndex;
+	public static enum ButtonState {
+		READY,
+		ACTIVATED,
+		WORKING,
+		DISABLED,
+		;
 	}
-
+	
 	
 	public void paint( final Image imageBuffer ) {
 		rect = imageBuffer.getBounds();
@@ -39,7 +48,7 @@ public abstract class TileBase implements Tile {
 		this.iXC = rect.x + rect.width / 2;
 		this.iYC = rect.y + rect.height / 2;
 
-		buttons.clear();
+//		buttons.clear();
 		
 		paint( gc, imageBuffer );
 		gc.dispose();
@@ -61,12 +70,16 @@ public abstract class TileBase implements Tile {
 	public boolean clickButtons( final Point point ) {
 
 		boolean bButton = false;
-		for ( final Button button : buttons ) {
-			final Rectangle r = button.rect;
+//		for ( final Button button : buttons ) {
+		for ( final S2Button button : buttons.values() ) {
+			final Rectangle r = button.getRect();
 			if ( ( point.x > r.x ) && ( point.x < r.x + r.width )
 					&& ( point.y > r.y ) && ( point.y < r.y + r.height ) ) {
 				
-				activateButton( button.iIndex );
+				System.out.println( "Button pressed: " + button.getName() );
+				
+				activateButton( button );
+				button.setState( ButtonState.ACTIVATED );
 				
 				bButton = true;
 			}
@@ -76,25 +89,72 @@ public abstract class TileBase implements Tile {
 	}
 	
 	
-	protected abstract void activateButton( final int iIndex );
+	protected abstract void activateButton( final S2Button button );
 
+	
+	public S2Button getButton( final int iIndex ) {
+		return buttons.get( iIndex );
+	}
 
+	
+	
+	private final static Map<String,Integer> SIZE_CACHE = new HashMap<>();
+	
+	private String getCacheKey( final String strText,
+								final int iGCWidth,
+								final int iMin,
+								final int iMax ) {
+		return ""+iGCWidth + ":" + iMin + "-" + iMax + ":" + strText;
+	}
+	
+	public void setButtonState(	final int iIndex,
+								final ButtonState state ) {
+		if ( null==state ) return;
+		final S2Button button = buttons.get( iIndex );
+		if ( null==button ) return;
+		button.setState( state );
+	}
+	
+	
+	
+	
 	//TODO optimize
 	protected void drawTextCentered(	final String strText,
-										final int iY ) {
-		int iSize = 200;
-		Point ptTest;
-		do {
-			iSize = iSize - 10;
-			gc.setFont( Theme.get().getFont( iSize ) );
-			ptTest = gc.textExtent( strText );
-		} while ( rect.width < ptTest.x );
+										final int iY,
+										final int iMin,
+										final int iMax ) {
+		int iSize;
+		final String strKey = getCacheKey( strText, rect.width, iMin, iMax );
+		if ( !SIZE_CACHE.containsKey( strKey ) ) {
+		
+			iSize = iMax + 1;
+			Point ptTest;
+			do {
+				iSize = iSize - 1;
+				gc.setFont( Theme.get().getFont( iSize ) );
+				ptTest = gc.textExtent( strText );
+			} while ( ( rect.width < ptTest.x ) && ( iSize >= iMin ) );
+			iSize = Math.max( iSize, iMin );
+
+			if ( SIZE_CACHE.size() > 20 ) SIZE_CACHE.clear();
+			
+			SIZE_CACHE.put( strKey, iSize );
+			System.out.println( "SIZE_CACHE size: " + SIZE_CACHE.size() );
+		} else {
+			iSize = SIZE_CACHE.get( strKey );
+		}
+		
 		
 		gc.setFont( Theme.get().getFont( iSize ) );
 		final Point ptExtent = gc.textExtent( strText );
 		
 		final int iX = iXC - ( ptExtent.x / 2 );
 		gc.drawText( strText, iX, iY );
+	}
+
+	protected void drawTextCentered(	final String strText,
+										final int iY ) {
+		drawTextCentered( strText, iY, 8, 50 );
 	}
 
 
@@ -105,23 +165,105 @@ public abstract class TileBase implements Tile {
 								final String strText ) {
 		if ( null==gc || gc.isDisposed() ) return;
 		if ( null==strText ) return;
+
+		final S2Button button;
+		final int iBrightBase;
+		final Color colorText;
 		
-		gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
-		gc.drawRoundRectangle( iX, iY, iW, iH, 20, 20 );
+		if ( this.buttons.containsKey( iIndex ) ) {
+			button = this.buttons.get( iIndex );
+			switch ( button.getState() ) {
+				case ACTIVATED: {
+					iBrightBase = 60;
+					colorText = UI.COLOR_RED;
+					break;
+				}
+				case READY: {
+					iBrightBase = 100;
+					colorText = UI.COLOR_BLACK;
+					break;
+				}
+				case DISABLED: {
+					iBrightBase = 80;
+					colorText = UI.COLOR_GRAY;
+					break;
+				}
+				case WORKING: {
+					iBrightBase = 60;
+					colorText = UI.COLOR_GREEN;
+					break;
+				}
+				default: {
+					iBrightBase = 100;
+					colorText = UI.COLOR_BLACK;
+					break;
+				}
+			}
+		} else {
+			button = new S2Button( iIndex, strText, rect );
+			button.setState( ButtonState.READY );
+			this.buttons.put( iIndex, button );
+			iBrightBase = 200;
+			colorText = UI.COLOR_BLACK;
+		}
+//		final Rectangle rect = new Rectangle( iX, iY, iW, iH );
+//		button.rect = rect;
+
 		
-		gc.setFont( Theme.get().getFont( 11 ) );
+		
+		
+		gc.setAdvanced( true );
+		gc.setAntialias( SWT.ON );
+		
+//		gc.setForeground( UI.COLOR_GRAY );
+		gc.setForeground( ColorCache.getGray( iBrightBase + 100 ) );
+		gc.drawRoundRectangle( iX-1, iY-2, iW, iH, 20, 20 );
+		gc.setForeground( ColorCache.getGray( iBrightBase + 40 ) );
+		gc.drawRoundRectangle( iX-1, iY-1, iW, iH, 20, 20 );
+
+//		gc.drawRoundRectangle( iX, iY, iW, iH, 20, 20 );
+		gc.setBackground( ColorCache.getGray( iBrightBase + 10 ) );
+//		gc.setBackground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
+		gc.fillRoundRectangle( iX, iY, iW, iH, 20, 20 );
+
+		gc.setBackground( ColorCache.getGray( iBrightBase + 15 ) );
+		gc.fillRoundRectangle( iX+3, iY+0, iW-6, iH-10, 20, 20 );
+		gc.setBackground( ColorCache.getGray( iBrightBase + 20 ) );
+		gc.fillRoundRectangle( iX+6, iY+1, iW-12, iH-20, 20, 20 );
+		gc.setBackground( ColorCache.getGray( iBrightBase + 25 ) );
+		gc.fillRoundRectangle( iX+9, iY+4, iW-16, iH-25, 20, 20 );
+
+		gc.setFont( Theme.get().getBoldFont( 11 ) );
 
 		final Point ptSize = gc.textExtent( strText );
 		
 		final int iTextX = iX + (int)((float)iW/2 - (float)ptSize.x/2);
 		final int iTextY = iY + (int)((float)iH/2 - (float)ptSize.y/2);
 		
-		gc.drawText( strText, iTextX, iTextY );
-		
-		final Button button = new Button();
-		button.rect = new Rectangle( iX, iY, iW, iH );
-		button.iIndex = iIndex;
-		this.buttons.add( button );
+		gc.setForeground( ColorCache.getGray( iBrightBase + 50 ) );
+		gc.drawText( strText, iTextX+1, iTextY+1, true );
+		gc.setForeground( colorText );
+		gc.drawText( strText, iTextX, iTextY, true );
+
+//		gc.setForeground( UI.COLOR_WHITE );
+//		gc.drawRoundRectangle( iX, iY, iW, iH, 20, 20 );
+//
+////		final Button button = new Button();
+////		button.rect = new Rectangle( iX, iY, iW, iH );
+//		final Rectangle rect = new Rectangle( iX, iY, iW, iH );
+////		button.iIndex = iIndex;
+//		
+//		if ( this.buttons.containsKey( iIndex ) ) {
+//			this.buttons.get( iIndex ).rect = rect;
+//		} else {
+//			final Button button = new Button();
+//			button.iIndex = iIndex;
+//			button.rect = rect;
+//			button.state = ButtonState.READY;
+//			this.buttons.put( iIndex, button );
+//		}
+//		this.buttons.add( button );
+//		this.buttons.put( iIndex, button );
 	}
 
 }

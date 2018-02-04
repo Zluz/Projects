@@ -4,6 +4,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 
+import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.UI;
 
 public class TextTile extends TileBase {
@@ -49,7 +50,7 @@ public class TextTile extends TileBase {
 
 	
 	@Override
-	protected void activateButton( final int iIndex ) {}
+	protected void activateButton( final S2Button button ) {}
 	
 
 }

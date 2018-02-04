@@ -40,12 +40,14 @@ public class Theme {
 	private Theme() {
 		this.display = Display.getCurrent();
 		for ( final Colors c : Colors.values() ) {
-			final Color color = new Color( display, c.rgb );
+			final Color color = ColorCache.getColor( c.rgb );
+//			final Color color = new Color( display, c.rgb );
 			COLORMAP.put( c, color );
 		}
 	}
 	
-	private final Map<Integer,Font> mapFonts = new HashMap<Integer,Font>();
+	private final Map<Integer,Font> mapFontNormal = new HashMap<Integer,Font>();
+	private final Map<Integer,Font> mapFontBold = new HashMap<Integer,Font>();
 	
 	
 	public static synchronized Theme get() {
@@ -88,13 +90,24 @@ public class Theme {
 	 * @return
 	 */
 	public Font getFont( final int iSize ) {
-		if ( !mapFonts.containsKey( iSize ) ) {
+		if ( !mapFontNormal.containsKey( iSize ) ) {
 		    final FontData fd = display.getSystemFont().getFontData()[0];
 		    fd.setHeight( iSize );
 			final Font font = new Font( display, fd );
-			mapFonts.put( iSize, font );
+			mapFontNormal.put( iSize, font );
 		}
-		return mapFonts.get( iSize );
+		return mapFontNormal.get( iSize );
+	}
+	
+	public Font getBoldFont( final int iSize ) {
+		if ( !mapFontBold.containsKey( iSize ) ) {
+		    final FontData fd = display.getSystemFont().getFontData()[0];
+		    fd.setHeight( iSize );
+		    fd.setStyle( SWT.BOLD );
+			final Font font = new Font( display, fd );
+			mapFontBold.put( iSize, font );
+		}
+		return mapFontBold.get( iSize );
 	}
 	
 	

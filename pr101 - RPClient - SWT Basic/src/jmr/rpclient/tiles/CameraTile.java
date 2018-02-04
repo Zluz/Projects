@@ -8,6 +8,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
+import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.rpclient.swt.UI;
@@ -122,7 +123,7 @@ public class CameraTile extends TileBase {
 	}
 	
 	@Override
-	protected void activateButton( final int iIndex ) {}
+	protected void activateButton( final S2Button button ) {}
 	
 
 }

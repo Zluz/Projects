@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 
+import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.s2db.tables.Page;
@@ -136,7 +137,7 @@ public class NetworkListTile extends TileBase {
 	}
 	
 	@Override
-	protected void activateButton( final int iIndex ) {}
+	protected void activateButton( final S2Button button ) {}
 	
 
 }

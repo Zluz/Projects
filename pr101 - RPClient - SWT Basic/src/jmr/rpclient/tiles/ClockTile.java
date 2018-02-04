@@ -6,8 +6,8 @@ import java.util.TimeZone;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Rectangle;
 
+import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 
@@ -42,52 +42,6 @@ public class ClockTile extends TileBase {
 
 	
 	
-	
-	public void paint(	final GC gc,
-						final Rectangle rect ) {
-		final Date now = new Date();
-		
-
-		final String[] strTimes = new String[ TIME_FORMATS.length ];
-//		for ( final SimpleDateFormat formatter : FORMATTERS ) {
-		for ( int i=0; i<TIME_FORMATS.length; i++ ) {
-			strTimes[i] = FORMATTERS[i].format( now );
-		}
-
-		gc.setFont( Theme.get().getFont( 50 ) );
-		gc.drawText( strTimes[0], 10, 10 );
-		
-		gc.setFont( Theme.get().getFont( 30 ) );
-		gc.drawText( strTimes[0], 110, 20 );
-
-		drawTextCentered( strTimes[2], 60 );
-		drawTextCentered( strTimes[3], 100 );
-
-		
-		
-		
-		/*
-		final int iXC = rect.x * 150 + rect.width * 150 / 2;
-		final int iYC = rect.y * 150 + rect.height * 150 / 2;
-
-		int iSize = 200;
-		Point ptTest;
-		do {
-			iSize = iSize - 10;
-			gc.setFont( Theme.get().getFont( iSize ) );
-			ptTest = gc.textExtent( strTime );
-		} while ( rect.width * 150 < ptTest.x );
-		
-		gc.setFont( Theme.get().getFont( iSize ) );
-		final Point ptExtent = gc.textExtent( strTime );
-		
-		final int iX = iXC - ( ptExtent.x / 2 );
-		final int iY = iYC - ( ptExtent.y / 2 );
-		gc.drawText( strTime, iX, iY );
-		*/
-	}
-		
-	
 
 	@Override
 	public void paint( 	final GC gc, 
@@ -111,7 +65,7 @@ public class ClockTile extends TileBase {
 		gc.drawText( strTimes[1], 385, 25 );
 
 		gc.setFont( Theme.get().getFont( 25 ) );
-		drawTextCentered( strTimes[3], 100 );
+		drawTextCentered( strTimes[3], 100, 24, 30 );
 
 		gc.setFont( Theme.get().getFont( 15 ) );
 		gc.drawText( "." + strTimes[4], 380, 65 );
@@ -137,7 +91,7 @@ public class ClockTile extends TileBase {
 	}
 	
 	@Override
-	protected void activateButton( final int iIndex ) {}
+	protected void activateButton( final S2Button button ) {}
 	
 
 }
