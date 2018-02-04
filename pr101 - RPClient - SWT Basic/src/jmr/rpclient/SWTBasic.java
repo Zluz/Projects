@@ -579,7 +579,7 @@ public class SWTBasic {
 		final int iH = 180;
 
 		final Image imageBuffer = new Image( device, iW, iH );
-		tile.paint( imageBuffer );
+		tile.paint( imageBuffer, System.currentTimeMillis() );
 		gc.drawImage( imageBuffer, iX, iY );
 //		gc.fillOval( 750, 100, 20, 20 );
 		imageBuffer.dispose();

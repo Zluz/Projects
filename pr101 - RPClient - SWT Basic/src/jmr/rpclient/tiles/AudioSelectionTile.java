@@ -18,7 +18,7 @@ public class AudioSelectionTile extends TileBase {
 
 	
 	public static enum AudioProgram {
-		PLAY_SPOTIFY( "Spotify (ext)", "/Local/scripts/play_stop.sh" ),
+		PLAY_SPOTIFY( "Spotify (ext)", "/Local/scripts/stop_all.sh" ),
 		PLAY_LOVELINE( "Classic Loveline", "/Local/scripts/play_vlc.sh" ),
 		PLAY_TWIT( "TWiT (Twitch)", "/Local/scripts/play_twit.sh" ),
 		PLAY_NPR( "NPR stream", "/Local/scripts/play_npr.sh" ),
@@ -109,7 +109,8 @@ public class AudioSelectionTile extends TileBase {
 	}
 
 
-	private void play( final AudioProgram program ) {
+	private void play(	final S2Button button,
+						final AudioProgram program ) {
 
 		System.out.println( "Selected audio program: " + program.strTitle );
 
@@ -120,7 +121,8 @@ public class AudioSelectionTile extends TileBase {
 				map.put( "remote", "media" );
 				map.put( "command", program.strScript );
 					
-				Job.add( JobType.REMOTE_EXECUTE, map );
+				final Job job = Job.add( JobType.REMOTE_EXECUTE, map );
+				button.setJob( job );
 			};
 		};
 		thread.start();
@@ -131,7 +133,7 @@ public class AudioSelectionTile extends TileBase {
 	protected void activateButton( final S2Button button ) {
 		for ( final AudioProgram program : AudioProgram.values() ) {
 			if ( program.ordinal()==button.getIndex() ) {
-				play( program );
+				play( button, program );
 			}
 		}
 	}

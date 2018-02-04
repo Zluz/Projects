@@ -2,11 +2,9 @@ package jmr.s2.ingest;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import jmr.pr102.Command;
@@ -17,6 +15,7 @@ import jmr.s2db.Client;
 import jmr.s2db.imprt.WebImport;
 import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
+import jmr.s2db.tables.Job.JobState;
 import jmr.util.NetUtil;
 
 public class TeslaIngestManager {
@@ -99,10 +98,11 @@ public class TeslaIngestManager {
 		
 		if ( null!=jobs && !jobs.isEmpty() ) {
 		
-			final Set<DataRequest> setRequests = new HashSet<>();
-			final Map<Command,String> mapCommands = new HashMap<>();
+			final Map<DataRequest,Long> setRequests = new HashMap<>();
+			final Map<Command,Long> mapCommands = new HashMap<>();
 			
 			for ( final Job job : jobs ) {
+				final long lSeq = job.getJobSeq();
 				final String strRequest = job.getRequest();
 				final JobType type = job.getJobType();
 				final boolean bRead = JobType.TESLA_READ.equals( type );
@@ -113,38 +113,58 @@ public class TeslaIngestManager {
 					final String strSub = strRequest.substring( iPos+1 ).trim();
 					final DataRequest request = DataRequest.getDataRequest( strSub );
 					if ( null!=request ) {
-						setRequests.add( request );
+						setRequests.put( request, lSeq );
 					}
 				} else if ( bWrite ) {
 					final int iPos = strRequest.indexOf(":");
 					final String strSub = strRequest.substring( iPos+1 ).trim();
 					final Command command = Command.getCommand( strSub );
 					if ( null!=command ) {
-						mapCommands.put( command, "" );
+						mapCommands.put( command, lSeq );
 					}
 
 				}
 			}
 
+			final Map<Long,String> mapResults = new HashMap<>();
+			
 			if ( !mapCommands.isEmpty() ) {
-				for ( final Entry<Command, String> 
+				for ( final Entry<Command, Long> 
 								entry : mapCommands.entrySet() ) {
 					final Command command = entry.getKey();
-					final String strPost = entry.getValue();
-					tvi.command( command, strPost );
+					final Long lSeq = entry.getValue();
+					
+					final Map<String,String> map = 
+									tvi.command( command, null );
+					
+					mapResults.put( lSeq, map.get( 
+									TeslaVehicleInterface.MAP_KEY_FULL_JSON ) );
 				}
 			}
 			
 			if ( !setRequests.isEmpty() ) {
 				final Boolean[] arrFlags = { true };
 				
-				for ( final DataRequest request : setRequests ) {
-					requestToWebService( request, arrFlags );
+				for ( final Entry<DataRequest, Long> 
+											entry : setRequests.entrySet() ) {
+					final DataRequest request = entry.getKey();
+					final Long lSeq = entry.getValue();
+					
+					final String strResponse = 
+							requestToWebService( request, arrFlags );
+					
+					mapResults.put( lSeq, strResponse );
 				}
 			}
 			
 			for ( final Job job : jobs ) {
-				job.setState( 'C' );
+				final long lSeq = job.getJobSeq();
+				if ( mapResults.containsKey( lSeq ) ) {
+					final String strResult = mapResults.get( lSeq );
+					job.setState( JobState.COMPLETE, strResult );
+				} else {
+					job.setState( JobState.COMPLETE );
+				}
 			}
 
 			return !setRequests.isEmpty() || !mapCommands.isEmpty();
@@ -180,7 +200,7 @@ public class TeslaIngestManager {
 	 * @param request
 	 * @param arrFlags
 	 */
-	/*package*/ void requestToWebService(	final DataRequest request,
+	/*package*/ String requestToWebService(	final DataRequest request,
 											final Boolean[] arrFlags ) {
 
 		System.out.println( "Requesting: " + request );
@@ -209,6 +229,7 @@ public class TeslaIngestManager {
 						tvi.getURL( request ),
 						strResponse );
 		final Long seq = ingest.save();
+		final String strResult = ingest.getResponse();
 		
 		System.out.println( "Page saved: seq " + seq );
 		
@@ -235,6 +256,7 @@ public class TeslaIngestManager {
 					"key: " + strKey + ", value: " + strValue );
 		}
 		
+		return strResult;
 	}
 	
 	

@@ -19,7 +19,11 @@ import jmr.util.transform.JsonUtils;
 
 public class TeslaVehicleInterface implements TeslaConstants {
 
+
 	
+	public final static String MAP_KEY_FULL_JSON = "";
+	
+
 	private TeslaLogin login;
 	private TeslaVehicleID vehicle;
 	
@@ -176,7 +180,6 @@ java.lang.Exception: HTTP code 408 received.
 	}
 	
 	
-
 	public Map<String,String> command(	final Command command, 
 										final String strPost ) {
 		if ( null==command ) throw new IllegalStateException( "Null command" );
@@ -187,7 +190,8 @@ java.lang.Exception: HTTP code 408 received.
 						+ "api/1/vehicles/" + strVID + "/" 
 						+ command.getUrlSuffix();
 		
-		final String strResponse = getContent( strURL, strPost );
+		final String strNonNullPost = null!=strPost ? strPost : ""; 
+		final String strResponse = getContent( strURL, strNonNullPost );
 		// {"response":{"reason":"","result":true}}
 		// {"response":{"reason":"could_not_wake_buses","result":false}}
 
@@ -197,6 +201,8 @@ java.lang.Exception: HTTP code 408 received.
 			final JsonElement response = element.getAsJsonObject().get( "response" );
 			final JsonObject jo = response.getAsJsonObject();
 			final Map<String,String> map = JsonUtils.transformJsonToMap( jo );
+			
+			map.put( MAP_KEY_FULL_JSON, strResponse );
 			
 	        return map;
 	        

@@ -26,6 +26,29 @@ import jmr.s2db.job.JobType;
  */
 public class Job extends TableBase {
 
+	public static enum JobState {
+		REQUEST,
+		WORKING,
+		COMPLETE,
+		FAILURE,
+		UNKNOWN,
+		;
+		
+		public char getChar() {
+			return this.name().charAt( 0 );
+		}
+		
+		public static JobState getJobStateFor( final char c ) {
+			for ( final JobState state : JobState.values() ) {
+				if ( c==state.getChar() ) {
+					return state;
+				}
+			}
+			return JobState.UNKNOWN;
+		}
+	}
+	
+	
 	private static final Logger 
 			LOGGER = Logger.getLogger( Page.class.getName() );
 
@@ -33,13 +56,19 @@ public class Job extends TableBase {
 	
 	private Long seqSession = null;
 	private Long seqDeviceTarget = null;
-	private char cState = 0;
+	private JobState state = JobState.UNKNOWN;
 	private String strRequest = null;
 	private Long lRequestTime = null;
 	private Long lCompleteTime = null;
+	private String strResult;
+	
+	private long lLastRefresh = 0;
 	
 	private String strMAC = null;
+
 	
+	
+	private Job() {};
 	
 	public static Job get( final long seqJob ) {
 		final String strWhere = "job.seq = " + seqJob;
@@ -79,6 +108,8 @@ public class Job extends TableBase {
 
 			final List<Job> listJob = new LinkedList<>();
 			
+			final long lQueryTime = System.currentTimeMillis();
+			
 			try ( final ResultSet rs = stmt.executeQuery( strQueryProperties ) ) {
 				while ( rs.next() ) {
 					
@@ -91,11 +122,14 @@ public class Job extends TableBase {
 						job.seqDeviceTarget 
 								= ((Number)objDeviceTarget).longValue();
 					}
-					job.cState = rs.getString( "state" ).charAt( 0 );
+					final char cState = rs.getString( "state" ).charAt( 0 );
+					job.state = JobState.getJobStateFor( cState );
 					job.lRequestTime = rs.getLong( "request_time" );
 					job.lCompleteTime = rs.getLong( "complete_time" );
 					job.seqSession = rs.getLong( "seq_session" );
 					job.seqJob = rs.getLong( "seq" );
+					job.strResult = rs.getString( "result" );
+					job.lLastRefresh = lQueryTime;
 					
 					listJob.add( job );
 				}
@@ -151,7 +185,7 @@ public class Job extends TableBase {
 		job.seqSession = lSession;
 		job.lRequestTime = System.currentTimeMillis();
 		job.strRequest = type.name() + ":" + strOptions;
-		job.cState = 'R';
+		job.state = JobState.REQUEST;
 		job.seqDeviceTarget = seqDeviceTarget;
 
 		final String strInsert;
@@ -164,7 +198,7 @@ public class Job extends TableBase {
 					+ "( seq_session, state, request, request_time ) "
 					+ "VALUES ( " 
 							+ job.seqSession.longValue() + ", "
-							+ "\"" + job.cState + "\", "
+							+ "\"" + job.state.getChar() + "\", "
 							+ strFormatted + ", " 
 							+ job.lRequestTime + " );";
 		} else {
@@ -174,7 +208,7 @@ public class Job extends TableBase {
 					+ "			seq_device_target ) "
 					+ "VALUES ( " 
 							+ job.seqSession.longValue() + ", "
-							+ "\"" + job.cState + "\", "
+							+ "\"" + job.state.getChar() + "\", "
 							+ strFormatted + ", " 
 							+ job.lRequestTime + ","
 							+ job.seqDeviceTarget + " );";
@@ -228,8 +262,8 @@ public class Job extends TableBase {
 		return this.seqDeviceTarget;
 	}
 	
-	public char getState() {
-		return this.cState;
+	public JobState getState() {
+		return this.state;
 	}
 	
 	public Long getRequestTime() {
@@ -249,17 +283,17 @@ public class Job extends TableBase {
 	}
 	
 
-	public boolean setState( final char state ) {
+	public boolean setState( final JobState state ) {
 		return setState( state, null );
 	}
 	
-	public boolean setState(	final char state,
+	public boolean setState(	final JobState state,
 								final String strResult ) {
 		if ( null==this.getJobSeq() ) return false;
 		
 		final String strUpdate;
 		strUpdate = "UPDATE job "
-				+ "SET state=\"" + state + "\" " 
+				+ "SET state=\"" + state.getChar() + "\" " 
 				+ ( null!=strResult 
 					? ", result=" + DataFormatter.format( strResult ) + " " 
 					: "" )	
@@ -276,6 +310,34 @@ public class Job extends TableBase {
 			LOGGER.log( Level.SEVERE, "Update SQL: " + strUpdate, e );
 			return false;
 		}
+	}
+	
+	
+	public long getTimeSinceRefresh() {
+		final long lNow = System.currentTimeMillis();
+		final long lElapsed = lNow - this.lLastRefresh;
+		return lElapsed;
+	}
+	
+	public String getResult() {
+		return this.strResult;
+	}
+	
+	
+	public boolean refresh() {
+		final Job jobNew = Job.get( this.getJobSeq() );
+		if ( null!=jobNew ) {
+			this.seqSession = jobNew.seqSession;
+			this.seqDeviceTarget = jobNew.seqDeviceTarget;
+			this.state = jobNew.state;
+			this.strRequest = jobNew.strRequest;
+			this.strResult = jobNew.strResult;
+			this.lRequestTime = jobNew.lRequestTime;
+			this.lCompleteTime = jobNew.lCompleteTime;
+			this.lLastRefresh = jobNew.lLastRefresh;
+			this.strMAC = jobNew.strMAC;
+		}
+		return true;
 	}
 	
 }

@@ -16,14 +16,13 @@ import jmr.s2db.Client;
 import jmr.s2db.job.JobManager;
 import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
+import jmr.s2db.tables.Job.JobState;
 import jmr.util.transform.DateFormatting;
 
 public class JobListingTile extends TileBase {
 
-//	final static Map<String,Long> map = new HashMap<>();
 
 	final static List<Job> listing = new LinkedList<>();
-	
 
 
 	private Thread threadUpdater;
@@ -88,7 +87,7 @@ public class JobListingTile extends TileBase {
 		
 		if ( this.strName.equals( map.get( "remote" ) ) ) {
 
-			job.setState( 'W' );
+			job.setState( JobState.WORKING );
 
 			final String strCommand = map.get( "command" );
 			
@@ -101,9 +100,9 @@ public class JobListingTile extends TileBase {
 				
 				String strResult = "Exit value = " + process.exitValue();
 				
-				job.setState( 'C', strResult );
+				job.setState( JobState.COMPLETE, strResult );
 			} catch ( final Exception e ) {
-				job.setState( 'F', e.toString() );
+				job.setState( JobState.FAILURE, e.toString() );
 			}
 			
 		}
@@ -149,11 +148,12 @@ public class JobListingTile extends TileBase {
 //			strText += strSession + "\n";
 //		}
 		
-		int iY = 20;
+		int iY = 2;
 
 		final int iX_RequestText;
 //		final int iX_MAC;
 		final int iX_RequestTime;
+		final int iX_RequestResult;
 		final char iX_State;
 		
 //		if ( 450 == rect.width ) {
@@ -163,20 +163,24 @@ public class JobListingTile extends TileBase {
 			iX_RequestTime = 20;	
 //			iX_MAC = 10;	
 			iX_RequestText = 80;
+			iX_RequestResult = 450;
 //		}
 			
 		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 		gc.setFont( Theme.get().getFont( 8 ) );
-		gc.drawText( "Local remote name: " + this.strName, 15, 4 );
+		if ( null!=strName && !strName.isEmpty() ) {
+			gc.drawText( "Local remote name: " + this.strName, 15, 4 );
+			iY = iY + 18;
+		}
 		
 		synchronized ( listing ) {
 			for ( final Job job : listing ) {
 //			for ( final Map<String, String> map : map2.values() ) {
 
-				final char cState = job.getState();
+				final JobState state = job.getState();
 
 				final Color color;
-				if ( 'R'==cState ) {
+				if ( JobState.REQUEST.equals( state ) ) {
 					color = Theme.get().getColor( Colors.TEXT_BOLD );
 				} else {
 					color = Theme.get().getColor( Colors.TEXT_LIGHT );
@@ -188,11 +192,18 @@ public class JobListingTile extends TileBase {
 //				final String strElapsed = String.format( "%.2f s", lElapsed );
 				final String strElapsed = DateFormatting.getSmallTime( lElapsed );
 				gc.setFont( Theme.get().getFont( 8 ) );
-				gc.drawText( ""+cState, iX_State, iY );
+				gc.drawText( ""+state.getChar(), iX_State, iY );
 				gc.drawText( strElapsed, iX_RequestTime, iY );
 
 				final String strRequest = job.getRequest();
 				gc.drawText( strRequest, iX_RequestText, iY );
+				
+				if ( rect.width > 400 ) {
+					final String strResult = job.getResult();
+					final String strPrintable = null!=strResult ? strResult : "-";
+					gc.drawText( "   " + strPrintable, iX_RequestResult, iY );
+				}
+				
 	//			strText += strIPFit + "   " + strExecFit + "   " + strName + "\n";
 				iY += 18;
 			}

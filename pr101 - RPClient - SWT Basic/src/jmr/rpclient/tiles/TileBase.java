@@ -1,6 +1,8 @@
 package jmr.rpclient.tiles;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.swt.SWT;
@@ -12,9 +14,11 @@ import org.eclipse.swt.graphics.Rectangle;
 
 import jmr.rpclient.swt.ColorCache;
 import jmr.rpclient.swt.S2Button;
+import jmr.rpclient.swt.S2Button.ButtonState;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.rpclient.swt.UI;
+import jmr.s2db.tables.Job;
 
 public abstract class TileBase implements Tile {
 
@@ -26,19 +30,15 @@ public abstract class TileBase implements Tile {
 	protected Rectangle rect = null;
 	protected int iXC;
 	protected int iYC;
+	
+	protected long iNowPaint;
 
 
 	
-	public static enum ButtonState {
-		READY,
-		ACTIVATED,
-		WORKING,
-		DISABLED,
-		;
-	}
 	
-	
-	public void paint( final Image imageBuffer ) {
+	public void paint(	final Image imageBuffer, 
+						final long lNowPaint ) {
+		this.iNowPaint = lNowPaint;
 		rect = imageBuffer.getBounds();
 		gc = new GC( imageBuffer );
 		gc.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
@@ -70,7 +70,6 @@ public abstract class TileBase implements Tile {
 	public boolean clickButtons( final Point point ) {
 
 		boolean bButton = false;
-//		for ( final Button button : buttons ) {
 		for ( final S2Button button : buttons.values() ) {
 			final Rectangle r = button.getRect();
 			if ( ( point.x > r.x ) && ( point.x < r.x + r.width )
@@ -157,7 +156,36 @@ public abstract class TileBase implements Tile {
 		drawTextCentered( strText, iY, 8, 50 );
 	}
 
-
+	
+	
+	final static List<Long> listScheduledJobRefreshes = new ArrayList<>( 10 );
+	
+	private void scheduleButtonJobCheck( final S2Button button ) {
+		if ( null==button ) return;
+		if ( null==button.getJob() ) return;
+		
+		final Job job = button.getJob();
+		
+		if ( job.getTimeSinceRefresh() > 500 ) {
+			final long lSeq = job.getJobSeq();
+			synchronized ( listScheduledJobRefreshes ) {
+				if ( listScheduledJobRefreshes.contains( lSeq ) ) {
+					return;
+				}
+				listScheduledJobRefreshes.add( lSeq );
+			}
+			final Thread thread = new Thread( "Job " + lSeq + " refresh " ) {
+				@Override
+				public void run() {
+					job.refresh();
+					listScheduledJobRefreshes.remove( lSeq );
+				}
+			};
+			thread.start();
+		}
+	}
+	
+	
 	protected void addButton(	final GC gc,
 								final int iIndex,
 								final int iX, final int iY,
@@ -176,6 +204,7 @@ public abstract class TileBase implements Tile {
 				case ACTIVATED: {
 					iBrightBase = 60;
 					colorText = UI.COLOR_RED;
+					scheduleButtonJobCheck( button );
 					break;
 				}
 				case READY: {
@@ -191,6 +220,7 @@ public abstract class TileBase implements Tile {
 				case WORKING: {
 					iBrightBase = 60;
 					colorText = UI.COLOR_GREEN;
+					scheduleButtonJobCheck( button );
 					break;
 				}
 				default: {
@@ -200,6 +230,7 @@ public abstract class TileBase implements Tile {
 				}
 			}
 		} else {
+			final Rectangle rect = new Rectangle( iX, iY, iW, iH );
 			button = new S2Button( iIndex, strText, rect );
 			button.setState( ButtonState.READY );
 			this.buttons.put( iIndex, button );

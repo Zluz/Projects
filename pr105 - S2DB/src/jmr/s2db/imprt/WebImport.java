@@ -110,6 +110,11 @@ public class WebImport {
 		
 		System.out.println( "Result: seq = " + seq );
 	}
+
+
+	public String getResponse() {
+		return this.strJSON;
+	}
 		
 	
 	

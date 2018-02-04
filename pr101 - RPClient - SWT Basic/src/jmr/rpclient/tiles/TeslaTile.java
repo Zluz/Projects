@@ -10,10 +10,12 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Text;
 
+import jmr.data.Conversion;
 import jmr.pr102.Command;
 import jmr.pr102.DataRequest;
 import jmr.rpclient.swt.GCTextUtils;
 import jmr.rpclient.swt.S2Button;
+import jmr.rpclient.swt.S2Button.ButtonState;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.s2db.Client;
@@ -163,7 +165,20 @@ public class TeslaTile extends TileBase {
 //					final String strOdometer = mapVehicle.get( "odometer" );
 				final String strRange = mapCharge.get( "battery_range" );
 				final String strStatus = mapCharge.get( "+status" );
-				final String strTimestampCharge = mapCharge.get( ".last_modified_uxt" );
+//				final String strTimestampCharge = mapCharge.get( ".last_modified_uxt" );
+//				
+//				final int iTimestampCharge = Conversion.getIntFromString( 
+//						mapCharge.get( ".last_modified_uxt" ), Integer.MIN_VALUE );
+//				final int iTimestampVehicle = Conversion.getIntFromString( 
+//						mapVehicle.get( ".last_modified_uxt" ), Integer.MIN_VALUE );
+//				final int iTimestampClimate = Conversion.getIntFromString( 
+//						mapClimate.get( ".last_modified_uxt" ), Integer.MIN_VALUE );
+				
+				final Long lTimestampLatest = Conversion.getMaxLongFromStrings(
+									mapCharge.get( ".last_modified_uxt" ),
+									mapVehicle.get( ".last_modified_uxt" ),
+									mapClimate.get( ".last_modified_uxt" ) );
+				
 				final String strHome = mapVehicle.get( "homelink_nearby" );
 				final String strAPIVersion = mapVehicle.get( "api_version" );
 			
@@ -219,10 +234,11 @@ public class TeslaTile extends TileBase {
 				}
 
 				try {
-					final Long lLastModified = Long.parseLong( strTimestampCharge );
-					if ( lLastRefresh != lLastModified ) {
+//					final Long lLastModified = Long.parseLong( strTimestampCharge );
+//					if ( lLastRefresh != lLastModified ) {
+					if ( null!=lTimestampLatest && lLastRefresh != lTimestampLatest ) {
 						bRefreshRequest = false;
-						lLastRefresh = lLastModified;
+						lLastRefresh = lTimestampLatest;
 						setButtonState( TeslaTile.BUTTON_CLIMATE_OFF, ButtonState.READY );
 						setButtonState( TeslaTile.BUTTON_CLIMATE_ON, ButtonState.READY );
 						setButtonState( TeslaTile.BUTTON_FLASH_LIGHTS, ButtonState.READY );
@@ -321,12 +337,15 @@ public class TeslaTile extends TileBase {
 					gc.setFont( Theme.get().getFont( 28 ) );
 					gc.drawText( strRange + " mi", 110, 70 );
 	
-					final String strElapsed = 
-							DateFormatting.getSmallTime( strTimestampCharge );
-					
-					gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
-					gc.setFont( Theme.get().getFont( 6 ) );
-					gc.drawText( strElapsed, 265, 10 );
+					if ( null!=lTimestampLatest ) {
+						final String strElapsed = 
+	//							DateFormatting.getSmallTime( strTimestampCharge );
+								DateFormatting.getSmallTime( super.iNowPaint - lTimestampLatest );
+						
+						gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
+						gc.setFont( Theme.get().getFont( 6 ) );
+						gc.drawText( strElapsed, 265, 10 );
+					}
 				}
 			} else {
 				gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
@@ -387,23 +406,23 @@ public class TeslaTile extends TileBase {
 		switch ( button.getIndex() ) {
 			case BUTTON_CLIMATE_ON: {
 				System.out.println( "Climate ON" );
-				Job.add( JobType.TESLA_WRITE, Command.HVAC_START.name() );
+				job = Job.add( JobType.TESLA_WRITE, Command.HVAC_START.name() );
 				Thread.sleep( 1000 );
-				job = Job.add( JobType.TESLA_READ, DataRequest.CLIMATE_STATE.name() );
+				Job.add( JobType.TESLA_READ, DataRequest.CLIMATE_STATE.name() );
 				
 				break;
 			}
 			
 			case BUTTON_CLIMATE_OFF: {
 				System.out.println( "Climate OFF" );
-				Job.add( JobType.TESLA_WRITE, Command.HVAC_STOP.name() );
+				job = Job.add( JobType.TESLA_WRITE, Command.HVAC_STOP.name() );
 				Thread.sleep( 1000 );
 				Job.add( JobType.TESLA_READ, DataRequest.CLIMATE_STATE.name() );
 				break;
 			}
 			case BUTTON_FLASH_LIGHTS: {
 				System.out.println( "Flash lights" );
-				Job.add( JobType.TESLA_WRITE, Command.FLASH_LIGHTS.name() );
+				job = Job.add( JobType.TESLA_WRITE, Command.FLASH_LIGHTS.name() );
 				break;
 			}
 		}

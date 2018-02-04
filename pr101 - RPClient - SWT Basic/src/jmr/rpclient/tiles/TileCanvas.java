@@ -180,6 +180,7 @@ public class TileCanvas {
 			public void paintControl( final PaintEvent e ) {
 
 				lPaintCount++;
+				final long lNowPaint = System.currentTimeMillis();
 
 		    	final Rectangle rectCanvas = canvas.getClientArea();
 
@@ -216,7 +217,7 @@ public class TileCanvas {
 					
 					final Image imageBuffer = new Image( e.display, iW, iH );
 					
-					tile.paint( imageBuffer );
+					tile.paint( imageBuffer, lNowPaint );
 					
 					if ( perspective.isRotated() ) {
 						e.gc.setAdvanced( true );
