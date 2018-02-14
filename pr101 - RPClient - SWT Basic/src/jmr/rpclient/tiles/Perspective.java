@@ -14,7 +14,8 @@ public enum Perspective {
 	CAMERA( 5, 3, true, false ),
 	DESKTOP( 5, 6, false, false ),
 	DAILY_ROTATE( 3, 5, true, true ),
-	REMOTE( 5, 2, false, false ),
+	REMOTE( 6, 2, false, false ),
+	GPIO( 4, 5, false, false ),
 	
 	TEST( 5, 3, false, false ),
 	;
@@ -76,6 +77,7 @@ public enum Perspective {
 				case DESKTOP: this.build_Desktop( mapOptions ); break;
 				case DAILY_ROTATE: this.build_DailyRotate(); break;
 				case REMOTE: this.build_Remote( mapOptions ); break;
+				case GPIO: this.build_GPIO( mapOptions ); break;
 			}
 			validate();
 		}
@@ -247,7 +249,7 @@ public enum Perspective {
 	private void build_Remote( final Map<String, String> mapOptions ) {
 		
 		list.add( new TileGeometry( new JobListingTile( mapOptions ), 
-						new Rectangle( 0, 0, 5, 1 ) ) ); 
+						new Rectangle( 0, 0, 6, 1 ) ) ); 
 
 		list.add( new TileGeometry( new SystemInfoTile(), 
 						new Rectangle( 0, 1, 1, 1 ) ) );
@@ -256,7 +258,13 @@ public enum Perspective {
 						new Rectangle( 1, 1, 1, 1 ) ) );
 
 		list.add( new TileGeometry( new CalibrationTile(), 
-						new Rectangle( 4, 1, 1, 1 ) ) ); 
+						new Rectangle( 5, 1, 1, 1 ) ) ); 
+	}
+
+	private void build_GPIO( final Map<String, String> mapOptions ) {
+		
+		list.add( new TileGeometry( new GPIOTile( mapOptions ), 
+						new Rectangle( 0, 0, 4, 5 ) ) ); 
 	}
 
 	private void build_Tesla( final Map<String, String> mapOptions ) {
