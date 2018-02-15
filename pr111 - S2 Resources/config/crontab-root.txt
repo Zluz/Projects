@@ -26,4 +26,6 @@
 #14 * * * * /root/Scripts/beacon.sh > /tmp/beacon.log
 #16 * * * * /usr/bin/beacon.sh > /tmp/beacon.log
 #18 * * * * /root/Scripts/beacon.sh > /tmp/beacon.log
+# * * * * *  /Local/scripts/capture_still_cron.sh
+* * * * *  /Local/scripts/capture_still_now.sh
 
