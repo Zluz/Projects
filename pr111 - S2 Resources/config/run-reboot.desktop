@@ -1,0 +1,8 @@
+[Desktop Entry]
+Comment=Run the reboot script
+Terminal=false
+Name=Reboot
+Exec=/Local/scripts/reboot.sh
+Type=Application
+Icon=gnome-panel-launcher
+
