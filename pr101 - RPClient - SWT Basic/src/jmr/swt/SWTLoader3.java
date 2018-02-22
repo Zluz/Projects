@@ -135,12 +135,24 @@ public class SWTLoader3 {
 	
 	
 	public static void main( final String[] args ) {
+		
+		boolean bConsole = false;
+		for ( final String arg : args ) {
+			if ( arg.toLowerCase().endsWith( "console" ) ) {
+				bConsole = true;
+			}
+		}
+		
 //		org.eclipse.ui/debug=true
 //		org.eclipse.ui/trace/graphics=true
 //		System.getenv().put( "org.eclipse.ui/debug", "true" );
 //		System.getenv().put( "org.eclipse.ui//debug", "true" );
 //		System.getenv().put( "org.eclipse.ui/trace/graphics", "true" );
-		loadSWT();
+		if ( !bConsole ) {
+			loadSWT();
+		} else {
+			System.out.println( "Console mode. SWT libraries not loaded." );
+		}
 //		TestSWT.main( args );
 		SWTBasic.main( args );
 	}

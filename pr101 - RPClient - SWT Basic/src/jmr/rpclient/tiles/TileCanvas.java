@@ -1,5 +1,7 @@
 package jmr.rpclient.tiles;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -17,7 +19,10 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 
+import jmr.rpclient.ConsoleClient;
 import jmr.rpclient.RPiTouchscreen;
+import jmr.rpclient.screen.TextCanvas;
+import jmr.rpclient.screen.TextScreen;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.rpclient.swt.UI;
@@ -44,6 +49,10 @@ public class TileCanvas {
 	
 	final Perspective perspective;
 	
+	final boolean bConsole;
+	
+	final private Map<String,String> mapOptions = new HashMap<>();
+	
 //	
 //	// fixed tiles
 //	final PerformanceMonitorTile tilePerf = new PerformanceMonitorTile();
@@ -51,10 +60,14 @@ public class TileCanvas {
 	
 	
 	public TileCanvas(	final String strDeviceDescription, 
-						final String strPerspective ) {
-		
+						final String strPerspective,
+						final boolean bConsole,
+						final Map<String,String> mapOptions ) {
 		this.perspective = Perspective.getPerspectiveFor( strPerspective );
 		this.strDeviceDescription = strDeviceDescription;
+		this.bConsole = bConsole;
+		this.mapOptions.clear();
+		this.mapOptions.putAll( mapOptions );
 	}
 	
 	
@@ -65,9 +78,39 @@ public class TileCanvas {
 	}
 	
 	
-	public Composite buildUI( 	final Composite parent,
-								final Map<String,String> mapOptions ) {
+	public void buildConsole() {
+//		this.mapOptions.clear();
+//		this.mapOptions.putAll( mapOptions );
+		
+		final Thread threadPaintConsole = new Thread( "Paint Console" ) {
+			@Override
+			public void run() {
+				try {
+					while ( !ConsoleClient.get().isShuttingDown() ) {
+						Thread.sleep( 100 );
+						
+						final TextScreen screen = TextCanvas.getInstance().getScreen();
+					
+						for ( final TileGeometry geo : 
+											TileCanvas.this.getTiles() ) {
+							geo.tile.paint( screen );
+						}
+						
+					}
+				} catch ( final InterruptedException e ) {
+//					e.printStackTrace();
+					// just quit..
+				}
+			}
+		};
+		threadPaintConsole.start();
+	}
+	
+	
+	public Composite buildUI( final Composite parent ) {
 		parent.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
+//		this.mapOptions.clear();
+//		this.mapOptions.putAll( mapOptions );
 
 		final String strPad = "              ";
 		final String strInfo = strPad 
@@ -86,7 +129,7 @@ public class TileCanvas {
 	    final Display display = parent.getDisplay();
 	    canvas.addPaintListener( getPaintListener( display, strInfo, mapOptions ) );
 	    
-	    canvas.addMouseListener( getMouseListener( mapOptions ) );
+	    canvas.addMouseListener( getMouseListener() );
 	    
 
 //		final Thread threadRefresh = new Thread() {
@@ -118,16 +161,23 @@ public class TileCanvas {
 	    return canvas;
 	}
 
+	private List<TileGeometry> tiles = null;
+	
+	private List<TileGeometry> getTiles() {
+		if ( null==tiles ) {
+			this.tiles = perspective.getTiles( mapOptions );
+		}
+		return this.tiles;
+	}
+	
 
-	private MouseListener getMouseListener(
-										final Map<String,String> mapOptions ) {
+	private MouseListener getMouseListener() {
 		final MouseListener listenerCanvas = new MouseAdapter() {
 			@Override
 			public void mouseDown( final MouseEvent event ) {
 				if ( null==event ) return;
 				
-				for ( final TileGeometry geo : 
-									perspective.getTiles( mapOptions ) ) {
+				for ( final TileGeometry geo : TileCanvas.this.getTiles() ) {
 					
 //					final TileBase tile = geo.tile;
 					final Rectangle rect = geo.rect;
@@ -204,8 +254,7 @@ public class TileCanvas {
 					e.gc.drawText( strInfo + "Frame " + lPaintCount, 10, -2 );
 				}
 
-				for ( final TileGeometry geo : 
-									perspective.getTiles( mapOptions ) ) {
+				for ( final TileGeometry geo : TileCanvas.this.getTiles() ) {
 					
 					final TileBase tile = geo.tile;
 					final Rectangle rect = geo.rect;
@@ -240,6 +289,16 @@ public class TileCanvas {
 		};
 	}
 
+	
+	public boolean processKey( final char c ) {
+		for ( final TileGeometry geo : TileCanvas.this.getTiles() ) {
+			if ( geo.tile.pressKey( c ) ) {
+				ConsoleClient.get().showStatus( "Key: " + c + " " );
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	
 }

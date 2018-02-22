@@ -19,11 +19,16 @@ public class AudioSelectionTile extends TileBase {
 	
 	public static enum AudioProgram {
 		PLAY_SPOTIFY( "Spotify (ext)", "/Local/scripts/stop_all.sh" ),
+		CHANNEL_A( "Channel A", "/Local/scripts/stop_all.sh" ),
 		PLAY_LOVELINE( "Classic Loveline", "/Local/scripts/play_vlc.sh" ),
 		PLAY_TWIT( "TWiT (Twitch)", "/Local/scripts/play_twit.sh" ),
+		PLAY_WTOP( "WTOP stream", "/Local/scripts/play_wtop.sh" ),
 		PLAY_NPR( "NPR stream", "/Local/scripts/play_npr.sh" ),
 		;
 		
+		//	Spotify		Loveline	WTOP live
+		//	Channel A	TWiT live	NPR live
+
 		public final String strTitle;
 		public final String strScript;
 		
@@ -55,14 +60,14 @@ public class AudioSelectionTile extends TileBase {
 			
 			gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
 
-			int iY = 10;
-			int iX = 20;
+			int iY = 16;
+			int iX = 14;
 			for ( final AudioProgram program : AudioProgram.values() ) {
 				super.addButton( gc, program.ordinal(), 
-						iX, iY,  120, 50, program.strTitle );
+						iX, iY,  132, 52, program.strTitle );
 				if ( iY > 50 ) {
-					iY = 10;
-					iX += 140;
+					iY = 16;
+					iX += 148;
 				} else {
 					iY += 70;
 				}

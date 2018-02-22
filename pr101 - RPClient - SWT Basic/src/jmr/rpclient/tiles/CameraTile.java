@@ -17,6 +17,7 @@ import jmr.util.hardware.rpi.CameraModule;
 public class CameraTile extends TileBase {
 
 
+	public static final boolean GRAPHICS_ADVANCED = false;
 	private Image imageStill = null;
 //	private Object semaphore = "semaphore";
 	private File fileLastImage;
@@ -47,6 +48,10 @@ public class CameraTile extends TileBase {
 														ptDesiredImageSize.x, 
 														ptDesiredImageSize.y );
 									final GC gc = new GC( imgScaled );
+									if ( !GRAPHICS_ADVANCED ) {
+										gc.setAdvanced( false );
+										gc.setAntialias( SWT.OFF );
+									}
 									gc.drawImage( imgRaw, 0, 0,
 											imgRaw.getBounds().width,
 											imgRaw.getBounds().height,
@@ -56,12 +61,13 @@ public class CameraTile extends TileBase {
 									gc.dispose();
 									imgRaw.dispose();
 
-									if ( null!=imageStill ) {
-										imageStill.dispose();
-										imageStill = null;
-									}
-									imageStill = imgScaled;
-		//							file.delete();
+//									synchronized ( imageStill ) {
+										if ( null!=imageStill ) {
+											imageStill.dispose();
+											imageStill = null;
+										}
+										imageStill = imgScaled;
+//									}
 									fileLastImage = file;
 								}
 							}
@@ -94,14 +100,12 @@ public class CameraTile extends TileBase {
 				gc.setFont( Theme.get().getFont( 12 ) );
 				gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 				try {
-					gc.setAntialias( SWT.OFF );
-					gc.setInterpolation( SWT.LOW );
-					gc.setInterpolation( SWT.OFF );
+					if ( !GRAPHICS_ADVANCED ) {
+						gc.setAdvanced( false );
+						gc.setAntialias( SWT.OFF );
+						gc.setInterpolation( SWT.OFF );
+					}
 					synchronized ( imageStill ) {
-//						final ImageData idStill = imageStill.getImageData();
-//						gc.drawImage( 
-//								imageStill, 0, 0, idStill.width, idStill.height,
-//								0, 0, rect.width, rect.height );
 						gc.drawImage( imageStill, 0, 0 );
 					}
 				} catch ( final Exception e ) {
