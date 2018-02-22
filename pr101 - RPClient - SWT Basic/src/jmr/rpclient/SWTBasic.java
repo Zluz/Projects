@@ -128,6 +128,7 @@ public class SWTBasic {
 		}
 	};
 
+
 	public static String report( final Rectangle r ) {
 		if ( null==r ) return "(null)";
 		return "(size:" + r.width + "," + r.height 
@@ -156,9 +157,13 @@ public class SWTBasic {
     	grid.marginWidth = 0;
     }
 
+    
+//    final boolean bConsole;
+    
 
     
-    public SWTBasic() {
+    public SWTBasic( final boolean bConsole ) {
+//    	this.bConsole = bConsole;
     	this.shell = this.buildUI();
     	instance = this;
 	}
@@ -185,10 +190,6 @@ public class SWTBasic {
     
     
 	public Shell buildUI() {
-		
-		
-		
-		
 		
 		
 
@@ -218,7 +219,7 @@ public class SWTBasic {
 				+ "IP:" + strIP + ", Session:" + strSessionID );
 	    
 		
-	    final TabTiles tTiles = new TabTiles( strDeviceName, mapOptions );
+	    final TabTiles tTiles = new TabTiles( strDeviceName, mapOptions, false );
 
 		final Perspective perspective = tTiles.getPerspective();
 		
@@ -228,10 +229,9 @@ public class SWTBasic {
 		
 		
 		
-		
-		
-		
 		final Display display = UI.display;
+		
+
 	    
 //	    final PaletteData palette = new PaletteData(
 //	    		new RGB[] { UI.colorWhite.getRGB(), UI.colorBlack.getRGB() } );
@@ -414,6 +414,7 @@ public class SWTBasic {
 	    tDailyInfo.addToTabFolder( tabs );
 	    listTabs.add( tDailyInfo );
 	    
+	    
 //	    final ClientSession session = ClientSession.get();
 //	    final Server server = new Server( session );
 //	    
@@ -515,8 +516,7 @@ public class SWTBasic {
 	    shell.setText( NetUtil.getSessionID() );
 	    
 	    
-	    
-	//    for ( final Display display : Display.)
+		//    for ( final Display display : Display.)
 	    log( "Display Information: " );
 	    log( "\tDisplay (bounds): " + report( display.getBounds() ) );
 	    log( "\tDisplay (client): " + report( display.getClientArea() ) );
@@ -588,7 +588,14 @@ public class SWTBasic {
 
 	public static void main( final String[] args ) {
 
-		final SWTBasic ui = new SWTBasic();
+		boolean bConsole = false;
+		for ( final String arg : args ) {
+			if ( arg.toLowerCase().endsWith( "console" ) ) {
+				bConsole = true;
+			}
+		}
+		
+		final SWTBasic ui = new SWTBasic( bConsole );
 	    
 		UI.runUIWatchdog();
 		UI.runUIRefresh();

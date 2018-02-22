@@ -22,19 +22,28 @@ public class TabTiles extends TabBase {
 	
 	private final Map<String, String> mapOptions;
 	
+//	private final boolean bConsole;
+	
 	public TabTiles(	final String strDeviceDescription,
-						final Map<String,String> mapOptions ) {
+						final Map<String,String> mapOptions,
+						final boolean bConsole ) {
 //		this.strDeviceDescription = strDeviceDescription;
+//		this.bConsole = bConsole;
 		this.mapOptions = mapOptions;
 		this.strPerspective = mapOptions.get( "tiles.perspective" );
 		
-		this.canvastile = new TileCanvas( strDeviceDescription, strPerspective );
+		this.canvastile = new TileCanvas( strDeviceDescription, 
+								strPerspective, bConsole, mapOptions );
+		
+		if ( bConsole ) {
+			this.canvastile.buildConsole();
+		}
 	}
 	
 	
 	@Override
 	public Composite buildUI( final Composite parent ) {
-		final Composite comp = canvastile.buildUI( parent, mapOptions );
+		final Composite comp = canvastile.buildUI( parent );
 		return comp;
 	}
 	
@@ -42,6 +51,10 @@ public class TabTiles extends TabBase {
 		return this.canvastile.getPerspective();
 	}
 
+	public TileCanvas getTiles() {
+		return this.canvastile;
+	}
+	
 	@Override
 	public CTabItem addToTabFolder( final CTabFolder tabs ) {
 

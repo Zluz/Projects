@@ -94,7 +94,7 @@ public class GPIOTile extends TileBase {
 	public void paint( 	final GC gc, 
 						final Image image ) {
 
-		final long lNow = System.currentTimeMillis();
+//		final long lNow = System.currentTimeMillis();
 		
 //		String strText = "";
 //		for ( final String strSession : map.keySet() ) {
@@ -103,21 +103,21 @@ public class GPIOTile extends TileBase {
 		
 		int iY = 10;
 
-		final int iX_RequestText;
-//		final int iX_MAC;
-		final int iX_RequestTime;
-		final int iX_RequestResult;
-		final char iX_State;
-		
-//		if ( 450 == rect.width ) {
-//			iX_MAC = 10;	iX_Exec = 10;	iX_Desc = 290;
-//		} else {
-			iX_State = 5;	
-			iX_RequestTime = 20;	
-//			iX_MAC = 10;	
-			iX_RequestText = 80;
-			iX_RequestResult = 450;
-//		}
+//		final int iX_RequestText;
+////		final int iX_MAC;
+//		final int iX_RequestTime;
+//		final int iX_RequestResult;
+//		final char iX_State;
+//		
+////		if ( 450 == rect.width ) {
+////			iX_MAC = 10;	iX_Exec = 10;	iX_Desc = 290;
+////		} else {
+//			iX_State = 5;	
+//			iX_RequestTime = 20;	
+////			iX_MAC = 10;	
+//			iX_RequestText = 80;
+//			iX_RequestResult = 450;
+////		}
 			
 		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 		gc.setFont( Theme.get().getFont( 10 ) );

@@ -7,6 +7,7 @@ import java.util.TimeZone;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 
+import jmr.rpclient.screen.TextScreen;
 import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
@@ -41,11 +42,9 @@ public class ClockTile extends TileBase {
 	}
 
 	
-	
 
-	@Override
-	public void paint( 	final GC gc, 
-						final Image image ) {
+	
+	private String[] getTimeStrings() {
 		final Date now = new Date();
 		
 //		final String strTime = FORMATTER_SHORT.format( now );
@@ -59,7 +58,36 @@ public class ClockTile extends TileBase {
 			strTimes[i] = FORMATTERS[i].format( now );
 		}
 		
+		return strTimes;
+	}
+	
+	
+	@Override
+	public void paint( final TextScreen screen ) {
+		final String[] strTimes = getTimeStrings();
+		screen.print( 1, 1, strTimes[3] );
+	}
+
+	
+	@Override
+	public void paint( 	final GC gc, 
+						final Image image ) {
+//		final Date now = new Date();
+//		
+////		final String strTime = FORMATTER_SHORT.format( now );
+////		drawTextCentered( strTime, 10 );
+//		
+//		
+//
+//		final String[] strTimes = new String[ TIME_FORMATS.length ];
+////		for ( final SimpleDateFormat formatter : FORMATTERS ) {
+//		for ( int i=0; i<TIME_FORMATS.length; i++ ) {
+//			strTimes[i] = FORMATTERS[i].format( now );
+//		}
+//		
 //		gc.fillRectangle( rect );
+
+		final String[] strTimes = getTimeStrings();
 
 		gc.setFont( Theme.get().getFont( 25 ) );
 		gc.drawText( strTimes[1], 385, 25 );

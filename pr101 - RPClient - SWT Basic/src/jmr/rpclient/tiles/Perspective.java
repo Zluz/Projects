@@ -189,13 +189,13 @@ public enum Perspective {
 //						new Rectangle( 1, 1, 1, 1 ) ) );
 		
 		list.add( new TileGeometry( new AudioSelectionTile(), 
-						new Rectangle( 0, 1, 2, 1 ) ) ); 
+						new Rectangle( 0, 1, 3, 1 ) ) ); 
 
 		list.add( new TileGeometry( new CameraTile(), 
 						new Rectangle( 3, 0, 2, 2 ) ) ); 
 
-		list.add( new TileGeometry( new PerformanceMonitorTile(), 
-						new Rectangle( 2, 1, 1, 1 ) ) );
+//		list.add( new TileGeometry( new PerformanceMonitorTile(), 
+//						new Rectangle( 2, 1, 1, 1 ) ) );
 		
 		list.add( new TileGeometry( new WeatherForecastTile(), 
 						new Rectangle( 0, 2, 5, 1 ) ) ); 

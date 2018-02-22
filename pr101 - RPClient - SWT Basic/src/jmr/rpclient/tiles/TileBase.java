@@ -12,6 +12,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
+import jmr.rpclient.screen.TextScreen;
 import jmr.rpclient.swt.ColorCache;
 import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.S2Button.ButtonState;
@@ -35,6 +36,13 @@ public abstract class TileBase implements Tile {
 
 
 	
+	@Override
+	public void paint( final TextScreen screen ) {}
+	
+	@Override
+	public boolean pressKey( final char c ) {
+		return false;
+	}
 	
 	public void paint(	final Image imageBuffer, 
 						final long lNowPaint ) {
@@ -58,7 +66,7 @@ public abstract class TileBase implements Tile {
 	
 	@Override
 	public abstract void paint( final GC gc, Image imageBuffer );
-	
+
 	
 	@Override
 	public boolean clickCanvas( final Point point ) {
@@ -296,5 +304,7 @@ public abstract class TileBase implements Tile {
 //		this.buttons.add( button );
 //		this.buttons.put( iIndex, button );
 	}
+
+
 
 }
