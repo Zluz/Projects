@@ -5,6 +5,9 @@ public enum SUProperty {
 	TESLA_USERNAME( "teslamotors.username" ),
 	TESLA_PASSWORD( "teslamotors.password" ),
 	
+	NEST_USERNAME( "nest.username" ),
+	NEST_PASSWORD( "nest.password" ),
+	
 	S2DB_CONNECTION( "s2db.connection" ),
 	S2DB_USERNAME( "s2db.username" ),
 	S2DB_PASSWORD( "s2db.password" ),

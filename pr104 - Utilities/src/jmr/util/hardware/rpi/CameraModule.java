@@ -88,7 +88,6 @@ public class CameraModule {
 		if ( !isCameraPresent() ) return null;
 		
 		final File file = capture();
-//		final Image image = new Image();
 		return file;
 	}
 	
