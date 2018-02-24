@@ -9,4 +9,6 @@ sleep 1
 xdotool key s
 sleep 1
 xdotool key space
+sleep 1
+xdotool key alt+L E O
 

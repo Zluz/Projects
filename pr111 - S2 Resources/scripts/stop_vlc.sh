@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [[ "`lsof /dev/snd/* | grep vlc`" == "" ]]
+then 
+	echo "no vlc audio"
+	exit
+fi
+
 WID=`xdotool search --name "VLC media player"`
 xdotool windowfocus $WID
 sleep 1

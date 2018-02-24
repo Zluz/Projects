@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [[ "`lsof /dev/snd/* | grep chromium`" == "" ]]
+then 
+	echo "no web audio"
+	exit
+fi
+
 WID=`xdotool search --name " Chromium"`
 xdotool windowfocus $WID
 sleep 1
