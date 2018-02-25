@@ -44,81 +44,105 @@ public class NestDevicesInterface {
 		System.out.println( "\tNestSession.getUserid() = " + session.getUserid() );
 														// 62657
 
-		final Nest nest = new Nest(session);
+		boolean bFirst = true;
 		
-		System.out.println( "Nest information" );
-		System.out.println( "\tNest.toString() = " + nest.toString() );
-
-		final Set<String> setHomeNames = nest.getHomeNames(); /* list of home structures  i.e. MyHouse */
-		System.out.println( "Home names:" );
-		String strHomeName = null;
-		for ( final String name : setHomeNames ) {
-			if ( null==strHomeName ) strHomeName = name;
-			System.out.println( "\t" + name );
-		}
-		// home name:  d7d17cb0-ad43-11e1-a9b6-1231381b6879
+		for (;;) {
 		
-		final Home home = nest.getHome( strHomeName );
-		
-		final WhereDetail wheres = nest.getWhere( strHomeName );
-		System.out.println( "WhereDetail.getOriginalJSON() = " 
-						+ wheres.getOriginalJSON() );
-		
-		System.out.println( "Home information:" );
-		System.out.println( "\tHome.getName() = " + home.getName() );
-//		System.out.println( "\tHome.getDetail() = " + home.getDetail() );
-		
-		System.out.println( "Where information:" );
-		for ( final WhereItem where : wheres.getWheres() ) {
-			System.out.println( "\tWhereDetail.getWhereId() = " + where.getWhereId() );
-			System.out.println( "\tWhereDetail.getName() = " + where.getName() );
-		}
-		
-
-//		aHome.setAway(Boolean.FALSE); /* either TRUE or FALSE */
-
-		final Set<String> setDeviceNames = nest.getThermostatNames(); /* list of thermostats in all structure */
-		System.out.println( "Device names:" );
-		String strDevice = null;
-		for ( final String name : setDeviceNames ) {
-			if ( null==strDevice ) strDevice = name;
-			System.out.println( "\t" + name );
-		}
-		// device name:  01AA02AB111205MR
-		
-		
-		for ( int i=1; i<100; i++ ) {
+			final Nest nest = new Nest( session );
+			
+			System.out.println( "Nest information" );
+			System.out.println( "\tNest.toString() = " + nest.toString() );
+	
+			/* list of home structures  i.e. MyHouse */
+			final Set<String> setHomeNames = nest.getHomeNames(); 
+			
+//			System.out.println( "Home names:" );
+			String strHomeName = null;
+			for ( final String name : setHomeNames ) {
+				if ( null==strHomeName ) strHomeName = name;
+//				System.out.println( "\t" + name );
+			}
+			// home name:  d7d17cb0-ad43-11e1-a9b6-1231381b6879
+			
+			final Home home = nest.getHome( strHomeName );
+			
+			final WhereDetail wheres = nest.getWhere( strHomeName );
+			System.out.println( "WhereDetail.getOriginalJSON() = " 
+							+ wheres.getOriginalJSON() );
+			
+			if ( bFirst ) {
+				System.out.println( "Home information:" );
+				System.out.println( "\tHome.getName() = " + home.getName() );
+		//		System.out.println( "\tHome.getDetail() = " + home.getDetail() );
+				
+				System.out.println( "Where information:" );
+				System.out.print( "\t" );
+				for ( final WhereItem where : wheres.getWheres() ) {
+					System.out.print( where.getName() + " " );
+		//			System.out.println( "\tWhereDetail.getWhereId() = " + where.getWhereId() );
+		//			System.out.println( "\tWhereDetail.getName() = " + where.getName() );
+				}
+			}
+	
+	//		aHome.setAway(Boolean.FALSE); /* either TRUE or FALSE */
+	
+			/* list of thermostats in all structure */
+			final Set<String> setDeviceNames = nest.getThermostatNames();
+			
+//			System.out.println( "Device names:" );
+			String strDevice = null;
+			for ( final String name : setDeviceNames ) {
+				if ( null==strDevice ) strDevice = name;
+//				System.out.println( "\t" + name );
+			}
+			// device name:  01AA02AB111205MR
+			
+			
+//		for ( int i=1; i<100; i++ ) {
 
 			System.out.println( "Updating Thermostat" );
 			final Thermostat thermostat = nest.getThermostat( strDevice );
 			
-			for ( int j=1; j<4; j++ ) {
-				System.out.println( "Updating SharedDetail and DeviceDetail" );
-				final SharedDetail shared = thermostat.getSharedDetail();
+			System.out.println( "Updating SharedDetail and DeviceDetail" );
+			
+			final SharedDetail shared = thermostat.getSharedDetail();
+			
+			// DeviceDetail does not seem to populate properly.
+			// version mismatch? examine original JSON.
+			final DeviceDetail detail = thermostat.getDeviceDetail();
+			
 
-				final DeviceDetail detail = thermostat.getDeviceDetail();
+			System.out.println( "\tTime now: " + new Date().toString() );
+			System.out.println( "SharedDetail information" );
+			final Double lTemp = shared.getCurrentTemperature();
+			System.out.println( "\tgetCurrentTemperature() = " + lTemp + " C = " + (lTemp * (9/5) + 32) + " F" );
+//				System.out.println( "\tgetTargetTemperature() = " + shared.getTargetTemperature() );
+//				System.out.println( "\tgetHvacFanState() = " + shared.getHvacFanState() );
+//				System.out.println( "\tgetAutoAway() = " + shared.getAutoAway() );
+			final Long lTimestamp = shared.get$timestamp();
+			System.out.println( "\tget$timestamp() = " + lTimestamp + " = " + new Date( lTimestamp ).toString() );
+//				System.out.println( "\tgetAutoAwayLearning() = " + shared.getAutoAwayLearning() );
+//				System.out.println( "\tgetCompressorLockoutTimeout() = " + shared.getCompressorLockoutTimeout() );
+			System.out.println( "\tJSON: " + shared.getOriginalJSON() );
 
-				for ( int k=1; k<4; k++ ) {
-					System.out.println( "\tTime now: " + new Date().toString() );
-					System.out.println( "SharedDetail information" );
-					final Double lTemp = shared.getCurrentTemperature();
-					System.out.println( "\tgetCurrentTemperature() = " + lTemp + " C = " + (lTemp * (9/5) + 32) + " F" );
-	//				System.out.println( "\tgetTargetTemperature() = " + shared.getTargetTemperature() );
-	//				System.out.println( "\tgetHvacFanState() = " + shared.getHvacFanState() );
-	//				System.out.println( "\tgetAutoAway() = " + shared.getAutoAway() );
-					final Long lTimestamp = shared.get$timestamp();
-					System.out.println( "\tget$timestamp() = " + lTimestamp + " = " + new Date( lTimestamp ).toString() );
-	//				System.out.println( "\tgetAutoAwayLearning() = " + shared.getAutoAwayLearning() );
-	//				System.out.println( "\tgetCompressorLockoutTimeout() = " + shared.getCompressorLockoutTimeout() );
-					System.out.println( "\tJSON: " + shared.getOriginalJSON() );
+			System.out.println( "DeviceDetail information" );
+			System.out.println( "\tJSON: " + detail.getOriginalJSON() );
 
-					System.out.println( "DeviceDetail information" );
-					System.out.println( "\tJSON: " + detail.getOriginalJSON() );
+			
 
-					final int iMinutes = 100000;
-					Thread.sleep( 1000 * 60 * iMinutes );
-				}
-			}
+			/* device refresh frequency..
+			get$timestamp() = 1519495683537 = Sat Feb 24 13:08:03 EST 2018
+			get$timestamp() = 1519497485913 = Sat Feb 24 13:38:05 EST 2018
+			get$timestamp() = 1519498885890 = Sat Feb 24 14:01:25 EST 2018
+			get$timestamp() = 1519500785875 = Sat Feb 24 14:33:05 EST 2018
+			*/
+			
+			
+//			final int iMinutes = 30; // device seems to refresh this frequently
+			final int iMinutes = 60; // check every hour
+			Thread.sleep( 1000 * 60 * iMinutes );
+			bFirst = false;
+			System.out.println();
 		}
 		
 //		final DeviceDetail detail = thermostat.getDeviceDetail();
