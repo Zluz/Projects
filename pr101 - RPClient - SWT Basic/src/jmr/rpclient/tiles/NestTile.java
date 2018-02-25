@@ -12,6 +12,7 @@ import jmr.rpclient.swt.GCTextUtils;
 import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.UI;
+import jmr.rpclient.swt.Theme.Colors;
 import jmr.s2db.Client;
 
 public class NestTile extends TileBase {
@@ -100,19 +101,27 @@ public class NestTile extends TileBase {
 		
 		final GCTextUtils text = new GCTextUtils( gc );
 		text.setRect( gc.getClipping() );
-		
+		text.drawDataAge( map, super.iNowPaint, true );
+
+
 //		gc.setFont( Theme.get().getFont( 11 ) );
 //		text.println( "              Limit - High:    " + getTemperature( "target_temperature_high" ) );
+		gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
 		gc.setFont( Theme.get().getFont( 18 ) );
 		text.println( "Temperature:  " + getTemperature( "current_temperature" ) );
 		gc.setFont( Theme.get().getFont( 11 ) );
 //		text.println( "              Limit - Low:    " + getTemperature( "target_temperature_low" ) );
+
+		gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
 		text.println( "                    Range:   " 
 					+ getTemperature( "target_temperature_low", false ) 
 					+ " - " + getTemperature( "target_temperature_high" ) );
 		gc.setFont( Theme.get().getFont( 16 ) );
+
+		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 		text.println( "        Humidity:  " + map.get( "current_humidity" ) + "%" );
 		
+		gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
 		gc.setFont( Theme.get().getFont( 9 ) );
 		text.addSpace( 6 );
 		text.println( "target_temperature_type: " + map.get( "target_temperature_type" ) );

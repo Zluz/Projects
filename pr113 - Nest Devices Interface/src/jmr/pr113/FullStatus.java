@@ -4,6 +4,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.bwssystems.nest.controller.FanMode;
+import com.bwssystems.nest.controller.Thermostat;
+import com.bwssystems.nest.controller.ThermostatTargetType;
 import com.bwssystems.nest.protocol.status.DeviceDetail;
 import com.bwssystems.nest.protocol.status.SharedDetail;
 
@@ -30,14 +33,17 @@ DeviceDetail
 	 */
 
 
+	final Thermostat thermostat;
 	final DeviceDetail device;
 	final SharedDetail shared;
 	
 	final Map<String,String> map = new HashMap<>();
 	
 	
-	/*package*/ FullStatus(	final DeviceDetail device,
+	/*package*/ FullStatus(	final Thermostat thermostat,
+							final DeviceDetail device,
 							final SharedDetail shared ) {
+		this.thermostat = thermostat;
 		this.device = device;
 		this.shared = shared;
 		
@@ -62,6 +68,22 @@ DeviceDetail
 		if ( null==key ) return null;
 		final String strValue = this.map.get( key.getKey() );
 		return strValue;
+	}
+	
+	public void setTemperature( final double dFahrenheit ) {
+		final double dCelsius = ( dFahrenheit - 32 ) * 5 / 9;
+		this.thermostat.setTargetTemperature( dCelsius );
+	}
+	
+	public void setFanMode( final String strFanMode ) {
+		final FanMode mode = FanMode.valueOf( strFanMode );
+		this.thermostat.setFanMode( mode );
+	}
+
+	public void setTargetType( final String strFanMode ) {
+		final ThermostatTargetType 
+						type = ThermostatTargetType.valueOf( strFanMode );
+		this.thermostat.setTargetType( type );
 	}
 
 }

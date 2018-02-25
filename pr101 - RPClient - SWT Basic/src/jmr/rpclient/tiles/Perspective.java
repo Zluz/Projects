@@ -269,7 +269,7 @@ public enum Perspective {
 
 	private void build_Tesla( final Map<String, String> mapOptions ) {
 		list.add( new TileGeometry( new ClockTile(), 
-						new Rectangle( 0, 0, 3, 1 ) ) );
+						new Rectangle( 0, 0, 2, 1 ) ) );
 
 		list.add( new TileGeometry( new TeslaTile(), 
 						new Rectangle( 4, 0, 1, 2 ) ) );

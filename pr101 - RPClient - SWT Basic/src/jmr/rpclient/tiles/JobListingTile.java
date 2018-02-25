@@ -85,7 +85,8 @@ public class JobListingTile extends TileBase {
 	private void runRemoteExecute( final Job job ) {
 		final Map<String,String> map = job.getJobDetails();
 		
-		if ( this.strName.equals( map.get( "remote" ) ) ) {
+		if ( null!=this.strName 
+				&& this.strName.equals( map.get( "remote" ) ) ) {
 
 			job.setState( JobState.WORKING );
 

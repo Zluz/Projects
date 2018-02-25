@@ -50,13 +50,13 @@ public class Session {
 		
 		final Set<String> setDeviceNames = nest.getThermostatNames();
 		final String strDeviceName = setDeviceNames.iterator().next();
-
+		
 		final Thermostat thermostat = nest.getThermostat( strDeviceName );
 		
 		final DeviceDetail device = thermostat.getDeviceDetail();
 		final SharedDetail shared = thermostat.getSharedDetail();
 		
-		final FullStatus status = new FullStatus( device, shared );
+		final FullStatus status = new FullStatus( thermostat, device, shared );
 		return status;
 	}
 	

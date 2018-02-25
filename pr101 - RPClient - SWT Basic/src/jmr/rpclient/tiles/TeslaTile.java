@@ -288,6 +288,7 @@ public class TeslaTile extends TileBase {
 						
 					} else {
 
+						gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
 						gc.setFont( Theme.get().getFont( 11 ) );
 						
 						text.println( bHome, "Location: Home" );
@@ -317,9 +318,12 @@ public class TeslaTile extends TileBase {
 					gc.drawText( "Tesla", 10, 10 );
 					gc.setFont( Theme.get().getFont( 10 ) );
 					
+					gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
 					gc.drawText( strVersion, 10, 50 );
 					gc.drawText( "API  " + strAPIVersion, 10, 64 );
 	
+					gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
+
 					gc.setFont( Theme.get().getFont( 16 ) );
 	//					gc.drawText( "Time to Charge:  " + strTime, 40, 112 );
 					if ( null!=strError ) {
