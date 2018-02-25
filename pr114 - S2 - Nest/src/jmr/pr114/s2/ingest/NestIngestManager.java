@@ -3,6 +3,7 @@ package jmr.pr114.s2.ingest;
 import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 import jmr.pr113.FullStatus;
 import jmr.pr113.Session;
@@ -14,11 +15,6 @@ import jmr.util.SUProperty;
 import jmr.util.SystemUtil;
 
 public class NestIngestManager {
-
-	final static char[] cUsername = 
-			SystemUtil.getProperty( SUProperty.NEST_USERNAME ).toCharArray(); 
-	final static char[] cPassword = 
-			SystemUtil.getProperty( SUProperty.NEST_PASSWORD ).toCharArray(); 
 
 	
 	public void printValues( final FullStatus status ) {
@@ -48,19 +44,21 @@ public class NestIngestManager {
 	
 	
 	
-	
 	public static void main( final String[] args ) throws Exception {
 
 		System.out.println( "Registering S2 client.." );
 		final String strSession = NetUtil.getSessionID();
 		final String strClass = NestIngestManager.class.getName();
 		Client.get().register( strSession, strClass );
-		
+
+		final char[] cUsername = 
+				SystemUtil.getProperty( SUProperty.NEST_USERNAME ).toCharArray(); 
+		final char[] cPassword = 
+				SystemUtil.getProperty( SUProperty.NEST_PASSWORD ).toCharArray(); 
+
 		System.out.println( "Creating Nest session.." );
 		final Session session = new Session( cUsername, cPassword );
 
-		final Path path = new Path();
-		final Page page = new Page();
 		
 		for (;;) {
 			
@@ -70,17 +68,24 @@ public class NestIngestManager {
 			final FullStatus status = session.getStatus();
 			
 			System.out.println( "Saving page.." );
-			final String strNodePath = "/External/Ingest/Nest - Thermostat";
-			final Long seqPath = path.get( strNodePath );
-			if ( null!=seqPath ) {
-				final Long seqPage = page.create( seqPath );
-				page.addMap( seqPage, status.getMap(), false );
-				page.setState( seqPage, now, 'A' );
-				System.out.println( "Page saved, seq=" + seqPage );
+			{
+				final Path path = new Path();
+				final Page page = new Page();
+
+				final String strNodePath = "/External/Ingest/Nest - Thermostat";
+				final Long seqPath = path.get( strNodePath );
+				if ( null!=seqPath ) {
+					final Long seqPage = page.create( seqPath );
+					page.addMap( seqPage, status.getMap(), false );
+					page.setState( seqPage, now, 'A' );
+					System.out.println( "Page saved, seq=" + seqPage );
+				} else {
+					System.err.println( "Failed to get a Path seq." );
+				}
 			}
 
 			System.out.println();
-			Thread.sleep( 1000 * 60 * 30 );
+			Thread.sleep( TimeUnit.MINUTES.toMillis( 30 ) );
 		}
 	}
 }
