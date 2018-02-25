@@ -19,21 +19,21 @@ public class NestDevicesInterface {
 
 	public static void main( final String[] args ) throws InterruptedException {
 		
-		final String strUsername = 
-				SystemUtil.getProperty( SUProperty.NEST_USERNAME ); 
-		final String strPassword = 
-				SystemUtil.getProperty( SUProperty.NEST_PASSWORD ); 
+		final char[] cUsername = 
+				SystemUtil.getProperty( SUProperty.NEST_USERNAME ).toCharArray(); 
+		final char[] cPassword = 
+				SystemUtil.getProperty( SUProperty.NEST_PASSWORD ).toCharArray(); 
 
 		
 		
 
 		System.err.println( "Testing Nest Devices Interface" );
-		System.out.println( "Using username: " + strUsername );
+		System.out.println( "Using username: " + new String( cUsername ) );
 
 		final NestSession session;
 
 		try {
-			session = new NestSession(strUsername, strPassword);
+			session = new NestSession( cUsername, cPassword );
 		} catch ( final Exception e ) {
 			System.out.println("Caught Login Exception, exiting....");
 			System.exit(1);
