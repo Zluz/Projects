@@ -3,6 +3,9 @@
   add text notification alarm/controls if tesla is not charging
   add sample response json from nest
   
+  (dev env)
+    install Classic Start Menu (4.3.0+)  www.classicshell.net
+  
 
 [NOTES]
 
