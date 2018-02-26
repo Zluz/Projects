@@ -35,23 +35,30 @@ public class TileCanvas {
 	private static final Logger 
 			LOGGER = Logger.getLogger( TileCanvas.class.getName() );
 
+	private static TileCanvas instance;
+	
+	
 	public static final int REFRESH_SLEEP = 100;
 	
 	public final static int TRIM_X = 0;
 	public final static int TRIM_Y = 10;
 	
 	
-	private Canvas canvas;
+	private Canvas canvas = null;
 	
 	private long lPaintCount = 0;
 	
 	private String strDeviceDescription;
 	
-	final Perspective perspective;
+	Perspective perspective;
 	
 	final boolean bConsole;
 	
 	final private Map<String,String> mapOptions = new HashMap<>();
+
+	private PaintListener listenerCanvasPainter;
+
+	private MouseListener listenerCanvasMouse;
 	
 //	
 //	// fixed tiles
@@ -68,7 +75,18 @@ public class TileCanvas {
 		this.bConsole = bConsole;
 		this.mapOptions.clear();
 		this.mapOptions.putAll( mapOptions );
+		TileCanvas.instance = this;
 	}
+	
+	public static TileCanvas getInstance() {
+		return instance;
+	}
+	
+	public void setPerspective( final Perspective perspective ) {
+		this.perspective = perspective;
+		this.buildUI( this.canvas.getParent() );
+	}
+	
 	
 	
 //	public void rotate( final GC gc ) {}
@@ -112,57 +130,46 @@ public class TileCanvas {
 //		this.mapOptions.clear();
 //		this.mapOptions.putAll( mapOptions );
 
-		final String strPad = "              ";
-		final String strInfo = strPad 
+		final String strPad = "     ";
+		final String strInfo = "" 
 				+ "IP: " + NetUtil.getIPAddress() + strPad
 				+ "MAC: " + NetUtil.getMAC() + strPad
-				+ "Device: " + strDeviceDescription + strPad
-				+ "Executable: " + OSUtil.getProgramName() + strPad
+				+ strDeviceDescription + strPad
+				+ OSUtil.getProgramName() + strPad
 //				+ "Process Name: " + NetUtil.getProcessName() + strPad
 				;
 		
-	    this.canvas = new Canvas( parent, SWT.NO_BACKGROUND );
-	    if ( RPiTouchscreen.getInstance().isEnabled() ) {
-	    	this.canvas.setCursor( UI.CURSOR_HIDE );
-	    }
+		if ( null==this.canvas ) {
+		    this.canvas = new Canvas( parent, SWT.NO_BACKGROUND );
+		    if ( RPiTouchscreen.getInstance().isEnabled() ) {
+		    	this.canvas.setCursor( UI.CURSOR_HIDE );
+		    }
+
+		    UI.listRefreshCanvases.add( canvas );
+		} else {
+			canvas.removePaintListener( this.listenerCanvasPainter );
+			canvas.removeMouseListener( this.listenerCanvasMouse );
+			this.listenerCanvasPainter = null;
+			this.listenerCanvasMouse = null;
+			
+			this.tiles = null;
+		}
     	
 	    final Display display = parent.getDisplay();
-	    canvas.addPaintListener( getPaintListener( display, strInfo, mapOptions ) );
 	    
-	    canvas.addMouseListener( getMouseListener() );
+	    this.listenerCanvasPainter = 
+	    				getPaintListener( display, strInfo, mapOptions );
+		canvas.addPaintListener( this.listenerCanvasPainter );
 	    
-
-//		final Thread threadRefresh = new Thread() {
-//			@Override
-//			public void run() {
-//				try {
-//					do {
-//						UI.notifyUIIdle();
-//						Thread.sleep( REFRESH_SLEEP );
-//						if ( !canvas.isDisposed() ) {
-//							canvas.getDisplay().asyncExec( new Runnable() {
-//								@Override
-//								public void run() {
-//									canvas.redraw();
-//								}
-//							});
-//						}
-//					} while ( !parent.isDisposed() );
-//				} catch ( final InterruptedException e ) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//			}
-//		};
-//		threadRefresh.start();
-	    
-	    UI.listRefreshCanvases.add( canvas );
+	    this.listenerCanvasMouse = getMouseListener();
+		canvas.addMouseListener( this.listenerCanvasMouse );
 	    
 	    return canvas;
 	}
 
-	private List<TileGeometry> tiles = null;
 	
+	private List<TileGeometry> tiles = null;
+
 	private List<TileGeometry> getTiles() {
 		if ( null==tiles ) {
 			this.tiles = perspective.getTiles( mapOptions );
@@ -225,6 +232,9 @@ public class TileCanvas {
 
     	final int iYLimit = 150 * perspective.getRowCount();
 
+    	System.out.println( "New TileCanvas PaintListener created for " 
+    										+ perspective.name() );
+    	
 		return new PaintListener() {
 			@Override
 			public void paintControl( final PaintEvent e ) {
@@ -246,12 +256,14 @@ public class TileCanvas {
 				e.gc.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
 
 				e.gc.fillRectangle( 0,0, 800, TRIM_Y );
+//				final String strHeaderInfo = strInfo + "Frame " + lPaintCount;
+				final String strHeaderInfo = strInfo;
 				if ( RPiTouchscreen.getInstance().isEnabled() ) {
 					e.gc.setFont( Theme.get().getFont( 6 ) );
-					e.gc.drawText( strInfo + "Frame " + lPaintCount, 10, 0 );
+					e.gc.drawText( strHeaderInfo, 10, 0 );
 				} else {
 					e.gc.setFont( Theme.get().getFont( 7 ) );
-					e.gc.drawText( strInfo + "Frame " + lPaintCount, 10, -2 );
+					e.gc.drawText( strHeaderInfo, 10, -2 );
 				}
 
 				for ( final TileGeometry geo : TileCanvas.this.getTiles() ) {

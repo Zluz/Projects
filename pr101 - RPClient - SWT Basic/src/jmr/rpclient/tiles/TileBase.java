@@ -85,8 +85,8 @@ public abstract class TileBase implements Tile {
 				
 				System.out.println( "Button pressed: " + button.getName() );
 				
-				activateButton( button );
 				button.setState( ButtonState.ACTIVATED );
+				activateButton( button );
 				
 				bButton = true;
 			}

@@ -52,6 +52,7 @@ import jmr.rpclient.tab.TopSection;
 import jmr.rpclient.tiles.PerformanceMonitorTile;
 import jmr.rpclient.tiles.Perspective;
 import jmr.rpclient.tiles.TileBase;
+import jmr.rpclient.tiles.TileCanvas;
 import jmr.s2db.Client;
 import jmr.s2db.job.JobManager;
 import jmr.util.Logging;
@@ -337,21 +338,20 @@ public class SWTBasic {
 				
 				int iY = 0; iY = 3 * iH;
 				final int iRH = iH - 20;
-				gc.fillRectangle(  10, iY + 10, 30, iRH ); iY += iH;
-				gc.fillRectangle(  10, iY + 10, 30, iRH ); iY += iH;
-				gc.fillRectangle(  10, iY + 10, 30, iRH ); iY += iH;
-				gc.fillRectangle(  10, iY + 10, 30, iRH ); iY += iH;
-				gc.fillRectangle(  10, iY + 10, 30, iRH ); iY += iH;
+				for ( int i=0; i<5; i++ ) {
+					gc.fillRoundRectangle( 8, iY + 10, 33, iRH, 10, 10 ); iY += iH;
+				}
 
 				gc.setForeground( UI.COLOR_BLACK );
 
 				iY = 3 * iH - 8;
-				gc.drawText( "Daily", 12, iY + 30 ); iY += iH;
-				gc.drawText( "Tiles", 12, iY + 30 ); iY += iH;
-				gc.drawText( "S2DB",  11, iY + 30 ); iY += iH;
-//				gc.drawText( "Calib", 005, iY + 30 ); iY += iH;
-				gc.drawText( "Device", 8, iY + 30 ); iY += iH;
-				gc.drawText( "EXIT",  12, iY + 30 ); iY += iH;
+				int iXO = -3;
+				gc.drawText( "Top", 16+iXO, iY + 30 ); iY += iH;
+				gc.drawText( "Tiles", 15+iXO, iY + 30 ); iY += iH;
+				gc.drawText( "S2DB",  13+iXO, iY + 30 ); iY += iH;
+//				gc.drawText( "Calib", 005+iXO, iY + 30 ); iY += iH;
+				gc.drawText( "Device", 8+iXO, iY + 30 ); iY += iH;
+				gc.drawText( "EXIT",  15+iXO, iY + 30 ); iY += iH;
 			}
 		});
 	    
@@ -362,7 +362,13 @@ public class SWTBasic {
 	    		TopSection ts = null;
 	    		switch ( y ) {
 //	    			case 0	: SWTBasic.get().activate( TopSection. ); 
-	    			case 0	: ts = TopSection.DAILY_INFO; break; 
+//	    			case 0	: ts = TopSection.DAILY_INFO; break;
+		    		case 0 : {
+		    			ts = TopSection.TILES;
+		    			TileCanvas.getInstance().setPerspective( 
+		    										Perspective.TOP_PAGE );
+		    			break;
+		    		}
     				case 1	: ts = TopSection.TILES; break;
     				case 2	: ts = TopSection.S2DB; break; 
     				case 3	: ts = TopSection.DEVICE_CONTROLS; break; 

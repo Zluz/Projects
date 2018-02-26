@@ -124,10 +124,16 @@ public class ClockTile extends TileBase {
 			final String[] strTimes = getTimeStrings();
 
 			final String strTimeMin = strTimes[5];
+			final String strTimePadded;
+			if ( 1==strTimeMin.indexOf( ':' ) ) {
+				strTimePadded = " " + strTimeMin;
+			} else {
+				strTimePadded = strTimeMin;
+			}
 //			final String strTimeMin = strTimeSec.substring( 0, 5 );
 			gc.setFont( Theme.get().getFont( 72 ) );
 			gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
-			gc.drawText( strTimeMin, 30, 0 );
+			gc.drawText( strTimePadded, 36, 0 );
 
 			gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 
