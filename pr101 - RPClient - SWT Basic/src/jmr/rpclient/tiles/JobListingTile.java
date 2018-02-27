@@ -1,5 +1,9 @@
 package jmr.rpclient.tiles;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +12,9 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 
 import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
@@ -22,114 +29,13 @@ import jmr.util.transform.DateFormatting;
 public class JobListingTile extends TileBase {
 
 
-	final static List<Job> listing = new LinkedList<>();
-
-
-	private Thread threadUpdater;
-	private final String strName;
-
+	
+	
 	public JobListingTile(  final Map<String, String> mapOptions  ) {
-		this.strName = mapOptions.get( "remote" );
-		
-		threadUpdater = new Thread( "NetworkList Updater" ) {
-			@Override
-			public void run() {
-				try {
-					Thread.sleep( TimeUnit.SECONDS.toMillis( 1 ) );
-		
-					for (;;) {
-						synchronized ( listing ) {
-							try {
-								updateListing();
-							} catch ( final Exception e ) {
-								// ignore.. 
-								// JDBC connection may have been dropped..
-							}
-						}
-		
-						Thread.sleep( TimeUnit.SECONDS.toMillis( 10 ) );
-					}
-				} catch ( final InterruptedException e ) {
-					// just quit
-				}
-			}
-		};
-//		threadUpdater.start();
+		JobMonitor.get().initialize( mapOptions );
 	}
 	
 
-
-	private void updateListing() {
-
-		final JobManager manager = Client.get().getJobManager();
-		
-		final List<Job> listingActive = manager.getJobListing( 
-//				"( job.request LIKE \"%\" )" );
-				"( job.state = \"R\" )", 100 );
-
-		final List<Job> listingCompleted = manager.getJobListing( 
-//				"( job.request LIKE \"%\" )" );
-				"( ( job.state = \"C\" ) OR ( job.state = \"F\" ) "
-				+ "OR ( job.state = \"W\" ) )", 8 );
-
-		synchronized (listing) {
-			listing.clear();
-			listing.addAll( listingActive );
-			listing.addAll( listingCompleted );
-		}
-		
-		doWorkJobs( listingActive );
-	}
-
-	
-	private void runRemoteExecute( final Job job ) {
-		final Map<String,String> map = job.getJobDetails();
-		
-		if ( null!=this.strName 
-				&& this.strName.equals( map.get( "remote" ) ) ) {
-
-			job.setState( JobState.WORKING );
-
-			final String strCommand = map.get( "command" );
-			
-			System.out.println( "Running command: " + strCommand );
-			
-			try {
-				final Process process = 
-								Runtime.getRuntime().exec( strCommand );
-				process.waitFor();
-				
-				String strResult = "Exit value = " + process.exitValue();
-				
-				job.setState( JobState.COMPLETE, strResult );
-			} catch ( final Exception e ) {
-				job.setState( JobState.FAILURE, e.toString() );
-			}
-			
-		}
-		
-	}
-	
-	private void doWorkJobs( final List<Job> jobs ) {
-		if ( jobs.isEmpty() ) return;
-		
-		final Thread threadWorkJobs = new Thread( "Work Jobs" ) {
-			@Override
-			public void run() {
-				for ( final Job job : jobs ) {
-					final JobType type = job.getJobType();
-
-					// execute job?
-					if ( JobType.REMOTE_EXECUTE.equals( type ) ) {
-						runRemoteExecute( job );
-					}
-				}
-			}
-		};
-		threadWorkJobs.start();
-	}
-	
-	
 
 
 
@@ -137,10 +43,7 @@ public class JobListingTile extends TileBase {
 	@Override
 	public void paint(	final GC gc, 
 						final Image image ) {
-
-		if ( !threadUpdater.isAlive() ) {
-			threadUpdater.start();
-		}
+		JobMonitor.get().check();
 		
 		final long lNow = System.currentTimeMillis();
 		
@@ -167,14 +70,17 @@ public class JobListingTile extends TileBase {
 			iX_RequestResult = 450;
 //		}
 			
+		final String strName = JobMonitor.get().getName();
+			
 		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 		gc.setFont( Theme.get().getFont( 8 ) );
 		if ( null!=strName && !strName.isEmpty() ) {
-			gc.drawText( "Local remote name: " + this.strName, 15, 4 );
+			gc.drawText( "Local remote name: " + strName, 15, 4 );
 			iY = iY + 18;
 		}
 		
-		synchronized ( listing ) {
+		final LinkedList<Job> listing = JobMonitor.get().getListing();
+//		synchronized ( listing ) {
 			for ( final Job job : listing ) {
 //			for ( final Map<String, String> map : map2.values() ) {
 
@@ -207,7 +113,7 @@ public class JobListingTile extends TileBase {
 				
 	//			strText += strIPFit + "   " + strExecFit + "   " + strName + "\n";
 				iY += 18;
-			}
+//			}
 		}
 
 //		drawTextCentered( strText, 10 );

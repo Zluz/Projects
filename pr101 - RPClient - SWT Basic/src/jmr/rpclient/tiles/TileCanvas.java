@@ -130,12 +130,12 @@ public class TileCanvas {
 //		this.mapOptions.clear();
 //		this.mapOptions.putAll( mapOptions );
 
-		final String strPad = "     ";
-		final String strInfo = "" 
+		final String strPad = "         ";
+		final String strInfo = "  " 
 				+ "IP: " + NetUtil.getIPAddress() + strPad
 				+ "MAC: " + NetUtil.getMAC() + strPad
-				+ strDeviceDescription + strPad
 				+ OSUtil.getProgramName() + strPad
+				+ strDeviceDescription + strPad
 //				+ "Process Name: " + NetUtil.getProcessName() + strPad
 				;
 		

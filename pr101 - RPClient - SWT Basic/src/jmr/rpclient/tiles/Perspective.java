@@ -205,17 +205,17 @@ public enum Perspective {
 	
 
 	private void build_TopPage( final Map<String, String> mapOptions ) {
-		list.add( new TileGeometry( new ClockTile(), 
-						new Rectangle( 0, 0, 3, 1 ) ) );
+//		list.add( new TileGeometry( new ClockTile(), 
+//						new Rectangle( 0, 0, 3, 1 ) ) );
 
-		list.add( new TileGeometry( new PerformanceMonitorTile(), 
-						new Rectangle( 3, 0, 1, 1 ) ) );
+//		list.add( new TileGeometry( new PerformanceMonitorTile(), 
+//						new Rectangle( 3, 0, 1, 1 ) ) );
 
 		list.add( new TileGeometry( new PerspectiveSwitcherTile(), 
 						new Rectangle( 4, 0, 1, 3 ) ) );
 		
-		list.add( new TileGeometry( new SystemInfoTile(), 
-						new Rectangle( 0, 1, 1, 1 ) ) );
+//		list.add( new TileGeometry( new SystemInfoTile(), 
+//						new Rectangle( 0, 1, 1, 1 ) ) );
 
 //		list.add( new TileGeometry( new CalibrationTile(), 
 //						new Rectangle( 4, 0, 1, 1 ) ) ); 
@@ -226,7 +226,10 @@ public enum Perspective {
 //						new Rectangle( 0, 2, 4, 1 ) ) );
 		
 		list.add( new TileGeometry( new JobListingTile( mapOptions ), 
-						new Rectangle( 0, 2, 4, 1 ) ) ); 
+						new Rectangle( 0, 0, 4, 1 ) ) ); 
+
+		list.add( new TileGeometry( new JobDetailTile( mapOptions ), 
+				new Rectangle( 0, 1, 4, 2 ) ) ); 
 
 	}
 
