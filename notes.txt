@@ -1,7 +1,8 @@
 
 [TO DO]
-  add text notification alarm/controls if tesla is not charging
+  add text notification alarm/controls (ie, if tesla is not charging)
   add sample response json from nest
+  remove weather icons from S2 client
   
   (dev env)
     install Classic Start Menu (4.3.0+)  www.classicshell.net
