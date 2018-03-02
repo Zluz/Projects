@@ -17,6 +17,7 @@ public enum Perspective {
 	DAILY_ROTATE( 3, 5, true, true ),
 	REMOTE( 6, 2, false, false ),
 	GPIO( 4, 5, false, false ),
+	AUTO_HAT( 5, 3, false, false ),
 	
 	TEST( 5, 3, false, false ),
 	;
@@ -80,6 +81,7 @@ public enum Perspective {
 				case DAILY_ROTATE: this.build_DailyRotate(); break;
 				case REMOTE: this.build_Remote( mapOptions ); break;
 				case GPIO: this.build_GPIO( mapOptions ); break;
+				case AUTO_HAT: this.build_AutoHAT( mapOptions ); break;
 			}
 			validate();
 		}
@@ -293,8 +295,21 @@ public enum Perspective {
 
 	private void build_GPIO( final Map<String, String> mapOptions ) {
 		
-		list.add( new TileGeometry( new GPIOTile( mapOptions ), 
+		list.add( new TileGeometry( new IO_GPIOTile( mapOptions ), 
 						new Rectangle( 0, 0, 4, 5 ) ) ); 
+	}
+
+	private void build_AutoHAT( final Map<String, String> mapOptions ) {
+		
+		list.add( new TileGeometry( new IO_AutomationHatTile( mapOptions ), 
+						new Rectangle( 0, 0, 3, 3 ) ) ); 
+
+		list.add( new TileGeometry( new SystemInfoTile(), 
+						new Rectangle( 3, 0, 1, 1 ) ) );
+		list.add( new TileGeometry( new PerformanceMonitorTile(), 
+						new Rectangle( 4, 0, 1, 1 ) ) );
+		list.add( new TileGeometry( new CalibrationTile(), 
+						new Rectangle( 4, 2, 1, 1 ) ) ); 
 	}
 
 	private void build_Tesla( final Map<String, String> mapOptions ) {

@@ -7,13 +7,19 @@ import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.rpclient.swt.UI;
+import jmr.util.hardware.rpi.CPUMonitor;
 
 public class PerformanceMonitorTile extends TileBase {
+
+	private static final double TEMP_ALERT_THRESHOLD = 65.0;
+
 
 	private final static int SAMPLE_COUNT = 130;
 
 
 	private final Long[] arrTimes = new Long[ SAMPLE_COUNT ];
+	private final Double[] arrTemp = new Double[ SAMPLE_COUNT ];
+	private final CPUMonitor cpu = CPUMonitor.get();
 	
 	private int iTimeIndex = 0;
 	
@@ -26,6 +32,7 @@ public class PerformanceMonitorTile extends TileBase {
 			
 //			arrTimes[ iTimeIndex ] = System.currentTimeMillis();
 			arrTimes[ iTimeIndex ] = System.nanoTime() / 100000;
+			arrTemp[ iTimeIndex ] = cpu.getTemperature();
 			if ( iTimeIndex<SAMPLE_COUNT-1 ) {
 				iTimeIndex++;
 			} else {
@@ -68,14 +75,33 @@ public class PerformanceMonitorTile extends TileBase {
 					
 					iElapsedMax = Math.max( iElapsedMax, iTimeElapsed );
 					iElapsedMin = Math.min( iElapsedMin, iTimeElapsed );
-					
+
+					final int iY;
+					final int iXframe;
+					gc.setForeground( UI.COLOR_GREEN );
 					if ( bBar ) {
-						final int iGraphY = iTimeElapsed * 2/100;
-						final int iY = 47 + iX;
-						gc.drawLine( 0, iY, iGraphY, iY );
+						iXframe = iTimeElapsed * 2/100;
+						iY = 47 + iX;
+						gc.drawLine( 0, iY, iXframe, iY );
 					} else {
 						final float fGraphY = ( iTimeElapsed * 150 / 10000 );
 						gc.drawLine( 10+iX, 145, 10+iX, 130 - (int)fGraphY );
+						iY = 0;
+						iXframe = 0;
+					}
+					
+					final Double dTemp = arrTemp[ iXTime ];
+					if ( bBar && null!=dTemp ) {
+						
+						final double dX = ( dTemp.doubleValue() - 10.0 ) / 2; 
+						
+						gc.setForeground( UI.COLOR_RED );
+						
+//						if ( dTemp.doubleValue() > TEMP_ALERT_THRESHOLD ) {
+//							gc.drawLine( iXframe, iY, (int)dX, iY );
+//						} else {
+							gc.drawPoint( (int)dX, iY );
+//						}
 					}
 				}
 				

@@ -23,7 +23,7 @@ import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.s2db.tables.Job;
 
-public class GPIOTile extends TileBase {
+public class IO_GPIOTile extends TileBase {
 
 
 
@@ -40,7 +40,7 @@ public class GPIOTile extends TileBase {
 
 
 
-	public GPIOTile(  final Map<String, String> mapOptions  ) {
+	public IO_GPIOTile(  final Map<String, String> mapOptions  ) {
 		this.strGPIOId = mapOptions.get( "gpio" );
 		final Thread threadUpdateStatus = new Thread( "Update GPIO Status" ) {
 			@Override
