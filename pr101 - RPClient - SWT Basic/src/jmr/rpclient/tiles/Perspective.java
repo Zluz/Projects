@@ -9,6 +9,7 @@ import org.eclipse.swt.graphics.Rectangle;
 
 public enum Perspective {
 
+	TOP_PAGE( 5, 3, true, false ),
 	DAILY( 5, 3, true, false ),
 	TESLA( 5, 3, true, false ),
 	CAMERA( 5, 3, true, false ),
@@ -70,6 +71,7 @@ public enum Perspective {
 	public List<TileGeometry> getTiles( final Map<String, String> mapOptions ) {
 		if ( list.isEmpty() ) {
 			switch ( this ) {
+				case TOP_PAGE: this.build_TopPage( mapOptions ); break;
 				case DAILY: this.build_Daily(); break;
 				case TESLA: this.build_Tesla( mapOptions ); break;
 				case CAMERA: this.build_Camera(); break;
@@ -202,6 +204,35 @@ public enum Perspective {
 	}
 	
 
+	private void build_TopPage( final Map<String, String> mapOptions ) {
+//		list.add( new TileGeometry( new ClockTile(), 
+//						new Rectangle( 0, 0, 3, 1 ) ) );
+
+//		list.add( new TileGeometry( new PerformanceMonitorTile(), 
+//						new Rectangle( 3, 0, 1, 1 ) ) );
+
+		list.add( new TileGeometry( new PerspectiveSwitcherTile(), 
+						new Rectangle( 4, 0, 1, 3 ) ) );
+		
+//		list.add( new TileGeometry( new SystemInfoTile(), 
+//						new Rectangle( 0, 1, 1, 1 ) ) );
+
+//		list.add( new TileGeometry( new CalibrationTile(), 
+//						new Rectangle( 4, 0, 1, 1 ) ) ); 
+//		list.add( new TileGeometry( new CalibrationTile(), 
+//						new Rectangle( 4, 1, 1, 1 ) ) ); 
+
+//		list.add( new TileGeometry( new WeatherForecastTile(), 
+//						new Rectangle( 0, 2, 4, 1 ) ) );
+		
+		list.add( new TileGeometry( new JobListingTile( mapOptions ), 
+						new Rectangle( 0, 0, 4, 1 ) ) ); 
+
+		list.add( new TileGeometry( new JobDetailTile( mapOptions ), 
+				new Rectangle( 0, 1, 4, 2 ) ) ); 
+
+	}
+
 	private void build_Daily() {
 		list.add( new TileGeometry( new ClockTile(), 
 						new Rectangle( 0, 0, 3, 1 ) ) );
@@ -220,7 +251,6 @@ public enum Perspective {
 		list.add( new TileGeometry( new WeatherForecastTile(), 
 						new Rectangle( 0, 2, 5, 1 ) ) ); 
 	}
-
 	private void build_DailyRotate() {
 		list.add( new TileGeometry( new ClockTile(), 
 						new Rectangle( 0, 0, 3, 1 ) ) );
@@ -269,7 +299,9 @@ public enum Perspective {
 
 	private void build_Tesla( final Map<String, String> mapOptions ) {
 		list.add( new TileGeometry( new ClockTile(), 
-						new Rectangle( 0, 0, 3, 1 ) ) );
+						new Rectangle( 0, 0, 2, 1 ) ) );
+//		list.add( new TileGeometry( new PerspectiveSwitcherTile(), 
+//						new Rectangle( 2, 0, 1, 1 ) ) );
 
 		list.add( new TileGeometry( new TeslaTile(), 
 						new Rectangle( 4, 0, 1, 2 ) ) );
@@ -283,7 +315,9 @@ public enum Perspective {
 						new Rectangle( 0, 1, 2, 1 ) ) ); 
 		
 		list.add( new TileGeometry( new WeatherForecastTile(), 
-						new Rectangle( 0, 2, 5, 1 ) ) ); 
+						new Rectangle( 0, 2, 3, 1 ) ) ); 
+		list.add( new TileGeometry( new NestTile(), 
+						new Rectangle( 3, 2, 2, 1 ) ) ); 
 	}
 
 	private void build_Desktop( final Map<String, String> mapOptions ) {

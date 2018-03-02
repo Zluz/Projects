@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -95,6 +96,7 @@ public class TabS2DB extends TabBase {
 	}
 
 	public CTabItem tab = null;
+	private Composite compDetails;
 	
 	@Override
 	public CTabItem getTab() {
@@ -108,7 +110,7 @@ public class TabS2DB extends TabBase {
 		
 	    final Composite comp = new Composite( parent, SWT.NONE );
 //	    comp.setLayout( new FillLayout() );
-	    comp.setLayout( new GridLayout( 5, true ) );
+	    comp.setLayout( new GridLayout( 6, true ) );
 	    
 	    final Composite compNodes = new Composite( comp, SWT.NONE );
 	    compNodes.setLayout( new FillLayout() );
@@ -116,11 +118,11 @@ public class TabS2DB extends TabBase {
 	    gdNode.horizontalSpan = 2;
 		compNodes.setLayoutData( gdNode );
 
-	    final Composite compPeers = new Composite( comp, SWT.NONE );
-	    compPeers.setLayout( new FillLayout() );
+	    compDetails = new Composite( comp, SWT.NONE );
+	    compDetails.setLayout( new FillLayout() );
 	    final GridData gdPeer = new GridData( GridData.FILL_BOTH );
-	    gdPeer.horizontalSpan = 3;
-	    compPeers.setLayoutData( gdPeer );
+	    gdPeer.horizontalSpan = 4;
+	    compDetails.setLayoutData( gdPeer );
 
 		menu = new Menu( parent.getShell(), SWT.POP_UP );
 
@@ -143,7 +145,7 @@ public class TabS2DB extends TabBase {
 
 
 //		treePeers = new Tree( compPeers, SWT.V_SCROLL );
-		tableDetails = new Table( compPeers, SWT.V_SCROLL );
+		tableDetails = new Table( compDetails, SWT.V_SCROLL );
 		
 		TableColumn tcolName = new TableColumn( tableDetails, SWT.LEFT );
 		tcolName.setText( "Name" );
@@ -242,6 +244,10 @@ public class TabS2DB extends TabBase {
 		}
 		tableDetails.clearAll();
 		tableDetails.removeAll();
+		final ScrollBar hbar = tableDetails.getHorizontalBar();
+		if ( null!=hbar ) {
+			hbar.setSelection( 0 );
+		}
 
 		final TableItem itemTitle = new TableItem( tableDetails, SWT.NONE );
 		itemTitle.setText( 0, "Node Path" );

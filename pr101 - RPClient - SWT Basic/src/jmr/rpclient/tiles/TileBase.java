@@ -85,8 +85,8 @@ public abstract class TileBase implements Tile {
 				
 				System.out.println( "Button pressed: " + button.getName() );
 				
-				activateButton( button );
 				button.setState( ButtonState.ACTIVATED );
+				activateButton( button );
 				
 				bButton = true;
 			}
@@ -135,12 +135,13 @@ public abstract class TileBase implements Tile {
 		if ( !SIZE_CACHE.containsKey( strKey ) ) {
 		
 			iSize = iMax + 1;
+			final int iWidth = rect.width - 6;
 			Point ptTest;
 			do {
 				iSize = iSize - 1;
 				gc.setFont( Theme.get().getFont( iSize ) );
 				ptTest = gc.textExtent( strText );
-			} while ( ( rect.width < ptTest.x ) && ( iSize >= iMin ) );
+			} while ( ( iWidth < ptTest.x ) && ( iSize >= iMin ) );
 			iSize = Math.max( iSize, iMin );
 
 			if ( SIZE_CACHE.size() > 20 ) SIZE_CACHE.clear();

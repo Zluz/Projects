@@ -1,9 +1,11 @@
 
 [TO DO]
-  add input to warm up tesla
-  add alarm controls if tesla is not charging
-    add text notification
-  add sample response json from tesla
+  add text notification alarm/controls (ie, if tesla is not charging)
+  add sample response json from nest
+  remove weather icons from S2 client
+  
+  (dev env)
+    install Classic Start Menu (4.3.0+)  www.classicshell.net
   
 
 [NOTES]
@@ -21,3 +23,7 @@
             Object[] objects = info.objects;
             Error[] errors = info.errors;
       
+[JSON handling]
+  JsonObject jo = new JsonObject();
+  jo.addProperty( "name", "value" );
+  return jo.toString();
