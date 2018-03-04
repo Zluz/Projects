@@ -10,7 +10,9 @@
 #-------------------------------------
 
 
+/Local/scripts/launch_web.sh
 /Local/scripts/stop_all.sh
+
 
 WID=`xdotool search --name " Chromium"`
 xdotool windowfocus $WID
