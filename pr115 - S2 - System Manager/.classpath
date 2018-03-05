@@ -6,7 +6,9 @@
 			<attribute name="owner.project.facets" value="java"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/pr104 - Utilities"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/SWT_Win32"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/px110 - KTable - Widget"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr105 - S2DB"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr110 - S2 File Session"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

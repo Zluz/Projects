@@ -16,6 +16,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Rectangle;
 
+import jmr.FileSessionMap;
+import jmr.S2FSUtil;
 import jmr.rpclient.swt.GCTextUtils;
 import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
@@ -24,7 +26,6 @@ import jmr.s2db.tables.Page;
 import jmr.s2db.tables.Path;
 import jmr.s2fs.FileSession;
 import jmr.s2fs.FileSessionManager;
-import jmr.s2fs.S2FSUtil;
 
 public class SessionListTile extends TileBase {
 
@@ -180,9 +181,13 @@ public class SessionListTile extends TileBase {
 					map = new HashMap<>();
 					map2.put( strKey, map );
 				}
-				map.put( "uname", session.getAllSystemInfo() );
-				map.put( "conky", session.getDeviceInfo() );
-				map.put( "ifconfig", session.getNetworkInterfaceInfo() );
+				
+				final FileSessionMap fsmap = new FileSessionMap( session );
+				map.putAll( fsmap );
+				
+//				map.put( "uname", session.getAllSystemInfo() );
+//				map.put( "conky", session.getDeviceInfo() );
+//				map.put( "ifconfig", session.getNetworkInterfaceInfo() );
 			}
 		}
 	}
@@ -340,18 +345,18 @@ public class SessionListTile extends TileBase {
 					gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 				}
 				
-				final String strIP = getIP( map );
+				final String strIP = FileSessionMap.getIP( map );
 				gc.setFont( Theme.get().getFont( 12 ) );
 				util.drawTextJustified( strIP, rect );
 				rect.y = rect.y + 18;
 				
-				final String strName = getDescription( map );
+				final String strName = FileSessionMap.getDescription( map );
 				gc.setFont( Theme.get().getFont( 10 ) );
 				util.drawTextJustified( strName, rect );
 				rect.y = rect.y + 18;
 				
 				if ( !this.bAlternating ) {
-					final String[] strs = getMAC( map );
+					final String[] strs = FileSessionMap.getMAC( map );
 					final String strMAC = strs[ 0 ];
 					final String strNIC = strs[ 1 ];
 					gc.setFont( Theme.get().getFont( 11 ) );
@@ -372,93 +377,6 @@ public class SessionListTile extends TileBase {
 
 //		drawTextCentered( strText, 10 );
 	}
-	
-
-	public static String getDescription( final Map<String,String> map ) {
-		if ( null==map ) return "<null>";
-		
-		final String strDeviceName = map.get( "device.name" );
-		if ( null!=strDeviceName ) return strDeviceName;
-		
-		final String str_ifconfig = map.get( "conky" );
-		if ( null!=str_ifconfig && !str_ifconfig.isEmpty() ) {
-			return str_ifconfig;
-		}
-		return "<unknown>";
-	}
-
-	public static String getIP( final Map<String,String> map ) {
-		if ( null==map ) return "<null>";
-		
-		final String strDeviceIP = map.get( "device.ip" );
-		if ( null!=strDeviceIP ) return strDeviceIP;
-		
-		final String str_ifconfig = map.get( "ifconfig" );
-		if ( null!=str_ifconfig ) {
-			final String[] strs = str_ifconfig.split( "\n" );
-			for ( final String str : strs ) {
-				if ( str.contains( "inet addr:192.168" ) ) {
-					int iStart = str.indexOf( "addr:192.168" ) + 5;
-					int iEnd = str.indexOf( " ", iStart );
-					final String strsub = str.substring( iStart, iEnd );
-					return strsub;
-				}
-				if ( str.contains( "inet 192.168" ) ) {
-					int iStart = str.indexOf( "inet 192.168" ) + 5;
-					int iEnd = str.indexOf( " ", iStart );
-					final String strsub = str.substring( iStart, iEnd );
-					return strsub;
-				}
-			}
-		}
-		return "<unknown>";
-	}
-
-	public static String[] getMAC( final Map<String,String> map ) {
-		if ( null==map ) return new String[]{ "<null>", "<?>" };
-		
-		final String str_ifconfig = map.get( "ifconfig" );
-		String strNIC = "<?>";
-		if ( null!=str_ifconfig ) {
-			final String[] strs = str_ifconfig.split( "\n" );
-			for ( final String str : strs ) {
-				if ( !str.isEmpty() && !str.startsWith( " " ) ) {
-					final String strsub = str.substring( 0, 8 );
-					final int iPos = strsub.indexOf( ":" );
-					if ( iPos > 0 ) {
-						strNIC = strsub.substring( 0, iPos );
-					} else {
-						strNIC = strsub.trim();
-					}
-				}
-				if ( str.contains( "HWaddr " ) ) {
-					int iStart = str.indexOf( "HWaddr " ) + 7;
-					int iEnd = str.length();
-					final String strsub = str.substring( iStart, iEnd ).trim();
-					final String strMAC = S2FSUtil.normalizeMAC( strsub );
-					return new String[]{ strMAC, strNIC };
-				}
-				if ( str.trim().startsWith( "ether " ) ) {
-					int iStart = str.indexOf( "ether " ) + 6;
-					int iEnd = str.indexOf( "  ", iStart );
-					final String strsub = str.substring( iStart, iEnd ).trim();
-					final String strMAC = S2FSUtil.normalizeMAC( strsub );
-					return new String[] { strMAC, strNIC };
-				}
-			}
-		}
-		
-		strNIC = "<session>";
-		final String strSession = map.get( "session.id" );
-		if ( null!=strSession ) {
-			final String strsub = strSession.substring( 5, 22 );
-			final String strMAC = S2FSUtil.normalizeMAC( strsub );
-			return new String[] { strMAC, strNIC };
-		}
-		
-		return new String[]{ "<unknown>", "<?>" };
-	}
-	
 	
 	public static String checkNull( final String text ) {
 		if ( null==text ) {
