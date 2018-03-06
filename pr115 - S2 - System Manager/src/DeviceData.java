@@ -3,10 +3,8 @@ import java.util.Map;
 import java.util.Set;
 
 import jmr.CompositeSessionManager;
-import jmr.FileSessionMap;
-import jmr.s2fs.FileSession;
-import jmr.s2fs.FileSessionManager;
-import jmr.s2fs.FileSession.SessionFile;
+import jmr.Field;
+import jmr.SessionMap;
 
 public class DeviceData {
 
@@ -31,7 +29,7 @@ public class DeviceData {
 	}
 
 	public String getValue(	final int iRow, 
-							final Column col ) {
+							final Field col ) {
 		if ( mapSessionIndex.containsKey( iRow ) ) {
 			final String strMAC = mapSessionIndex.get( iRow );
 			
@@ -39,29 +37,44 @@ public class DeviceData {
 //			final FileSessionMap map = new FileSessionMap( session );
 			
 //			final Map<String, String> 
-			final FileSessionMap map = 
-					new FileSessionMap( csm.getAllSessionData().get( strMAC ) );
+			final SessionMap map = 
+//					new SessionMap( csm.getAllSessionData().get( strMAC ) );
+					csm.getAllSessionData().get( strMAC );
 			
-			switch ( col ) {
-				case SESSION_NAME: {
-					return map.toString();
-				}
-				case MAC: {
-					return strMAC;
-				}
-				case DEVICE_INFO: {
-					return map.get( SessionFile.DEVICE_INFO.name() );
-				}
-				case SYSTEM_INFO: {
-					return map.get( SessionFile.SYSTEM_INFO.name() );
-				}
-				case IP: {
-					return map.getIP();
-				}
-				case DESCRIPTION: {
-					return map.getDescription();
+//			System.out.println( "getValue(), iRow:" + iRow + ", col:" + col );
+//			System.out.println( "\tmap = " + map.toString() );
+			
+			if ( null!=col ) {
+				final String strValue = map.get( col );
+//				System.out.println( "\tstrValue = " + strValue );
+				
+				if ( null!=strValue ) {
+					return strValue;
 				}
 			}
+			
+//			switch ( col ) {
+//				case SESSION_NAME: {
+//					return map.toString();
+//				}
+//				case MAC: {
+//					return strMAC;
+//				}
+//				case DEVICE_INFO: {
+//					return map.get( Field.DEVICE_INFO );
+//				}
+//				case SYSTEM_INFO: {
+//					return map.get( Field.SYSTEM_INFO );
+//				}
+//				case IP: {
+////					return map.getIP();
+//					return map.get( Field.IP );
+//				}
+//				case DESCRIPTION: {
+////					return map.getDescription();
+//					return map.get( Field.DESCRIPTION );
+//				}
+//			}
 		}
 		return "Row:" + iRow + ", Column:" + col.name();
 	}

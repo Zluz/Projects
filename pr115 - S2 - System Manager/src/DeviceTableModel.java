@@ -18,6 +18,7 @@ import de.kupzog.ktable.KTableCellRenderer;
 import de.kupzog.ktable.KTableSortedModel;
 import de.kupzog.ktable.renderers.DefaultCellRenderer;
 import de.kupzog.ktable.renderers.FixedCellRenderer;
+import jmr.Field;
 
 /**
  * Shows how to create a table model that allows sorting the table!
@@ -60,15 +61,21 @@ public class DeviceTableModel extends KTableSortedModel {
      * @see de.kupzog.ktable.KTableDefaultModel#doGetContentAt(int, int)
      */
     public Object doGetContentAt( int col, int row ) {
-
-    	final Column column = Column.get( col );
     	
-    	if ( col<Column.values().length ) {
+    	final Field column = getFieldForColumn( col );
+    	
+//    	if ( col<Field.values().length ) {
+    	if ( null!=column ) {
         	if ( 0==row ) {
         		return column.name();
         	}
+        	
+//        	System.out.println( "Column: " + column );
     		
     		final String strValue = data.getValue( row-1, column );
+    		
+//    		System.out.println( "\tvalue: " + strValue );
+    		
     		if ( null!=strValue ) {
     			return strValue;
     		} else {
@@ -129,22 +136,40 @@ public class DeviceTableModel extends KTableSortedModel {
         return new Point(col,row);
     }
     
+    public Field getFieldForColumn( final int iCol ) {
+    	if ( iCol>0 ) {
+    		return Field.get( iCol-1 );
+    	} else {
+    		return Field.MAC;
+    	}
+    }
+    
     /* (non-Javadoc)
      * @see de.kupzog.ktable.KTableDefaultModel#getInitialColumnWidth(int)
      */
     public int getInitialColumnWidth( final int iCol ) {
-    	final Column column = Column.get( iCol );
+    	final Field column = getFieldForColumn( iCol );
     	if ( null!=column ) {
-    		return column.getWidth();
+//    		return 50;
+    		final int iWidth = column.getWidth();
+    		return iCharWidth * iWidth;
     	}
     	return 10;
     }
+    
+    
+    private int iCharWidth = 10;
+    
+    public void setCharWidth( final int iWidth ) {
+    	this.iCharWidth = iWidth;
+    }
+    
 
     /* (non-Javadoc)
      * @see de.kupzog.ktable.KTableDefaultModel#getInitialRowHeight(int)
      */
     public int getInitialRowHeight(int row ) {
-        return 18;
+        return 34;
     }
 
     /* (non-Javadoc)
@@ -152,7 +177,13 @@ public class DeviceTableModel extends KTableSortedModel {
      */
     public int doGetRowCount() {
 //       return 1000+getFixedRowCount();
-    	return 20 + getFixedRowCount();
+    	final int iSize;
+    	if ( null!=this.data && null!=this.data.mapSessionIndex ) {
+        	iSize = this.data.mapSessionIndex.size();
+    	} else {
+    		iSize = 0;
+    	}
+    	return iSize + getFixedRowCount();
     }
     
     /* (non-Javadoc)
@@ -160,7 +191,7 @@ public class DeviceTableModel extends KTableSortedModel {
      */
     public int doGetColumnCount() {
 //        return 1000+getFixedColumnCount();
-    	return 10 + getFixedColumnCount();
+    	return 20 + getFixedColumnCount();
     }
 
     /* (non-Javadoc)
@@ -174,7 +205,7 @@ public class DeviceTableModel extends KTableSortedModel {
      * @see de.kupzog.ktable.KTableModel#getFixedColumnCount()
      */
     public int getFixedHeaderColumnCount() {
-        return 0;
+        return 1;
     }
     
     /* (non-Javadoc)
@@ -188,7 +219,7 @@ public class DeviceTableModel extends KTableSortedModel {
      * @see de.kupzog.ktable.KTableModel#getFixedSelectableColumnCount()
      */
     public int getFixedSelectableColumnCount() {
-        return 1;
+        return 0;
     }
 
 
