@@ -4,15 +4,17 @@ package jmr;
 public enum Field {
 	
 	// source data
-	UNAME( 60 ),
+	UNAME( 1 ),
 	CONKY( 40 ),
 	IFCONFIG( 30 ),
-	
+
+	UNAME_FORMATTED( 80 ),
 	
 	// derived data
-	SESSION_NAME( 20 ),
+	SESSION_NAME( "session_id", 20 ),
 	MAC( "device.mac", 20 ),
 	IP( "device.ip", 16 ),
+	NIC( 6 ),
 	DESCRIPTION( 40 ),
 //	UNAME( 100 ),
 	DEVICE_INFO( 40 ),
@@ -27,6 +29,11 @@ public enum Field {
 	SESSION_ID( "session.id", 50 ),
 	SESSION_START( "session.start", 20 ),
 	SESSION_SEQ( ".seq_session", 12 ),
+	
+	TIMESTR_PAGE( 30 ),
+	TIMESTR_SCREENSHOT( 30 ),
+	TIMEE_SCREENSHOT( 20 ),
+	
 	
 
 //	EMPTY,

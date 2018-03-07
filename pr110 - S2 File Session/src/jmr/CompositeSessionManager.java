@@ -1,7 +1,6 @@
 package jmr;
 
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,18 +30,16 @@ public class CompositeSessionManager {
 		
 		MAP.clear();
 		
-		for ( final Entry<String, Map<String, String>> 
-								entry : dbsm.getSessionMap().entrySet() ) {
-			final String strMAC = entry.getKey();
-			final Map<String,String> mapData = entry.getValue();
-			final SessionMap sm = new SessionMap( mapData );
-			MAP.put( strMAC, sm );
-		}
+		
 		
 		for ( final Entry<String, FileSession> 
 								entry : s2sm.getSessionMap().entrySet() ) {
 			final String strMAC = entry.getKey();
-			
+
+			final SessionMap fsm = new SessionMap( entry.getValue() );
+
+			MAP.put( strMAC, fsm );
+
 //			final Map<String,String> map;
 			final SessionMap map;
 			if ( MAP.containsKey( strMAC ) ) {
@@ -53,13 +50,45 @@ public class CompositeSessionManager {
 				MAP.put( strMAC, map );
 			}
 			
-			final SessionMap fsm = new SessionMap( entry.getValue() );
 			
 //			map.putAll( fsm );
 			for ( final Entry<Field, String> e : fsm.entrySet() ) {
-				map.put( e.getKey(), e.getValue() );
+				fsm.put( e.getKey(), e.getValue() );
 			}
 		}
+		
+		
+
+		for ( final Entry<String, Map<String, String>> 
+								entry : dbsm.getSessionMap().entrySet() ) {
+			
+			final String strMAC = entry.getKey();
+			final Map<String,String> mapData = entry.getValue();
+			
+			final SessionMap sm = new SessionMap( mapData );
+			
+			
+//			final Map<String,String> map;
+			
+			final SessionMap map;
+			
+			if ( MAP.containsKey( strMAC ) ) {
+				map = MAP.get( strMAC );
+			} else {
+				map = new SessionMap();
+				MAP.put( strMAC, map );
+			}
+			
+			for ( final Entry<Field, String> e : sm.entrySet() ) {
+				map.put( e.getKey(), e.getValue() );
+			}
+			
+//			MAP.put( strMAC, sm );
+		}
+		
+		
+		
+		
 	}
 	
 	

@@ -19,6 +19,7 @@ import de.kupzog.ktable.KTableSortedModel;
 import de.kupzog.ktable.renderers.DefaultCellRenderer;
 import de.kupzog.ktable.renderers.FixedCellRenderer;
 import jmr.Field;
+import jmr.SessionMap;
 
 /**
  * Shows how to create a table model that allows sorting the table!
@@ -56,6 +57,12 @@ public class DeviceTableModel extends KTableSortedModel {
         initialize();
         data = new DeviceData();
     }
+    
+    
+    public SessionMap getSessionMapForRow( final int iRow ) {
+    	return data.getSessionMapForRow( iRow );
+    }
+    
     
     /* (non-Javadoc)
      * @see de.kupzog.ktable.KTableDefaultModel#doGetContentAt(int, int)
@@ -191,7 +198,7 @@ public class DeviceTableModel extends KTableSortedModel {
      */
     public int doGetColumnCount() {
 //        return 1000+getFixedColumnCount();
-    	return 20 + getFixedColumnCount();
+    	return Field.values().length + getFixedColumnCount();
     }
 
     /* (non-Javadoc)

@@ -27,57 +27,35 @@ public class DeviceData {
 			i++;
 		}
 	}
-
-	public String getValue(	final int iRow, 
-							final Field col ) {
+	
+	public SessionMap getSessionMapForRow( final int iRow ) {
 		if ( mapSessionIndex.containsKey( iRow ) ) {
 			final String strMAC = mapSessionIndex.get( iRow );
-			
-//			final FileSession session = fsm.getFileSession( strMAC );
-//			final FileSessionMap map = new FileSessionMap( session );
-			
-//			final Map<String, String> 
 			final SessionMap map = 
-//					new SessionMap( csm.getAllSessionData().get( strMAC ) );
 					csm.getAllSessionData().get( strMAC );
-			
-//			System.out.println( "getValue(), iRow:" + iRow + ", col:" + col );
-//			System.out.println( "\tmap = " + map.toString() );
-			
-			if ( null!=col ) {
-				final String strValue = map.get( col );
-//				System.out.println( "\tstrValue = " + strValue );
+			return map;
+		};
+		return null;
+	}
+	
+	public String getValue(	final int iRow, 
+							final Field col ) {
+		if ( null!=col ) {
+			final SessionMap sm = this.getSessionMapForRow( iRow );
+			if ( null!=sm ) {
+				final String strValue = sm.get( col );
+	//				System.out.println( "\tstrValue = " + strValue );
 				
 				if ( null!=strValue ) {
 					return strValue;
 				}
 			}
-			
-//			switch ( col ) {
-//				case SESSION_NAME: {
-//					return map.toString();
-//				}
-//				case MAC: {
-//					return strMAC;
-//				}
-//				case DEVICE_INFO: {
-//					return map.get( Field.DEVICE_INFO );
-//				}
-//				case SYSTEM_INFO: {
-//					return map.get( Field.SYSTEM_INFO );
-//				}
-//				case IP: {
-////					return map.getIP();
-//					return map.get( Field.IP );
-//				}
-//				case DESCRIPTION: {
-////					return map.getDescription();
-//					return map.get( Field.DESCRIPTION );
-//				}
-//			}
 		}
-		return "Row:" + iRow + ", Column:" + col.name();
+
+		//return "Row:" + iRow + ", Column:" + col.name();
+		return "-";
 	}
-	
+
+
 	
 }

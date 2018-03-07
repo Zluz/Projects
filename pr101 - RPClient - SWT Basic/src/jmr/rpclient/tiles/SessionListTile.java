@@ -16,7 +16,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Rectangle;
 
-import jmr.FileSessionMap;
+import jmr.SessionMap;
+import jmr.Field;
 import jmr.S2FSUtil;
 import jmr.rpclient.swt.GCTextUtils;
 import jmr.rpclient.swt.S2Button;
@@ -35,6 +36,7 @@ public class SessionListTile extends TileBase {
 //	final static Map<String,Long> map = new HashMap<>();
 
 	final static Map<String,Map<String,String>> map2 = new HashMap<>();
+//	final static Map<String,SessionMap> map2 = new HashMap<>();
 	final static Map<String,Image> mapScreenshots = new HashMap<>();
 	boolean bScreenshotsUpdating = false;
 
@@ -182,8 +184,8 @@ public class SessionListTile extends TileBase {
 					map2.put( strKey, map );
 				}
 				
-				final FileSessionMap fsmap = new FileSessionMap( session );
-				map.putAll( fsmap );
+				final SessionMap fsmap = new SessionMap( session );
+				map.putAll( fsmap.asMap() );
 				
 //				map.put( "uname", session.getAllSystemInfo() );
 //				map.put( "conky", session.getDeviceInfo() );
@@ -345,26 +347,29 @@ public class SessionListTile extends TileBase {
 					gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 				}
 				
-				final String strIP = FileSessionMap.getIP( map );
+//				final String strIP = SessionMap.getIP( map );
+				final String strIP = map.get( Field.IP );
 				gc.setFont( Theme.get().getFont( 12 ) );
 				util.drawTextJustified( strIP, rect );
 				rect.y = rect.y + 18;
 				
-				final String strName = FileSessionMap.getDescription( map );
+//				final String strName = SessionMap.getDescription( map );
+				final String strName = map.get( Field.DESCRIPTION );
 				gc.setFont( Theme.get().getFont( 10 ) );
 				util.drawTextJustified( strName, rect );
 				rect.y = rect.y + 18;
 				
 				if ( !this.bAlternating ) {
-					final String[] strs = FileSessionMap.getMAC( map );
-					final String strMAC = strs[ 0 ];
-					final String strNIC = strs[ 1 ];
+//					final String[] strs = SessionMap.getMAC( map );
+					final String strMAC = map.get( Field.MAC );
+//					final String strMAC = strs[ 0 ];
+//					final String strNIC = strs[ 1 ];
 					gc.setFont( Theme.get().getFont( 11 ) );
 					util.drawTextJustified( "  " + strMAC, rect );
 					rect.y = rect.y + 3;
 					gc.setFont( Theme.get().getFont( 8 ) );
 					util.setRightAligned( true );
-					util.drawTextJustified( strNIC, rect );
+//					util.drawTextJustified( strNIC, rect );
 					rect.y = rect.y + 20;
 					util.setRightAligned( false );
 				}

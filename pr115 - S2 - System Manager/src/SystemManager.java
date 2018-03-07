@@ -1,3 +1,5 @@
+import java.util.Map.Entry;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
@@ -10,6 +12,8 @@ import org.eclipse.swt.widgets.Shell;
 import de.kupzog.ktable.KTable;
 import de.kupzog.ktable.KTableCellSelectionListener;
 import de.kupzog.ktable.SWTX;
+import jmr.Field;
+import jmr.SessionMap;
 
 public class SystemManager {
 
@@ -32,15 +36,29 @@ public class SystemManager {
 		table.setModel( model );
 		
 		final KTableCellSelectionListener listenerSelection = 
-						new KTableCellSelectionListener() {
+									new KTableCellSelectionListener() {
 			@Override
-			public void cellSelected(int col, int row,
-					int statemask) {
+			public void cellSelected( int col, int row, int statemask ) {
 				System.out.println();
 		    	System.out.println( "DeviceTableKTableCellSelectionListenerModel.cellSelected() - "
 		    			+ "col:" + col + ", row:" + row + ", statemask:" + statemask );
-		    	final Object content = model.doGetContentAt( col, row );
-		    	System.out.println( "\tContent: " + content );
+		    	if ( col > 0 ) {
+			    	final Object content = model.doGetContentAt( col, row );
+			    	System.out.println( "\tContent: " + content );
+		    	} else {
+		    		final SessionMap sm = model.getSessionMapForRow( row );
+		    		if ( null!=sm ) {
+			    		System.out.println( "SessionMap " + sm.hashCode() );
+			    		for ( final Entry<Field, String> entry : sm.entrySet() ) {
+			    			System.out.println( "\t" 
+			    						+ entry.getKey().name()
+			    						+ ":" + entry.getValue() );
+			    		}
+		    		} else {
+		    			System.out.println( "(Null SessionMap)" );
+		    		}
+		    	}
+		    	
 			}
 
 			@Override

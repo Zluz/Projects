@@ -1,7 +1,12 @@
 package jmr;
 
+import java.io.File;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 import jmr.s2fs.FileSession;
 
@@ -19,12 +24,17 @@ public class SessionMap extends EnumMap<Field,String> {
 	
 	public SessionMap() {
 		super( Field.class );
+		this.fs = null;
 	}
+	
+	
+	final FileSession fs;
 
 	
 	
 	public SessionMap( final FileSession session ) {
 		super( Field.class );
+		this.fs = session;
 		if ( null!=session ) {
 			this.put( Field.UNAME, session.getAllSystemInfo() );
 			this.put( Field.CONKY, session.getDeviceInfo() );
@@ -32,7 +42,14 @@ public class SessionMap extends EnumMap<Field,String> {
 		}
 	}
 	
-	
+
+	public SessionMap( final Map<String,String> map ) {
+		super( Field.class );
+		this.fs = null;
+//		this.putAll( map );
+		this.loadMap( map );
+	}
+
 //	@Override
 //	public String get( final Field field ) {
 //		// TODO Auto-generated method stub
@@ -70,8 +87,51 @@ public class SessionMap extends EnumMap<Field,String> {
 							strValue = values[0];
 							break;
 						}
+						case NIC: {
+							final String[] values = getMAC( this );
+							strValue = values[1];
+							break;
+						}
 						case DESCRIPTION: {
 							strValue = getDescription( this );
+							break;
+						}
+						case UNAME_FORMATTED: {
+							final String strUname = this.get( Field.UNAME );
+							if ( null!=strUname ) {
+								strValue = strUname.split( "\n" )[0];
+							} else {
+								strValue = "<no uname output>";
+							}
+							break;
+						}
+						case TIMESTR_PAGE: {
+							final Long lValue = 
+									this.getLong( Field.LAST_MODIFIED );
+							strValue = getISOTime( lValue );
+							break;
+						}
+						case TIMEE_SCREENSHOT: {
+							final File file = this.getScreenshot();
+							final Long lModified;
+							if ( null!=file ) {
+								lModified = file.lastModified();
+								strValue = Long.toString( lModified );
+							} else {
+								lModified = null;
+								strValue = "<no file>";
+							}
+							break;
+						}
+						case TIMESTR_SCREENSHOT: {
+							final File file = this.getScreenshot();
+							final Long lModified;
+							if ( null!=file ) {
+								lModified = file.lastModified();
+							} else {
+								lModified = null;
+							}
+							strValue = getISOTime( lModified );
 							break;
 						}
 						default: {
@@ -92,12 +152,42 @@ public class SessionMap extends EnumMap<Field,String> {
 	}
 	
 	
-	public SessionMap( final Map<String,String> map ) {
-		super( Field.class );
-//		this.putAll( map );
-		this.loadMap( map );
+	public static String getISOTime( final Long lEpoch ) {
+		final String strValue;
+		if ( null!=lEpoch ) {
+			final LocalDateTime date = 
+					LocalDateTime.ofInstant(
+							Instant.ofEpochMilli( lEpoch ), 
+                    TimeZone.getDefault().toZoneId() );
+			strValue = date.toString();
+		} else {
+			strValue = "<invalid time>";
+		}
+		return strValue;
 	}
-
+	
+	
+	public Long getLong( final Field field ) {
+		if ( null==field ) return null;
+		final String strValue = this.get( field );
+		if ( null==strValue ) return null;
+		try {
+			final Long lValue = Long.parseLong( strValue );
+			return lValue;
+		} catch ( final NumberFormatException e ) {
+			return null;
+		}
+	}
+	
+	
+	public File getScreenshot() {
+		if ( null!=fs ) {
+			return fs.getScreenshotImageFile();
+		}
+		return null;
+	}
+	
+	
 //	public String getIP() {
 //		return SessionMap.getIP( this );
 //	}
@@ -116,6 +206,15 @@ public class SessionMap extends EnumMap<Field,String> {
 				this.put( field, strValue );
 			}
 		}
+	}
+	
+	
+	public Map<String,String> asMap() {
+		final Map<String,String> map = new HashMap<>();
+		for ( final Entry<Field, String> entry : this.entrySet() ) {
+			map.put( entry.getKey().name(), entry.getValue() );
+		}
+		return map;
 	}
 	
 
