@@ -1,3 +1,4 @@
+package jmr.pr115.ui;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
@@ -5,6 +6,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import de.kupzog.ktable.KTable;
 import de.kupzog.ktable.SWTX;
+import jmr.pr115.model.TextModelExample;
 
 public class KTableTest {
 

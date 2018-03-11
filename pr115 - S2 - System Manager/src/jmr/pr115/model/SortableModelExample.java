@@ -1,3 +1,4 @@
+package jmr.pr115.model;
 /*
  * Copyright (C) 2004 by Friederich Kupzog Elektronik & Software
  * All rights reserved. This program and the accompanying materials

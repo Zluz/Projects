@@ -1,7 +1,5 @@
 package jmr;
 
-import java.util.Map;
-
 public abstract class S2FSUtil {
 
 	public static String normalizeMAC( final String strInput ) {

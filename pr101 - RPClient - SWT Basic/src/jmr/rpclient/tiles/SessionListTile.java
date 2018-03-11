@@ -17,6 +17,7 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Rectangle;
 
 import jmr.SessionMap;
+import jmr.Element;
 import jmr.Field;
 import jmr.S2FSUtil;
 import jmr.rpclient.swt.GCTextUtils;
@@ -35,7 +36,7 @@ public class SessionListTile extends TileBase {
 
 //	final static Map<String,Long> map = new HashMap<>();
 
-	final static Map<String,Map<String,String>> map2 = new HashMap<>();
+	final static Map<String,Map<String,Element>> map2 = new HashMap<>();
 //	final static Map<String,SessionMap> map2 = new HashMap<>();
 	final static Map<String,Image> mapScreenshots = new HashMap<>();
 	boolean bScreenshotsUpdating = false;
@@ -138,6 +139,8 @@ public class SessionListTile extends TileBase {
 
 	private void updateMap() {
 
+		final long lSnapshotTime = System.currentTimeMillis();
+		
 		final String strPath = "/Sessions/";
 
 		final Map<String, Long> mapSessions = 
@@ -165,7 +168,8 @@ public class SessionListTile extends TileBase {
 			final String strMAC = map.get( "device.mac" );
 			final String strNorm = S2FSUtil.normalizeMAC( strMAC );
 			
-			map2.put( strNorm, map );
+//			map2.put( strNorm, map );
+			map2.put( strNorm, Element.convertStringMap( map ) );
 		}
 		
 		final FileSessionManager fsm = FileSessionManager.getInstance();
@@ -175,7 +179,7 @@ public class SessionListTile extends TileBase {
 			
 			if ( null!=session ) {
 
-				final Map<String,String> map;
+				final Map<String,Element> map;
 				
 				if ( map2.containsKey( strKey ) ) {
 					map = map2.get( strKey );
@@ -184,7 +188,8 @@ public class SessionListTile extends TileBase {
 					map2.put( strKey, map );
 				}
 				
-				final SessionMap fsmap = new SessionMap( session );
+				final SessionMap fsmap = 
+									new SessionMap( session, lSnapshotTime );
 				map.putAll( fsmap.asMap() );
 				
 //				map.put( "uname", session.getAllSystemInfo() );
@@ -289,10 +294,10 @@ public class SessionListTile extends TileBase {
 			int iCount = 0;
 			boolean bLeft = true;
 			
-			for ( final Entry<String, Map<String, String>> 
+			for ( final Entry<String, Map<String, Element>> 
 											entry : map2.entrySet() ) {
 				final String strKey = entry.getKey();
-				final Map<String,String> map = entry.getValue();
+				final Map<String,Element> map = entry.getValue();
 				
 				if ( !this.bAlternating ) {
 					bLeft = true;
@@ -348,20 +353,20 @@ public class SessionListTile extends TileBase {
 				}
 				
 //				final String strIP = SessionMap.getIP( map );
-				final String strIP = map.get( Field.IP );
+				final String strIP = map.get( Field.IP ).getAsString();
 				gc.setFont( Theme.get().getFont( 12 ) );
 				util.drawTextJustified( strIP, rect );
 				rect.y = rect.y + 18;
 				
 //				final String strName = SessionMap.getDescription( map );
-				final String strName = map.get( Field.DESCRIPTION );
+				final String strName = map.get( Field.DESCRIPTION ).getAsString();
 				gc.setFont( Theme.get().getFont( 10 ) );
 				util.drawTextJustified( strName, rect );
 				rect.y = rect.y + 18;
 				
 				if ( !this.bAlternating ) {
 //					final String[] strs = SessionMap.getMAC( map );
-					final String strMAC = map.get( Field.MAC );
+					final String strMAC = map.get( Field.MAC ).getAsString();
 //					final String strMAC = strs[ 0 ];
 //					final String strNIC = strs[ 1 ];
 					gc.setFont( Theme.get().getFont( 11 ) );

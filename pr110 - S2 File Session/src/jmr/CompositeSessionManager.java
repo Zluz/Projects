@@ -19,14 +19,14 @@ public class CompositeSessionManager {
 	private final FileSessionManager s2sm;
 	
 	
-	public CompositeSessionManager() {
+	public CompositeSessionManager( final long lSnapshotTime ) {
 		dbsm = new DBSessionManager();
 		s2sm = FileSessionManager.getInstance();
-		this.collect();
+		this.collect( lSnapshotTime );
 	}
 	
 	
-	private void collect() {
+	private void collect( final long lSnapshotTime ) {
 		
 		MAP.clear();
 		
@@ -36,7 +36,8 @@ public class CompositeSessionManager {
 								entry : s2sm.getSessionMap().entrySet() ) {
 			final String strMAC = entry.getKey();
 
-			final SessionMap fsm = new SessionMap( entry.getValue() );
+			final SessionMap fsm = 
+							new SessionMap( entry.getValue(), lSnapshotTime );
 
 			MAP.put( strMAC, fsm );
 
@@ -46,13 +47,13 @@ public class CompositeSessionManager {
 				map = MAP.get( strMAC );
 			} else {
 //				map = new HashMap<String,String>();
-				map = new SessionMap();
+				map = new SessionMap( lSnapshotTime );
 				MAP.put( strMAC, map );
 			}
 			
 			
 //			map.putAll( fsm );
-			for ( final Entry<Field, String> e : fsm.entrySet() ) {
+			for ( final Entry<Field, Element> e : fsm.entrySet() ) {
 				fsm.put( e.getKey(), e.getValue() );
 			}
 		}
@@ -65,7 +66,7 @@ public class CompositeSessionManager {
 			final String strMAC = entry.getKey();
 			final Map<String,String> mapData = entry.getValue();
 			
-			final SessionMap sm = new SessionMap( mapData );
+			final SessionMap sm = new SessionMap( mapData, lSnapshotTime );
 			
 			
 //			final Map<String,String> map;
@@ -75,11 +76,11 @@ public class CompositeSessionManager {
 			if ( MAP.containsKey( strMAC ) ) {
 				map = MAP.get( strMAC );
 			} else {
-				map = new SessionMap();
+				map = new SessionMap( lSnapshotTime );
 				MAP.put( strMAC, map );
 			}
 			
-			for ( final Entry<Field, String> e : sm.entrySet() ) {
+			for ( final Entry<Field, Element> e : sm.entrySet() ) {
 				map.put( e.getKey(), e.getValue() );
 			}
 			

@@ -1,13 +1,17 @@
+package jmr.pr115.data;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import jmr.CompositeSessionManager;
+import jmr.Element;
 import jmr.Field;
 import jmr.SessionMap;
 
 public class DeviceData {
 
+	final long lSnapshotTime;
 
 //	final FileSessionManager fsm = FileSessionManager.getInstance();
 	final CompositeSessionManager csm;
@@ -17,7 +21,8 @@ public class DeviceData {
 	
 	
 	public DeviceData() {
-		this.csm = new CompositeSessionManager();
+		this.lSnapshotTime = System.currentTimeMillis();
+		this.csm = new CompositeSessionManager( lSnapshotTime );
 		
 //		final Set<String> keys = fsm.getSessionKeys();
 		final Set<String> keys = csm.getAllSessionData().keySet();
@@ -38,22 +43,24 @@ public class DeviceData {
 		return null;
 	}
 	
-	public String getValue(	final int iRow, 
+	public Element getValue(	final int iRow, 
 							final Field col ) {
 		if ( null!=col ) {
 			final SessionMap sm = this.getSessionMapForRow( iRow );
 			if ( null!=sm ) {
-				final String strValue = sm.get( col );
+				return sm.get( col );
+//				if ( null!=eValue ) {
+//					final String strValue = eValue.getAsString();
+//					if ( null!=strValue ) {
+//						return strValue;
+//					}
+//				}
 	//				System.out.println( "\tstrValue = " + strValue );
-				
-				if ( null!=strValue ) {
-					return strValue;
-				}
 			}
 		}
 
 		//return "Row:" + iRow + ", Column:" + col.name();
-		return "-";
+		return new Element( "-" );
 	}
 
 
