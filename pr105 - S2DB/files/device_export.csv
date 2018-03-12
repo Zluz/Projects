@@ -1,0 +1,18 @@
+seq,mac,name,options,comment
+1,08-00-27-D8-73-57,"VM101 - Development on Windows VM",tiles.perspective=desktop,NULL
+2,B8-27-EB-94-1E-94,"RPi - Prototype device",tiles.perspective=test,NULL
+3,B8-27-EB-6A-F7-87,"RPi - Master Bathroom",tiles.perspective=daily_rotate,NULL
+4,B8-27-EB-4D-14-E2,"RPi - Kitchen Window Sill",tiles.perspective=camera,NULL
+5,B8-27-EB-90-07-BD,"RPi - (formerly Garage Entrance)",tiles.perspective=tesla,"Bad video? (RPi S2 Client crashes after hours)"
+6,B8-27-EB-A4-EA-4C,"RPi - [do not use]",NULL,"Bad eth0 (using eth1)."
+7,B8-27-EB-1F-F3-56,L32--B8-27-EB-1F-F3-56--0464B--160A120512D,NULL,NULL
+8,B8-27-EB-E6-6A-EC,L32--B8-27-EB-E6-6A-EC--0098E--160C492C844,NULL,NULL
+9,B8-27-EB-5E-91-EB,"RPi - Media Server","tiles.perspective=remote
+remote=media",NULL
+10,08-00-27-D7-DE-79,"VM106 - Development on Windows VM",tiles.perspective=top_page,NULL
+11,B8-27-EB-5B-1E-3B,"RPi - Experimental GPIO/Relay","tiles.perspective=gpio
+gpio=development","No wlan0, eth0 sometimes drops out. Graphics problems."
+12,B8-27-EB-A4-53-04,L32--B8-27-EB-A4-53-04--003C0--161BB7658CE,NULL,NULL
+13,B8-27-EB-65-2D-01,"RPi - Experimental - Automation Hat",NULL,"Layered lexan enclosure (red)"
+14,08-00-27-50-AA-7A,"VM105 - Linux (Ubuntu/Gnome) workstation",NULL,NULL
+15,B8-27-EB-13-8B-C0,"RPi - Garage Entrance",tiles.perspective=tesla,NULL
