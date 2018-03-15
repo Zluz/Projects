@@ -1,17 +1,30 @@
 package jmr.pr116.messaging;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.Properties;
 
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 
 import jmr.util.SystemUtil;
+
+/*
+
+
+ */
 
 public class EmailMessage {
 
@@ -29,7 +42,8 @@ public class EmailMessage {
 	
 	public void send(	final String strRecipient,
 						final String strSubject,
-						final String strBody ) {
+						final String strBody,
+						final File[] fileAttachments ) {
 		
         final Properties props = System.getProperties();
         props.put( "mail.smtp.starttls.enable", "true" );
@@ -41,6 +55,7 @@ public class EmailMessage {
 
         final Session session = Session.getDefaultInstance( props );
         final MimeMessage message = new MimeMessage( session );
+    	final Multipart mp = new MimeMultipart();
 
         try {
             message.setFrom( new InternetAddress( strSender ) );
@@ -56,8 +71,26 @@ public class EmailMessage {
                 message.addRecipient(Message.RecipientType.TO, toAddress[i]);
             }
 
+        	final BodyPart bpMessage = new MimeBodyPart();
+        	bpMessage.setText( strBody );
+        	mp.addBodyPart( bpMessage );
+            message.setContent(mp);
+            
+            if ( null!=fileAttachments && fileAttachments.length>0 ) {
+            	for ( final File file : fileAttachments ) {
+	            	final BodyPart bpAttachment = new MimeBodyPart();
+	            	
+	            	final DataSource source = new FileDataSource( file );
+	            	bpAttachment.setDataHandler( new DataHandler( source ) );
+	            	bpAttachment.setFileName( file.getAbsolutePath() );
+	            	
+	            	mp.addBodyPart( bpAttachment );
+	                message.setContent(mp);
+            	}
+            }
+            
             message.setSubject( strSubject );
-            message.setText( strBody );
+            
             try ( final Transport transport = session.getTransport("smtp") ) {
 	            
             	System.out.println( "Connecting.." );
@@ -91,9 +124,16 @@ public class EmailMessage {
 					p.getProperty( "email.sender.password" ).toCharArray() );
 		
 		final String strRecipient = p.getProperty( "email.receiver.address" );
+		final String strFile01 = "S:\\Sessions\\B8-27-EB-4D-14-E2\\screenshot.png";
+		final String strFile02 = "S:\\Sessions\\B8-27-EB-6A-F7-87\\screenshot.png";
+		
+		final File file01 = new File( strFile01 );
+		final File file02 = new File( strFile02 );
+		
 		message.send(	strRecipient, 
 						"pr116-subject", 
-						"pr116-body test\n" + now.toString() );
+						"pr116-body test\n" + now.toString(),
+						new File[] { file01, file02 } );
 	}
 	
 }

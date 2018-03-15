@@ -28,7 +28,7 @@ public class TextMessage {
 		} else {
 			strSubject = "Text_" + now.toString();
 		}
-		email.send( strRecipientEmail, strSubject, strText ); 
+		email.send( strRecipientEmail, strSubject, strText, null ); 
 	}
 	
 	public void send( 	final String strRecipient,
