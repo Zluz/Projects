@@ -20,6 +20,8 @@ import json
 import automationhat
 
 
+# from pathlib import Path
+
 
 class KeyReader :
     '''
@@ -123,19 +125,47 @@ def main():
 
 
 
-    keyreader = KeyReader(echo=False, block=False)
+    file = False
+    if len( sys.argv ) > 1:
+        file = sys.argv[1]
+        print "Monitoring file: ", file 
+        monitor = True
+    else:
+        print("Starting KeyReader..")
+        keyreader = KeyReader(echo=False, block=False)
+
     selected = ' '
+    key = ' '
+
+
+    print("Starting loop..")
 
     while True:
         print json.dumps( [ automationhat.input.read(), automationhat.analog.read(), selected ] )
 
-        key = keyreader.getch()
+        if file:
+            key = ' '
+            if ( os.path.exists( file ) ):
+                print "# File (%s) found, reading.." % file
+                with open( file, 'r' ) as input:
+                    data=input.read().strip()
+                print "# File contents: ", data
+                if len( data )>1:
+                    selected = data[0]
+                    key = data[1]
+                else:
+                    print "# WARNING: Input file should be 2 characters."
+
+                os.remove( file )
+
+        else:
+            key = keyreader.getch()
 
         if key == 'q':
             keyreader = None
             return
         elif key == '+':
-            print("# power ON %s" % selected)
+            print("# Power ON %s" % selected)
 
             if selected == '1':
                 automationhat.relay.one.write(1)
@@ -151,7 +181,7 @@ def main():
                 automationhat.output.three.write(1)
 
         elif key == '-':
-            print("# power OFF %s" % selected)
+            print("# Power OFF %s" % selected)
 
             if selected == '1':
                 automationhat.relay.one.write(0)
