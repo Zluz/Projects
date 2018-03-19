@@ -10,6 +10,9 @@ public enum JobType {
 	
 	REMOTE_EXECUTE,
 	
+	SEND_EMAIL,
+	SEND_TEXT,
+	
 	UNDEFINED,
 	;
 

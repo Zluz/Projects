@@ -15,11 +15,17 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Display;
 
+import jmr.s2db.Client;
+import jmr.util.SystemUtil;
+
 public abstract class UI {
 
 	final public static Display display = new Display();
 
 	public static final int REFRESH_SLEEP = 100;
+	
+	public static final long UI_LOOP_DELAY_WARN = 500;
+	public static final long UI_LOOP_DELAY_ABORT = TimeUnit.SECONDS.toMillis( 20 );
 	
 	
 	final public static Color COLOR_WHITE = 
@@ -87,23 +93,76 @@ public abstract class UI {
 					while ( !UI.display.isDisposed() ) {
 						final long lNow = System.currentTimeMillis();
 						final long lElapsed = lNow - lLastUpdate[0];
-						if ( lElapsed > TimeUnit.SECONDS.toMillis( 20 ) ) {
-							System.out.println( "UI thread unresponsive." );
-							final StackTraceElement[] stack = 
-										UI.display.getThread().getStackTrace();
-							for ( final StackTraceElement frame : stack ) {
-								System.out.println( "\t" + frame.toString() );
-							}
-							System.exit( 1000 );
+						if ( lElapsed > UI_LOOP_DELAY_ABORT ) {
+							emergencyShutdown( "UI thread unresponsive" );
+						} else if ( lElapsed > UI_LOOP_DELAY_WARN ) {
+							printUIStack( "UI thread is less responsive"
+									+ " (" + lElapsed + "ms elapsed)." );
 						}
 						Thread.sleep( 2000 );
 					}
 				} catch ( final InterruptedException e ) {
-					System.err.println( "UI Watchdog thread interrupted." );
+					emergencyShutdown( "UI watchdog thread interrupted" );
 				}
 			}
 		};
 		threadUIWatchdog.start();
+    }
+    
+    
+    public static void printUIStack( final String strMessage ) {
+    	System.out.println( strMessage );
+		final StackTraceElement[] stack = 
+				UI.display.getThread().getStackTrace();
+		for ( final StackTraceElement frame : stack ) {
+			System.out.println( "\t" + frame.toString() );
+		}
+    }
+    
+    public static void emergencyShutdown( final String strReason ) {
+    	System.out.println();
+		System.err.println( "Emergency shutdown" );
+		System.err.println( strReason );
+		
+		new Thread( "Closing S2 client" ) {
+			@Override
+			public void run() {
+				Client.get().close();
+			}
+		}.start();
+
+		new Thread( "Attempting to close UI" ) {
+			@Override
+			public void run() {
+				if ( !display.isDisposed() ) {
+					display.asyncExec( new Runnable() {
+						@Override
+						public void run() {
+							if ( !display.isDisposed() ) {
+								display.close();
+							}
+						}
+					} );
+				}
+			}
+		}.start();
+		
+		new Thread( "Printing UI stack" ) {
+			@Override
+			public void run() {
+				printUIStack( "UI Stack:" );
+			}
+		}.start();
+
+		try {
+			Thread.sleep( 2000 );
+		} catch ( final InterruptedException e ) {
+			e.printStackTrace();
+		}
+		
+//		System.out.println( "Calling System.exit(1000).." );
+//		System.exit( 1000 );
+		SystemUtil.shutdown( 1000, strReason );
     }
     
     
@@ -116,16 +175,27 @@ public abstract class UI {
     		public void run() {
 				try {
 					while ( !display.isDisposed() ) {
-						UI.notifyUIIdle();
 						Thread.sleep( REFRESH_SLEEP );
 						display.asyncExec( new Runnable() {
 							@Override
 							public void run() {
-								for ( final Canvas canvas : listRefreshCanvases ) {
-									if ( !canvas.isDisposed() ) {
-										canvas.redraw();
+								try {
+									// invalidate canvases (queue to repaint)
+									for ( final Canvas canvas : listRefreshCanvases ) {
+										if ( !canvas.isDisposed() ) {
+											canvas.redraw();
+										}
 									}
+								} catch ( final Throwable t ) {
+									System.err.println( 
+											"ERROR encountered on the "
+											+ "UI thread, aborting." );
+									t.printStackTrace();
+									SystemUtil.shutdown( 1100, 
+											"Exception on the UI thread" );
+//									display.close();
 								}
+								UI.notifyUIIdle();
 							}
 						});
 					};

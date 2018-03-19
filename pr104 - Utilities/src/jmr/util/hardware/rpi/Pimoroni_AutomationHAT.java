@@ -1,7 +1,15 @@
 package jmr.util.hardware.rpi;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -10,10 +18,12 @@ import com.google.gson.JsonParser;
 
 import jmr.util.MonitorProcess;
 import jmr.util.OSUtil;
+import jmr.util.hardware.HardwareInput;
+import jmr.util.hardware.HardwareOutput;
 
 public class Pimoroni_AutomationHAT {
 
-	public static enum Ports {
+	public static enum Port {
 
 		// digital inputs
 		IN_D_1,
@@ -27,17 +37,42 @@ public class Pimoroni_AutomationHAT {
 		IN_A_4, // available?
 		
 		// digital outputs
-		OUT_D_1,
-		OUT_D_2,
-		OUT_D_3,
-		OUT_D_4,
+		OUT_D_1( '4' ),
+		OUT_D_2( '5' ),
+		OUT_D_3( '6' ),
 		
 		// relay outputs
-		OUT_R_1,
-		OUT_R_2,
-		OUT_R_3,
+		OUT_R_1( '1' ),
+		OUT_R_2( '2' ),
+		OUT_R_3( '3' ),
 
 		;
+		
+		final char cCommIndex;
+		
+		Port( final char cCommIndex ) {
+			this.cCommIndex = cCommIndex;
+		}
+		
+		Port() {
+			this.cCommIndex = 0;
+		}
+		
+		public static Port getPortFor( final String value ) {
+			if ( null==value ) return null;
+			
+			final String strNorm = value.trim().toUpperCase();
+			for ( final Port port : Port.values() ) {
+				if ( strNorm.equals( port.name() ) ) {
+					return port;
+				}
+			}
+			return null;
+		}
+		
+		public boolean isInput() {
+			return this.name().startsWith( "IN_" );
+		}
 	};
 	
 
@@ -45,44 +80,174 @@ public class Pimoroni_AutomationHAT {
 
 	public final static String[] COMMAND_STREAM_INPUT = {
 //			"/bin/sh",
+//			"/bin/bash",
+//			"/Local/scripts/exec_automationhat_input.sh",
 			"/usr/bin/python",
 			"/Local/scripts/exec_automationhat_input.py",
 		};
 
 	
-	private JsonElement jeLast;
+	private final EnumMap<Port,HardwareInput> 
+								mapInputs = new EnumMap<>( Port.class );
+	private final EnumMap<Port,HardwareOutput> 
+								mapOutputs = new EnumMap<>( Port.class );
+	
+	private final Map<Port,Runnable> listTriggers = new HashMap<>();
+
+	
+	private JsonElement jeLast = null;
 	
 	private final MonitorProcess mp;
 	
-	public final EnumMap<Ports,Boolean> 
-				mapDigitalInput = new EnumMap<Ports,Boolean>( Ports.class );
-	public final EnumMap<Ports,Float> 
-				mapAnalogInput = new EnumMap<Ports,Float>( Ports.class );
+	private final EnumMap<Port,Boolean> 
+				mapDigitalInput = new EnumMap<>( Port.class );
+	private final EnumMap<Port,Float> 
+				mapAnalogInput = new EnumMap<>( Port.class );
+	
+	private final EnumMap<Port,Boolean> 
+				mapDigitalOutput = new EnumMap<>( Port.class );
+	private final EnumMap<Port,Float> 
+				mapAnalogOutput = new EnumMap<>( Port.class );
+	
+	
+	private final String strCommFile;
 	
 	
 	
 	private static Pimoroni_AutomationHAT instance = null;
 	
+	
 	private Pimoroni_AutomationHAT() {
 		if ( !OSUtil.isWin() ) {
+			
+			strCommFile = "/tmp/" + UUID.randomUUID().toString() + ".txt";
+			
+			final String[] command = new String[3];
+			command[0] = COMMAND_STREAM_INPUT[0]; // shell
+			command[1] = COMMAND_STREAM_INPUT[1]; // script
+			command[2] = strCommFile;
+			
 			mp = new MonitorProcess( 
-						"Monitor Automation HAT", COMMAND_STREAM_INPUT );
+						"Monitor Automation HAT", command );
 			mp.start();
+			mp.addRunnable( new Runnable() {
+				@Override
+				public void run() {
+					updateData();
+				}
+			} );
 		} else {
 			mp = null;
+			strCommFile = null;
 		}
 	};
 	
 	
-	public static Pimoroni_AutomationHAT get() {
+	public void initialize( final Map<String,String> map ) {
+		if ( null==map ) return;
+		for ( final Entry<String, String> entry : map.entrySet() ) {
+			final String strKey = entry.getKey().trim().toUpperCase();
+			final Port port = Port.getPortFor( strKey );
+			if ( null!=port ) {
+				final String strValue = entry.getValue();
+				final HardwareInput input = HardwareInput.getValueFor( strValue );
+				if ( null!=input ) {
+					mapInputs.put( port, input );
+					System.out.println( "Registering input " 
+								+ port.name() + " as " + input.name() );
+				} else {
+					final HardwareOutput output = HardwareOutput.getValueFor( strValue );
+					mapOutputs.put( port, output );
+					System.out.println( "Registering output " 
+							+ port.name() + " as " + output.name() );
+				}
+			}
+		}
+	}
+	
+	public static synchronized Pimoroni_AutomationHAT get() {
 		if ( null==instance ) {
 			instance = new Pimoroni_AutomationHAT();
 		}
 		return instance;
 	}
 
+	
+	public boolean isActive() {
+		if ( null==mp ) return false;
+		if ( null==jeLast ) return false;
+		return true;
+	}
 
-	public JsonElement updateData() {
+	private void updateDigitalInput( 	final Port port,
+										final boolean bNewValue ) {
+		final Boolean bOrigValue = mapDigitalInput.get( port );
+		if ( null!=bOrigValue && bOrigValue.booleanValue() != bNewValue ) {
+			
+			mapDigitalInput.put( port, bNewValue );
+			checkRunTrigger( port );
+		} else {
+			mapDigitalInput.put( port, bNewValue );
+		}
+	}
+	
+	
+	private void updateAnalogInput( 	final Port port,
+										final Float fNewValue ) {
+		final Float fOrigValue = mapAnalogInput.get( port );
+		if ( null!=fOrigValue && 
+				( Math.abs( fOrigValue.floatValue() - fNewValue ) ) > 10 ) {
+
+			mapAnalogInput.put( port, fNewValue );
+			checkRunTrigger( port );
+		} else {
+			mapAnalogInput.put( port, fNewValue );
+		}
+	}
+	
+	
+	private void checkRunTrigger( final Port port ) {
+		if ( null==port ) return;
+		
+		if ( this.listTriggers.containsKey( port ) ) {
+			final Runnable runnable = this.listTriggers.get( port );
+			final Thread thread = new Thread( 
+					"Analog Input event: " + port.name() ) {
+				@Override
+				public void run() {
+					runnable.run();
+				}
+			};
+			thread.start();
+		}
+	}
+	
+	public Port getPortForInput( final HardwareInput input ) {
+		for ( final Port port : Port.values() ) {
+			if ( mapInputs.get( port ) == input ) {
+				return port;
+			}
+		}
+		return null;
+	}
+
+	public HardwareInput getHardwareInputForPort( final Port port ) {
+		final HardwareInput input = mapInputs.get( port );
+		return input;
+	}
+
+	public HardwareOutput getHardwareOutputForPort( final Port port ) {
+		final HardwareOutput output = mapOutputs.get( port );
+		return output;
+	}
+	
+	public void registerChangeExec(	final HardwareInput input,
+									final Runnable runnable ) {
+		final Port port = getPortForInput( input );
+		this.listTriggers.put( port, runnable );
+	}
+
+	private JsonElement updateData() {
 		if ( null==mp ) return null;
 		
 		// [{"three": 0, "two": 0, "one": 0}, {"four": 0.53, "three": 0.03, "two": 0.03, "one": 0.03}]
@@ -105,19 +270,23 @@ public class Pimoroni_AutomationHAT {
 				final JsonObject joD = ja.get( 0 ).getAsJsonObject();
 				final JsonObject joA = ja.get( 1 ).getAsJsonObject();
 				
-				mapDigitalInput.put( Ports.IN_D_1, 1==joD.get( "one" ).getAsInt() );
-				mapDigitalInput.put( Ports.IN_D_2, 1==joD.get( "two" ).getAsInt() );
-				mapDigitalInput.put( Ports.IN_D_3, 1==joD.get( "three" ).getAsInt() );
+				synchronized ( mapDigitalInput ) {
+					updateDigitalInput( Port.IN_D_1, 1==joD.get( "one" ).getAsInt() );
+					updateDigitalInput( Port.IN_D_2, 1==joD.get( "two" ).getAsInt() );
+					updateDigitalInput( Port.IN_D_3, 1==joD.get( "three" ).getAsInt() );
+				}
 				
-				mapAnalogInput.put( Ports.IN_A_1, joA.get( "one" ).getAsFloat() );
-				mapAnalogInput.put( Ports.IN_A_2, joA.get( "two" ).getAsFloat() );
-				mapAnalogInput.put( Ports.IN_A_3, joA.get( "three" ).getAsFloat() );
-				mapAnalogInput.put( Ports.IN_A_4, joA.get( "four" ).getAsFloat() );
+				synchronized ( mapDigitalInput ) {
+					updateAnalogInput( Port.IN_A_1, joA.get( "one" ).getAsFloat() );
+					updateAnalogInput( Port.IN_A_2, joA.get( "two" ).getAsFloat() );
+					updateAnalogInput( Port.IN_A_3, joA.get( "three" ).getAsFloat() );
+					updateAnalogInput( Port.IN_A_4, joA.get( "four" ).getAsFloat() );
+				}
 				
 //				for ( final Entry<String, JsonElement> entry : jo.entrySet() ) {
 //					System.out.println( entry.getKey() + " = " + entry.getValue().toString() );
 //				}
-			} catch ( final IllegalStateException e ) {
+			} catch ( final Exception e ) {
 				// may report line as a not a JSON Object
 				// just ignore, return null this time, do not update joLast
 				System.out.println( "Exception encountered while parsing JSON" );
@@ -133,6 +302,83 @@ public class Pimoroni_AutomationHAT {
 
 	public void close() {
 		mp.close();
+	}
+
+	
+	/**
+	 * Get the value associated with this (either input or output) 
+	 * digital port. 
+	 * @param port
+	 * @return
+	 */
+	public Boolean getDigitalPortValue( final Port port ) {
+		synchronized ( mapDigitalInput ) {
+			if ( mapDigitalInput.containsKey( port ) ) {
+				final Boolean value = mapDigitalInput.get( port );
+				return value;
+			}
+		}
+		synchronized ( mapDigitalOutput ) {
+			if ( mapDigitalOutput.containsKey( port ) ) {
+				final Boolean value = mapDigitalOutput.get( port );
+				return value;
+			}
+		}
+		return null;
+	}
+
+	
+	public Float getAnalogPortValue( final Port port ) {
+		synchronized ( mapAnalogInput ) {
+			if ( mapAnalogInput.containsKey( port ) ) {
+				final Float value = mapAnalogInput.get( port );
+				return value;
+			}
+		}
+		synchronized ( mapAnalogOutput ) {
+			if ( mapAnalogOutput.containsKey( port ) ) {
+				final Float value = mapAnalogOutput.get( port );
+				return value;
+			}
+		}
+		return null;
+	}
+	
+	
+	public void setPortValue(	final Port port,
+								final boolean bOn ) {
+		if ( null==port ) return;
+		final char cCommPort = port.cCommIndex;
+		if ( 0==cCommPort ) return;
+		
+		/*
+		mp.write( Character.toString( cCommPort ) );
+		if ( bOn ) {
+			mp.write( "+" );
+		} else {
+			mp.write( "-" );
+		}
+		*/
+		
+		final String strCommand =
+				Character.toString( cCommPort )
+				+ ( bOn ? "+" : "-" );
+		
+		try {
+			final Path path = Paths.get( this.strCommFile );
+			Files.write( path, strCommand.getBytes(), StandardOpenOption.CREATE );
+
+			synchronized ( mapDigitalOutput ) {
+				this.mapDigitalOutput.put( port, bOn );
+			}
+			
+		} catch ( final IOException e ) {
+			e.printStackTrace();
+
+			synchronized ( mapDigitalOutput ) {
+				this.mapDigitalOutput.remove( port );
+			}
+		}
 	}
 	
 	

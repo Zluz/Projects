@@ -19,5 +19,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/SWT_Win32"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr110 - S2 File Session"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Pi4J"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr116 - Email, SMS"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

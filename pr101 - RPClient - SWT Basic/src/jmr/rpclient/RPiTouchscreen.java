@@ -38,6 +38,11 @@ Display is RPi touchscreen
 	private static boolean isRPiTouchscreen( final Display display ) {
 		if ( null==display ) return false;
 		
+		/*
+		 * Really, this should test
+		 * udevadm info -e | grep INPUT_TOUCHSCREEN=1 | head -1
+		 */
+		
 		if ( 24 != display.getDepth() ) return false;
 		
 //		if ( !display.getTouchEnabled() ) return false;

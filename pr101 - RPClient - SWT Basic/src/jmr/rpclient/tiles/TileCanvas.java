@@ -28,6 +28,7 @@ import jmr.rpclient.swt.Theme.Colors;
 import jmr.rpclient.swt.UI;
 import jmr.util.NetUtil;
 import jmr.util.OSUtil;
+import jmr.util.SystemUtil;
 
 public class TileCanvas {
 
@@ -277,8 +278,19 @@ public class TileCanvas {
 					final int iH = rect.height * 150;
 					
 					final Image imageBuffer = new Image( e.display, iW, iH );
-					
-					tile.paint( imageBuffer, lNowPaint );
+
+					try {
+						tile.paint( imageBuffer, lNowPaint );
+					} catch ( final Throwable t ) {
+						
+						System.err.println( "ERROR while rendering tile " 
+										+ tile.getClass().getSimpleName() 
+										+ " on " + perspective.name() );
+
+						t.printStackTrace();
+						SystemUtil.shutdown( 1200, "Error rendering tile" );
+//						display.close();
+					}
 					
 					if ( perspective.isRotated() ) {
 						e.gc.setAdvanced( true );

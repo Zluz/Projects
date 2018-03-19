@@ -1,10 +1,13 @@
 package jmr.s2fs;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import jmr.S2FSUtil;
@@ -41,6 +44,32 @@ public class FileSessionManager {
 		return instance;
 	}
 
+	
+	// NOTE: much of this is duplicated in pr104:SystemUtil .. 
+	// move both of these elsewhere
+	private static Properties properties = null;
+
+	public static Properties getProperties() {
+		if ( null==properties ) {
+			properties = new Properties();
+			try {
+				final File fileSessionPath = getInstance().getBaseSessionPath();
+				if ( null==fileSessionPath ) {
+					return null;
+				}
+				final File fileBasePath = fileSessionPath.getParentFile();
+				final File file = new File( fileBasePath, "settings.ini" ); 
+				properties.load( new FileInputStream( file ) );
+			} catch ( final IOException e ) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return properties;
+	}
+
+	
+	
 	
 	public synchronized File getBaseSessionPath() {
 		if ( null!=fileBaseSessionPath ) {

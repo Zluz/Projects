@@ -148,17 +148,19 @@ public class ConnectionProvider {
 	
 	public void close() {
 
+		final StackTraceElement ste = Thread.currentThread().getStackTrace()[2];
 		final String strCaller = 
-				Thread.currentThread().getStackTrace()[2].getMethodName();
-		System.out.print( "Closing S2DB connection pool, "
-						+ "called from " + strCaller + "(). " );
+					ste.getClassName() + "." + ste.getMethodName() + "()";
+		final String strLeader = "Closing S2DB "
+				+ "from " + strCaller + ". ";
+		
 		synchronized ( listConnections ) {
 			if ( listConnections.isEmpty() ) {
-				System.out.println( "All connections closed." );
+				System.out.println( strLeader + "All connections already closed." );
 				return;
 			}
-			System.out.print( "Closing S2DB connection pool, "
-					+ "called from " + strCaller + "(). Issuing threaded close()s..." );
+			System.out.println( strLeader 
+					+ "Checking " + listConnections.size() + " connections.." );
 	
 			final List<ConnectionReference> listRemove = new LinkedList<>();
 			for ( final ConnectionReference ref : listConnections ) {
@@ -188,8 +190,22 @@ public class ConnectionProvider {
 					}
 				}
 			}
+			if ( !listRemove.isEmpty() ) {
+				System.out.println( strLeader 
+						+ "Cleaning up " + listRemove.size() + " references.." );
+				while ( !listRemove.isEmpty() ) {
+					try {
+						final ConnectionReference conn = listRemove.remove( 0 );
+						if ( null!=conn ) {
+							listConnections.remove( conn );
+						}
+					} catch ( final Exception e ) {
+						// ignore
+					}
+				}
+			}
 		}
-		System.out.print( "Done. " );
+		System.out.println( strLeader + "Done." );
 		
 		try {
 			Thread.sleep( 100 );
@@ -198,19 +214,14 @@ public class ConnectionProvider {
 			e.printStackTrace();
 		}
 		
-//		for ( final WeakReference<Connection> ref : listRemove ) {
-//			if ( null!=ref ) {
-//				listConnections.remove( ref );
-//			}
-//		}
-		
 		if ( listConnections.isEmpty() ) {
 			System.out.println( "All connections closed." );
 			return;
 		}
 		
-		System.out.println();
-		System.out.println( "Lingering connections detected:" );
+//		System.out.println();
+//		System.out.println( "Lingering connections detected:" );
+		final List<String> list = new LinkedList<>();
 		synchronized ( listConnections ) {
 			for ( final ConnectionReference ref : listConnections ) {
 				final WeakReference<Connection> wr = ref.reference;
@@ -221,6 +232,8 @@ public class ConnectionProvider {
 						System.out.println( "\t" 
 									+ conn.getClass().getSimpleName() 
 									+ "-" + conn.hashCode() );
+						list.add( conn.getClass().getSimpleName() 
+									+ "-" + conn.hashCode() );
 					}
 				} catch ( final SQLException e ) {
 					// TODO Auto-generated catch block
@@ -228,8 +241,16 @@ public class ConnectionProvider {
 				}
 			}
 		}
+		if ( !list.isEmpty() ) {
+			System.out.println();
+			System.out.println( "Lingering connections detected:" );
+			for ( final String line : list ) {
+				System.out.println( "\t" + line );
+			}
+			System.out.println();
+		}
 		
-		System.out.print( "Closing lingering connections..." );
+//		System.out.print( "Closing lingering connections..." );
 
 		// skip for now..
 //		for ( final WeakReference<Connection> ref : listConnections ) {
@@ -256,7 +277,7 @@ public class ConnectionProvider {
 //				}
 //			}
 //		}
-		System.out.println( "Done." );
+//		System.out.println( "Done." );
 	}
 	
 	

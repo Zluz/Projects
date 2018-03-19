@@ -28,12 +28,14 @@ public class TextMessage {
 		} else {
 			strSubject = "Text_" + now.toString();
 		}
-		email.send( strRecipientEmail, strSubject, strText, null ); 
+		System.out.println( "Sending text\n\tto: " + strRecipientEmail 
+				+ "\n\tText: " + strText );
+		email.send( strRecipientEmail, strSubject, strText, null );
 	}
 	
 	public void send( 	final String strRecipient,
 						final String strText ) {
-		this.send( strRecipient, null, strText );
+		this.send( strRecipient, "test", strText );
 	}
 
 	

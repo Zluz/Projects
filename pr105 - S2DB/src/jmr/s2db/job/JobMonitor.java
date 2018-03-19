@@ -1,4 +1,4 @@
-package jmr.rpclient.tiles;
+package jmr.s2db.job;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +39,7 @@ public class JobMonitor {
 		return instance;
 	}
 	
+	
 	public void initialize( final Map<String,String> mapOptions ) {
 		this.strName = mapOptions.get( "remote" );
 		this.initializeJobMonitorThread();
@@ -58,7 +59,9 @@ public class JobMonitor {
 	}
 	
 	public LinkedList<Job> getListing() {
-		return new LinkedList<Job>( listing );
+		synchronized ( listing ) {
+			return new LinkedList<Job>( listing );
+		}
 	}
 
 	
@@ -153,9 +156,10 @@ public class JobMonitor {
 			try {
 				int nextChar;
 				while ((nextChar = m_stream.read()) != -1) {
-					m_captureBuffer.append( (char) nextChar );
+					final char c = (char) nextChar;
+					m_captureBuffer.append( c );
 					if ( null!=this.echo ) {
-						this.echo.print( nextChar );
+						this.echo.print( c );
 					}
 				}
 			} catch ( final IOException ioe ) {

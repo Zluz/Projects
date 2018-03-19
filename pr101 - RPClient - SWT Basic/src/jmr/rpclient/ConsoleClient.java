@@ -34,6 +34,7 @@ import jmr.s2db.job.JobManager;
 import jmr.util.Logging;
 import jmr.util.NetUtil;
 import jmr.util.OSUtil;
+import jmr.util.SystemUtil;
 
 
 
@@ -91,7 +92,9 @@ public class ConsoleClient {
 		Logging.log("Application closing. " + new Date().toString());
 		LOGGER.log( Level.INFO, "Session ending." );
 		get().s2db.close();
-		System.exit(0);
+		
+//		System.exit(0);
+		SystemUtil.shutdown( 0, "Application close" );
 	}
 
 	public final static SelectionAdapter selClose = new SelectionAdapter() {

@@ -58,6 +58,7 @@ import jmr.s2db.job.JobManager;
 import jmr.util.Logging;
 import jmr.util.NetUtil;
 import jmr.util.OSUtil;
+import jmr.util.SystemUtil;
 
 
 /*
@@ -118,8 +119,24 @@ public class SWTBasic {
 	public static void close() {
 		Logging.log("Application closing. " + new Date().toString());
 		LOGGER.log( Level.INFO, "Session ending." );
-		get().s2db.close();
-		System.exit(0);
+		new Thread( "Shut down S2 session" ) {
+			@Override
+			public void run() {
+				get().s2db.close();
+//				System.out.println( "Calling System.exit(0).." );
+				SystemUtil.shutdown( 0, 
+						"UI close requested, after S2 client close" );
+			}
+		}.start();
+		try {
+			Thread.sleep( 2000 );
+		} catch ( final InterruptedException e ) {
+			e.printStackTrace();
+		}
+//		System.out.println( "Calling System.exit(0).." );
+//		System.exit(0);
+		SystemUtil.shutdown( 0, 
+				"UI close requested, in SWTBasic.close()" );
 	}
 
 	public final static SelectionAdapter selClose = new SelectionAdapter() {
@@ -232,6 +249,7 @@ public class SWTBasic {
 		
 		final Display display = UI.display;
 		
+	    final boolean bTouchscreen = RPiTouchscreen.getInstance().isEnabled();
 
 	    
 //	    final PaletteData palette = new PaletteData(
@@ -241,14 +259,16 @@ public class SWTBasic {
 //	    idHide.transparentPixel = 0;
 	    
 	    final int iOptions;
-	    if ( OSUtil.isWin() || !perspective.isFullscreen() ) {
+//	    if ( OSUtil.isWin() || !perspective.isFullscreen() ) {
+		if ( OSUtil.isWin() || !bTouchscreen ) {
 //	    	iOptions = SWT.TOOL | SWT.SHELL_TRIM;
 	    	iOptions = SWT.SHELL_TRIM;
 	    } else {
 	    	iOptions = SWT.TOOL | SWT.ON_TOP | SWT.NO_TRIM;
 	    }
 	    final Shell shell = new Shell( UI.display, iOptions );
-		if ( RPiTouchscreen.getInstance().isEnabled() ) {
+	    
+		if ( bTouchscreen ) {
 	    	log( "Display is RPi touchscreen" );
 		    shell.setSize( 800, 495 );
 	    	shell.setLocation( 0, 0 );
@@ -258,7 +278,7 @@ public class SWTBasic {
 	    	
 //		    shell.setSize( 810, 520 );
 	    	final int iX = perspective.getColCount() * 150 + 60;
-	    	final int iY = perspective.getRowCount() * 150 + 70;
+	    	final int iY = perspective.getRowCount() * 150 + 66;
 	    	shell.setSize( iX, iY );
 	    	
 	    	if ( shell.getLocation().x < 20 ) {

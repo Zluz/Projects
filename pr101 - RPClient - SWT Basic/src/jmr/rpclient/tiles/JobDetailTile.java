@@ -15,6 +15,7 @@ import com.google.gson.JsonParser;
 import jmr.rpclient.swt.GCTextUtils;
 import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
+import jmr.s2db.job.JobMonitor;
 import jmr.s2db.tables.Job;
 import jmr.s2db.tables.Job.JobState;
 
