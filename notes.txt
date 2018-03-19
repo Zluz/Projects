@@ -1,6 +1,7 @@
 
 [TO DO]
-  add text notification alarm/controls (ie, if tesla is not charging)
+  update tesla interface (new commands, etc)
+    see:  https://timdorr.docs.apiary.io/#reference/vehicle-commands
   add sample response json from nest
   remove weather icons from S2 client
   add time check to MonitorProcess.java: if process exits too quickly, record error?, echo to console
