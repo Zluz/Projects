@@ -193,17 +193,50 @@ public class Pimoroni_AutomationHAT {
 	
 	
 	private void updateAnalogInput( 	final Port port,
-										final Float fNewValue ) {
-		final Float fOrigValue = mapAnalogInput.get( port );
-		if ( null!=fOrigValue && 
-				( Math.abs( fOrigValue.floatValue() - fNewValue ) ) > 10 ) {
+										final float fNewValue ) {
+		if ( null==port ) return;
 
-			mapAnalogInput.put( port, fNewValue );
-			checkRunTrigger( port );
-		} else {
-			mapAnalogInput.put( port, fNewValue );
+		final Float fOrigValue = mapAnalogInput.get( port );
+		mapAnalogInput.put( port, fNewValue );
+
+		final HardwareInput input = this.getHardwareInputForPort( port );
+
+		if ( null!=fOrigValue && null!=input ) {
+			
+			
+//System.out.println( "--- updateAnalogInput() " );			
+			
+			final float fOld = fOrigValue.floatValue();
+			final float fNew = fNewValue; // fNewValue.floatValue();
+			final float fDiff = fNew - fOld;
+
+//System.out.println( "--- updateAnalogInput()"
+//				+ "\n\tfOld = " + fOld 
+//				+ "\n\tfNew = " + fNew 
+//				+ "\n\tfDiff = " + fDiff );			
+
+			final float fPctDiff = fDiff * 100 / fOld;
+
+			if ( ( fOld > ANALOG_MIN_VALUE ) 
+					&& ( fPctDiff > ANALOG_TRIGGER_THRESHOLD ) ) {
+				
+System.out.println( "--- updateAnalogInput()"
+//			+ "\n\tport = " + port.name() 
+			+ "\n\tfOld = " + fOld 
+			+ "\n\tfNew = " + fNew 
+			+ "\n\tfDiff = " + fDiff			
+			+ "\n\tfPctDiff = " + fPctDiff			
+				);			
+				
+				checkRunTrigger( port );
+			}
 		}
 	}
+	
+	
+	final static double ANALOG_TRIGGER_THRESHOLD = 50.0;
+	final static double ANALOG_MIN_VALUE = 1.0;
+	
 	
 	
 	private void checkRunTrigger( final Port port ) {
@@ -212,7 +245,7 @@ public class Pimoroni_AutomationHAT {
 		if ( this.listTriggers.containsKey( port ) ) {
 			final Runnable runnable = this.listTriggers.get( port );
 			final Thread thread = new Thread( 
-					"Analog Input event: " + port.name() ) {
+					"Input event: " + port.name() ) {
 				@Override
 				public void run() {
 					runnable.run();
@@ -244,6 +277,11 @@ public class Pimoroni_AutomationHAT {
 	public void registerChangeExec(	final HardwareInput input,
 									final Runnable runnable ) {
 		final Port port = getPortForInput( input );
+		this.listTriggers.put( port, runnable );
+	}
+
+	public void registerChangeExec(	final Port port,
+									final Runnable runnable ) {
 		this.listTriggers.put( port, runnable );
 	}
 

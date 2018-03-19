@@ -12,7 +12,8 @@ public abstract class DataFormatter {
 
 
 	public static String format( final Object value ) {
-		if ( null==value ) return "''";
+//		if ( null==value ) return "''";
+		if ( null==value ) return "null";
 		if ( value instanceof String ) {
 			String str = value.toString();;
 			if ( ( '\'' == str.charAt( 0 ) ) 

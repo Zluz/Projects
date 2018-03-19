@@ -5,10 +5,11 @@ package jmr.s2db.trigger;
 /*
  * trigger types:
 		I - Hardware input port (digital or analog)
-		O - Hardware output port (digital or analog)
+		O - Hardware output port (digital or analog) 
 		P - Page updated (may be imported content)
 		T - Time event
 		U - User input event (pressing a button)
+		S - System event
  */
 public enum TriggerType {
 	
@@ -17,6 +18,7 @@ public enum TriggerType {
 	PAGE,
 	TIME,
 	USER,
+	SYSTEM,
 	;
 	
 	public char getChar() {

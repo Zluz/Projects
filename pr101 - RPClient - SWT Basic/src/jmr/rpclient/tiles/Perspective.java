@@ -301,10 +301,12 @@ public enum Perspective {
 
 	private void build_AutoHAT( final Map<String, String> mapOptions ) {
 		
-		list.add( new TileGeometry( new IO_AutomationHatTile( mapOptions ), 
+		list.add( new TileGeometry( new IO_AutomationHatTile( 
+					IO_AutomationHatTile.TileType.DISPLAY, mapOptions ), 
 						new Rectangle( 0, 0, 3, 3 ) ) ); 
 
-		list.add( new TileGeometry( new IO_AutomationHatTile( mapOptions ), 
+		list.add( new TileGeometry( new IO_AutomationHatTile(  
+					IO_AutomationHatTile.TileType.CONTROL, mapOptions ), 
 						new Rectangle( 3, 1, 1, 1 ) ) ); 
 
 		list.add( new TileGeometry( new SystemInfoTile(), 
@@ -318,6 +320,8 @@ public enum Perspective {
 	private void build_Tesla( final Map<String, String> mapOptions ) {
 		list.add( new TileGeometry( new ClockTile(), 
 						new Rectangle( 0, 0, 2, 1 ) ) );
+		list.add( new TileGeometry( new EventListingTile(), 
+						new Rectangle( 2, 0, 1, 1 ) ) );
 //		list.add( new TileGeometry( new PerspectiveSwitcherTile(), 
 //						new Rectangle( 2, 0, 1, 1 ) ) );
 
