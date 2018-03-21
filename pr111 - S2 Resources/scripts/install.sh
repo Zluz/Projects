@@ -12,13 +12,15 @@ then
 	echo "@/Local/scripts/conky.sh" >> /home/pi/.config/lxsession/LXDE-pi/autostart
 fi
 
-rm -f /etc/network/if-up.d/run_beacon.sh
-echo "/bin/bash /Local/scripts/beacon.sh > /tmp/beacon.log" > /etc/network/if-up.d/run_beacon.sh
+rm -f /etc/network/if-up.d/STARTUP
+cp /Local/config/STARTUP /etc/network/if-up.d/
+# xxecho "/bin/bash /Local/config/STARTUP > /tmp/beacon.log" > /etc/network/if-up.d/run_beacon.sh
 
-rm -f /etc/network/if-up.d/run_post_event.sh
-echo "/bin/bash /Local/scripts/run_PostSystemEvent.sh DEVICE_STARTED" > /etc/network/if-up.d/run_post_event.sh
+# rm -f /etc/network/if-up.d/run_post_event.sh
+# echo "/bin/bash /Local/scripts/run_PostSystemEvent.sh DEVICE_STARTED" > /etc/network/if-up.d/run_post_event.sh
 
-chmod a+x /etc/network/if-up.d/*.sh
+chmod a+x /etc/network/if-up.d/STARTUP
 
+sleep 1
 lxpanelctl restart
 

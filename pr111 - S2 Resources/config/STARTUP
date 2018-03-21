@@ -1,0 +1,19 @@
+#! /bin/sh
+
+# /bin/echo "TEST-create-log - `/bin/date`" >  /tmp/TEST2.out
+echo "----------------------------------------------"  >> /tmp/network-start-script.out
+echo "Network started - `/bin/date`"  >> /tmp/network-start-script.out
+echo "eth0 `/sbin/ethtool eth0 | /bin/grep -i \"link detected\"`" >> /tmp/network-start-script.out
+echo "----------------------------------------------"  >> /tmp/network-start-script.out
+
+
+echo "Running run_CheckOS.sh.."  >> /tmp/network-start-script.out
+/Local/scripts/run_CheckOS.sh   >> /tmp/network-start-script.out
+
+echo "Running run_PostSystemEvent.sh.."  >> /tmp/network-start-script.out
+/Local/scripts/run_PostSystemEvent.sh DEVICE_STARTED  >> /tmp/network-start-script.out
+
+echo "Running beacon.sh.."  >> /tmp/network-start-script.out
+/Local/scripts/beacon.sh  >> /tmp/network-start-script.out
+
+
