@@ -6,6 +6,9 @@ echo "Network started - `/bin/date`"  >> /tmp/network-start-script.out
 echo "eth0 `/sbin/ethtool eth0 | /bin/grep -i \"link detected\"`" >> /tmp/network-start-script.out
 echo "----------------------------------------------"  >> /tmp/network-start-script.out
 
+exit 0
+# incomsistent complications ... just do not use this.
+# will use a cron job with scripts to detect restarts.
 
 echo "Running run_CheckOS.sh.."  >> /tmp/network-start-script.out
 /Local/scripts/run_CheckOS.sh   >> /tmp/network-start-script.out

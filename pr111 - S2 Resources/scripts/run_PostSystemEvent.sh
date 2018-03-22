@@ -23,7 +23,8 @@ while [[ "$LATEST" == "" ]]; do
 	echo "PostSystemEvent not found."
 
 	echo "Attempting to mount /Share .."
-	mount -t cifs -o user=pi,password=rpi //192.168.1.200/Share /Share
+	# pwd necessary here?
+	mount -t cifs -o user=pi //192.168.1.200/Share /Share
 
 	echo "No executable found. Share probably not mounted yet."
 	/bin/sleep 1

@@ -21,6 +21,7 @@
 # 
 # m h  dom mon dow   command
 
+* * * * *  /Local/scripts/run_CheckOS.sh
 00,20,40 * * * * /Local/scripts/beacon.sh > /tmp/beacon.log
 #00,20,40 * * * * /root/Scripts/beacon.sh > /tmp/beacon.log
 #14 * * * * /root/Scripts/beacon.sh > /tmp/beacon.log
