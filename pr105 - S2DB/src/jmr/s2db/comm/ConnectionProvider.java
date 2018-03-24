@@ -18,7 +18,8 @@ public class ConnectionProvider {
 
 
 	public final static String 
-			MYSQL_CONNECTION = "jdbc:mysql://192.168.1.200:3306/s2db";
+			MYSQL_CONNECTION = "jdbc:mysql://192.168.1.200:3306/s2db"
+							+ "?autoReconnect=true&useSSL=false";
 	
 	public final static String
 			MYSQL_DRIVER = "com.mysql.jdbc.Driver";

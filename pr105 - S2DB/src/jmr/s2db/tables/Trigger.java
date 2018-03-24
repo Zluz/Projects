@@ -13,8 +13,8 @@ import java.util.logging.Logger;
 
 import jmr.s2db.DataFormatter;
 import jmr.s2db.comm.ConnectionProvider;
+import jmr.s2db.event.EventType;
 import jmr.s2db.trigger.TriggerDetail;
-import jmr.s2db.trigger.TriggerType;
 
 
 /*
@@ -41,7 +41,7 @@ public class Trigger extends TableBase {
 	private final Long seqSession;
 	private final Long seqLog;
 	private final Long time;
-	private final TriggerType type;
+	private final EventType type;
 	private final TriggerDetail detail;
 	private final String strMatch;
 	private final URI uri;
@@ -65,7 +65,7 @@ public class Trigger extends TableBase {
 	}
 	
 	public static List<Trigger> getTriggersLike(
-										final TriggerType event,
+										final EventType event,
 										final String strDetailLike ) {
 		final String strWhere = 
 				"( ( trigger.type.state = \"" + event.getChar() + "\" ) "
@@ -75,7 +75,7 @@ public class Trigger extends TableBase {
 	}
 	
 	private Trigger( final Long lSeq,
-					final TriggerType event,
+					final EventType event,
 					final TriggerDetail detail,
 					final long time,
 					final String strMatch,
@@ -123,7 +123,7 @@ public class Trigger extends TableBase {
 
 					final Trigger trigger = new Trigger(	
 									rs.getLong( "seq" ),
-									TriggerType.getTriggerEventFor( cType ),
+									EventType.getTriggerEventFor( cType ),
 									TriggerDetail.valueOf( rs.getString( "detail" ) ),
 									rs.getLong( "time" ),
 									rs.getString( "match" ),
@@ -187,7 +187,7 @@ public class Trigger extends TableBase {
 //	}
 	
 	
-	public static Trigger add(	final TriggerType type,
+	public static Trigger add(	final EventType type,
 								final TriggerDetail detail,
 								final String strMatch,
 								final String strURL ) {
@@ -297,7 +297,7 @@ public class Trigger extends TableBase {
 		return this.uri;
 	}
 	
-	public TriggerType getTriggerType() {
+	public EventType getTriggerType() {
 		return this.type;
 	}
 

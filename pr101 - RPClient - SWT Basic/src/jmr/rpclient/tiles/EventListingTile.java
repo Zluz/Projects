@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
@@ -19,13 +20,18 @@ import jmr.s2db.tables.Event;
 public class EventListingTile extends TileBase {
 
 
+	final static long SUBJECT_REFRESH_INTERVAL = TimeUnit.MINUTES.toMillis( 1 );
+	final static long EVENTS_REFRESH_INTERVAL = 500;
+
 	final static Map<String,Event> events = new HashMap<>();
 
+	static long lLastSubjectUpdate = 0;
+	final static List<String> listSubjects = new LinkedList<>();
 
 	static Thread threadUpdate = null;
 	
 	
-	public static void updateEvents() {
+	public static void updateEvents_simple() {
 		final List<Event> list = Event.get( "seq>0", 100 );
 		
 		synchronized ( events ) {
@@ -40,6 +46,32 @@ public class EventListingTile extends TileBase {
 	}
 	
 	
+	public static void updateEvents() {
+		
+		final long lNow = System.currentTimeMillis();
+		if ( lNow - lLastSubjectUpdate > SUBJECT_REFRESH_INTERVAL ) {
+			synchronized ( listSubjects ) {
+				listSubjects.clear();
+				listSubjects.addAll( Event.getSubjects() );
+				lLastSubjectUpdate = lNow;
+			}
+		}
+		
+		final Map<String,Event> map = new HashMap<>();
+		synchronized ( listSubjects ) {
+			for ( final String strSubject : listSubjects ) {
+				final Event event = Event.getLatestEventFor( strSubject );
+				map.put( strSubject, event );
+			}
+		}
+
+		synchronized ( events ) {
+			events.clear();
+			events.putAll( map );
+		}
+	}
+	
+	
 	public EventListingTile() {
 		if ( null==threadUpdate ) {
 			threadUpdate = new Thread( "EventListingTile updater" ) {
@@ -47,7 +79,7 @@ public class EventListingTile extends TileBase {
 				public void run() {
 					try {
 						while ( !UI.display.isDisposed() ) {
-							Thread.sleep( 500 );
+							Thread.sleep( EVENTS_REFRESH_INTERVAL );
 						
 							updateEvents();
 						}
@@ -82,12 +114,12 @@ public class EventListingTile extends TileBase {
 //					} else {
 //						color = Theme.get().getColor( Colors.TEXT_LIGHT );
 //					}
-					color = Theme.get().getColor( Colors.TEXT_LIGHT );
+					color = Theme.get().getColor( Colors.TEXT );
 					gc.setForeground( color );
 					
 					gc.setFont( Theme.get().getFont( 8 ) );
 					
-					gc.drawText( event.getSubject(), 30, iY );
+					gc.drawText( event.getSubject(), 26, iY );
 
 					gc.setFont( Theme.get().getFont( 12 ) );
 

@@ -7,14 +7,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
 import jmr.s2db.Client;
-import jmr.s2db.job.JobManager;
-import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
 import jmr.s2db.tables.Job.JobState;
 
@@ -65,27 +62,35 @@ public class JobMonitor {
 	}
 
 	
+	public final static long MONITOR_INTERVAL = 200;
+	
+	private int iLastActiveCount = 0;
+	private int iCompletedQuerySkipCount = 0;
+	private int iCompletedQuerySkipMax = 10;
+	private List<Job> listingLastCompleted = new LinkedList<>();
 
+	
 	public void initializeJobMonitorThread() {
 		if ( null!=threadUpdater ) return;
 		
-		threadUpdater = new Thread( "NetworkList Updater" ) {
+		threadUpdater = new Thread( "Job Monitor Updater" ) {
 			@Override
 			public void run() {
 				try {
-					Thread.sleep( TimeUnit.SECONDS.toMillis( 1 ) );
+					Thread.sleep( 1000 * 2 );
 		
 					for (;;) {
-						synchronized ( listing ) {
+//						synchronized ( listing ) {
 							try {
 								updateListing();
 							} catch ( final Exception e ) {
 								// ignore.. 
 								// JDBC connection may have been dropped..
+								e.printStackTrace();
 							}
-						}
+//						}
 		
-						Thread.sleep( TimeUnit.SECONDS.toMillis( 10 ) );
+						Thread.sleep( MONITOR_INTERVAL );
 					}
 				} catch ( final InterruptedException e ) {
 					// just quit
@@ -93,28 +98,52 @@ public class JobMonitor {
 			}
 		};
 	}
-	
 
+	
+	/*
+	 * NOTE: This will run busy if there are no completed records 
+	 * in the Jobs table.
+	 */
 	private void updateListing() {
+		
+//		System.out.println( "--> updateListing()" );
 
 		final JobManager manager = Client.get().getJobManager();
 		
 		final List<Job> listingActive = manager.getJobListing( 
 //				"( job.request LIKE \"%\" )" );
 				"( job.state = \"R\" )", 100 );
+		final boolean bQueryCompleted =
+				( listingActive.size() != iLastActiveCount )
+				|| ( iCompletedQuerySkipCount > iCompletedQuerySkipMax )
+				|| ( listingLastCompleted.isEmpty() );
+		iLastActiveCount = listingActive.size();
 
-		final List<Job> listingCompleted = manager.getJobListing( 
-//				"( job.request LIKE \"%\" )" );
-				"( ( job.state = \"C\" ) OR ( job.state = \"F\" ) "
-				+ "OR ( job.state = \"W\" ) )", 8 );
+		if ( bQueryCompleted ) {
+//			System.out.println( "    updateListing() - querying completed" );
+
+			final List<Job> listingCompleted = manager.getJobListing( 
+	//				"( job.request LIKE \"%\" )" );
+					"( ( job.state = \"C\" ) OR ( job.state = \"F\" ) "
+					+ "OR ( job.state = \"W\" ) )", 8 );
+			synchronized ( listingLastCompleted ) {
+				listingLastCompleted.clear();
+				listingLastCompleted.addAll( listingCompleted );
+			}
+			iCompletedQuerySkipCount = 0;
+		} else {
+			iCompletedQuerySkipCount++;
+		}
 
 		synchronized (listing) {
 			listing.clear();
 			listing.addAll( listingActive );
-			listing.addAll( listingCompleted );
+			listing.addAll( listingLastCompleted );
 		}
 		
 		doWorkJobs( listingActive );
+		
+//		System.out.println( "<-- updateListing()" );
 	}
 
 	

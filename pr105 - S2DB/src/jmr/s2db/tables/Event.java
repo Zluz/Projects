@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 
 import jmr.s2db.DataFormatter;
 import jmr.s2db.comm.ConnectionProvider;
-import jmr.s2db.trigger.TriggerType;
+import jmr.s2db.event.EventType;
 
 
 /*
@@ -40,7 +40,7 @@ public class Event extends TableBase {
 	private final Long seqPage;
 	private final Long seqLog;
 	private final Long time;
-	private final TriggerType type;
+	private final EventType type;
 	private final String strSubject;
 	private final String strValue;
 	private final String strData;
@@ -64,7 +64,7 @@ public class Event extends TableBase {
 	}
 	
 	public static List<Event> getTriggersLike(
-										final TriggerType event,
+										final EventType event,
 										final String strDetailLike ) {
 		final String strWhere = 
 				"( ( trigger.type.state = \"" + event.getChar() + "\" ) "
@@ -75,7 +75,7 @@ public class Event extends TableBase {
 	
 	private Event( 	final Long lSeq,
 					final long time,
-					final TriggerType type,
+					final EventType type,
 					final String strSubject,
 					final long seqSession,
 					final Long seqTrigger,
@@ -94,7 +94,63 @@ public class Event extends TableBase {
 		this.strValue = strValue;
 		this.strData = strData;
 	}
+
+	
+	public static Event getLatestEventFor( final String strSubject ) {
+
+		final String strQuery = "SELECT seq FROM event "
+				+ "WHERE subject = \"" + strSubject + "\" "
+				+ "ORDER BY time DESC "
+				+ "LIMIT 1;";
+		 
+		try ( final Connection conn = ConnectionProvider.get().getConnection();
+				final Statement stmt = conn.createStatement() ) {
+
+			try ( final ResultSet rs = stmt.executeQuery( strQuery ) ) {
+				while ( rs.next() ) {
 					
+					final long lSeq = rs.getLong( 1 );
+					
+					final Event event = Event.get( lSeq );
+					return event;
+				}
+			}
+			
+		} catch ( final SQLException e ) {
+			e.printStackTrace();
+			LOGGER.log( Level.SEVERE, "Query SQL: " + strQuery, e );
+		}
+		return null;
+	}
+	
+	
+	public static List<String> getSubjects() {
+
+		final String strQuery = "SELECT DISTINCT( subject ) FROM event;";
+		 
+		try (	final Connection conn = ConnectionProvider.get().getConnection();
+				final Statement stmt = conn.createStatement() ) {
+
+			final List<String> list = new LinkedList<>();
+			
+			try ( final ResultSet rs = stmt.executeQuery( strQuery ) ) {
+				while ( rs.next() ) {
+					
+					final String strSubject = rs.getString( 1 );
+					
+					list.add( strSubject );
+				}
+			}
+			
+			return list;
+			
+		} catch ( final SQLException e ) {
+			e.printStackTrace();
+			LOGGER.log( Level.SEVERE, "Query SQL: " + strQuery, e );
+		}
+		return null;
+	}
+	
 	
 	public static List<Event> get( 	final String strWhere,
 									final int iLimit ) {
@@ -119,7 +175,7 @@ public class Event extends TableBase {
 					final Event trigger = new Event(	
 									rs.getLong( "seq" ),
 									rs.getLong( "time" ),
-									TriggerType.getTriggerEventFor( cType ),
+									EventType.getTriggerEventFor( cType ),
 									rs.getString( "subject" ),
 									rs.getLong( "seq_session" ),
 									rs.getLong( "seq_trigger" ),
@@ -144,7 +200,7 @@ public class Event extends TableBase {
 	
 	
 	
-	public static Event add(	final TriggerType type,
+	public static Event add(	final EventType type,
 								final String strSubject,
 								final String strValue,
 								final String strData,
@@ -228,8 +284,12 @@ public class Event extends TableBase {
 		return this.strSubject;
 	}
 
-	public TriggerType getTriggerType() {
+	public EventType getTriggerType() {
 		return this.type;
+	}
+	
+	public long getTime() {
+		return this.time;
 	}
 
 	public boolean delete() {

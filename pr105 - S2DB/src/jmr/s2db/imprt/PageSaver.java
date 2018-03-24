@@ -27,15 +27,22 @@ public class PageSaver extends HashMap<String,String> {
 		this.strPath = strPath;
 		
 		final Path tPath = ( (Path)Tables.PATH.get() );
-		this.seqPath = tPath.get( strPath );
-
-		final Page tPage = ( (Page)Tables.PAGE.get() );
-//		this.seqPage = tPage.get( seqPath );
-		this.seqPage = tPage.create( seqPath );
-		
-		if ( null!=seqPage ) {
-			this.putAll( tPage.getMap( this.seqPage ) );
-//			tPage.setState( seqPage, now, 'A' );
+		if ( null!=tPath ) {
+			this.seqPath = tPath.get( strPath );
+	
+			final Page tPage = ( (Page)Tables.PAGE.get() );
+	//		this.seqPage = tPage.get( seqPath );
+			this.seqPage = tPage.create( seqPath );
+			
+			if ( null!=seqPage ) {
+				this.putAll( tPage.getMap( this.seqPage ) );
+	//			tPage.setState( seqPage, now, 'A' );
+			}
+		} else {
+			//TODO report error.
+			// this may happen if db is unavailable.
+			this.seqPage = null;
+			this.seqPath = -1;
 		}
 	}
 	

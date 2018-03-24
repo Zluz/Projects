@@ -15,9 +15,9 @@ import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.S2Button.ButtonState;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
+import jmr.s2db.event.EventType;
 import jmr.s2db.tables.Event;
 import jmr.s2db.tables.Job;
-import jmr.s2db.trigger.TriggerType;
 import jmr.util.hardware.HardwareInput;
 import jmr.util.hardware.HardwareOutput;
 import jmr.util.hardware.rpi.Pimoroni_AutomationHAT;
@@ -122,7 +122,7 @@ public class IO_AutomationHatTile extends TileBase {
 			final String strData = jsonMap.toString();
 			
 			final Event event = Event.add( 
-					TriggerType.INPUT, strSubject, strValue, strData, lTime,
+					EventType.INPUT, strSubject, strValue, strData, lTime,
 					null, null, null );
 			
 			System.out.println( "Event created: seq " + event.getEventSeq() );
@@ -252,7 +252,7 @@ public class IO_AutomationHatTile extends TileBase {
 			final String strValue = Boolean.toString( bValue );
 			
 			final Event event = Event.add( 
-					TriggerType.USER, strSubject, strValue, strData, lTime,
+					EventType.USER, strSubject, strValue, strData, lTime,
 					null, null, null );
 			
 			System.out.println( "Event created: seq " + event.getEventSeq() );

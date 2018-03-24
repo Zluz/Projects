@@ -306,17 +306,9 @@ public class DeviceTableModel extends KTableSortedModel {
     }
     
     public Field getFieldForColumn( final int iCol ) {
-    	if ( iCol>3 ) {
-    		return Field.get( iCol-1 );
-    	} else if ( 1==iCol ) {
-    		return Field.IMAGE_SCREENSHOT;
-    	} else if ( 2==iCol ) {
-    		return Field.IP;
-    	} else if ( 3==iCol ) {
-    		return Field.SESSION_STATE;
-    	} else {
-    		return Field.MAC;
-    	}
+		final ColumnMap column = ColumnMap.get( iCol );
+		if ( null==column ) return null;
+		return column.getField();
     }
     
     /* (non-Javadoc)
@@ -344,7 +336,7 @@ public class DeviceTableModel extends KTableSortedModel {
      * @see de.kupzog.ktable.KTableDefaultModel#getInitialRowHeight(int)
      */
     public int getInitialRowHeight(int row ) {
-        return 50;
+        return 42;
     }
 
     /* (non-Javadoc)
@@ -366,7 +358,8 @@ public class DeviceTableModel extends KTableSortedModel {
      */
     public int doGetColumnCount() {
 //        return 1000+getFixedColumnCount();
-    	return Field.values().length + getFixedColumnCount();
+//    	return ColumnMap.values().length + getFixedColumnCount();
+    	return ColumnMap.values().length;
     }
 
     /* (non-Javadoc)

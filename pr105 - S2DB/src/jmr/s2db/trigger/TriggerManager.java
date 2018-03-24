@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.google.gson.JsonElement;
 
+import jmr.s2db.event.EventType;
 import jmr.s2db.tables.Trigger;
 
 public class TriggerManager {
@@ -26,7 +27,7 @@ public class TriggerManager {
 	}
 	
 	
-	public Trigger registerTrigger( 	final TriggerType type,
+	public Trigger registerTrigger( 	final EventType type,
 										final TriggerDetail detail,
 										final String strMatch,
 										final Runnable runnable ) {
@@ -43,7 +44,7 @@ public class TriggerManager {
 	
 	
 	public List<Trigger> getTriggersLike(
-										final TriggerType event,
+										final EventType event,
 										final String strDetailLike ) {
 		final List<Trigger> list = 
 						Trigger.getTriggersLike( event, strDetailLike );
