@@ -1,4 +1,3 @@
-import java.util.Map;
 import java.util.Map.Entry;
 
 import com.google.gson.JsonElement;
@@ -38,7 +37,7 @@ public class PostSystemEvent {
 			
 
 			final String strDeviceName = client.getThisDevice().getName();
-			final Map<String,String> mapOptions = client.getThisDevice().getOptions();
+//			final Map<String,String> mapOptions = client.getThisDevice().getOptions();
 			
 			
 			
@@ -50,7 +49,7 @@ public class PostSystemEvent {
 			final String strData = jo.toString();
 			
 			final Event event = Event.add( EventType.SYSTEM, se.name(),
-					strMAC, strData, lStart, null, null, null );
+					strMAC, "", strData, lStart, null, null, null );
 			
 			System.out.println( "Event generated" );
 			System.out.println( "\tseq\t" + event.getEventSeq() );

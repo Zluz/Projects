@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
+import jmr.S2Properties;
+import jmr.SettingKey;
 import jmr.pr113.FullStatus;
 import jmr.pr113.Session;
 import jmr.s2db.Client;
@@ -41,6 +43,50 @@ public class NestIngestManager {
 		}
 
 	}
+	
+	
+	
+	final Session session;
+	
+	
+	public NestIngestManager() {
+		
+		final S2Properties props = S2Properties.get();
+		final char[] cUsername = props.getValue( SettingKey.NEST_USERNAME ).toCharArray();
+		final char[] cPassword = props.getValue( SettingKey.NEST_PASSWORD ).toCharArray();
+
+		System.out.println( "Creating Nest session.." );
+		this.session = new Session( cUsername, cPassword );
+	}
+	
+	public FullStatus callNest() {
+
+		final Date now = new Date();
+		
+		System.out.println( "Requesting Nest (thermostat) status.." );
+		final FullStatus status = session.getStatus();
+		
+		System.out.println( "Saving page.." );
+		{
+			final Path path = new Path();
+			final Page page = new Page();
+
+			final String strNodePath = "/External/Ingest/Nest - Thermostat";
+			final Long seqPath = path.get( strNodePath );
+			if ( null!=seqPath ) {
+				final Long seqPage = page.create( seqPath );
+				page.addMap( seqPage, status.getMap(), false );
+				page.setState( seqPage, now, 'A' );
+				System.out.println( "Page saved, seq=" + seqPage );
+			} else {
+				System.err.println( "Failed to get a Path seq." );
+			}
+		}
+		
+//		return status.getDeviceDetailJSON();
+		return status;
+	}
+	
 	
 	
 	
