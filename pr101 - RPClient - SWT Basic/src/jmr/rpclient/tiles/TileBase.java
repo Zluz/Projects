@@ -12,6 +12,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
+import com.google.gson.JsonObject;
+
 import jmr.rpclient.screen.TextScreen;
 import jmr.rpclient.swt.ColorCache;
 import jmr.rpclient.swt.S2Button;
@@ -20,6 +22,7 @@ import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.rpclient.swt.UI;
 import jmr.s2db.tables.Job;
+import jmr.util.transform.JsonUtils;
 
 public abstract class TileBase implements Tile {
 
@@ -249,7 +252,26 @@ public abstract class TileBase implements Tile {
 //		final Rectangle rect = new Rectangle( iX, iY, iW, iH );
 //		button.rect = rect;
 
-		
+		final Job job = ( null!=button ) ? button.getJob() : null;
+		final String strData = ( null!=job ) ? job.getResult() : null;
+		final String strCaption;
+		if ( null!=strData && !strData.isEmpty() ) {
+			
+			if ( !job.getState().isActive() ) {
+				button.setJob( null );
+				buttons.remove( iIndex );
+			}
+			
+			final JsonObject jo = JsonUtils.getJsonObjectFor( strData );
+			if ( jo.has( "caption" ) ) {
+				strCaption = "" + jo.get( "caption" ).getAsString();
+			} else {
+				strCaption = "";
+			}
+		} else {
+			strCaption = "";
+		}
+		final boolean bCaption = !strCaption.isEmpty();
 		
 		
 		gc.setAdvanced( true );
@@ -273,18 +295,38 @@ public abstract class TileBase implements Tile {
 		gc.setBackground( ColorCache.getGray( iBrightBase + 25 ) );
 		gc.fillRoundRectangle( iX+9, iY+4, iW-16, iH-25, 20, 20 );
 
-		gc.setFont( Theme.get().getBoldFont( 11 ) );
+		final int iTextYNext;
+		{
+			gc.setFont( Theme.get().getBoldFont( 11 ) );
+	
+			final Point ptSize = gc.textExtent( strText );
+			
+			final int iTextX = iX + (int)((float)iW/2 - (float)ptSize.x/2);
+			final int iTextY = iY + (int)((float)iH/2 - (float)ptSize.y/2) 
+												- ( bCaption ? 4 : 2 );
+			iTextYNext = iY + (int)((float)iH/2 + (float)ptSize.y/2) - 2; 
+			
+			gc.setForeground( ColorCache.getGray( iBrightBase + 50 ) );
+			gc.drawText( strText, iTextX+1, iTextY+1, true );
+			gc.setForeground( colorText );
+			gc.drawText( strText, iTextX, iTextY, true );
+		}
 
-		final Point ptSize = gc.textExtent( strText );
-		
-		final int iTextX = iX + (int)((float)iW/2 - (float)ptSize.x/2);
-		final int iTextY = iY + (int)((float)iH/2 - (float)ptSize.y/2);
-		
-		gc.setForeground( ColorCache.getGray( iBrightBase + 50 ) );
-		gc.drawText( strText, iTextX+1, iTextY+1, true );
-		gc.setForeground( colorText );
-		gc.drawText( strText, iTextX, iTextY, true );
+		if ( bCaption ) {
+			gc.setFont( Theme.get().getBoldFont( 9 ) );
+	
+			final Point ptSize = gc.textExtent( strCaption );
+			
+			final int iTextX = iX + (int)((float)iW/2 - (float)ptSize.x/2);
+//			final int iTextY = iY + (int)((float)iH/2 - (float)ptSize.y/2);
+			final int iTextY = iTextYNext;
+			
+			gc.setForeground( UI.COLOR_GRAY );
+			gc.drawText( strCaption, iTextX, iTextY, true );
+		}
 
+		
+		
 //		gc.setForeground( UI.COLOR_WHITE );
 //		gc.drawRoundRectangle( iX, iY, iW, iH, 20, 20 );
 //

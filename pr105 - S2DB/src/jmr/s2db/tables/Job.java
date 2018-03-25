@@ -12,9 +12,13 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import jmr.s2db.DataFormatter;
 import jmr.s2db.comm.ConnectionProvider;
 import jmr.s2db.job.JobType;
+import jmr.util.transform.JsonUtils;
 
 
 /*
@@ -27,12 +31,22 @@ import jmr.s2db.job.JobType;
 public class Job extends TableBase {
 
 	public static enum JobState {
-		REQUEST,
-		WORKING,
+		REQUEST( true ),
+		WORKING( true ),
 		COMPLETE,
 		FAILURE,
 		UNKNOWN,
 		;
+		
+		final boolean bActive;
+		
+		JobState( final boolean bActive ) {
+			this.bActive = bActive;
+		}
+		
+		JobState() {
+			this( false );
+		}
 		
 		public char getChar() {
 			return this.name().charAt( 0 );
@@ -46,12 +60,23 @@ public class Job extends TableBase {
 			}
 			return JobState.UNKNOWN;
 		}
+
+		public boolean isActive() {
+			return this.bActive;
+		}
 	}
 	
 	
 	private static final Logger 
 			LOGGER = Logger.getLogger( Page.class.getName() );
 
+	
+	public StatusListener listener = null;
+	
+	public Thread threadMonitorStatus = null;
+
+	
+	
 	private Long seqJob = null;
 	
 	private Long seqSession = null;
@@ -291,16 +316,36 @@ public class Job extends TableBase {
 								final String strResult ) {
 		if ( null==this.getJobSeq() ) return false;
 		
+		final String strNewData;
+		if ( null!=strResult ) {
+			final JsonObject jo = JsonUtils.getJsonObjectFor( strResult );
+			addData( jo );
+			strNewData = DataFormatter.format( this.strResult );
+		} else {
+			strNewData = null;
+		}
+		
 		final String strUpdate;
 		strUpdate = "UPDATE job "
-				+ "SET state=\"" + state.getChar() + "\" " 
-				+ ( null!=strResult 
-					? ", result=" + DataFormatter.format( strResult ) + " " 
+				+ "SET "
+				+ "seq=" + this.seqJob
+				+ ( null!=state 
+					? ", state=\"" + state.getChar() + "\" " 
+					: "" ) 
+				+ ( null!=strNewData 
+					? ", result=" + strNewData + " "
 					: "" )	
 				+ "WHERE seq=" + this.getJobSeq() + ";";
 
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
 				final Statement stmt = conn.createStatement() ) {
+
+			if ( null!=state ) {
+				this.state = state;
+			}
+			if ( null!=strNewData ) {
+				this.strResult = strResult;
+			}
 
 			stmt.executeUpdate( strUpdate );
 			
@@ -313,6 +358,55 @@ public class Job extends TableBase {
 	}
 	
 	
+	/**
+	 * This will add data in the given JsonObject to the existing data
+	 * string. This will NOT save it to the database.
+	 * @param jo
+	 * @return
+	 */
+	public boolean addData( final JsonObject jo ) {
+		if ( null==jo ) return false;
+		
+		final JsonObject joData = JsonUtils.getJsonObjectFor( strResult );
+		
+		for ( final Entry<String, JsonElement> entry : jo.entrySet() ) {
+			joData.add( entry.getKey(), entry.getValue() );
+		}
+		
+		this.strResult = joData.toString();
+		return true;
+	}
+	
+
+	public boolean updateProgress( final String strLine ) {
+		if ( null==strLine ) return false;
+		
+//		System.out.println( "processing >> \"" + strLine + "\"" );
+		
+		//						  012345
+		if ( strLine.startsWith( "#JSON " ) ) {
+			final String strTrimmed = strLine.substring( 5 ).trim();
+			
+//			final JsonObject joData = JsonUtils.getJsonObjectFor( strResult );
+			
+			final JsonObject joNew = JsonUtils.getJsonObjectFor( strTrimmed );
+			
+//			for ( final Entry<String, JsonElement> entry : joNew.entrySet() ) {
+//				joData.add( entry.getKey(), entry.getValue() );
+//			}
+//			
+//			final String strData = joData.toString();
+
+			this.addData( joNew );
+			
+			System.out.println( "Updating data on Job " + this.seqJob + ":" );
+			System.out.println( this.strResult );
+			this.setState( null, strResult );
+		}
+		return false;
+	}
+	
+	
 	public long getTimeSinceRefresh() {
 		final long lNow = System.currentTimeMillis();
 		final long lElapsed = lNow - this.lLastRefresh;
@@ -322,6 +416,69 @@ public class Job extends TableBase {
 	public String getResult() {
 		return this.strResult;
 	}
+	
+	
+	public static interface StatusListener {
+		public void updateStatus(	final JobState state,
+									final String strData );
+	}
+	
+	
+	public boolean checkForUpdatedStatus() {
+
+		final String strQuery = "SELECT state, result "
+								+ "FROM job "
+								+ "WHERE seq=" + this.seqJob;
+		
+		try (	final Connection conn = ConnectionProvider.get().getConnection();
+				final Statement stmt = conn.createStatement() ) {
+
+			try ( final ResultSet rs = stmt.executeQuery( strQuery ) ) {
+				if ( rs.next() ) {
+					final char cState = rs.getString( "state" ).charAt( 0 );
+					this.state = JobState.getJobStateFor( cState );
+					this.strResult = rs.getString( "result" );
+					
+					return true;
+				}
+			}
+		} catch ( final SQLException e ) {
+			e.printStackTrace();
+			LOGGER.log( Level.SEVERE, "Query SQL: " + strQuery, e );
+		}
+		return false;
+	}
+	
+	
+	public void setStatusListener( final StatusListener listener ) {
+		this.listener = listener;
+		
+		if ( null==threadMonitorStatus ) {
+			this.threadMonitorStatus = new Thread( 
+					"Job " + this.seqJob + " status monitor " ) {
+				@Override
+				public void run() {
+					try {
+						boolean bContinue = true;
+						while ( bContinue 
+								&& Job.this.state.isActive() ) {
+							
+							if ( checkForUpdatedStatus() ) {
+								Thread.sleep( 200 );
+							} else {
+								bContinue = false;
+							}
+						}
+					} catch ( final InterruptedException e ) {
+						// ignore
+					}
+				}
+			};
+			this.threadMonitorStatus.start();
+		}
+	}
+	
+	
 	
 	
 	public boolean refresh() {
@@ -339,5 +496,6 @@ public class Job extends TableBase {
 		}
 		return true;
 	}
+
 	
 }

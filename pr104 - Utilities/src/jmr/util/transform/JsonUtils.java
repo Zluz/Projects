@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.json.simple.JSONObject;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -124,6 +122,23 @@ public class JsonUtils {
 		return getPretty( je );
 	}
 
+
+
+	public static JsonObject getJsonObjectFor( final String strResult ) {
+
+		if ( null!=strResult ) {
+			try {
+				final JsonElement je = PARSER.parse( strResult );
+				if ( je.isJsonObject() ) {
+					return je.getAsJsonObject();
+				}
+			} catch ( final Exception e ) {
+				// just return a blank JsonObject, below
+			}
+		}
+		
+		return new JsonObject();
+	}
 	
 	
 	public static void main( final String[] args ) {

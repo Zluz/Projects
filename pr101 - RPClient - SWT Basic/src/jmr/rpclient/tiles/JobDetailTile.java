@@ -18,6 +18,7 @@ import jmr.rpclient.swt.Theme;
 import jmr.s2db.job.JobMonitor;
 import jmr.s2db.tables.Job;
 import jmr.s2db.tables.Job.JobState;
+import jmr.util.transform.JsonUtils;
 
 public class JobDetailTile extends TileBase {
 
@@ -61,9 +62,10 @@ public class JobDetailTile extends TileBase {
 			final String strResult = job.getResult();
 			
 			try {
-				final JsonParser parser = new JsonParser();
-				final JsonElement je = parser.parse( strResult );
-				final JsonObject jo = je.getAsJsonObject();
+//				final JsonParser parser = new JsonParser();
+//				final JsonElement je = parser.parse( strResult );
+//				final JsonObject jo = je.getAsJsonObject();
+				final JsonObject jo = JsonUtils.getJsonObjectFor( strResult );
 				
 				gc.setFont( Theme.get().getFont( 11 ) );
 

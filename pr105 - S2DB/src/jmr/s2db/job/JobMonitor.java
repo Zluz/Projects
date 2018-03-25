@@ -147,6 +147,16 @@ public class JobMonitor {
 	}
 
 	
+	public static void processLine(	final Job job,
+									final String strLine ) {
+		if ( null==job ) return;
+		if ( null==strLine ) return;
+		
+		final String strNorm = strLine.trim();
+		job.updateProgress( strNorm );
+	}
+	
+	
 	/*
 	 * From  http://archive.oreilly.com/pub/h/1092
 	 */
@@ -163,15 +173,19 @@ public class JobMonitor {
 		private final StringBuffer m_captureBuffer;
 		
 		private final PrintStream echo;
+		
+		private final Job job;
 
 		/**
 		 * Constructor.
 		 * 
 		 * @param
 		 */
-		InputStreamHandler(	final StringBuffer captureBuffer, 
+		InputStreamHandler(	final Job job,
+							final StringBuffer captureBuffer, 
 							final InputStream stream,
 							final PrintStream echo ) {
+			this.job = job;
 			m_stream = stream;
 			m_captureBuffer = captureBuffer;
 			this.echo = echo;
@@ -184,11 +198,20 @@ public class JobMonitor {
 		public void run() {
 			try {
 				int nextChar;
+				String strLine = "";
 				while ((nextChar = m_stream.read()) != -1) {
 					final char c = (char) nextChar;
 					m_captureBuffer.append( c );
 					if ( null!=this.echo ) {
 						this.echo.print( c );
+					}
+					if ( '\n'==c ) {
+						if ( null!=job ) {
+							processLine( job, strLine );
+						}
+						strLine = "";
+					} else {
+						strLine = strLine + c;
 					}
 				}
 			} catch ( final IOException ioe ) {
@@ -221,11 +244,11 @@ public class JobMonitor {
 
 				final StringBuffer inBuffer = new StringBuffer();
 				final InputStream inStream = process.getInputStream();
-				new InputStreamHandler( inBuffer, inStream, System.out );
+				new InputStreamHandler( job, inBuffer, inStream, System.out );
 
 				final StringBuffer errBuffer = new StringBuffer();
 				final InputStream errStream = process.getErrorStream();
-				new InputStreamHandler( errBuffer , errStream, System.err );
+				new InputStreamHandler( job, errBuffer , errStream, System.err );
 
 				process.waitFor();
 				
