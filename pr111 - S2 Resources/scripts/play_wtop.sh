@@ -9,12 +9,20 @@
 #
 #-------------------------------------
 
+echo "#JSON  {\"caption\":\"Stopping audio\"}"
 
 /Local/scripts/launch_web.sh
 /Local/scripts/stop_all.sh
 
+echo "#JSON  {\"caption\":\"Activting browser\"}"
 
 WID=`xdotool search --name " Chromium"`
+if [[ "$WID" == "" ]]
+then
+	echo "#JSON  {\"caption\":\"Browser not found\",\"status\":\"error\",\"status\":\"done\"}"
+	exit 1
+fi
+
 xdotool windowfocus $WID
 sleep 1
 # xdotool key ctrl+shift+p
@@ -26,20 +34,30 @@ xdotool key "Return"
 xdotool windowsize $WID 50% 70%
 xdotool windowmove $WID 900 40
 
+echo "#JSON  {\"caption\":\"Activating playback\"}"
 sleep 2
 for i in 1 2 3 4 5
 do
 	LSOF_TEST=`lsof /dev/snd/* 2>/dev/null | grep chromium`
 	if [[ "$LSOF_TEST" == "" ]]
 	then 
+		echo "#JSON  {\"caption\":\"Activating playback\",\"status\":\"warning\"}"
 		echo "No web audio detected yet, sending mouse click.."
+
+		xdotool windowfocus $WID
 		xdotool mousemove 972 474 click 1
-		sleep 4
+		sleep 3
+		echo "#JSON  {\"caption\":\"Checking playback\",\"status\":\"warning\"}"
+		sleep 1
 	else
 		echo "Web audio detected:"
 		echo "    $LSOF_TEST"
+		xdotool windowfocus $WID
 		xdotool mousemove 972 500
-		exit
+		echo "#JSON  {\"caption\":\"Audio detected\",\"status\":\"done\"}"
+		exit 0
 	fi
 done
+echo "#JSON  {\"caption\":\"Audio not detected\",\"status\":\"error\"}"
+echo 1
 

@@ -12,13 +12,15 @@ WID=`xdotool search --name "VLC media player"`
 
 if [[ "$WID" == "" ]]
 then
-	echo "#JSON  {\"caption\":\"VLC not found\",\"status\":\"error\",\"status\":\"done\"}"
+	echo "#JSON  {\"caption\":\"VLC not found\",\"status\":\"error\"}"
 	exit 1
 fi
 
 xdotool windowfocus $WID
 sleep 1
 # xdotool key ctrl+shift+p
+xdotool key Escape
+sleep 1
 xdotool key s
 sleep 1
 xdotool key space
