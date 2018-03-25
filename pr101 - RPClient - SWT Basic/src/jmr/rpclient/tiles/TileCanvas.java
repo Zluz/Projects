@@ -47,7 +47,7 @@ public class TileCanvas {
 	
 	private Canvas canvas = null;
 	
-	private long lPaintCount = 0;
+//	private long lPaintCount = 0;
 	
 	private String strDeviceDescription;
 	
@@ -240,7 +240,7 @@ public class TileCanvas {
 			@Override
 			public void paintControl( final PaintEvent e ) {
 
-				lPaintCount++;
+//				lPaintCount++;
 				final long lNowPaint = System.currentTimeMillis();
 
 		    	final Rectangle rectCanvas = canvas.getClientArea();

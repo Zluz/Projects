@@ -56,7 +56,7 @@ public class Configuration {
 	}
 	
 	
-	@SuppressWarnings("deprecation")
+//	@SuppressWarnings("deprecation")
 	public static void main(String[] args) {
 		
 //		System.out.println( "Fake MAC: " + createFakeMAC() );

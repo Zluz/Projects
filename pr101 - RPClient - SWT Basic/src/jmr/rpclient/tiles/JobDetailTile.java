@@ -10,7 +10,6 @@ import org.eclipse.swt.graphics.Image;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import jmr.rpclient.swt.GCTextUtils;
 import jmr.rpclient.swt.S2Button;

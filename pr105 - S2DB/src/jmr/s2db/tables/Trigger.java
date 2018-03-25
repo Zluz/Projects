@@ -50,6 +50,7 @@ public class Trigger extends TableBase {
 	
 //	private Trigger() {};
 	
+
 	public static Trigger get( final long seqTrigger ) {
 		final String strWhere = "trigger.seq = " + seqTrigger;
 		final List<Trigger> listTrigger = Trigger.get( strWhere, 1 );
@@ -301,6 +302,19 @@ public class Trigger extends TableBase {
 		return this.type;
 	}
 
+	public Long getSessionSeq() {
+		return seqSession;
+	}
+
+	public Long getLogSeq() {
+		return seqLog;
+	}
+
+	public Long getTime() {
+		return time;
+	}
+	
+	
 	public boolean delete() {
 		return Trigger.delete( this.seqTrigger );
 	}

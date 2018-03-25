@@ -117,7 +117,11 @@ public class Device extends TableBase {
 	}
 	
 	public static Device getDevice( final long seqDevice ) {
-		return null;
+		return null; //TODO
+	}
+	
+	public static Device getThisDevice() {
+		return deviceThis;
 	}
 	
 	

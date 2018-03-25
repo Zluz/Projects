@@ -1,8 +1,5 @@
 package jmr.rpclient.tiles;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -13,8 +10,6 @@ import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.S2Button.ButtonState;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
-import jmr.s2db.job.JobType;
-import jmr.s2db.tables.Job;
 
 public class PerspectiveSwitcherTile extends TileBase {
 

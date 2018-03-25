@@ -306,6 +306,22 @@ public class Event extends TableBase {
 		return this.time;
 	}
 
+	public Long getTriggerSeq() {
+		return seqTrigger;
+	}
+
+	public Long getSessionSeq() {
+		return seqSession;
+	}
+
+	public Long getPageSeq() {
+		return seqPage;
+	}
+
+	public Long getLogSeq() {
+		return seqLog;
+	}
+
 	public boolean delete() {
 		return Event.delete( this.seqEvent );
 	}

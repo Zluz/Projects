@@ -11,7 +11,7 @@ import jmr.util.hardware.rpi.CPUMonitor;
 
 public class PerformanceMonitorTile extends TileBase {
 
-	private static final double TEMP_ALERT_THRESHOLD = 65.0;
+//	private static final double TEMP_ALERT_THRESHOLD = 65.0;
 
 
 	private final static int SAMPLE_COUNT = 130;
