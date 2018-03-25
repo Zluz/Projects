@@ -1,6 +1,5 @@
 package jmr.rpclient.screen;
 
-import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
 
 import jmr.util.OSUtil;
@@ -70,16 +69,8 @@ public class TextCanvas {
 		this.screen = screen;
 		return this.screen;
 	}
-	
-	private static void run( final String command ) {
-		try {
-			Runtime.getRuntime().exec( command );
-		} catch ( final IOException e ) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
+
+
 	private void clear() {
 		if ( OSUtil.isWin() ) {
 //			run( "cls" );

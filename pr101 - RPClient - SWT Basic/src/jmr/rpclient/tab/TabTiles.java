@@ -20,6 +20,7 @@ public class TabTiles extends TabBase {
 
 	private final String strPerspective; 
 	
+	@SuppressWarnings("unused")
 	private final Map<String, String> mapOptions;
 	
 //	private final boolean bConsole;
