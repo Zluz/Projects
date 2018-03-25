@@ -100,6 +100,7 @@ public class IO_AutomationHatTile extends TileBase {
 		final Boolean bValue = hat.getDigitalPortValue( port );
 		final Float fValue = hat.getAnalogPortValue( port );
 		final String strValue;
+		final String strThreshold = "";
 		if ( null!=bValue ) {
 			jsonMap.addProperty( "type", "boolean" );
 			jsonValue = new JsonPrimitive( bValue.booleanValue() );
@@ -122,8 +123,8 @@ public class IO_AutomationHatTile extends TileBase {
 			final String strData = jsonMap.toString();
 			
 			final Event event = Event.add( 
-					EventType.INPUT, strSubject, strValue, strData, lTime,
-					null, null, null );
+					EventType.INPUT, strSubject, strValue, strThreshold, 
+					strData, lTime, null, null, null );
 			
 			System.out.println( "Event created: seq " + event.getEventSeq() );
 		}
@@ -250,10 +251,11 @@ public class IO_AutomationHatTile extends TileBase {
 //			final String strData = jsonData.getAsString();
 			final String strData = jsonMap.toString();
 			final String strValue = Boolean.toString( bValue );
+			final String strThreshold = "";
 			
 			final Event event = Event.add( 
-					EventType.USER, strSubject, strValue, strData, lTime,
-					null, null, null );
+					EventType.USER, strSubject, strValue, strThreshold, 
+					strData, lTime, null, null, null );
 			
 			System.out.println( "Event created: seq " + event.getEventSeq() );
 		}

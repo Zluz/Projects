@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import jmr.s2db.DataFormatter;
 import jmr.s2db.comm.ConnectionProvider;
+import jmr.s2db.event.EventMonitor;
 import jmr.s2db.event.EventType;
 
 
@@ -43,6 +44,7 @@ public class Event extends TableBase {
 	private final EventType type;
 	private final String strSubject;
 	private final String strValue;
+	private final String strThreshold;
 	private final String strData;
 	
 	
@@ -82,6 +84,7 @@ public class Event extends TableBase {
 					final Long seqPage,
 					final Long seqLog,
 					final String strValue,
+					final String strThreshold,
 					final String strData ) {
 		this.seqEvent = lSeq;
 		this.seqSession = seqSession;
@@ -92,6 +95,7 @@ public class Event extends TableBase {
 		this.strSubject = strSubject;
 		this.time = time;
 		this.strValue = strValue;
+		this.strThreshold = strThreshold;
 		this.strData = strData;
 	}
 
@@ -182,6 +186,7 @@ public class Event extends TableBase {
 									rs.getLong( "seq_page" ),
 									rs.getLong( "seq_log" ),
 									rs.getString( "value" ),
+									rs.getString( "threshold" ),
 									rs.getString( "data" ) );
 					
 					listJob.add( trigger );
@@ -203,6 +208,7 @@ public class Event extends TableBase {
 	public static Event add(	final EventType type,
 								final String strSubject,
 								final String strValue,
+								final String strThreshold,
 								final String strData,
 								final long lTime,
 								final Long seqPage,
@@ -233,6 +239,7 @@ public class Event extends TableBase {
 						+ DataFormatter.format( type.getChar() ) + ", "
 						+ DataFormatter.format( strSubject ) + ", "
 						+ DataFormatter.format( strValue ) + ", "
+						+ DataFormatter.format( strThreshold ) + ", "
 						+ DataFormatter.format( strData ) + " );";
 
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
@@ -255,6 +262,9 @@ public class Event extends TableBase {
 //									uri,
 //									lSession,
 //									null );
+					
+					EventMonitor.postNewEvent( event );
+					
 					return event;
 				}
 			}
@@ -278,6 +288,10 @@ public class Event extends TableBase {
 
 	public String getValue() {
 		return this.strValue;
+	}
+
+	public String getThreshold() {
+		return this.strThreshold;
 	}
 	
 	public String getSubject() {

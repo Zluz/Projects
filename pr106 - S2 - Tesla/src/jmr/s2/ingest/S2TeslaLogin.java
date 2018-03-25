@@ -2,10 +2,10 @@ package jmr.s2.ingest;
 
 import java.util.Map;
 
+import jmr.S2Properties;
+import jmr.SettingKey;
 import jmr.pr102.comm.TeslaLoginSimple;
 import jmr.s2db.Client;
-import jmr.util.SUProperty;
-import jmr.util.SystemUtil;
 
 public class S2TeslaLogin extends TeslaLoginSimple {
 
@@ -15,9 +15,16 @@ public class S2TeslaLogin extends TeslaLoginSimple {
 	final static public String PATH_LOGIN = "/var/Tesla/Login";
 	
 	public S2TeslaLogin() {
-		super(	SystemUtil.getProperty( SUProperty.TESLA_USERNAME ),
-				SystemUtil.getProperty( SUProperty.TESLA_PASSWORD ).toCharArray() );
+//		super(	SystemUtil.getProperty( SUProperty.TESLA_USERNAME ),
+//				SystemUtil.getProperty( SUProperty.TESLA_PASSWORD ).toCharArray() );
+		super(	S2Properties.get().getValue( SettingKey.TESLA_USERNAME ),
+				S2Properties.get().getValue( SettingKey.TESLA_PASSWORD ).toCharArray() );
 		s2db = Client.get();
+	
+//		final S2Properties props = S2Properties.get();
+//		final char[] cUsername = props.getValue( SettingKey.NEST_USERNAME ).toCharArray();
+//		final char[] cPassword = props.getValue( SettingKey.NEST_PASSWORD ).toCharArray();
+
 		
 		final Map<String, String> map = s2db.loadPage( PATH_LOGIN );
 		this.strTokenValue = map.get( "access_token" );

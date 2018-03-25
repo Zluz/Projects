@@ -19,5 +19,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr110 - S2 File Session"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

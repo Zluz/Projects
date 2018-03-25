@@ -1,34 +1,18 @@
 package jmr.s2fs;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import jmr.S2FSUtil;
+import jmr.SessionPath;
 
 public class FileSessionManager {
 
-//	public final static String BASE_SHARE_PATH = 
-//						( '/'==File.separatorChar
-//								? "/Share"
-//								: "S:\\" );
-//	
-//	public final static String BASE_SESSION_PATH = 
-//			BASE_SHARE_PATH + File.separatorChar + "Sessions";
-	
-	private final static String[] BASE_SESSION_PATHS =
-					{	"/Share/Sessions",
-						"S:\\Sessions\\",
-						"H:\\Share\\Sessions\\"
-					};
-	private static File fileBaseSessionPath = null;
-	
+
 	private final Map<String,FileSession> MAP = new HashMap<>();
 	
 	private static FileSessionManager instance;
@@ -45,57 +29,10 @@ public class FileSessionManager {
 	}
 
 	
-	// NOTE: much of this is duplicated in pr104:SystemUtil .. 
-	// move both of these elsewhere
-	private static Properties properties = null;
-
-	public static Properties getProperties() {
-		if ( null==properties ) {
-			properties = new Properties();
-			try {
-				final File fileSessionPath = getInstance().getBaseSessionPath();
-				if ( null==fileSessionPath ) {
-					return null;
-				}
-				final File fileBasePath = fileSessionPath.getParentFile();
-				final File file = new File( fileBasePath, "settings.ini" ); 
-				properties.load( new FileInputStream( file ) );
-			} catch ( final IOException e ) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		return properties;
-	}
-
 	
-	
-	
-	public synchronized File getBaseSessionPath() {
-		if ( null!=fileBaseSessionPath ) {
-			return fileBaseSessionPath;
-		} else {
-			for ( final String strPath : BASE_SESSION_PATHS ) {
-				final File file = new File( strPath );
-				if ( file.isDirectory() ) {
-					fileBaseSessionPath = file;
-					return file;
-				}
-			}
-		}
-		System.err.println( "Could not locate base share path. "
-							+ "Please ensure Share is mapped." );
-		return null;
-	}
-	
-//	public File getBaseSessionPath() {
-//		final File fileBaseShare = getBaseSharePath();
-//		final File fileBaseSession = new File( fileBaseShare, "Sessions" );
-//		return fileBaseSession;
-//	}
 	
 	private boolean scan() {
-		final File file = getBaseSessionPath();
+		final File file = SessionPath.getPath();
 //		System.out.println( "Scanning for sessions "
 //				+ "(under " + BASE_SESSION_PATH + ")" );
 		String[] arrDirs = file.list(new FilenameFilter() {

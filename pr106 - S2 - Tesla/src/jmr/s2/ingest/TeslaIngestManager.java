@@ -260,6 +260,12 @@ public class TeslaIngestManager {
 	}
 	
 	
+	public void requestToWebService( final DataRequest request ) {
+		final Boolean[] arrFlags = { true };
+		this.requestToWebService( request, arrFlags );
+	}
+	
+	
 	public void scanAll() {
 
 		System.out.println( "------ ----------------------------------------------------------------" );

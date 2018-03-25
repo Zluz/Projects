@@ -8,6 +8,7 @@ import java.util.Properties;
 import jmr.util.NetUtil;
 import jmr.util.OSUtil;
 
+@Deprecated // use S2Properties
 public class Configuration {
 
 	final public static String PATH_SHARE = 

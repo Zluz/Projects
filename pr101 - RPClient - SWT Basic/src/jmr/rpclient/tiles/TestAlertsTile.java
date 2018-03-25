@@ -9,6 +9,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import jmr.S2Properties;
 import jmr.pr116.messaging.EmailMessage;
 import jmr.pr116.messaging.EmailProvider;
 import jmr.rpclient.swt.GCTextUtils;
@@ -18,7 +19,6 @@ import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.s2db.Client;
 import jmr.s2db.tables.Job;
-import jmr.s2fs.FileSessionManager;
 
 public class TestAlertsTile extends TileBase {
 
@@ -124,7 +124,8 @@ public class TestAlertsTile extends TileBase {
 					
 
 //					final Properties p = SystemUtil.getProperties();
-					final Properties p = FileSessionManager.getProperties();
+//					final Properties p = FileSessionManager.getProperties();
+					final Properties p = S2Properties.get();
 
 					final EmailMessage message = new EmailMessage( 
 								EmailProvider.GMAIL, 

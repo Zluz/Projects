@@ -20,5 +20,6 @@
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/Git_nest-controller__20180224"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr105 - S2DB"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr110 - S2 File Session"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
