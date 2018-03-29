@@ -34,11 +34,23 @@ then
 
 	export RUNDIR=/Share/Development/Export
 	export LATEST=`/bin/ls -1t $RUNDIR/pr117_* | /usr/bin/head -1`
-
 	if [[ "$LATEST" == "" ]];
 	then
 		echo "Unable to post system event; pr117 executable not found. Share may not be mounted."
-		echo 0;
+
+		echo "Attempting to mount.."
+		mount -t cifs -o user=pi,password=rpi //192.168.1.200/Share /Share
+
+		sleep 1
+
+		export LATEST=`/bin/ls -1t $RUNDIR/pr117_* | /usr/bin/head -1`
+		if [[ "$LATEST" == "" ]];
+		then
+			echo "Failed to mount Share. Exiting."
+			exit 1;
+		fi
+
+		echo "    Share mounted successfully." >> /tmp/reboot.log
 	fi
 
 	/usr/bin/java -jar $LATEST DEVICE_STARTED > /tmp/PostEvent.out
