@@ -17,6 +17,7 @@ then
 fi
 
 xdotool windowfocus $WID
+xdotool windowactivate $WID
 sleep 1
 # xdotool key ctrl+shift+p
 xdotool key Escape

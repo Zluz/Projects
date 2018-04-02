@@ -23,7 +23,10 @@ then
 	exit 1
 fi
 
+echo "Chromium window: $WID"
+
 xdotool windowfocus $WID
+xdotool windowactivate $WID
 sleep 1
 # xdotool key ctrl+shift+p
 xdotool key alt+d
@@ -45,6 +48,7 @@ do
 		echo "No web audio detected yet, sending mouse click.."
 
 		xdotool windowfocus $WID
+		xdotool windowactivate $WID
 		xdotool mousemove 972 474 click 1
 		sleep 3
 		echo "#JSON  {\"caption\":\"Checking playback\",\"status\":\"warning\"}"
