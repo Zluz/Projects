@@ -38,7 +38,10 @@ xdotool windowsize $WID 50% 70%
 xdotool windowmove $WID 900 40
 
 echo "#JSON  {\"caption\":\"Activating playback\"}"
+sleep 3
+xdotool mousemove 972 474 click 1
 sleep 2
+
 for i in 1 2 3 4 5
 do
 	LSOF_TEST=`lsof /dev/snd/* 2>/dev/null | grep chromium`
