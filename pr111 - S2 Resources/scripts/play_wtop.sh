@@ -38,9 +38,14 @@ xdotool windowsize $WID 50% 70%
 xdotool windowmove $WID 900 40
 
 echo "#JSON  {\"caption\":\"Activating playback\"}"
-sleep 3
+sleep 4
+
+xdotool windowfocus $WID
+xdotool windowactivate $WID
 xdotool mousemove 972 474 click 1
-sleep 2
+
+sleep 4
+
 
 for i in 1 2 3 4 5
 do
