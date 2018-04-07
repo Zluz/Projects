@@ -231,8 +231,10 @@ public enum Perspective {
 						new Rectangle( 0, 0, 4, 1 ) ) ); 
 
 		list.add( new TileGeometry( new JobDetailTile( mapOptions ), 
-				new Rectangle( 0, 1, 4, 2 ) ) ); 
+				new Rectangle( 0, 1, 3, 2 ) ) ); 
 
+		list.add( new TileGeometry( new EventListingTile(), 
+				new Rectangle( 3, 1, 1, 2 ) ) ); 
 	}
 
 	private void build_Daily() {

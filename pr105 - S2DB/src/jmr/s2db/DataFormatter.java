@@ -16,14 +16,18 @@ public abstract class DataFormatter {
 		if ( null==value ) return "null";
 		if ( value instanceof String ) {
 			String str = value.toString();;
-			if ( ( '\'' == str.charAt( 0 ) ) 
-					&& ( '\'' == str.charAt( str.length() - 1 ) ) ) {
-				str = str.substring( 1, str.length() - 2 );
+			if ( str.length()<1 ) {
+				return "''";
+			} else {
+				if ( ( '\'' == str.charAt( 0 ) ) 
+						&& ( '\'' == str.charAt( str.length() - 1 ) ) ) {
+					str = str.substring( 1, str.length() - 2 );
+				}
+				str = str.replace( "\\", "\\\\" );
+				str = str.replace( "'", "\\'" );
+				str = str.replace( "\"", "\\\"" );
+				return "'" + str + "'";
 			}
-			str = str.replace( "\\", "\\\\" );
-			str = str.replace( "'", "\\'" );
-			str = str.replace( "\"", "\\\"" );
-			return "'" + str + "'";
 		} else if ( value instanceof Number ) {
 			return "" + value.toString();
 		} else if ( value instanceof Date ) {

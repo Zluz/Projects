@@ -128,7 +128,14 @@ public class ConnectionProvider {
 		try {
 //			https://stackoverflow.com/questions/7592056/am-i-using-jdbc-connection-pooling
 				
-			final Connection conn = bds.getConnection();
+			
+			int i=10;
+			Connection conn = null;
+			do {
+				conn = bds.getConnection();
+				i--;
+			} while ( i>0 && ( null==conn || !conn.isValid( 200 ) ) );
+			
 			if ( null==conn ) return null;
 			
 			synchronized ( listConnections ) { 

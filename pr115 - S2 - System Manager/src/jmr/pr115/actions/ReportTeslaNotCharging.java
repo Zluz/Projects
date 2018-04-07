@@ -53,11 +53,44 @@ public class ReportTeslaNotCharging extends EventMonitorAction {
 						+ "Alert threshold: " + event.getThreshold() + " %\n\n"
 						+ "Combined JSON:\n" + strPrettyJSON;
 				
+				// send email
 				System.out.println( "Sending email: \"" + strSubject + "\"" );
 				SendMessage.send( MessageType.EMAIL, strSubject, strBody );
-				System.out.println( "Email sent." );
+				
+				System.out.println( "Email sent, sending SMS" );
+				// send text
+				SendMessage.send( MessageType.TEXT, strSubject );
+				System.out.println( "Email and SMS sent." );
 			}
 		}
+	}
+	
+	
+	public static void report( final String strJSON ) {
+		new Thread( "Report" ) {
+			@Override
+			public void run() {
+
+				final String strPrettyJSON = JsonUtils.getPretty( strJSON );
+				
+				final String strSubject = 
+						"Tesla: Report";
+				
+				final String strBody = 
+						"Debugging Report\n"
+						+ "jmr.pr115.actions.ReportTeslaNotCharging.report()\n\n"
+						+ "Combined JSON:\n" + strPrettyJSON;
+				
+				// send email
+				System.out.println( "Sending email: \"" + strSubject + "\"" );
+				SendMessage.send( MessageType.EMAIL, strSubject, strBody );
+				
+				System.out.println( "Email sent, sending SMS" );
+				// send text
+				SendMessage.send( MessageType.TEXT, strSubject );
+				System.out.println( "Email and SMS sent." );
+			}
+		}.start();
 	}
 	
 	

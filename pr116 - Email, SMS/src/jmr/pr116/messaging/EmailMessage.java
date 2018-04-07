@@ -45,6 +45,16 @@ public class EmailMessage {
 						final String strBody,
 						final File[] fileAttachments ) {
 		
+		System.out.println( "Sending message:" );
+		System.out.println( "\tTo: " + strRecipient );
+		System.out.println( "\tSubject: " + strSubject );
+		if ( null!=strBody ) {
+			System.out.println( "\tBody: " + strBody.substring( 0, 
+										Math.min( 40, strBody.length() ) ) );
+		} else {
+			System.out.println( "\tBody: <null>" );
+		}
+		
         final Properties props = System.getProperties();
         props.put( "mail.smtp.starttls.enable", "true" );
         props.put( "mail.smtp.host", provider.getHost() );
@@ -71,9 +81,11 @@ public class EmailMessage {
                 message.addRecipient(Message.RecipientType.TO, toAddress[i]);
             }
 
-        	final BodyPart bpMessage = new MimeBodyPart();
-        	bpMessage.setText( strBody );
-        	mp.addBodyPart( bpMessage );
+        	if ( null!=strBody ) {
+	        	final BodyPart bpMessage = new MimeBodyPart();
+	        	bpMessage.setText( strBody );
+	        	mp.addBodyPart( bpMessage );
+        	}
             message.setContent(mp);
             
             if ( null!=fileAttachments && fileAttachments.length>0 ) {
@@ -89,7 +101,7 @@ public class EmailMessage {
             	}
             }
             
-            message.setSubject( strSubject );
+            message.setSubject( ""+strSubject );
             
             try ( final Transport transport = session.getTransport("smtp") ) {
 	            

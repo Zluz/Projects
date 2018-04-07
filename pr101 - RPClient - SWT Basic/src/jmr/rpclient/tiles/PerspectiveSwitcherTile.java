@@ -14,33 +14,7 @@ import jmr.rpclient.swt.Theme.Colors;
 public class PerspectiveSwitcherTile extends TileBase {
 
 
-//	public static enum AudioProgram {
-//		PLAY_SPOTIFY( "Spotify (ext)", "/Local/scripts/stop_all.sh" ),
-//		CHANNEL_A( "Channel A", "/Local/scripts/stop_all.sh" ),
-//		PLAY_LOVELINE( "Classic Loveline", "/Local/scripts/play_vlc.sh" ),
-//		PLAY_TWIT( "TWiT (Twitch)", "/Local/scripts/play_twit.sh" ),
-//		PLAY_WTOP( "WTOP stream", "/Local/scripts/play_wtop.sh" ),
-//		PLAY_NPR( "NPR stream", "/Local/scripts/play_npr.sh" ),
-//		;
-//		
-//		//	Spotify		Loveline	WTOP live
-//		//	Channel A	TWiT live	NPR live
-//
-//		public final String strTitle;
-//		public final String strScript;
-//		
-//		AudioProgram(	final String strTitle,
-//						final String strScript ) {
-//			this.strTitle = strTitle;
-//			this.strScript = strScript;
-//		}
-//	}
-	
-	
 
-
-	
-	
 	@Override
 	public void paint( 	final GC gc, 
 						final Image image ) {
@@ -70,18 +44,6 @@ public class PerspectiveSwitcherTile extends TileBase {
 				if ( iY >= gc.getClipping().height ) break;
 			}
 			
-//			super.addButton( gc, AudioProgram.PLAY_LOVELINE.ordinal(), 
-//								10, 30,  125, 55, 
-//								AudioProgram.PLAY_LOVELINE.strTitle );
-//			
-//			super.addButton( gc, AudioProgram.PLAY_TWIT.ordinal(), 
-//								10, 100, 125, 55, 
-//								AudioProgram.PLAY_TWIT.strTitle );
-//			
-//			super.addButton( gc, AudioProgram.PLAY_NPR.ordinal(), 
-//								10, 170, 125, 55, 
-//								AudioProgram.PLAY_NPR.strTitle );
-
 			gc.setForeground( Theme.get().getColor( Colors.LINE_FAINT ) );
 			gc.drawLine( 299, 0, 299, 10 );
 			gc.drawLine( 290, 0, 299, 0 );
@@ -121,13 +83,36 @@ public class PerspectiveSwitcherTile extends TileBase {
 
 				button.setState( ButtonState.WORKING );
 
-				Display.getDefault().asyncExec( new Runnable() {
+				final Boolean[] switched = { false };
+				
+				final Display display = Display.getDefault();
+				display.asyncExec( new Runnable() {
 					@Override
 					public void run() {
 						TileCanvas.getInstance().setPerspective( perspective );
 						button.setState( ButtonState.READY );
+						switched[0] = true;
 					}
 				});
+
+				try {
+					Thread.sleep( 5000 );
+					if ( !switched[0] ) {
+						display.asyncExec( new Runnable() {
+							@Override
+							public void run() {
+								System.err.println();
+								System.err.println( "Excessive delay in "
+										+ "switching perspective, aborting." );
+								button.setState( ButtonState.DISABLED );
+								// request shutdown
+								display.getActiveShell().close();
+							}
+						});
+					}
+				} catch ( final InterruptedException e ) {
+					e.printStackTrace();
+				}
 
 //				final Map<String,String> map = new HashMap<String,String>();
 //				map.put( "remote", "media" );
@@ -135,12 +120,12 @@ public class PerspectiveSwitcherTile extends TileBase {
 //					
 //				final Job job = Job.add( JobType.REMOTE_EXECUTE, map );
 //				button.setJob( job );
-				try {
-					Thread.sleep( 200 );
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+//				try {
+//					Thread.sleep( 200 );
+//				} catch (InterruptedException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
 
 			};
 		};
@@ -158,8 +143,6 @@ public class PerspectiveSwitcherTile extends TileBase {
 			}
 		}
 	}
-	
-	
 	
 	
 	

@@ -8,7 +8,9 @@ public enum JobType {
 	TESLA_READ,
 	TESLA_WRITE,
 	
-	REMOTE_EXECUTE,
+	REMOTE_EXECUTE( true ),
+	REMOTE_SHUTDOWN( true ),
+	REMOTE_GET_CALL_STACK( true ),
 	
 	SEND_EMAIL,
 	SEND_TEXT,
@@ -16,6 +18,20 @@ public enum JobType {
 	UNDEFINED,
 	;
 
+	final boolean bRemote;
+	
+	JobType( final boolean bRemote ) {
+		this.bRemote = bRemote;
+	}
+
+	JobType() {
+		this( false );
+	}
+	
+	public boolean isRemoteType() {
+		return this.bRemote;
+	}
+	
 
 	public static JobType getType( final String text ) {
 		if ( null==text ) return UNDEFINED;

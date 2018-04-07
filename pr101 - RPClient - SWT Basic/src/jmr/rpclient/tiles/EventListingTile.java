@@ -10,18 +10,20 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 
 import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.rpclient.swt.UI;
+import jmr.rpclient.swt.S2Button.ButtonState;
 import jmr.s2db.tables.Event;
 
 public class EventListingTile extends TileBase {
 
 
 	final static long SUBJECT_REFRESH_INTERVAL = TimeUnit.MINUTES.toMillis( 1 );
-	final static long EVENTS_REFRESH_INTERVAL = 500;
+	final static long EVENTS_REFRESH_INTERVAL = 1000;
 
 	final static Map<String,Event> events = new HashMap<>();
 
@@ -29,6 +31,10 @@ public class EventListingTile extends TileBase {
 	final static List<String> listSubjects = new LinkedList<>();
 
 	static Thread threadUpdate = null;
+	
+	private static int iFastCount = 0;
+	private static long lUpdateCount = 0;
+	private static S2Button btnFast = null;
 	
 	
 	public static void updateEvents_simple() {
@@ -47,6 +53,11 @@ public class EventListingTile extends TileBase {
 	
 	
 	public static void updateEvents() {
+		if ( lUpdateCount >= 9999 ) {
+			lUpdateCount = 0;
+		} else {
+			lUpdateCount++;
+		}
 		
 		final long lNow = System.currentTimeMillis();
 		if ( lNow - lLastSubjectUpdate > SUBJECT_REFRESH_INTERVAL ) {
@@ -79,7 +90,15 @@ public class EventListingTile extends TileBase {
 				public void run() {
 					try {
 						while ( !UI.display.isDisposed() ) {
-							Thread.sleep( EVENTS_REFRESH_INTERVAL );
+							if ( iFastCount > 0 ) {
+//								iFastCount--;
+								Thread.sleep( 100 );
+								if ( 0==iFastCount && null!=btnFast ) {
+									btnFast.setState( ButtonState.READY );
+								}
+							} else {
+								Thread.sleep( EVENTS_REFRESH_INTERVAL );
+							}
 						
 							updateEvents();
 						}
@@ -127,17 +146,46 @@ public class EventListingTile extends TileBase {
 					gc.drawText( strType.substring( 0, 1 ), 10, iY );
 
 					gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
-					gc.drawText( event.getValue(), 80, iY + 12 );
+					final String strValue = event.getValue();
+					if ( strValue.length() < 10 ) {
+						gc.drawText( strValue, 80, iY + 12 );
+					} else {
+						gc.setFont( Theme.get().getFont( 10 ) );
+						gc.drawText( strValue, 40, iY + 12 );
+					}
 					
 					iY += 38;
 				}
 			}
 		}
+		
+		final Rectangle r = gc.getClipping();
+		if ( r.height > 200 ) {
+			super.addButton( gc, 1, 50, r.height - 50, 100, 40, "Scan Fast" );
+		}
+		
+		gc.setFont( Theme.get().getFont( 9 ) );
+		gc.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
+		if ( iFastCount > 0 ) {
+			iFastCount--;
+			gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
+			gc.drawText( "FAST", 5, r.height - 45 );
+			gc.drawText( ""+iFastCount, 15, r.height - 30 );
+		}
+		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
+		gc.drawText( ""+lUpdateCount, 15, r.height - 15 );
 	}
 
 	
+	
 	@Override
-	protected void activateButton( final S2Button button ) {}
+	protected void activateButton( final S2Button button ) {
+		if ( 1==button.getIndex() ) {
+			iFastCount = 100;
+			btnFast = button;
+			button.setState( ButtonState.WORKING );
+		}
+	}
 	
 
 }

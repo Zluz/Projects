@@ -51,7 +51,7 @@ public class ReportNestLowHumidity extends EventMonitorAction {
 						"Nest has reported low humidity.\n\n"
 						+ "Humidity: " + event.getValue() + " %\n"
 						+ "Threshold: " + event.getThreshold() + " %\n\n"
-						+ "JSON:\n" + strPrettyJSON;
+						+ "JSON (device):\n" + strPrettyJSON;
 				
 				System.out.println( "Sending email: \"" + strSubject + "\"" );
 				SendMessage.send( MessageType.EMAIL, strSubject, strBody );

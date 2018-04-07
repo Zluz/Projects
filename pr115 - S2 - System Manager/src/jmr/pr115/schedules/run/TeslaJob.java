@@ -152,25 +152,36 @@ public class TeslaJob extends JobWorker {
 		
 		final JsonObject joCombined = new JsonObject();
 
-		for ( final DataRequest request : set ) {
-			System.out.println( "Requesting from Tesla: " + request );
-			final String strResponse = this.getTVI().request( request );
-			System.out.println( "Requesting from Tesla: " + request 
-					+ ", response is " + strResponse.length() + " bytes long." ); 
-			
-			final JsonObject joResponse = getJsonObject( strResponse );
-			for ( final Entry<String, JsonElement> 
-									entry : joResponse.entrySet() ) {
-				joCombined.add( entry.getKey(), entry.getValue() );
+		try {
+			for ( final DataRequest request : set ) {
+				System.out.println( "Requesting from Tesla: " + request );
+				final String strResponse = this.getTVI().request( request );
+				System.out.println( "Requesting from Tesla: " + request 
+						+ ", response is " + strResponse.length() + " bytes long." ); 
+				
+				final JsonObject joResponse = getJsonObject( strResponse );
+				for ( final Entry<String, JsonElement> 
+										entry : joResponse.entrySet() ) {
+					joCombined.add( entry.getKey(), entry.getValue() );
+				}
 			}
+			
+			System.out.println( "Processing combined Tesla response "
+					+ "(" + joCombined.size() + " entries)" );
+			final boolean bResult = process( lNow, joCombined );
+			
+			ReportTeslaNotCharging.report( joCombined.toString() );
+			
+			return bResult;
+		} catch ( final Exception e ) {
+			e.printStackTrace();
+			//TODO report error in an Event
+			return false;
 		}
-		
-		System.out.println( "Processing combined Tesla response "
-				+ "(" + joCombined.size() + " entries)" );
-		final boolean bResult = process( lNow, joCombined );
-		
-		return bResult;
 	}
+	
+	
+	
 	
 	
 	

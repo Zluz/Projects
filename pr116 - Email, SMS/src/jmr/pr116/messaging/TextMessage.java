@@ -35,7 +35,7 @@ public class TextMessage {
 	
 	public void send( 	final String strRecipient,
 						final String strText ) {
-		this.send( strRecipient, "test", strText );
+		this.send( strRecipient, strText, strText );
 	}
 
 	

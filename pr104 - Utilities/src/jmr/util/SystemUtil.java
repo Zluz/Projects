@@ -59,11 +59,13 @@ public abstract class SystemUtil {
 		System.out.println();
 		
 		if ( !OSUtil.isWin() ) {
-			new Thread( "External process KILL thread" ) {
+			new Thread( "Call HALT, Run KILL" ) {
 				@Override
 				public void run() {
 					try {
 						Thread.sleep( 3000 );
+						Runtime.getRuntime().halt( 1000 );
+						
 						System.out.println( "Running: " + PROCESS_KILL_SELF );
 						Runtime.getRuntime().exec( PROCESS_KILL_SELF );
 					} catch ( final IOException | InterruptedException e ) {

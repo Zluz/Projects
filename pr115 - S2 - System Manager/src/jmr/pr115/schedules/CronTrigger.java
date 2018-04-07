@@ -19,12 +19,15 @@ public enum CronTrigger {
 	//												  v------5:month
 	//													 v---6:day-of-week
 //	GENERAL_HOURLY_CHECK( 	" 0  0    *            *  *  ?        ", RunTest.class ),
-	LOW_BATT_CHECK_WEEKDAY( " 0  0/10 19,20,21,22  ?  *  MON-FRI  ", new TeslaJob() ),
-	LOW_BATT_CHECK_WEEKEND( " 0  0    0/1          ?  *  SUN,SAT  ", new TeslaJob() ),
+//	LOW_BATT_CHECK_WEEKDAY( " 0  0/30 19,20,21,22  ?  *  MON-FRI  ", new TeslaJob() ),
+//	LOW_BATT_CHECK_WEEKEND( " 0  0    10/1          ?  *  SUN,SAT  ", new TeslaJob() ),
+//	ONE_TIME_TESLA_QUERY_0(	" 0  59   16           *  *  ?        ", new TeslaJob() ),
+//	ONE_TIME_TESLA_QUERY_1(	" 0 35,40 *            *  *  ?        ", new TeslaJob() ),
 //	LOW_BATT_CHECK_TEST( 	"0/30 *   *            *  *  ?        ", new TeslaJob() ),
 //	LOW_HUMID_CHECK_TEST( 	"0/30 *   *            *  *  ?        ", new NestJob( true ) ),
-	HUMID_AND_TEMP_CHECK( 	" 0  0    0/1          *  *  ?        ", new NestJob( true ) ),
+	HUMID_AND_TEMP_CHECK( 	" 0  0    *            *  *  ?        ", new NestJob( true ) ),
 //	TEST_SCHEDULE( 			"0/10 *   *            *  *  ?        ", RunTest.class ),
+	//								  ^--? not local time? 
 	;
 
 	

@@ -17,8 +17,8 @@ public class S2TeslaLogin extends TeslaLoginSimple {
 	public S2TeslaLogin() {
 //		super(	SystemUtil.getProperty( SUProperty.TESLA_USERNAME ),
 //				SystemUtil.getProperty( SUProperty.TESLA_PASSWORD ).toCharArray() );
-		super(	S2Properties.get().getValue( SettingKey.TESLA_USERNAME ),
-				S2Properties.get().getValue( SettingKey.TESLA_PASSWORD ).toCharArray() );
+		super(	S2Properties.get().getValue( SettingKey.TESLAMOTORS_USERNAME ),
+				S2Properties.get().getValue( SettingKey.TESLAMOTORS_PASSWORD ).toCharArray() );
 		s2db = Client.get();
 	
 //		final S2Properties props = S2Properties.get();

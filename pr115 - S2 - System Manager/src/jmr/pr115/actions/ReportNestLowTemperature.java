@@ -51,7 +51,7 @@ public class ReportNestLowTemperature extends EventMonitorAction {
 						"Nest has reported low temperature.\n\n"
 						+ "Temperture: " + event.getValue() + "º F\n"
 						+ "Threshold: " + event.getThreshold() + "º F\n\n"
-						+ "JSON:\n" + strPrettyJSON;
+						+ "JSON (shared):\n" + strPrettyJSON;
 				
 				System.out.println( "Sending email: \"" + strSubject + "\"" );
 				SendMessage.send( MessageType.EMAIL, strSubject, strBody );

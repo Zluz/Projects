@@ -3,17 +3,12 @@ package jmr.s2db.job;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-
 import jmr.s2db.Client;
 import jmr.s2db.tables.Job;
-import jmr.s2db.tables.Job.JobState;
 
 public class JobMonitor {
 
@@ -24,6 +19,7 @@ public class JobMonitor {
 	
 	private String strName = null;
 	
+	private RunRemoteJob runner = null;
 	
 	private static JobMonitor instance;
 	
@@ -39,6 +35,7 @@ public class JobMonitor {
 	
 	public void initialize( final Map<String,String> mapOptions ) {
 		this.strName = mapOptions.get( "remote" );
+		this.runner = new RunRemoteJob( strName );
 		this.initializeJobMonitorThread();
 	}
 	
@@ -221,63 +218,8 @@ public class JobMonitor {
 	}
 	
 	
-	
-	private void runRemoteExecute( final Job job ) {
-		final Map<String,String> map = job.getJobDetails();
-		
-		if ( null!=this.strName 
-				&& this.strName.equals( map.get( "remote" ) ) ) {
-
-			job.setState( JobState.WORKING );
-
-			final String strCommand = map.get( "command" );
-			
-			System.out.println( "Running command: " + strCommand );
-			
-			try {
-				final Process process = 
-								Runtime.getRuntime().exec( strCommand );
-//				process.waitFor();
-				
-				
-//				Process application = Runtime.getRuntime().exec(command);
-
-				final StringBuffer inBuffer = new StringBuffer();
-				final InputStream inStream = process.getInputStream();
-				new InputStreamHandler( job, inBuffer, inStream, System.out );
-
-				final StringBuffer errBuffer = new StringBuffer();
-				final InputStream errStream = process.getErrorStream();
-				new InputStreamHandler( job, errBuffer , errStream, System.err );
-
-				process.waitFor();
-				
-				
-				
-				
-//				final String strResult = "Exit value = " + process.exitValue();
-				final String strOutput = inBuffer.toString();
-				final String strError = errBuffer.toString();
-				
-				final Map<String,String> mapResult = new HashMap<>();
-				mapResult.put( "exit_code", ""+process.exitValue() );
-				mapResult.put( "std_out", strOutput );
-				mapResult.put( "std_err", strError );
-				
-				final Gson GSON = new Gson();
-				final JsonElement jsonResult = GSON.toJsonTree( mapResult );
-				final String strResult = jsonResult.toString();
-				
-				job.setState( JobState.COMPLETE, strResult );
-			} catch ( final Exception e ) {
-				job.setState( JobState.FAILURE, e.toString() );
-			}
-			
-		}
-		
-	}
-	
 	private void doWorkJobs( final List<Job> jobs ) {
+		if ( null==jobs ) return;
 		if ( jobs.isEmpty() ) return;
 		
 		final Thread threadWorkJobs = new Thread( "Work Jobs" ) {
@@ -286,9 +228,18 @@ public class JobMonitor {
 				for ( final Job job : jobs ) {
 					final JobType type = job.getJobType();
 
-					// execute job?
-					if ( JobType.REMOTE_EXECUTE.equals( type ) ) {
-						runRemoteExecute( job );
+					if ( type.isRemoteType() 
+							&& runner.isIntendedHere( job ) ) {
+
+						// execute job?
+						if ( JobType.REMOTE_EXECUTE.equals( type ) ) {
+							runner.runRemoteExecute( job );
+						} else if ( JobType.REMOTE_SHUTDOWN.equals( type ) ) {
+							runner.runShutdown( job );
+						} else if ( JobType.REMOTE_GET_CALL_STACK.equals( type ) ) {
+							runner.runGetCallStack( job );
+						}
+
 					}
 				}
 			}

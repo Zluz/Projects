@@ -229,7 +229,8 @@ public class Event extends TableBase {
 		strInsert = 
 				"INSERT INTO event "
 				+ "( seq_session, seq_page, seq_trigger, seq_log, "
-									+ "time, type, subject, value, data ) "
+									+ "time, type, subject, "
+									+ "value, threshold, data ) "
 				+ "VALUES ( " 
 						+ lSession + ", "
 						+ DataFormatter.format( seqPage ) + ", "
