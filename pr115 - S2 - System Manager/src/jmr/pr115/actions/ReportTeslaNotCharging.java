@@ -35,7 +35,7 @@ public class ReportTeslaNotCharging extends EventMonitorAction {
 	@Override
 	public void process( final Event event ) {
 		if ( null==event ) return;
-		if ( !EventType.TIME.equals( event.getTriggerType() ) ) return;
+		if ( !EventType.TIME.equals( event.getEventType() ) ) return;
 		
 		if ( TimeEvent.TESLA_LOW_BATTERY.name().equals( event.getSubject() ) ) {
 

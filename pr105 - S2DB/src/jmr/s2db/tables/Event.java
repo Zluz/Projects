@@ -299,7 +299,7 @@ public class Event extends TableBase {
 		return this.strSubject;
 	}
 
-	public EventType getTriggerType() {
+	public EventType getEventType() {
 		return this.type;
 	}
 	

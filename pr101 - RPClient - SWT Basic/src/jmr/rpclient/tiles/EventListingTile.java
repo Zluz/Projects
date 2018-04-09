@@ -142,7 +142,7 @@ public class EventListingTile extends TileBase {
 
 					gc.setFont( Theme.get().getFont( 12 ) );
 
-					final String strType = event.getTriggerType().name();
+					final String strType = event.getEventType().name();
 					gc.drawText( strType.substring( 0, 1 ), 10, iY );
 
 					gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );

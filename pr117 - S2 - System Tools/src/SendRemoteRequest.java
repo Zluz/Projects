@@ -1,15 +1,8 @@
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 import jmr.s2db.Client;
-import jmr.s2db.event.EventType;
-import jmr.s2db.event.SystemEvent;
 import jmr.s2db.job.JobType;
-import jmr.s2db.tables.Event;
 import jmr.s2db.tables.Job;
 import jmr.util.NetUtil;
 
@@ -23,7 +16,8 @@ public class SendRemoteRequest {
 	public static void main( final String[] args ) {
 		
 		final String strRemoteIP = "192.168.1.11";
-		final JobType jobRemoteCommand = JobType.REMOTE_SHUTDOWN;
+//		final JobType jobRemoteCommand = JobType.REMOTE_SHUTDOWN;
+		final JobType jobRemoteCommand = JobType.REMOTE_GET_CALL_STACK;
 		
 		
 		

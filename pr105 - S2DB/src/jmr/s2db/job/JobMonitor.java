@@ -9,6 +9,7 @@ import java.util.Map;
 
 import jmr.s2db.Client;
 import jmr.s2db.tables.Job;
+import jmr.s2db.tables.Job.JobState;
 
 public class JobMonitor {
 
@@ -221,15 +222,21 @@ public class JobMonitor {
 	private void doWorkJobs( final List<Job> jobs ) {
 		if ( null==jobs ) return;
 		if ( jobs.isEmpty() ) return;
-		
+
 		final Thread threadWorkJobs = new Thread( "Work Jobs" ) {
 			@Override
 			public void run() {
+				
 				for ( final Job job : jobs ) {
 					final JobType type = job.getJobType();
 
 					if ( type.isRemoteType() 
 							&& runner.isIntendedHere( job ) ) {
+						
+						System.out.println( 
+								"Remote job identified to run here "
+								+ "(Job " + job.getJobSeq() + ")" );
+						job.setState( JobState.WORKING );
 
 						// execute job?
 						if ( JobType.REMOTE_EXECUTE.equals( type ) ) {

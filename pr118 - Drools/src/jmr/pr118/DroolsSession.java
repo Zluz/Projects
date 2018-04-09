@@ -32,9 +32,12 @@ public class DroolsSession {
 
 	
     private final KieSession session;
+    private final RuleSet rules;
 
 
-	public DroolsSession( final RuleSet rules ) {
+	public DroolsSession(	final RuleSet rules,
+							final String strTitle ) {
+		this.rules = rules;
 
         final KieServices ks = KieServices.Factory.get();
 
@@ -74,6 +77,11 @@ public class DroolsSession {
 	}
 	
 	
+	public int getRulesLoaded() {
+		if ( null==session ) return -1;
+		
+		return this.rules.getResources().size();
+	}
 	
 	
 
@@ -105,6 +113,13 @@ public class DroolsSession {
 		
 		final InternalKieModule kieModule = 
 				(InternalKieModule) ks.getRepository().getKieModule(releaseId);
+		
+		if ( null==kieModule ) {
+			System.err.println( "WARNING: "
+					+ "Unable to initialize InternalKieModule." );
+			System.err.println( "Configuration may be invalid." );
+			Runtime.getRuntime().exit( 100 );
+		}
 		
 		final byte[] jar = kieModule.getBytes();
 		return jar;

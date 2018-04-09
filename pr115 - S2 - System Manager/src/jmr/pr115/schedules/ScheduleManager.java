@@ -10,6 +10,7 @@ import org.quartz.SchedulerFactory;
 import org.quartz.Trigger;
 import org.quartz.impl.StdSchedulerFactory;
 
+import jmr.pr115.rules.RulesProcessing;
 import jmr.pr115.schedules.run.JobWorker;
 import jmr.s2db.Client;
 
@@ -26,6 +27,7 @@ public class ScheduleManager {
 	
 	public ScheduleManager() {
 		createCronJobs();
+		RulesProcessing.get(); // just initialize, have it register..
 	}
 	
 	
@@ -83,10 +85,13 @@ public class ScheduleManager {
 			if ( null==classRun ) return;
 			
 			try {
+
+				final JobWorker instance = classRun.newInstance();
 				
+				RulesProcessing.get().process( instance );
+
 				final Method method = classRun.getMethod( "run", new Class<?>[]{} );
 				if ( null==method ) return;
-				final JobWorker instance = classRun.newInstance();
 				method.invoke( instance );
 				
 			} catch ( final Exception e ) {

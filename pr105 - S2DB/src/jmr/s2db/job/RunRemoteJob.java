@@ -6,14 +6,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import jmr.s2db.job.JobMonitor.InputStreamHandler;
 import jmr.s2db.tables.Job;
 import jmr.s2db.tables.Job.JobState;
 import jmr.util.NetUtil;
 import jmr.util.OSUtil;
-import jmr.util.SystemUtil;
 
 public class RunRemoteJob {
 
@@ -31,7 +32,10 @@ public class RunRemoteJob {
 		final Map<String,String> map = job.getJobDetails();
 		if ( null==map ) return false;
 
-		final boolean bMatchIP = this.strIP.equals( map.get( "IP" ) );
+		System.out.println( "        RRJ.strIP = " + this.strIP );
+		System.out.println( "        map.get(\"remote\") = " + map.get( "remote" ) );
+		
+		final boolean bMatchIP = this.strIP.equals( map.get( "remote" ) );
 		if ( bMatchIP ) return true;
 
 		final boolean bMatchName = null!=this.strName 
@@ -45,6 +49,9 @@ public class RunRemoteJob {
 
 	
 	public void runRemoteExecute( final Job job ) {
+		
+		System.out.println( "--- RunRemoteJob.runRemoteExecute()" );
+
 		final Map<String,String> map = job.getJobDetails();
 	
 		job.setState( JobState.WORKING );
@@ -89,10 +96,12 @@ public class RunRemoteJob {
 
 	
 	public void runGetCallStack( final Job job ) {
-	
+		
+		System.out.println( "--- RunRemoteJob.runGetCallStack()" );
+
 		job.setState( JobState.WORKING );
 
-		final Map<String,String> mapResult = new HashMap<>();
+		final JsonObject jo = new JsonObject();
 
 		final Map<Thread, StackTraceElement[]> map = Thread.getAllStackTraces();
 		for ( final Entry<Thread, StackTraceElement[]> entry : map.entrySet() ) {
@@ -101,21 +110,22 @@ public class RunRemoteJob {
 					&& null!=entry.getKey() 
 					&& null!=entry.getValue() ) {
 				
-				final StringBuilder strbuf = new StringBuilder();
+				final JsonArray ja = new JsonArray();
+				
 				final StackTraceElement[] stack = entry.getValue();
 				for ( final StackTraceElement frame : stack ) {
-					strbuf.append( frame.getClassName() + "." 
-								+ frame.getMethodName() + "(), " 
-								+ frame.getFileName() + ":" 
-								+ frame.getLineNumber() + "\n" );
+					final String strFrame = frame.getClassName() + "." 
+											+ frame.getMethodName() + "(), " 
+											+ frame.getFileName() + ":" 
+											+ frame.getLineNumber();
+					ja.add( strFrame );
 				}
 			
-				mapResult.put( entry.getKey().getName(), strbuf.toString() );
+				final String strThread = entry.getKey().getName();
+				jo.add( strThread, ja );
 			}
 			
-			final Gson GSON = new Gson();
-			final JsonElement jsonResult = GSON.toJsonTree( mapResult );
-			final String strResult = jsonResult.toString();
+			final String strResult = jo.toString();
 			
 			job.setState( JobState.COMPLETE, strResult );
 		}
@@ -123,6 +133,9 @@ public class RunRemoteJob {
 	
 
 	public void runShutdown( final Job job ) {
+		
+		System.out.println( "--- RunRemoteJob.runShutdown()" );
+
 		job.setState( JobState.WORKING );
 
 		final Map<String,String> mapResult = new HashMap<>();

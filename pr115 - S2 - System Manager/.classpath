@@ -26,5 +26,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/pr104 - Utilities"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr114 - S2 - Nest"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr113 - Nest Devices Interface"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr118 - Drools"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Drools 7.6.0.Final"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

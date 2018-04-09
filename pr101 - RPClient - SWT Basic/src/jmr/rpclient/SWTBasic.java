@@ -128,15 +128,19 @@ public class SWTBasic {
 						"UI close requested, after S2 client close" );
 			}
 		}.start();
-		try {
-			Thread.sleep( 2000 );
-		} catch ( final InterruptedException e ) {
-			e.printStackTrace();
-		}
-//		System.out.println( "Calling System.exit(0).." );
-//		System.exit(0);
-		SystemUtil.shutdown( 0, 
-				"UI close requested, in SWTBasic.close()" );
+		
+		new Thread( "UI Close followup" ) {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep( 2000 );
+					SystemUtil.shutdown( 0, 
+							"UI close requested, in SWTBasic.close()" );
+				} catch ( final InterruptedException e ) {
+					e.printStackTrace();
+				}
+			}
+		}.start();
 	}
 
 	public final static SelectionAdapter selClose = new SelectionAdapter() {

@@ -35,7 +35,7 @@ public class ReportNestLowTemperature extends EventMonitorAction {
 	@Override
 	public void process( final Event event ) {
 		if ( null==event ) return;
-		if ( !EventType.TIME.equals( event.getTriggerType() ) ) return;
+		if ( !EventType.TIME.equals( event.getEventType() ) ) return;
 		
 		if ( TimeEvent.NEST_LOW_TEMPERATURE.name().equals( event.getSubject() ) ) {
 

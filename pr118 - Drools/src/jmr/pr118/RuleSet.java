@@ -23,6 +23,14 @@ public class RuleSet {
 		return Collections.unmodifiableList( listResources );
 	}
 	
+	public List<String> getResourcesAsText() {
+		final List<String> list = new LinkedList<>();
+		for ( final Resource resource : listResources ) {
+			list.add( resource.getSourcePath() );
+		}
+		return list;
+	}
+	
 	
 	public void addResource( final String strProjectResource ) {
 		if ( null==strProjectResource ) return;
@@ -30,6 +38,12 @@ public class RuleSet {
 		
 		final InputStream is = cl.getResourceAsStream( strProjectResource );
 
+		if ( null==is ) {
+			System.err.println( 
+					"Resource appears to be invalid: " + strProjectResource );
+			return;
+		}
+		
         final Resource resource = ResourceFactory.newInputStreamResource( is )
 					        		.setResourceType( ResourceType.DRL )
 					        		.setSourcePath( strProjectResource );
@@ -41,6 +55,12 @@ public class RuleSet {
 		if ( null==strProjectPath ) return;
 		
 		final InputStream is = cl.getResourceAsStream( strProjectPath );
+		
+		if ( null==is ) {
+			System.err.println( 
+					"Resource appears to be invalid: " + strProjectPath );
+			return;
+		}
 		
 	    final InputStreamReader isr = new InputStreamReader( is );
 		final BufferedReader br = new BufferedReader( isr );
@@ -54,7 +74,7 @@ public class RuleSet {
 		    	final String strUpper = strLine.trim().toUpperCase();
 		    	
 		    	if ( strUpper.endsWith( ".DRL" ) ) {
-			    	this.addResource( strLine );
+			    	this.addResource( strProjectPath + "/" + strLine );
 		    	}
 	        }
 		} catch ( final IOException e ) {
