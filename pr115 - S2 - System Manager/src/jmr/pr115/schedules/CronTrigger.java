@@ -26,7 +26,7 @@ public enum CronTrigger {
 //	LOW_BATT_CHECK_TEST( 	"0/30 *   *            *  *  ?        ", new TeslaJob() ),
 //	LOW_HUMID_CHECK_TEST( 	"0/30 *   *            *  *  ?        ", new NestJob( true ) ),
 	HUMID_AND_TEMP_CHECK( 	" 0  0    *            *  *  ?        ", new NestJob( true ) ),
-	TEST_SCHEDULE( 			"0/10 *   *            *  *  ?        ", RunTest.class ),
+//	TEST_SCHEDULE( 			"0/10 *   *            *  *  ?        ", RunTest.class ),
 	//								  ^--? not local time? 
 	;
 

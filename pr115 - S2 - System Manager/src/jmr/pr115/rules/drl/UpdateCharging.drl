@@ -1,0 +1,22 @@
+package pr115.rules.drl
+
+import jmr.s2db.tables.Event;
+import jmr.s2db.event.*;
+import jmr.pr115.schedules.run.*;
+import jmr.util.hardware.*;
+import jmr.util.*;
+
+dialect "mvel"
+
+rule "GaragePedDoor-RequestChargeStatus"
+	when
+		e : Event( // garage ped door open event
+				getEventType() == EventType.INPUT, 
+				getSubject().equals( HardwareInput.GARAGE_PED_DOOR_CLOSED_STOP.name() ),
+				getValue().equals( "false" ) 
+			)
+		eval( TimeUtil.isWeekday() )
+		eval( TimeUtil.isHourOfDay( 16,17,18,19,20,21 ) )
+	then
+		System.out.println( "Garage pedestrian door opened." );
+end

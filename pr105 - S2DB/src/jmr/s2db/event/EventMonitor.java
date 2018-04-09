@@ -17,7 +17,7 @@ import jmr.s2db.tables.Event;
  */
 public class EventMonitor {
 	
-	public final static long MONITOR_INTERVAL = TimeUnit.SECONDS.toMillis( 10 );
+	public final static long MONITOR_INTERVAL = TimeUnit.SECONDS.toMillis( 1 );
 
 	
 	private final static Set<Long> setPostedEventSeqs = new HashSet<>();
@@ -52,8 +52,6 @@ public class EventMonitor {
 	public void initializeEventMonitorThread() {
 		if ( null!=threadUpdater ) return;
 		
-		System.out.println( "Event Monitor thread started." );
-		
 		threadUpdater = new Thread( "Event Monitor" ) {
 			@Override
 			public void run() {
@@ -76,6 +74,9 @@ public class EventMonitor {
 				}
 			}
 		};
+		threadUpdater.start();
+		
+		System.out.println( "Event Monitor thread started." );
 	}
 
 
@@ -111,6 +112,8 @@ public class EventMonitor {
 	
 	public static void postNewEvent( final Event event ) {
 		if ( null==event ) return;
+		
+//		System.out.println( "--- postNewEvent(), event " + event.getEventSeq() );
 		
 		final long seq = event.getEventSeq();
 		synchronized ( setPostedEventSeqs ) {

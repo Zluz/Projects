@@ -32,9 +32,6 @@ public class RunRemoteJob {
 		final Map<String,String> map = job.getJobDetails();
 		if ( null==map ) return false;
 
-		System.out.println( "        RRJ.strIP = " + this.strIP );
-		System.out.println( "        map.get(\"remote\") = " + map.get( "remote" ) );
-		
 		final boolean bMatchIP = this.strIP.equals( map.get( "remote" ) );
 		if ( bMatchIP ) return true;
 
