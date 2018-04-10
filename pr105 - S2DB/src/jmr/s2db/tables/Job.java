@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -193,6 +194,16 @@ public class Job extends TableBase {
 			}
 		}
 		return Job.add( null, type, strOptions.toString() );
+	}
+	
+	
+	public static Job add(	final JobType type,
+							final String[] options ) {
+		final Map<String,String> map = new HashMap<>();
+		for ( int i=1; i<options.length; i=i+2 ) {
+			map.put( options[i-1], options[i-0] );
+		}
+		return Job.add( type, map );
 	}
 	
 	
@@ -479,8 +490,6 @@ public class Job extends TableBase {
 	}
 	
 	
-	
-	
 	public boolean refresh() {
 		final Job jobNew = Job.get( this.getJobSeq() );
 		if ( null!=jobNew ) {
@@ -496,6 +505,8 @@ public class Job extends TableBase {
 		}
 		return true;
 	}
+	
+	
 
 	
 }

@@ -1,4 +1,4 @@
-package pr115.rules.drl
+package pr115.rules.drl;
 
 import jmr.s2db.tables.Event;
 import jmr.s2db.event.*;

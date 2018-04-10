@@ -13,9 +13,7 @@ public class ProcessEvent extends EventMonitorAction {
 
 	@Override
 	public void process( final Event event ) {
-		System.out.println( "--> ProcessEvent.process(), event: " + event );
 		RulesProcessing.get().process( event );
-		System.out.println( "<-- ProcessEvent.process()" );
 	}
 
 	@Override

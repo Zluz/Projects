@@ -131,6 +131,7 @@ public class NestIngestManager {
 			}
 
 			System.out.println();
+			// Nest seems ok with a 30 minute interval
 			Thread.sleep( TimeUnit.MINUTES.toMillis( 30 ) );
 		}
 	}

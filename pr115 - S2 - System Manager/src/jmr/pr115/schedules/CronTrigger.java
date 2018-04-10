@@ -8,6 +8,7 @@ import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 
 import jmr.pr115.schedules.run.*;
+import java.util.concurrent.TimeUnit;
 
 public enum CronTrigger {
 
@@ -18,6 +19,9 @@ public enum CronTrigger {
 	//											   v---------4:day-of-month
 	//												  v------5:month
 	//													 v---6:day-of-week
+//	HEARTBEAT_DAY(          " 0  0    0            *  *  ?        ", new Heartbeat( TimeUnit.DAYS ) ),
+	HEARTBEAT_HOUR(         " 0  0    *            *  *  ?        ", new Heartbeat( TimeUnit.HOURS ) ),
+	HEARTBEAT_MINUTE(       " 0  *    *            *  *  ?        ", new Heartbeat( TimeUnit.MINUTES ) ),
 //	GENERAL_HOURLY_CHECK( 	" 0  0    *            *  *  ?        ", RunTest.class ),
 //	LOW_BATT_CHECK_WEEKDAY( " 0  0/30 19,20,21,22  ?  *  MON-FRI  ", new TeslaJob() ),
 //	LOW_BATT_CHECK_WEEKEND( " 0  0    10/1          ?  *  SUN,SAT  ", new TeslaJob() ),

@@ -30,6 +30,20 @@ public abstract class TimeUtil {
 	}
 
 	
+	public static boolean isWeekday() {
+		return isDayOfWeek( 	DayOfWeek.MONDAY,
+								DayOfWeek.TUESDAY,
+								DayOfWeek.WEDNESDAY,
+								DayOfWeek.THURSDAY,
+								DayOfWeek.FRIDAY );
+	}
+	
+	public static boolean isWeekend() {
+		return isDayOfWeek( 	DayOfWeek.SUNDAY,
+								DayOfWeek.SATURDAY );
+	}
+	
+
 	public static boolean isHourOfDay( final Integer... hours ) {
 		if ( null==hours ) return false;
 		if ( 0==hours.length ) return false;
@@ -45,20 +59,22 @@ public abstract class TimeUtil {
 		return false;
 	}
 	
-	public static boolean isWeekday() {
-		return isDayOfWeek( 	DayOfWeek.MONDAY,
-								DayOfWeek.TUESDAY,
-								DayOfWeek.WEDNESDAY,
-								DayOfWeek.THURSDAY,
-								DayOfWeek.FRIDAY );
+	
+	public static boolean isMinuteInHour( final Integer... minutes ) {
+		if ( null==minutes ) return false;
+		if ( 0==minutes.length ) return false;
+		
+		final int now = LocalDateTime.now().getMinute();
+		
+		for ( final Integer minute : minutes ) {
+			if ( minute.equals( now ) ) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
-	public static boolean isWeekend() {
-		return isDayOfWeek( 	DayOfWeek.SUNDAY,
-								DayOfWeek.SATURDAY );
-	}
-	
-
 	
 	public static void main( final String[] args ) {
 //		final Set<DayOfWeek> set = new HashSet<>() { DayOfWeek.MONDAY };

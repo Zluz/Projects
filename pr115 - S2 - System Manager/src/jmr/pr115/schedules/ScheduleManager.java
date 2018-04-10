@@ -1,6 +1,5 @@
 package jmr.pr115.schedules;
 
-import java.lang.reflect.Method;
 import java.util.EnumMap;
 
 import org.quartz.JobDetail;
@@ -72,36 +71,32 @@ public class ScheduleManager {
 	
 	public void run( final CronTrigger cron ) {
 		if ( null==cron ) return;
-		
-		final JobWorker run = cron.getRunInstance();
-		
-		if ( null!=run ) {
-			
-			run.run();
-			
-		} else {
-			
-			final Class<? extends JobWorker> classRun = cron.getRunClass();
-			if ( null==classRun ) return;
-			
-			try {
 
-				final JobWorker instance = classRun.newInstance();
+		// step 1 of 2: try to assign worker
+		JobWorker worker = null;
+		
+		worker = cron.getRunInstance();
+		
+		if ( null==worker ) {
+			
+			final Class<? extends JobWorker> classWorker = cron.getRunClass();
+			if ( null!=classWorker ) {
 				
-				RulesProcessing.get().process( instance );
-
-				final Method method = classRun.getMethod( "run", new Class<?>[]{} );
-				if ( null==method ) return;
-				method.invoke( instance );
-				
-			} catch ( final Exception e ) {
-				e.printStackTrace();
+				try {
+					worker = classWorker.newInstance();
+				} catch ( final Exception e ) {
+					e.printStackTrace();
+				}
 			}
+		}
+		
+		// step 2 of 2: call run() and submit this item to rules processing
+		if ( null!=worker ) {
+			worker.run();
+			RulesProcessing.get().process( worker );
 		}
 	}
 		
-	
-	
 	
 	
 	

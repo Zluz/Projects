@@ -1,13 +1,17 @@
-package pr115.rules.drl
+//NOTE: do not add trailing semicolon (not required) 
+package pr115.rules.drl;
 
 import jmr.s2db.tables.Event;
-import jmr.s2db.event.EventType;
-import jmr.pr115.schedules.run.JobWorker;
-import jmr.pr115.schedules.run.RunTest;
+import jmr.s2db.event.*;
+import jmr.pr115.schedules.run.*;
+import jmr.util.hardware.*;
+import jmr.util.*;
 
+// Cannot seem to actually use java.util.Map 
+// (Map may already be declared and explicity referencing may not be working)
 
 rule "TestEvent"
-	dialect "mvel"
+	//dialect "mvel" //NOTE: do not specify dialect here
 	when
 		e : Event( getEventType() == EventType.TIME )
 	then

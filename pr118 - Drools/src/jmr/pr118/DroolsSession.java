@@ -96,20 +96,21 @@ public class DroolsSession {
 				.generateAndWritePomXML(releaseId)
 				.writeKModuleXML(kmoduleContent);
 		
-//		for ( int i = 0; i < resources.length; i++ ) {
-//			if (resources[i] != null) {
-//				kfs.write(resources[i]);
-//			}
-//		}
-		
 		for ( final Resource resource : resources ) {
 			if ( null!=resource ) {
 				kfs.write( resource );
 			}
 		}
-		
-		final KieBuilder kieBuilder = ks.newKieBuilder(kfs);
-		((InternalKieBuilder) kieBuilder).buildAll(classFilter);
+
+		final KieBuilder kieBuilder = ks.newKieBuilder( kfs );
+		try {
+			((InternalKieBuilder) kieBuilder).buildAll( classFilter );
+		} catch ( final Throwable e ) {
+			System.err.println( "WARNING: "
+					+ "Error encountered during buildAll()." );
+			System.err.println( "Configuration may be invalid." );
+			Runtime.getRuntime().exit( 100 );
+		}
 		
 		final InternalKieModule kieModule = 
 				(InternalKieModule) ks.getRepository().getKieModule(releaseId);
