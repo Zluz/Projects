@@ -19,6 +19,13 @@ echo "#JSON  {\"caption\":\"Activting browser\"}"
 WID=`xdotool search --name " Chromium"`
 if [[ "$WID" == "" ]]
 then
+	echo "Browser window not found .. retrying .."
+	sleep 2
+	WID=`xdotool search --name " Chromium"`
+fi
+
+if [[ "$WID" == "" ]]
+then
 	echo "#JSON  {\"caption\":\"Browser not found\",\"status\":\"error\",\"status\":\"done\"}"
 	exit 1
 fi
@@ -38,13 +45,15 @@ xdotool windowsize $WID 50% 70%
 xdotool windowmove $WID 900 40
 
 echo "#JSON  {\"caption\":\"Activating playback\"}"
-sleep 4
+echo "Sleeping for 6s.."
+sleep 6
 
 xdotool windowfocus $WID
 xdotool windowactivate $WID
 xdotool mousemove 972 474 click 1
 
-sleep 4
+echo "Sleeping for 8s.."
+sleep 8
 
 
 for i in 1 2 3 4 5
