@@ -30,6 +30,23 @@
       when: arrive home from work
           garage veh door opened
       then: nest to home
+  (check locked up for the night)
+      when: 
+          late, maybe 2300
+          any door (garage veh, or garage ped, etc) open
+      then:
+          send alert
+  (turn on park assist)
+      when:
+          garage veh door opened
+          NOT recent garage ped door opened
+      then:
+          power on park assist for 2? minutes
+   (turn on garage lights)
+      when:
+          (garage ped door opened) or (garage veh door opened)
+      then:
+          power on garage lights for 2? minutes
 
 [NEW HARDWARE/IO]
   garage door(s) status
