@@ -12,7 +12,24 @@
     install Classic Start Menu (4.3.0+)  www.classicshell.net
 
 [NEW RULES]
-  complete rule to check tesla on home arrival
+  (check-charge)
+      when: arrive home from work
+          weekday afternoon
+          garage ped door closed
+      then: check that tesla is charging
+          request tesla:charge-state ..
+          if tesla not home .. email alert?
+          if tesla not charging .. email alert
+  (nest-away)
+      when: leave for work
+          weekday morning
+          garage ped door opened recently
+          garage veh door closed
+      then: nest to away
+  (nest-home)
+      when: arrive home from work
+          garage veh door opened
+      then: nest to home
 
 [NEW HARDWARE/IO]
   garage door(s) status
