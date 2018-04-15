@@ -14,75 +14,44 @@ public class CronJob {
 	
 
 	final public JobDetail jobdetail;
+
+	public interface Listener {
+		void execute( final JobExecutionContext context );
+	}
+
 	
-	final public Runnable runnable;
-	
-//	public CronJob( final String strName ) {
-	public CronJob(	final CronTrigger trigger,
-					final Runnable runnable ) {
+	public CronJob(	final Listener listener ) {
 		
-//		final String strName = trigger.name();
 		final JobDataMap map = new JobDataMap();
-		map.put( CronTrigger.class.getName(), trigger );
 		map.put( CronJob.class.getName(), this );
-		
+		map.put( Listener.class.getName(), listener );
+
 		this.jobdetail = JobBuilder
-							.newJob( TestJob.class )
-//							.withIdentity( new JobKey( strName ) )
-//							.withIdentity( strName )
-							.usingJobData( "test_name", "test_value" )
-//							.usingJobData( "name", strName )
+							.newJob( JobExecutor.class )
 							.usingJobData( map )
 							.build();
-		
-		this.runnable = runnable;
 	}	
-		
 	
 
 	public JobDetail getJobDetail() {
 		return this.jobdetail;
 	}
-	
-	public Runnable getRunnable() {
-		return this.runnable;
-	}
-	
 
-	public static class TestJob implements Job {
+	public static class JobExecutor implements Job {
 		@Override
 		public void execute( JobExecutionContext context )
 				throws JobExecutionException {
-			
-//			System.out.println( "TestJob.execute() - " + new Date().toString() );
-			
+
 			final JobDetail jobdetail = context.getJobDetail();
 			final JobDataMap jdm = jobdetail.getJobDataMap();
 			
-//			final String strKeyName = jobdetail.getKey().getName();
-//			System.out.println( "\tstrKeyName = " + strKeyName );
-//			final String strValue = jdm.getString( "test_name" );
-//			System.out.println( "\tstrValue = " + strValue );
-//			final String strName = jdm.getString( "name" );
-//			System.out.println( "\tstrName = " + strName );
-
-//			final CronTrigger trigger = (CronTrigger)jdm.get( CronTrigger.class.getName() );
-//			final String strCronTrigger = trigger.name();
-//			System.out.println( "\tstrCronTrigger = " + strCronTrigger );
-
-			final CronJob job = (CronJob)jdm.get( CronJob.class.getName() );
-//			final String strCronJob = job.toString();
-//			System.out.println( "\tstrCronJob = " + strCronJob );
-			
-			final Runnable runnable = job.getRunnable();
-			if ( null!=runnable ) {
-				runnable.run();
+			final Object untyped = jdm.get( Listener.class.getName() );
+			if ( untyped instanceof Listener ) {
+				final Listener listener = (Listener)untyped;
+				listener.execute( context );
 			}
-			
-//			context.getJobInstance().
 		}
 	}
-	
 	
 	
 	public static void main( final String[] args ) throws SchedulerException {

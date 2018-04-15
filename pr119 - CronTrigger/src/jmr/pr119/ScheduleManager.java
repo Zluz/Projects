@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
@@ -46,15 +47,17 @@ public class ScheduleManager {
 			return;
 		}
 
+		
 		for ( final CronTrigger cron : CronTrigger.values() ) {
 
-			final Runnable runnable = new Runnable() {
-				public void run() {
-					ScheduleManager.this.run( cron );
-				};
+			final CronJob.Listener listener = new CronJob.Listener() {
+				@Override
+				public void execute( final JobExecutionContext context ) {
+					run( cron );
+				}
 			};
 			
-			final CronJob job = new CronJob( cron, runnable );
+			final CronJob job = new CronJob( listener );
 			final JobDetail jobdetail = job.getJobDetail();
 			
 

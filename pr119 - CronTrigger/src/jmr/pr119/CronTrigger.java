@@ -18,7 +18,7 @@ public enum CronTrigger {
 	//				  .	 .	.  v---------4:day-of-month
 	//				  .	 .	.  .  v------5:month
 	//				  .	 .	.  .  .  v---6:day-of-week
-//	DAY(      		" 0  0  0  *  *  ?  ", new Heartbeat( TimeUnit.DAYS ) ),
+	DAY(      		" 0  0  0  *  *  ?  ", new Heartbeat( TimeUnit.DAYS ) ),
 	HOUR(     		" 0  0  *  *  *  ?  ", new Heartbeat( TimeUnit.HOURS ) ),
 	MINUTE(			" 0  *  *  *  *  ?  ", new Heartbeat( TimeUnit.MINUTES ) ),
 	
@@ -45,17 +45,13 @@ public enum CronTrigger {
 	public final String strCronSchedule;
 	public final ScheduleBuilder<?> schedule;
 	public final Trigger trigger;
-	public final JobWorker runInstance;
-	public final Class<? extends JobWorker> runClass;
+	public final JobWorker job;
 	
 	
-//	@SuppressWarnings("unchecked")
 	CronTrigger(	final String strCronSchedule,
-					final Class<? extends JobWorker> classRun,
-					final JobWorker runInstance ) {
+					final JobWorker job ) {
 		this.strCronSchedule = strCronSchedule;
-		this.runClass = classRun;
-		this.runInstance = runInstance;
+		this.job = job;
 
 		final TimeZone tz = TimeZone.getTimeZone( "EST" );
 		
@@ -64,36 +60,14 @@ public enum CronTrigger {
 								.inTimeZone( tz );
 		
 		this.trigger = TriggerBuilder
-				.newTrigger()
-				.withSchedule( this.schedule )
-				.build();
+								.newTrigger()
+								.withSchedule( this.schedule )
+								.build();
 	}
 
-	
-	CronTrigger(	final String strCronSchedule,
-					final Class<? extends JobWorker> classRun ) {
-		this( strCronSchedule, classRun, null );
-	}
 
-	CronTrigger(	final String strCronSchedule,
-					final JobWorker runInstance ) {
-		this( strCronSchedule, null, runInstance );
-	}
-
-	public ScheduleBuilder<?> getSchedule() {
-		return this.schedule;
-	}
-	
 	public Trigger getTrigger() {
 		return this.trigger;
-	}
-	
-	public Class<? extends JobWorker> getRunClass() {
-		return this.runClass;
-	}
-	
-	public JobWorker getRunInstance() {
-		return this.runInstance;
 	}
 	
 }
