@@ -10,6 +10,11 @@
   
   (dev env)
     install Classic Start Menu (4.3.0+)  www.classicshell.net
+  (home network)
+    install nagios servers, npre clients
+      see:
+        https://nemslinux.com/download/nagios-for-raspberry-pi-3.php
+        https://leanpub.com/jenagios/read
 
 [NEW RULES]
   (check-charge)
