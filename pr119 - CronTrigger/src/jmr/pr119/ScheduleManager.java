@@ -20,7 +20,9 @@ public class ScheduleManager {
 	
 	private final List<Listener> listeners = new LinkedList<>();
 	
-	
+	//TODO consider possibly notifying of a JobWorker impl instead of
+	//     of CronTrigger, if CronTrigger has implications/dependencies.
+	//     JobWorker could also change to better represent the event.
 	public static interface Listener {
 		public void alarm( final CronTrigger trigger );
 	}
