@@ -56,11 +56,11 @@ public class RulesProcessing {
 	public boolean process( final Object item ) {
 		if ( null==session ) return false;
 
-		System.out.println( "--> RulesProcessing.process()" );
+//		System.out.println( "--> RulesProcessing.process()" );
 		
 		final int result = session.processItem( item );
 		
-		System.out.println( "<-- RulesProcessing.process(), result = " + result );
+//		System.out.println( "<-- RulesProcessing.process(), result = " + result );
 		return result > 0;
 	}
 	

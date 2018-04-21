@@ -15,7 +15,7 @@ public class SendRemoteRequest {
 	
 	public static void main( final String[] args ) {
 		
-		final String strRemoteIP = "192.168.1.11";
+		final String strRemoteIP = "192.168.1.5";
 //		final JobType jobRemoteCommand = JobType.REMOTE_SHUTDOWN;
 		final JobType jobRemoteCommand = JobType.REMOTE_GET_CALL_STACK;
 		

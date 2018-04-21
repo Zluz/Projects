@@ -23,33 +23,26 @@ import jmr.util.hardware.*;
 rule "Turn on WTOP"
 	when
 		h : Heartbeat( getTimeUnit() == TimeUnit.HOURS )
-		eval( TimeUtil.isHourOfDay( 4 ) )
+		eval( TimeUtil.isHourOfDay( 6 ) )
+		eval( TimeUtil.isMinuteInHour( 20, 25, 30 ) )
 	then
 	
 		System.out.println( "Selecting audio program: WTOP stream." );
 		
-		
-		//final jmr.s2db.tables.Job job = null; 
-
-		//final Job job = Job.add( JobType.REMOTE_EXECUTE, new String[] {
-		//final jmr.s2db.tables.Job job = jmr.s2db.tables.Job.add( 
-		//			JobType.REMOTE_EXECUTE, new String[] {
 		jmr.s2db.tables.Job.add( JobType.REMOTE_EXECUTE, new String[] {
 						"remote", "media",
 						"command", "/Local/scripts/play_wtop.sh",
 					} );
 					
-		//System.out.println( "Job " + job.getJobSeq() 
-		//				+ " created: " + job.toString() );
 		System.out.println( "Job created." ); 
 end
-
 
 /*
 rule "Turn on WTOP - TEST"
 	when
 		h : Heartbeat( getTimeUnit() == TimeUnit.MINUTES )
-		eval( TimeUtil.isMinuteInHour( 56 ) )
+		eval( TimeUtil.isHourOfDay( 7 ) )
+		eval( TimeUtil.isMinuteInHour( 39,40,41,42 ) )
 	then
 	
 		System.out.println( "[TEST] Selecting audio program: WTOP stream." );
@@ -58,11 +51,11 @@ rule "Turn on WTOP - TEST"
 						"remote", "media",
 						"command", "/Local/scripts/play_wtop.sh",
 					} );
-					
-
 		System.out.println( "Job created." ); 
 end
+*/
 
+/*
 rule "Minute Test"
 	when
 		h : Heartbeat( getTimeUnit() == TimeUnit.MINUTES )

@@ -56,25 +56,25 @@ public class CronJob {
 		public void execute( JobExecutionContext context )
 				throws JobExecutionException {
 			
-			System.out.println( "TestJob.execute() - " + new Date().toString() );
+//			System.out.println( "TestJob.execute() - " + new Date().toString() );
 			
 			final JobDetail jobdetail = context.getJobDetail();
 			final JobDataMap jdm = jobdetail.getJobDataMap();
 			
-			final String strKeyName = jobdetail.getKey().getName();
-			System.out.println( "\tstrKeyName = " + strKeyName );
-			final String strValue = jdm.getString( "test_name" );
-			System.out.println( "\tstrValue = " + strValue );
+//			final String strKeyName = jobdetail.getKey().getName();
+//			System.out.println( "\tstrKeyName = " + strKeyName );
+//			final String strValue = jdm.getString( "test_name" );
+//			System.out.println( "\tstrValue = " + strValue );
 //			final String strName = jdm.getString( "name" );
 //			System.out.println( "\tstrName = " + strName );
 
-			final CronTrigger trigger = (CronTrigger)jdm.get( CronTrigger.class.getName() );
-			final String strCronTrigger = trigger.name();
-			System.out.println( "\tstrCronTrigger = " + strCronTrigger );
+//			final CronTrigger trigger = (CronTrigger)jdm.get( CronTrigger.class.getName() );
+//			final String strCronTrigger = trigger.name();
+//			System.out.println( "\tstrCronTrigger = " + strCronTrigger );
 
 			final CronJob job = (CronJob)jdm.get( CronJob.class.getName() );
-			final String strCronJob = job.toString();
-			System.out.println( "\tstrCronJob = " + strCronJob );
+//			final String strCronJob = job.toString();
+//			System.out.println( "\tstrCronJob = " + strCronJob );
 			
 			final Runnable runnable = job.getRunnable();
 			if ( null!=runnable ) {

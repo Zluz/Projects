@@ -184,11 +184,21 @@ public class TeslaIngestManager {
 						
 						executeJobs();
 					}
-				} catch ( final InterruptedException e ) {
+				} catch ( final Exception e ) {
 					// just quit
+					e.printStackTrace();
+					System.err.println( 
+							"Exception in 'Monitor Jobs' thread. Quitting." );
+					Runtime.getRuntime().exit( 100 );
 				}
 			}
 		};
+		try {
+			Thread.sleep( 1000 );
+		} catch ( final InterruptedException e ) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		threadMonitorJobs.start();
 	}
 
@@ -268,6 +278,12 @@ public class TeslaIngestManager {
 	
 	public void scanAll() {
 
+		if ( null==tvi ) {
+			System.out.println( "Initializing Tesla login.." );
+			final TeslaLogin login = new S2TeslaLogin( );
+			tvi = new TeslaVehicleInterface( login );
+		}
+		
 		System.out.println( "------ ----------------------------------------------------------------" );
 		System.out.println( "Now: " + new Date().toString() );
 		System.out.println( "Token: " + tvi.getLoginToken() );
@@ -338,7 +354,7 @@ public class TeslaIngestManager {
 		
 		while ( true ) {
 			
-			tim.scanAll();
+//			tim.scanAll();
 
 //			Thread.sleep( 10 * 60 * 1000 );
 			Thread.sleep( TimeUnit.HOURS.toMillis( 2 ) );

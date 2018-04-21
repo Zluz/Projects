@@ -28,5 +28,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/pr113 - Nest Devices Interface"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr118 - Drools"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Drools 7.6.0.Final"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr107 - S2 - Imports"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

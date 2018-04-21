@@ -29,7 +29,7 @@ public class JsonIngest {
 	final private Path path = new Path();
 	final private Page page = new Page();
 	
-	
+	public final static boolean ECHO = false;
 	
 	
 	
@@ -56,8 +56,10 @@ public class JsonIngest {
 
 			SummaryRegistry.get().summarize( strNodePath, map );
 
-			System.out.println( "Node: " + strNodePath );
-			System.out.println( Reporting.print( map ) );
+			if ( ECHO ) {
+				System.out.println( "Node: " + strNodePath );
+				System.out.println( Reporting.print( map ) );
+			}
 
 			final Long seqPath = path.get( strNodePath );
 			if ( null!=seqPath ) {

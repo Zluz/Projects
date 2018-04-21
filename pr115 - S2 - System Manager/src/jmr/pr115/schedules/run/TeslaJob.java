@@ -144,15 +144,15 @@ public class TeslaJob extends JobWorker {
 //		return true;
 //	}
 	
-	@Override
-	public boolean run() {
-		
-		final long lNow = System.currentTimeMillis();
-		System.out.println( "RunTesla.run()");
-		
+	
+	public JsonObject request() {
+
 		final JsonObject joCombined = new JsonObject();
 
 		try {
+			
+			System.out.println( "Calling Tesla REST.." );
+			
 			for ( final DataRequest request : set ) {
 				System.out.println( "Requesting from Tesla: " + request );
 				final String strResponse = this.getTVI().request( request );
@@ -166,15 +166,35 @@ public class TeslaJob extends JobWorker {
 				}
 			}
 			
-			System.out.println( "Processing combined Tesla response "
-					+ "(" + joCombined.size() + " entries)" );
+			System.out.println( "Combined Tesla response: "
+					+ joCombined.size() + " entries" );
+
+			return joCombined;
+			
+		} catch ( final Exception e ) {
+			e.printStackTrace();
+			//TODO report error in an Event
+			return null;
+		}
+	}
+	
+	
+	@Override
+	public boolean run() {
+		
+		final long lNow = System.currentTimeMillis();
+		
+		final JsonObject joCombined = request();
+
+		if ( null!=joCombined ) {
+			
 			final boolean bResult = process( lNow, joCombined );
 			
 			ReportTeslaNotCharging.report( joCombined.toString() );
 			
 			return bResult;
-		} catch ( final Exception e ) {
-			e.printStackTrace();
+			
+		} else {
 			//TODO report error in an Event
 			return false;
 		}

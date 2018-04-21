@@ -73,7 +73,7 @@ public class WebImport {
 
 		saver.activate( now );
 		
-		System.out.println( "Result: seq = " + seq );
+//		System.out.println( "Result: seq = " + seq );
 		return seq;
 	}
 						
@@ -108,7 +108,7 @@ public class WebImport {
 		final WebImport wi = new WebImport( "Test_Import", strURL );
 		final Long seq = wi.save();
 		
-		System.out.println( "Result: seq = " + seq );
+//		System.out.println( "Result: seq = " + seq );
 	}
 
 

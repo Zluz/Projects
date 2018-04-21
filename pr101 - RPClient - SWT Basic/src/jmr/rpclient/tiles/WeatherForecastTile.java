@@ -32,7 +32,8 @@ public class WeatherForecastTile extends TileBase {
 	
 	
 	private void updatePages() {
-		synchronized ( pages ) { 
+		final PageData[] newpages = new PageData[ NUMBER_OF_DAYS + 1 ];
+//		synchronized ( pages ) { 
 
 			for ( int iDay = 0; iDay<NUMBER_OF_DAYS; iDay++ ) {
 				
@@ -42,11 +43,8 @@ public class WeatherForecastTile extends TileBase {
 				final Map<String, String> map = 
 							Client.get().loadPage( strPath );
 				
-				if ( null==pages[ iDay ] ) {
-					pages[ iDay ] = new PageData();
-				}
-				pages[ iDay ].clear();
-				pages[ iDay ].putAll( map );
+				newpages[ iDay ] = new PageData();
+				newpages[ iDay ].putAll( map );
 				
 				strWeatherImport = map.get( Page.ATTR_LAST_MODIFIED );
 			}
@@ -56,12 +54,19 @@ public class WeatherForecastTile extends TileBase {
 			final Map<String, String> map = 
 						Client.get().loadPage( strPath );
 			
-			if ( null==pages[ NUMBER_OF_DAYS ] ) {
-				pages[ NUMBER_OF_DAYS ] = new PageData();
+//			if ( null==newpages[ NUMBER_OF_DAYS ] ) {
+				newpages[ NUMBER_OF_DAYS ] = new PageData();
+//			}
+//			newpages[ NUMBER_OF_DAYS ].clear();
+			newpages[ NUMBER_OF_DAYS ].putAll( map );
+//		}
+
+		synchronized ( pages ) {
+			for ( int iDay = 0; iDay<NUMBER_OF_DAYS; iDay++ ) {
+				pages[ iDay ] = newpages[ iDay ];
 			}
-			pages[ NUMBER_OF_DAYS ].clear();
-			pages[ NUMBER_OF_DAYS ].putAll( map );
 		}
+
 	}
 	
 	
@@ -179,7 +184,7 @@ public class WeatherForecastTile extends TileBase {
 				}
 			}
 			
-			if ( null!=strWeatherImport ) {
+			if ( null!=strWeatherImport && null!=pages[ iNumberOfDays ] ) {
 				gc.setFont( Theme.get().getFont( 6 ) );
 				
 				final PageData pagedata = pages[ iNumberOfDays ];

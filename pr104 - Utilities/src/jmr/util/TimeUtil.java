@@ -3,6 +3,7 @@ package jmr.util;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 
 
 /**
@@ -48,14 +49,21 @@ public abstract class TimeUtil {
 		if ( null==hours ) return false;
 		if ( 0==hours.length ) return false;
 		
+//		System.out.print( "isHourOfDay(), "
+//						+ "hours = " + Arrays.deepToString( hours ) + ", "
+//						+ "now() = " + LocalDateTime.now().toString() + ", "
+//						+ "result = " );
+		
 		final int now = LocalDateTime.now().getHour();
 		
 		for ( final Integer hour : hours ) {
 			if ( hour.equals( now ) ) {
+//				System.out.println( "TRUE" );
 				return true;
 			}
 		}
 		
+//		System.out.println( "FALSE" );
 		return false;
 	}
 	

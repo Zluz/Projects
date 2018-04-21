@@ -12,7 +12,7 @@ public class Heartbeat extends JobWorker {
 	
 	@Override
 	public boolean run() {
-		System.out.println( "RunHeartbeat.run() - TimeUnit: " + unit.name() );
+//		System.out.println( "RunHeartbeat.run() - TimeUnit: " + unit.name() );
 		return false;
 	}
 	

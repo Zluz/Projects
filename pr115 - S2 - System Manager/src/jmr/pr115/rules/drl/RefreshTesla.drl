@@ -1,0 +1,19 @@
+package pr115.rules.drl;
+
+import jmr.util.TimeUtil;
+import jmr.pr115.rules.drl.Simple;
+import jmr.pr115.schedules.run.Heartbeat;
+
+
+dialect "mvel"
+
+
+rule "Refresh Tesla"
+	when
+		h : Heartbeat( getTimeUnit() == TimeUnit.HOURS )
+		eval( TimeUtil.isHourOfDay( 2,4,6,8,10,12,14,16,18,20,22 ) )
+	then
+		System.out.println( "Refreshing Tesla import.." );
+
+		Simple.doCheckTeslaState();
+end

@@ -18,6 +18,7 @@ import jmr.util.SystemUtil;
 
 public class NestIngestManager {
 
+	final static boolean ECHO = false;
 	
 	public void printValues( final FullStatus status ) {
 
@@ -63,10 +64,10 @@ public class NestIngestManager {
 
 		final Date now = new Date();
 		
-		System.out.println( "Requesting Nest (thermostat) status.." );
+		if ( ECHO ) System.out.println( "Requesting Nest (thermostat) status.." );
 		final FullStatus status = session.getStatus();
 		
-		System.out.println( "Saving page.." );
+		if ( ECHO ) System.out.println( "Saving page.." );
 		{
 			final Path path = new Path();
 			final Page page = new Page();
@@ -77,9 +78,9 @@ public class NestIngestManager {
 				final Long seqPage = page.create( seqPath );
 				page.addMap( seqPage, status.getMap(), false );
 				page.setState( seqPage, now, 'A' );
-				System.out.println( "Page saved, seq=" + seqPage );
+				if ( ECHO ) System.out.println( "Page saved, seq=" + seqPage );
 			} else {
-				System.err.println( "Failed to get a Path seq." );
+				if ( ECHO ) System.err.println( "Failed to get a Path seq." );
 			}
 		}
 		

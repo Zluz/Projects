@@ -12,6 +12,9 @@ import org.quartz.SchedulerFactory;
 import org.quartz.Trigger;
 import org.quartz.impl.StdSchedulerFactory;
 
+import jmr.pr119.quartz.CronJob;
+import jmr.pr119.quartz.CronTrigger;
+
 
 public class ScheduleManager {
 

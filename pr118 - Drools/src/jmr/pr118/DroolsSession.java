@@ -12,6 +12,7 @@ import org.kie.api.builder.ReleaseId;
 import org.kie.api.io.Resource;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
+import org.kie.api.runtime.rule.FactHandle;
 import org.kie.internal.builder.InternalKieBuilder;
 
 public class DroolsSession {
@@ -54,7 +55,7 @@ public class DroolsSession {
 	}
 	
 	
-	public int processItems( final List<Object> items ) {
+	public synchronized int processItems( final List<Object> items ) {
 		if ( null==items ) return -1;
 		if ( items.isEmpty() ) return 0;
 		
@@ -67,12 +68,15 @@ public class DroolsSession {
 	}
 	
 
-	public int processItem( final Object item ) {
+	public synchronized int processItem( final Object item ) {
 		if ( null==item ) return -1;
 		
-		session.insert( item );
+		final FactHandle handle = session.insert( item );
 		
 		final int iFired = session.fireAllRules();
+		
+		session.delete( handle );
+		
 		return iFired;
 	}
 	
