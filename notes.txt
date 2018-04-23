@@ -15,7 +15,13 @@
       see:
         https://nemslinux.com/download/nagios-for-raspberry-pi-3.php
         https://leanpub.com/jenagios/read
-
+        
+[NEW EVENT-OBJECTS]
+  Cron (time: heartbeat, custom?)
+  Input (hardware/user?)
+  Job request
+  Command input ? (or combine with Input above?)
+  
 [NEW RULES]
   (check-charge)
       when: arrive home from work
