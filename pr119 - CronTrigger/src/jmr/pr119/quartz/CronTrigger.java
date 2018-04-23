@@ -1,6 +1,7 @@
 package jmr.pr119.quartz;
 
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 import org.quartz.CronScheduleBuilder;
 import org.quartz.ScheduleBuilder;
@@ -9,8 +10,7 @@ import org.quartz.TriggerBuilder;
 
 import jmr.pr119.Heartbeat;
 import jmr.pr119.JobWorker;
-
-import java.util.concurrent.TimeUnit;
+import jmr.pr119.TimeEvent;
 
 public enum CronTrigger {
 
@@ -21,9 +21,9 @@ public enum CronTrigger {
 	//				  .	 .	.  v---------4:day-of-month
 	//				  .	 .	.  .  v------5:month
 	//				  .	 .	.  .  .  v---6:day-of-week
-	DAY(      		" 0  0  0  *  *  ?  ", new Heartbeat( TimeUnit.DAYS ) ),
-	HOUR(     		" 0  0  *  *  *  ?  ", new Heartbeat( TimeUnit.HOURS ) ),
-	MINUTE(			" 0  *  *  *  *  ?  ", new Heartbeat( TimeUnit.MINUTES ) ),
+	Q_DAY(      		" 0  0  0  *  *  ?  ", new Heartbeat( TimeUnit.DAYS ), TimeEvent.DAY ),
+	Q_HOUR(     		" 0  0  *  *  *  ?  ", new Heartbeat( TimeUnit.HOURS ), TimeEvent.HOUR ),
+	Q_MINUTE(			" 0  *  *  *  *  ?  ", new Heartbeat( TimeUnit.MINUTES ), TimeEvent.MINUTE ),
 	
 	//						  v-----------1:seconds
 	//							 v--------2:minutes
@@ -49,12 +49,15 @@ public enum CronTrigger {
 	public final ScheduleBuilder<?> schedule;
 	public final Trigger trigger;
 	public final JobWorker job;
+	public final TimeEvent event;
 	
 	
 	CronTrigger(	final String strCronSchedule,
-					final JobWorker job ) {
+					final JobWorker job,
+					TimeEvent event ) {
 		this.strCronSchedule = strCronSchedule;
 		this.job = job;
+		this.event = event;
 
 		final TimeZone tz = TimeZone.getTimeZone( "EST" );
 		
@@ -71,6 +74,10 @@ public enum CronTrigger {
 
 	public Trigger getTrigger() {
 		return this.trigger;
+	}
+	
+	public TimeEvent getEvent() {
+		return this.event;
 	}
 	
 }

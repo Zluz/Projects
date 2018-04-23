@@ -27,7 +27,7 @@ public class ScheduleManager {
 	//     of CronTrigger, if CronTrigger has implications/dependencies.
 	//     JobWorker could also change to better represent the event.
 	public static interface Listener {
-		public void alarm( final CronTrigger trigger );
+		public void alarm( final TimeEvent event );
 	}
 	
 	
@@ -83,9 +83,11 @@ public class ScheduleManager {
 	public void run( final CronTrigger cron ) {
 		if ( null==cron ) return;
 		
+		final TimeEvent event = cron.getEvent();
+		
 		for ( final Listener listener : listeners ) {
 			if ( null!=listener ) {
-				listener.alarm( cron );
+				listener.alarm( event );
 			}
 		}
 	}
@@ -98,9 +100,9 @@ public class ScheduleManager {
 		final ScheduleManager sm = new ScheduleManager();
 		final Listener listener = new Listener() {
 			@Override
-			public void alarm( final CronTrigger trigger ) {
+			public void alarm( final TimeEvent event ) {
 				System.out.println( "[" + LocalDateTime.now().toString() + "] "
-								+ "Trigger: " + trigger.name() );
+								+ "TimeEvent: " + event.name() );
 			}
 		};
 		sm.addListener( listener );

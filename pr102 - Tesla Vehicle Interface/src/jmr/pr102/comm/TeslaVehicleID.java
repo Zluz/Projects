@@ -3,6 +3,7 @@ package jmr.pr102.comm;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -58,6 +59,12 @@ public class TeslaVehicleID {
 
 		} catch ( final Exception e ) {
 			// TODO Auto-generated catch block
+			System.err.println( "Exception while trying to load vehicle data." );
+			for ( final Entry<String, String> entry : 
+									get.getProperties().entrySet() ) {
+				System.err.println( "\t" 
+							+ entry.getKey() + " = " + entry.getValue() );
+			}
 			e.printStackTrace();
 		}
 	}

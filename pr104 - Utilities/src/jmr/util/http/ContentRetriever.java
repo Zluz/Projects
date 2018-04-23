@@ -8,6 +8,7 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,6 +32,10 @@ public class ContentRetriever {
 		mapProperties.put( strName, strValue );
 	}
 	
+	
+	public Map<String,String> getProperties() {
+		return Collections.unmodifiableMap( mapProperties );
+	}
 	
 	
 	/*

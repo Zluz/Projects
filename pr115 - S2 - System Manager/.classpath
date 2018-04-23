@@ -29,5 +29,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/pr118 - Drools"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Drools 7.6.0.Final"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr107 - S2 - Imports"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr119 - CronTrigger"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
