@@ -82,3 +82,7 @@
   JsonObject jo = new JsonObject();
   jo.addProperty( "name", "value" );
   return jo.toString();
+
+[Development Resources]
+https://codenvy.io/dashboard/#/ide/zluz/Zluz
+https://codeanywhere.com/editor/#
