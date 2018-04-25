@@ -74,9 +74,23 @@ do
 		echo "Web audio detected:"
 		echo "    $LSOF_TEST"
 		xdotool windowfocus $WID
-		xdotool mousemove 972 500
-		echo "#JSON  {\"caption\":\"Audio detected\",\"status\":\"done\"}"
-		exit 0
+		echo "#JSON  {\"caption\":\"Audio detected..1\"}"
+		echo "Audio detected but Waiting again (5s) to double-check.."
+
+		sleep 5
+		LSOF_TEST=`lsof /dev/snd/* 2>/dev/null | grep chromium`
+		if [[ "$LSOF_TEST" == "" ]]
+		then 
+			echo "#JSON  {\"caption\":\"False hit, reset\",\"status\":\"warning\"}"
+			echo "Web audio no longer detected. Returning to wait loop.."
+		else
+			echo "Web audio detected (final check):"
+			echo "    $LSOF_TEST"
+			echo "#JSON  {\"caption\":\"Audio detected..2\",\"status\":\"done\"}"
+			xdotool windowfocus $WID
+			xdotool mousemove 972 500
+			exit 0
+		fi
 	fi
 done
 echo "#JSON  {\"caption\":\"Audio not detected\",\"status\":\"error\"}"
