@@ -126,7 +126,7 @@ public class AudioSelectionTile extends TileBase {
 				map.put( "remote", "media" );
 				map.put( "command", program.strScript );
 					
-				final Job job = Job.add( JobType.REMOTE_EXECUTE, map );
+				final Job job = Job.add( JobType.REMOTE_EXECUTE, null, map );
 				button.setJob( job );
 			};
 		};

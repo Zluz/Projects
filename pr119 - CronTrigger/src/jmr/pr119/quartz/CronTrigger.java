@@ -21,9 +21,9 @@ public enum CronTrigger {
 	//				  .	 .	.  v---------4:day-of-month
 	//				  .	 .	.  .  v------5:month
 	//				  .	 .	.  .  .  v---6:day-of-week
-	Q_DAY(      		" 0  0  0  *  *  ?  ", new Heartbeat( TimeUnit.DAYS ), TimeEvent.DAY ),
-	Q_HOUR(     		" 0  0  *  *  *  ?  ", new Heartbeat( TimeUnit.HOURS ), TimeEvent.HOUR ),
-	Q_MINUTE(			" 0  *  *  *  *  ?  ", new Heartbeat( TimeUnit.MINUTES ), TimeEvent.MINUTE ),
+	Q_DAY(      	" 0  0  0  *  *  ?  ", new Heartbeat( TimeUnit.DAYS ), TimeEvent.DAY ),
+	Q_HOUR(     	" 0  0  *  *  *  ?  ", new Heartbeat( TimeUnit.HOURS ), TimeEvent.HOUR ),
+	Q_MINUTE(		" 0  *  *  *  *  ?  ", new Heartbeat( TimeUnit.MINUTES ), TimeEvent.MINUTE ),
 	
 	//						  v-----------1:seconds
 	//							 v--------2:minutes

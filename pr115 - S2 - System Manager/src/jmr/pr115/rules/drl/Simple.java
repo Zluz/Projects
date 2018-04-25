@@ -1,12 +1,16 @@
 package jmr.pr115.rules.drl;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import com.google.gson.JsonObject;
 
-import jmr.pr115.schedules.run.TeslaJob;
 import jmr.s2.ingest.Import;
 import jmr.s2db.imprt.WebImport;
+import jmr.s2db.job.JobType;
+import jmr.s2db.tables.Job;
 import jmr.util.TimeUtil;
 
 public class Simple {
@@ -48,29 +52,62 @@ public class Simple {
 		}
 	}
 	
+	
+	public final static List<Job> JOBS = new LinkedList<>();
+	
+	
+	public static void queueJob( final Job job ) {
+		if ( null==job ) return;
+		
+		if ( null==job.getPartCount() ) {
+			workJobs( Collections.singletonList( job ) );
+		} else {
+			JOBS.add( job );
+		}
+	}
 
-	public static JsonObject doCheckTeslaState() {
+	
+	public static void workJobs( final List<Job> jobs ) {
+		
+	}
+	
+	
+	
+
+	public static JsonObject doCheckTeslaState( final Object obj ) {
 		System.out.println( "--- doCheckTeslaState(), "
 				+ "time is " + LocalDateTime.now().toString() );
-		try {
 		
-			final TeslaJob job = new TeslaJob();
-			final JsonObject jo = job.request();
-			
-			if ( null!=jo ) {
-				System.out.println( "Combined JsonObject "
-									+ "from Tesla (size): " + jo.size() );
-			} else {
-				System.err.println( "Combined JsonObject from Tesla is null" );
+		if ( obj instanceof Job ) {
+			final Job job = (Job)obj;
+			if ( ( JobType.TESLA_READ == job.getJobType() ) 
+					|| ( JobType.TESLA_WRITE == job.getJobType() ) ) {
+//				job.setState( JobState.WORKING );
+				queueJob( job );
 			}
-			return jo;
-
-		} catch ( final Throwable t ) {
-			System.err.println( 
-						"Error during doCheckTeslaState(): " + t.toString() );
-			t.printStackTrace();
-			return null;
 		}
+		return null;
+		
+		
+//		try {
+//		
+//			final TeslaJob job = new TeslaJob();
+//			final JsonObject jo = job.request();
+//			
+//			if ( null!=jo ) {
+//				System.out.println( "Combined JsonObject "
+//									+ "from Tesla (size): " + jo.size() );
+//			} else {
+//				System.err.println( "Combined JsonObject from Tesla is null" );
+//			}
+//			return jo;
+//
+//		} catch ( final Throwable t ) {
+//			System.err.println( 
+//						"Error during doCheckTeslaState(): " + t.toString() );
+//			t.printStackTrace();
+//			return null;
+//		}
 	}
 	
 }

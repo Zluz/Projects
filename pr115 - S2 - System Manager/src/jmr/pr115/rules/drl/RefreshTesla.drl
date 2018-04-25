@@ -4,16 +4,28 @@ import jmr.util.TimeUtil;
 import jmr.pr115.rules.drl.Simple;
 import jmr.pr115.schedules.run.Heartbeat;
 
+import jmr.s2db.tables.Job;
+import jmr.s2db.job.JobType;
 
 dialect "mvel"
 
 
-rule "Refresh Tesla"
+rule "Refresh Tesla (scheduled)"
 	when
 		h : Heartbeat( getTimeUnit() == TimeUnit.HOURS )
 		eval( TimeUtil.isHourOfDay( 2,4,6,8,10,12,14,16,18,20,22 ) )
 	then
-		System.out.println( "Refreshing Tesla import.." );
+		System.out.println( "Refreshing Tesla import (scheduled).." );
 
-		Simple.doCheckTeslaState();
+		Simple.doCheckTeslaState( null );
+end
+
+
+rule "Refresh Tesla (on demand)"
+	when
+		job : Job( getJobType() == JobType.TESLA_READ )
+	then
+		System.out.println( "Refreshing Tesla import (on demand).." );
+
+		Simple.doCheckTeslaState( job );
 end

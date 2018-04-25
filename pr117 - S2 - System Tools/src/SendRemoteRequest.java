@@ -41,7 +41,7 @@ public class SendRemoteRequest {
 			final Map<String,String> map = new HashMap<>();
 			map.put( "remote", strRemoteIP );
 			
-			final Job job = Job.add( jobRemoteCommand, map );
+			final Job job = Job.add( jobRemoteCommand, null, map );
 			
 			System.out.println( "Job created: " + job.getJobSeq() );
 			

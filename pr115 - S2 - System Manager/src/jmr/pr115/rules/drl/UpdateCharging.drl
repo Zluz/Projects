@@ -39,5 +39,5 @@ rule "GaragePedDoor-RequestChargeStatus"
 		
 		bCheckedHomeArrival = true;
 		
-		Simple.doCheckTeslaState();
+		Simple.doCheckTeslaState( null );
 end

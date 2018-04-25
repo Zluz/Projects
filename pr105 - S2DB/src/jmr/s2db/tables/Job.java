@@ -86,6 +86,10 @@ public class Job extends TableBase {
 	private String strRequest = null;
 	private Long lRequestTime = null;
 	private Long lCompleteTime = null;
+	
+	private Long lPartSeq = null;
+	private Integer iPartCount = null;
+	
 	private String strResult;
 	
 	private long lLastRefresh = 0;
@@ -172,17 +176,50 @@ public class Job extends TableBase {
 	}
 	
 	
+	public static class JobSet {
+		
+		public final long lSize;
+		public int lIndex;
+		public long lFirstSeq;
+		
+		public JobSet( final long lSize ) {
+			this.lSize = lSize;
+		}
+		
+		public synchronized int getNextIndex() {
+			lIndex++;
+			return lIndex;
+		}
+		
+		public long getFirstSeq() {
+			return this.lFirstSeq;
+		}
+		
+		public void setRelatedSeq( final long lSeq ) {
+			if ( 0==this.lFirstSeq ) {
+				this.lFirstSeq = lSeq;
+			}
+		}
+	}
+	
+	
 //	public static Job add( final String strRequest ) {
 //		return Job.add( null, strRequest );
 //	}
 	
 	public static Job add(	final JobType type,
+							final JobSet jobset,
 							final String strOptions ) {
-		return Job.add( null, type, strOptions );
+		return Job.add( null, type, jobset, strOptions );
 	}
 	
-
+//	public static Job add(	final JobType type,
+//							final String strOptions ) {
+//		return Job.add( null, type, null, strOptions );
+//	}
+	
 	public static Job add(	final JobType type,
+							final JobSet jobset,
 							final Map<String,String> map ) {
 		final StringBuilder strOptions = new StringBuilder();
 		if ( null!=map ) {
@@ -193,22 +230,24 @@ public class Job extends TableBase {
 				strOptions.append( strKey + "=" + strValue + "\\" );
 			}
 		}
-		return Job.add( null, type, strOptions.toString() );
+		return Job.add( null, type, jobset, strOptions.toString() );
 	}
 	
 	
 	public static Job add(	final JobType type,
+							final JobSet jobset,
 							final String[] options ) {
 		final Map<String,String> map = new HashMap<>();
 		for ( int i=1; i<options.length; i=i+2 ) {
 			map.put( options[i-1], options[i-0] );
 		}
-		return Job.add( type, map );
+		return Job.add( type, jobset, map );
 	}
 	
 	
 	public static Job add(	final Long seqDeviceTarget,
 							final JobType type,
+							final JobSet jobset,
 							final String strOptions ) {
 		final Long lSession = Session.getSessionSeq();
 		if ( null==lSession ) {
@@ -223,6 +262,14 @@ public class Job extends TableBase {
 		job.strRequest = type.name() + ":" + strOptions;
 		job.state = JobState.REQUEST;
 		job.seqDeviceTarget = seqDeviceTarget;
+		
+		if ( null!=jobset ) {
+			job.iPartCount = jobset.getNextIndex();
+			job.lPartSeq = jobset.getFirstSeq();
+		} else {
+			job.iPartCount = null;
+			job.lPartSeq = null;
+		}
 
 		final String strInsert;
 		
@@ -231,21 +278,29 @@ public class Job extends TableBase {
 		if ( null==seqDeviceTarget ) {
 			strInsert = 
 					"INSERT INTO job "
-					+ "( seq_session, state, request, request_time ) "
+					+ "( seq_session, state, request, "
+										+ "part_count, seq_part, "
+										+ "request_time ) "
 					+ "VALUES ( " 
 							+ job.seqSession.longValue() + ", "
 							+ "\"" + job.state.getChar() + "\", "
-							+ strFormatted + ", " 
+							+ strFormatted + ", "
+							+ DataFormatter.format( job.iPartCount ) + ", "
+							+ DataFormatter.format( job.lPartSeq ) + ", "
 							+ job.lRequestTime + " );";
 		} else {
 			strInsert = 
 					"INSERT INTO job "
-					+ "( seq_session, state, request, request_time, "
+					+ "( seq_session, state, request, "
+										+ "part_count, seq_part, "
+										+ "request_time, "
 					+ "			seq_device_target ) "
 					+ "VALUES ( " 
 							+ job.seqSession.longValue() + ", "
 							+ "\"" + job.state.getChar() + "\", "
 							+ strFormatted + ", " 
+							+ DataFormatter.format( job.iPartCount ) + ", "
+							+ DataFormatter.format( job.lPartSeq ) + ", "
 							+ job.lRequestTime + ","
 							+ job.seqDeviceTarget + " );";
 		}
@@ -259,6 +314,9 @@ public class Job extends TableBase {
 				if ( rs.next() ) {
 					final long lSeq = rs.getLong( 1 );
 					job.seqJob = lSeq;
+					if ( null!=jobset ) {
+						jobset.setRelatedSeq( lSeq );
+					}
 					return job;
 				}
 			}
@@ -316,6 +374,10 @@ public class Job extends TableBase {
 			this.strMAC = "<?,seqSession=" + this.seqSession + ">";
 		}
 		return this.strMAC;
+	}
+	
+	public Integer getPartCount() {
+		return this.iPartCount;
 	}
 	
 
@@ -502,6 +564,8 @@ public class Job extends TableBase {
 			this.lCompleteTime = jobNew.lCompleteTime;
 			this.lLastRefresh = jobNew.lLastRefresh;
 			this.strMAC = jobNew.strMAC;
+			this.iPartCount = jobNew.iPartCount;
+			this.lPartSeq = jobNew.lPartSeq;
 		}
 		return true;
 	}

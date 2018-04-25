@@ -398,9 +398,10 @@ public class TeslaTile extends TileBase {
 
 		if ( !this.bClimateControl ) {
 			bRefreshRequest = true;
-			Job.add( JobType.TESLA_READ, DataRequest.CHARGE_STATE.name() );
-			Job.add( JobType.TESLA_READ, DataRequest.VEHICLE_STATE.name() );
-			Job.add( JobType.TESLA_READ, DataRequest.CLIMATE_STATE.name() );
+			final Job.JobSet set = new Job.JobSet( 3 );
+			Job.add( JobType.TESLA_READ, set, DataRequest.CHARGE_STATE.name() );
+			Job.add( JobType.TESLA_READ, set, DataRequest.VEHICLE_STATE.name() );
+			Job.add( JobType.TESLA_READ, set, DataRequest.CLIMATE_STATE.name() );
 			return true;
 		} else {
 			return false;
@@ -417,23 +418,23 @@ public class TeslaTile extends TileBase {
 		switch ( button.getIndex() ) {
 			case BUTTON_CLIMATE_ON: {
 				System.out.println( "Climate ON" );
-				job = Job.add( JobType.TESLA_WRITE, Command.HVAC_START.name() );
+				job = Job.add( JobType.TESLA_WRITE, null, Command.HVAC_START.name() );
 				Thread.sleep( 1000 );
-				Job.add( JobType.TESLA_READ, DataRequest.CLIMATE_STATE.name() );
+				Job.add( JobType.TESLA_READ, null, DataRequest.CLIMATE_STATE.name() );
 				
 				break;
 			}
 			
 			case BUTTON_CLIMATE_OFF: {
 				System.out.println( "Climate OFF" );
-				job = Job.add( JobType.TESLA_WRITE, Command.HVAC_STOP.name() );
+				job = Job.add( JobType.TESLA_WRITE, null, Command.HVAC_STOP.name() );
 				Thread.sleep( 1000 );
-				Job.add( JobType.TESLA_READ, DataRequest.CLIMATE_STATE.name() );
+				Job.add( JobType.TESLA_READ, null, DataRequest.CLIMATE_STATE.name() );
 				break;
 			}
 			case BUTTON_FLASH_LIGHTS: {
 				System.out.println( "Flash lights" );
-				job = Job.add( JobType.TESLA_WRITE, Command.FLASH_LIGHTS.name() );
+				job = Job.add( JobType.TESLA_WRITE, null, Command.FLASH_LIGHTS.name() );
 				break;
 			}
 		}
