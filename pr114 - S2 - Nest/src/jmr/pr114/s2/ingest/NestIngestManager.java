@@ -114,8 +114,9 @@ public class NestIngestManager {
 			System.out.println( "Requesting Nest (thermostat) status.." );
 			final FullStatus status = session.getStatus();
 			
-			System.out.println( "Saving page.." );
-			{
+			if ( null!=status ) {
+				System.out.println( "Saving page.." );
+				
 				final Path path = new Path();
 				final Page page = new Page();
 

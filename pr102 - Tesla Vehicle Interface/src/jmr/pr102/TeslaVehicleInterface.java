@@ -130,7 +130,8 @@ public class TeslaVehicleInterface implements TeslaConstants {
 		}
 
 		// nope. no good.
-		throw new IllegalStateException( "Unable to retrieve content", cause );
+		throw new IllegalStateException( 
+				"Unable to retrieve content from URL " + strURL, cause );
 	}
 	
 	

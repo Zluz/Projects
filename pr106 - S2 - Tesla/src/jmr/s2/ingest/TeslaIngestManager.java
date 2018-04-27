@@ -102,6 +102,10 @@ public class TeslaIngestManager {
 			final Map<Command,Long> mapCommands = new HashMap<>();
 			
 			for ( final Job job : jobs ) {
+				
+				// much of this is duplicated in
+				// jmr.pr115.schedules.run.TeslaJob
+				
 				final long lSeq = job.getJobSeq();
 				final String strRequest = job.getRequest();
 				final JobType type = job.getJobType();
@@ -354,7 +358,7 @@ public class TeslaIngestManager {
 		
 		while ( true ) {
 			
-//			tim.scanAll();
+			tim.scanAll();
 
 //			Thread.sleep( 10 * 60 * 1000 );
 			Thread.sleep( TimeUnit.HOURS.toMillis( 2 ) );

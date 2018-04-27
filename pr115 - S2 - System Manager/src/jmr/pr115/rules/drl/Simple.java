@@ -7,10 +7,12 @@ import java.util.List;
 
 import com.google.gson.JsonObject;
 
+import jmr.pr115.schedules.run.TeslaJob;
 import jmr.s2.ingest.Import;
 import jmr.s2db.imprt.WebImport;
 import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
+import jmr.s2db.tables.Job.JobState;
 import jmr.util.TimeUtil;
 
 public class Simple {
@@ -56,19 +58,64 @@ public class Simple {
 	public final static List<Job> JOBS = new LinkedList<>();
 	
 	
-	public static void queueJob( final Job job ) {
+	public static synchronized void queueJob( final Job job ) {
 		if ( null==job ) return;
 		
-		if ( null==job.getPartCount() ) {
+		if ( null==job.getPartCount() || job.getPartCount()<2 ) {
 			workJobs( Collections.singletonList( job ) );
 		} else {
 			JOBS.add( job );
+			
+			final long lPartSeq = job.getPartSeq();
+			final int iPartCount = job.getPartCount();
+			final List<Job> list = new LinkedList<>();
+			for ( final Job element : JOBS ) {
+				if ( lPartSeq == element.getPartSeq().longValue() ) {
+					list.add( element );
+				}
+			}
+			if ( iPartCount == list.size() ) {
+				
+				for ( final Job element : list ) {
+					JOBS.remove( element );
+				}
+				
+				workJobs( list );
+			}
 		}
 	}
 
 	
 	public static void workJobs( final List<Job> jobs ) {
+		if ( null==jobs ) return;
+		if ( jobs.isEmpty() ) return;
 		
+		final JobType type = jobs.get( 0 ).getJobType();
+		
+		if ( ( JobType.TESLA_READ == type ) 
+				|| ( JobType.TESLA_WRITE == type ) ) {
+			
+			final TeslaJob tj = new TeslaJob( false );
+			for ( final Job job : jobs ) {
+				job.setState( JobState.WORKING );
+				tj.addJob( job );
+			}
+			
+			final JsonObject jo = tj.request();
+
+			if ( null!=jo ) {
+				System.out.println( "Combined JsonObject "
+									+ "from Tesla (size): " + jo.size() );
+			} else {
+				System.err.println( "Combined JsonObject from Tesla is null" );
+			}
+			
+			for ( final Job job : jobs ) {
+				job.setState( JobState.COMPLETE );
+			}
+
+//			return jo;
+		}
 	}
 	
 	
@@ -78,7 +125,34 @@ public class Simple {
 		System.out.println( "--- doCheckTeslaState(), "
 				+ "time is " + LocalDateTime.now().toString() );
 		
-		if ( obj instanceof Job ) {
+//		if ( 1==1 ) return null;
+		
+		if ( null==obj ) {
+
+			
+			try {
+			
+				final TeslaJob job = new TeslaJob();
+				final JsonObject jo = job.request();
+				
+				if ( null!=jo ) {
+					System.out.println( "Combined JsonObject "
+										+ "from Tesla (size): " + jo.size() );
+				} else {
+					System.err.println( "Combined JsonObject from Tesla is null" );
+				}
+				return jo;
+	
+			} catch ( final Throwable t ) {
+				System.err.println( 
+							"Error during doCheckTeslaState(): " + t.toString() );
+				t.printStackTrace();
+				return null;
+			}
+
+			
+			
+		} else if ( obj instanceof Job ) {
 			final Job job = (Job)obj;
 			if ( ( JobType.TESLA_READ == job.getJobType() ) 
 					|| ( JobType.TESLA_WRITE == job.getJobType() ) ) {
@@ -88,26 +162,6 @@ public class Simple {
 		}
 		return null;
 		
-		
-//		try {
-//		
-//			final TeslaJob job = new TeslaJob();
-//			final JsonObject jo = job.request();
-//			
-//			if ( null!=jo ) {
-//				System.out.println( "Combined JsonObject "
-//									+ "from Tesla (size): " + jo.size() );
-//			} else {
-//				System.err.println( "Combined JsonObject from Tesla is null" );
-//			}
-//			return jo;
-//
-//		} catch ( final Throwable t ) {
-//			System.err.println( 
-//						"Error during doCheckTeslaState(): " + t.toString() );
-//			t.printStackTrace();
-//			return null;
-//		}
 	}
 	
 }

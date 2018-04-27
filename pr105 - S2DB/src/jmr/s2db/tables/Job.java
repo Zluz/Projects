@@ -158,6 +158,18 @@ public class Job extends TableBase {
 					job.lCompleteTime = rs.getLong( "complete_time" );
 					job.seqSession = rs.getLong( "seq_session" );
 					job.seqJob = rs.getLong( "seq" );
+					
+					job.iPartCount = rs.getInt( "part_count" );
+					if ( 0==job.iPartCount ) {
+						job.iPartCount = null;
+						job.lPartSeq = null;
+					} else {
+						job.lPartSeq = rs.getLong( "seq_part" );
+						if ( 0==job.lPartSeq ) {
+							job.lPartSeq = job.seqJob;
+						}
+					}
+					
 					job.strResult = rs.getString( "result" );
 					job.lLastRefresh = lQueryTime;
 					
@@ -178,11 +190,11 @@ public class Job extends TableBase {
 	
 	public static class JobSet {
 		
-		public final long lSize;
+		public final int lSize;
 		public int lIndex;
-		public long lFirstSeq;
+		public Long lFirstSeq = null;
 		
-		public JobSet( final long lSize ) {
+		public JobSet( final int lSize ) {
 			this.lSize = lSize;
 		}
 		
@@ -191,12 +203,16 @@ public class Job extends TableBase {
 			return lIndex;
 		}
 		
-		public long getFirstSeq() {
+		public int getPartCount() {
+			return this.lSize;
+		}
+		
+		public Long getFirstSeq() {
 			return this.lFirstSeq;
 		}
 		
 		public void setRelatedSeq( final long lSeq ) {
-			if ( 0==this.lFirstSeq ) {
+			if ( null==this.lFirstSeq ) {
 				this.lFirstSeq = lSeq;
 			}
 		}
@@ -264,7 +280,8 @@ public class Job extends TableBase {
 		job.seqDeviceTarget = seqDeviceTarget;
 		
 		if ( null!=jobset ) {
-			job.iPartCount = jobset.getNextIndex();
+//			job.iPartCount = jobset.getNextIndex();
+			job.iPartCount = jobset.getPartCount();
 			job.lPartSeq = jobset.getFirstSeq();
 		} else {
 			job.iPartCount = null;
@@ -378,6 +395,10 @@ public class Job extends TableBase {
 	
 	public Integer getPartCount() {
 		return this.iPartCount;
+	}
+	
+	public Long getPartSeq() {
+		return this.lPartSeq;
 	}
 	
 

@@ -1,6 +1,8 @@
 package jmr.pr115.schedules.run;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -10,6 +12,7 @@ import com.google.gson.JsonParser;
 
 import jmr.S2Properties;
 import jmr.SettingKey;
+import jmr.pr102.Command;
 import jmr.pr102.DataRequest;
 import jmr.pr102.TeslaVehicleInterface;
 import jmr.pr102.comm.TeslaLogin;
@@ -17,6 +20,9 @@ import jmr.pr115.actions.ReportTeslaNotCharging;
 import jmr.s2.ingest.S2TeslaLogin;
 import jmr.s2db.event.EventType;
 import jmr.s2db.event.TimeEvent;
+import jmr.s2db.imprt.WebImport;
+import jmr.s2db.job.JobType;
+import jmr.s2db.tables.Job;
 
 public class TeslaJob extends JobWorker {
 	
@@ -26,7 +32,8 @@ public class TeslaJob extends JobWorker {
 	
 	private static TeslaVehicleInterface tvi = null;
 	
-	public final Set<DataRequest> set = new HashSet<>();
+	public final Set<DataRequest> setRequest = new HashSet<>();
+	public final Map<Command,String> mapCommand = new HashMap<>();
 	
 	private final boolean bCheckLowCharge;
 	
@@ -35,7 +42,7 @@ public class TeslaJob extends JobWorker {
 						DataRequest... requests ) {
 		this.bCheckLowCharge = bCheckLowCharge;
 		for ( final DataRequest request : requests ) {
-			set.add( request );
+			setRequest.add( request );
 		}
 		
 		new ReportTeslaNotCharging(); // instantiate to register action
@@ -43,6 +50,35 @@ public class TeslaJob extends JobWorker {
 	
 	public TeslaJob() {
 		this( true, DataRequest.VEHICLE_STATE, DataRequest.CHARGE_STATE );
+	}
+	
+	public void addJob( final Job job ) {
+		if ( null==job ) return;
+		
+		final String strRequest = job.getRequest();
+		final JobType type = job.getJobType();
+		final boolean bRead = JobType.TESLA_READ.equals( type );
+		final boolean bWrite = JobType.TESLA_WRITE.equals( type );
+
+		System.out.println( "Adding job to TeslaJob: " + strRequest );
+		
+		if ( bRead || bWrite ) {
+			final int iPos = strRequest.indexOf(":");
+			final String strSub = strRequest.substring( iPos+1 ).trim();
+			
+			if ( bRead ) {
+				final DataRequest request = DataRequest.getDataRequest( strSub );
+				if ( null!=request ) {
+					setRequest.add( request );
+				}
+			} else if ( bWrite ) {
+				final Command command = Command.getCommand( strSub );
+				final String strPost = null; //future: get this from the job
+				if ( null!=command ) {
+					mapCommand.put( command, strPost );
+				}
+			}
+		}
 	}
 	
 	
@@ -151,14 +187,46 @@ public class TeslaJob extends JobWorker {
 
 		try {
 			
-			System.out.println( "Calling Tesla REST.." );
+			System.out.println( "Calling Tesla REST"
+						+ " (" + mapCommand.size() + " commands, " 
+						+ setRequest.size() + " requests).." );
 			
-			for ( final DataRequest request : set ) {
+			for ( final Entry<Command, String> entry : mapCommand.entrySet() ) {
+				final Command command = entry.getKey();
+				final String strPost = entry.getValue();
+				
+				System.out.println( "Sending command to Tesla: " + command );
+				final Map<String,String> map = 
+								this.getTVI().command( command, strPost );
+				
+				System.out.println( "Result of command from Tesla: " 
+						+ map.size() + " elements." ); 
+			}
+			
+			for ( final DataRequest request : setRequest ) {
+				
+				// Call Tesla REST..
 				System.out.println( "Requesting from Tesla: " + request );
 				final String strResponse = this.getTVI().request( request );
-				System.out.println( "Requesting from Tesla: " + request 
+				System.out.println( "Requested from Tesla " + request 
 						+ ", response is " + strResponse.length() + " bytes long." ); 
+				// an exception will pop out here, caught below..
 				
+				
+				// Save to S2DB..  
+				//   this was borrowed from:
+				//     jmr.s2.ingest.TeslaIngestManager.requestToWebService()
+				final WebImport ingest = new WebImport( 
+								"Tesla - " + request.name(),
+								tvi.getURL( request ),
+								strResponse );
+				final Long seq = ingest.save();
+//				final String strResult = ingest.getResponse();
+				System.out.println( "Requested from Tesla " + request 
+						+ ", saved to page " + seq ); 
+				
+				
+				// Add the response to the combined JSON
 				final JsonObject joResponse = getJsonObject( strResponse );
 				for ( final Entry<String, JsonElement> 
 										entry : joResponse.entrySet() ) {
@@ -172,6 +240,8 @@ public class TeslaJob extends JobWorker {
 			return joCombined;
 			
 		} catch ( final Exception e ) {
+			System.err.println( e.toString() + " encountered "
+					+ "while communicating with Tesla." );
 			e.printStackTrace();
 			//TODO report error in an Event
 			return null;

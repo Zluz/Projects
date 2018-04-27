@@ -47,7 +47,8 @@ public class ContentRetriever {
 		
 		final URL url = new URL( strURL );
 		
-		final HttpURLConnection conn = (HttpURLConnection) url.openConnection();           
+		final HttpURLConnection conn = (HttpURLConnection) url.openConnection(); 
+		
 //		conn.setDoOutput( true );
 //		conn.setInstanceFollowRedirects( false );
 		conn.setRequestMethod( "GET" );
@@ -63,20 +64,24 @@ public class ContentRetriever {
 		
 		final int iCode = conn.getResponseCode();
 		if ( iCode<200 || iCode>=300 ) {
-			throw new Exception( "HTTP code " + iCode + " received." );
+			throw new Exception( "HTTP code " + iCode + " received "
+									+ "for URL " + strURL );
 		}
 		
-        final InputStream is = conn.getInputStream();
-		final InputStreamReader isr = new InputStreamReader( is, "UTF-8" );
-		final Reader in = new BufferedReader( isr );
-
 		final StringBuffer strbuf = new StringBuffer();
-		
-        for (int c; (c = in.read()) >= 0;) {
-//            System.out.print((char)c);
-            strbuf.append( (char)c );
-        }
-//        System.out.println();
+
+		try ( 	final InputStream is = conn.getInputStream();
+				final InputStreamReader isr = new InputStreamReader( is, "UTF-8" );
+				final Reader in = new BufferedReader( isr ); ) {
+			
+	        for ( int c; (c = in.read()) >= 0; ) {
+//	            System.out.print((char)c);
+	            strbuf.append( (char)c );
+	        }
+//	        System.out.println();
+		}
+        
+        conn.disconnect();
         
         return strbuf.toString();
 	}
@@ -113,17 +118,20 @@ public class ContentRetriever {
 		   wr.write( postData );
 		}
 
-        final InputStream is = conn.getInputStream();
-		final InputStreamReader isr = new InputStreamReader( is, "UTF-8" );
-		final Reader in = new BufferedReader( isr );
+		final StringBuffer strbuf = new StringBuffer();
 
-		StringBuffer strbuf = new StringBuffer();
+		try (   final InputStream is = conn.getInputStream();
+				final InputStreamReader isr = new InputStreamReader( is, "UTF-8" );
+				final Reader in = new BufferedReader( isr ) ) {
 		
-        for (int c; (c = in.read()) >= 0;) {
-            System.out.print((char)c);
-            strbuf.append( (char)c );
-        }
-        System.out.println();
+	        for ( int c; (c = in.read()) >= 0; ) {
+	            System.out.print((char)c);
+	            strbuf.append( (char)c );
+	        }
+	        System.out.println();
+		}
+		
+		conn.disconnect();
         
         final String strResponse = strbuf.toString();
 

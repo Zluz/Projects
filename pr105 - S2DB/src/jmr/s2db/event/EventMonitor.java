@@ -133,7 +133,9 @@ public class EventMonitor {
 	public void addListener( final EventListener listener ) {
 		if ( null==listener ) return;
 		
-		EventMonitor.listeners.add( listener );
+		synchronized ( setPostedEventSeqs ) {
+			EventMonitor.listeners.add( listener );
+		}
 		
 		this.initializeEventMonitorThread();
 		
