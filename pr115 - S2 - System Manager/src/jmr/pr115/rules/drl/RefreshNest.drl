@@ -1,0 +1,18 @@
+package pr115.rules.drl;
+
+import jmr.util.TimeUtil;
+import jmr.pr115.rules.drl.Simple;
+import jmr.pr115.schedules.run.Heartbeat;
+
+
+dialect "mvel"
+
+
+rule "Refresh Nest"
+	when
+		h : Heartbeat( getTimeUnit() == TimeUnit.HOURS )
+	then
+		System.out.println( "Refreshing Nest import.." );
+
+		Simple.doRefreshNest();
+end

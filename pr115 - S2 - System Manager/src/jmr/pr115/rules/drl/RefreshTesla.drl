@@ -16,16 +16,23 @@ rule "Refresh Tesla (scheduled)"
 		eval( TimeUtil.isHourOfDay( 2,4,6,8,10,12,14,16,18,20,22 ) )
 	then
 		System.out.println( "Refreshing Tesla import (scheduled).." );
-
 		Simple.doCheckTeslaState( null );
 end
 
 
-rule "Refresh Tesla (on demand)"
+rule "Request data from Tesla"
 	when
 		job : Job( getJobType() == JobType.TESLA_READ )
 	then
-		System.out.println( "Refreshing Tesla import (on demand).." );
+		System.out.println( "Sending request to Tesla .." );
+		Simple.doCheckTeslaState( job );
+end
 
+
+rule "Send command to Tesla"
+	when
+		job : Job( getJobType() == JobType.TESLA_WRITE )
+	then
+		System.out.println( "Sending command to Tesla .." );
 		Simple.doCheckTeslaState( job );
 end

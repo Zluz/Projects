@@ -108,7 +108,7 @@ public class WebImport {
 		final WebImport wi = new WebImport( "Test_Import", strURL );
 		final Long seq = wi.save();
 		
-//		System.out.println( "Result: seq = " + seq );
+		System.out.println( "Result: seq = " + seq );
 	}
 
 

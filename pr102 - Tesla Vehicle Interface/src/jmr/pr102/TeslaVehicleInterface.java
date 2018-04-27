@@ -212,7 +212,9 @@ java.lang.Exception: HTTP code 408 received.
 		}
 	}
 	
-	
+	public JsonObject getVehicleData() {
+		return this.vehicle.getVehicleDataResponse();
+	}
 	
 	
 

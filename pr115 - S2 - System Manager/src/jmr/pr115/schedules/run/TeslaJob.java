@@ -234,6 +234,21 @@ public class TeslaJob extends JobWorker {
 				}
 			}
 			
+			// add the vehicle data (sanitized)
+			final JsonObject joVehicle = this.getTVI().getVehicleData();
+			for ( final Entry<String, JsonElement> 
+											entry : joVehicle.entrySet() ) {
+				final String strKey = entry.getKey();
+				final boolean bSensitive = 
+						strKey.contains( "id" ) 
+						|| strKey.contains( "vin" ) 
+						|| strKey.contains( "token" );
+				if ( !bSensitive ) {
+					joCombined.add( entry.getKey(), entry.getValue() );
+				}
+			}
+			
+			
 			System.out.println( "Combined Tesla response: "
 					+ joCombined.size() + " entries" );
 
