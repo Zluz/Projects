@@ -45,15 +45,15 @@ xdotool windowsize $WID 50% 70%
 xdotool windowmove $WID 900 40
 
 echo "#JSON  {\"caption\":\"Activating playback\"}"
-echo "Sleeping for 6s.."
-sleep 6
+echo "Sleeping for 10s.."
+sleep 10s
 
 xdotool windowfocus $WID
 xdotool windowactivate $WID
 xdotool mousemove 972 474 click 1
 
-echo "Sleeping for 8s.."
-sleep 8
+echo "Sleeping for 12s.."
+sleep 12
 
 
 for i in 1 2 3 4 5
@@ -75,9 +75,9 @@ do
 		echo "    $LSOF_TEST"
 		xdotool windowfocus $WID
 		echo "#JSON  {\"caption\":\"Audio detected..1\"}"
-		echo "Audio detected but Waiting again (5s) to double-check.."
+		echo "Audio detected but waiting again (14s) to double-check.."
 
-		sleep 5
+		sleep 14
 		LSOF_TEST=`lsof /dev/snd/* 2>/dev/null | grep chromium`
 		if [[ "$LSOF_TEST" == "" ]]
 		then 
