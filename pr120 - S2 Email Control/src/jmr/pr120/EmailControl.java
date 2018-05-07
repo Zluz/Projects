@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Properties;
 
+import javax.mail.BodyPart;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -12,6 +13,7 @@ import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.event.MessageCountEvent;
 import javax.mail.event.MessageCountListener;
+import javax.mail.internet.MimeMultipart;
 
 import com.sun.mail.imap.IMAPFolder;
 import com.sun.mail.imap.IMAPStore;
@@ -32,6 +34,10 @@ public class EmailControl {
 	private final char[] cEmailPassword;
 	
 	private IMAPFolder imapInbox = null;
+	
+	private Thread threadMonitorInbox = null;
+	
+	private boolean bActive = false;
 	
 	
 	public static class EmailEvent {
@@ -58,8 +64,78 @@ public class EmailControl {
 	}
 
 	
-	private void scanInbox() throws MessagingException, IOException {
+	
+	
+	private void processMessage( final Message message ) {
 
+		final int iNumber = message.getMessageNumber();
+		
+		try {
+
+			final long lDate = message.getSentDate().getTime();
+//				final ZoneOffset tz = ZoneOffset.of( "EST" );
+			final ZoneOffset tz = ZoneOffset.UTC;
+			final LocalDateTime ldt = LocalDateTime.ofEpochSecond( lDate, 0, tz ) ;
+			
+			
+			System.out.println( "  Email message #" + iNumber + ", "
+						+ "size:" + message.getSize() + " bytes,  "
+						+ "sent:" + ldt.toString() + ",  "
+						+ "subject:" + message.getSubject() );
+			final String strContent = message.getContent().toString();
+			final Object objContent = message.getContent();
+			
+			if ( objContent instanceof MimeMultipart ) {
+				final MimeMultipart multi = (MimeMultipart) message.getContent();
+				final int iCount = multi.getCount();
+				
+				System.out.println( "\tContent is MimeMultipart, " 
+								+ iCount + " part(s)" );
+				
+				for ( int i=0; i<iCount; i++ ) {
+					final BodyPart part = multi.getBodyPart( i );
+					
+					final Object objPart = part.getContent();
+					final String strPart = objPart.toString();
+					final String strType = part.getContentType();
+					final String strClass = objPart.getClass().getName();
+					
+					/*
+					 * Typically 2 parts (text and html)
+					 * strType will typically be "TEXT/PLAIN" and "TEXT/HTML"
+					 * strClass will typically be java.lang.String
+					 */
+					
+					System.out.println( "\t\tpart " + i + " content details: "
+								+ "type " + strType + ", "
+								+ "class " + strClass + ", "
+								+ "string length " + strPart.length() );
+//					System.out.println( "\t\t  content toString(): " + 
+//							strPart.substring( 0, 
+//									Math.min( 60, strPart.length() ) ) );
+				}
+			} else {
+				System.out.println( "      body: " + 
+							strContent.substring( 0, 
+									Math.min( 60, strContent.length() ) ) );
+			}
+			
+		} catch ( final MessagingException e ) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch ( final IOException e ) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	
+	
+	private void initializeInbox() throws MessagingException, IOException {
+		if ( this.bActive ) return;
+		if ( null!=this.threadMonitorInbox ) return;
+		
 		final Properties p = new Properties();
 		p.setProperty( "mail.store.protocol",  "imaps" );
 		p.setProperty( "mail.imaps.host",  "imap.gmail.com" );
@@ -112,53 +188,70 @@ public class EmailControl {
 				@Override
 				public void messagesAdded( final MessageCountEvent event ) {
 					System.out.println( "MessageCountListener.messagesAdded()" );
+
+					System.out.println( "\tprocessing " 
+								+ event.getMessages().length + " message(s)" );
+
+					for ( final Message message : event.getMessages() ) {
+						processMessage( message );
+					}
 				}
 			} );
 			
-//			final IdleThread threadIdle = new IdleThread( inbox );
+			this.bActive = true;
 			
-			try {
-				for (;;) {
-					
+			this.threadMonitorInbox = new Thread( "Monitor IMAP Inbox" ) {
+				@Override
+				public void run() {
 					try {
-						
-						if ( !imapInbox.isOpen() ) {
-							System.out.println( "Opening IMAPFolder.." );
-							imapInbox.open( Folder.READ_ONLY );
+						while ( bActive ) {
+	
+							try {
+								
+								if ( !imapInbox.isOpen() ) {
+									System.out.println( "Opening IMAPFolder.." );
+									imapInbox.open( Folder.READ_ONLY );
+								}
+								
+								final Store storeTest = imapInbox.getStore();
+								if ( null!=storeTest && storeTest.isConnected() ) {
+								
+									imapInbox.idle();
+									
+								} else {
+									
+									System.out.println( "Reconnecting Store.." );
+									storeTest.connect( 	"imap.gmail.com", 
+											new String( cEmailAddress ), 
+											new String( cEmailPassword )  );
+									
+								}
+								
+							} catch ( final Exception e ) {
+								System.err.println( 
+	//									"Exception during IMAPFolder.idle(): " 
+										"Exception while maintaining IMAPFolder: " 
+														+ e.toString() );
+								e.printStackTrace();
+							}
+	
+							Thread.sleep( 100 );
+							
 						}
-						
-						final Store storeTest = imapInbox.getStore();
-						if ( null!=storeTest && storeTest.isConnected() ) {
-						
-							imapInbox.idle();
-							
-						} else {
-							
-							System.out.println( "Reconnecting Store.." );
-							storeTest.connect( 	"imap.gmail.com", 
-									new String( this.cEmailAddress ), 
-									new String( this.cEmailPassword )  );
-							
-						}
-					} catch ( final Exception e ) {
-						System.err.println( 
-//								"Exception during IMAPFolder.idle(): " 
-								"Exception while maintaining IMAPFolder: " 
-												+ e.toString() );
-						e.printStackTrace();
+					} catch ( final InterruptedException e ) {
+						// quitting..
+						bActive = false;
 					}
-
-					Thread.sleep( 100 );
 				}
-			} catch ( final InterruptedException e ) {
-				e.printStackTrace();
-			}
+			};
 			
+			threadMonitorInbox.start();
 			
 			
 		} else {
 			System.out.println( "Email does NOT support IDLE." );
 		
+//			this.bActive = true;
 			
 			final Folder folder = store.getFolder( "INBOX" );
 			folder.open( Folder.READ_ONLY );
@@ -213,7 +306,7 @@ public class EmailControl {
 		System.out.println( "Retrieving recent email.." );
 
 		final EmailControl control = new EmailControl( cUsername, cPassword );
-		control.scanInbox();
+		control.initializeInbox();
 
 		for (;;) {
 			Thread.sleep( 100 );
