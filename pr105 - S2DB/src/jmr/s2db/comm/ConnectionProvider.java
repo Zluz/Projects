@@ -14,12 +14,15 @@ import java.util.logging.Logger;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.dbcp.DelegatingDatabaseMetaData;
 
+import jmr.util.SUProperty;
+import jmr.util.SystemUtil;
+
 public class ConnectionProvider {
 
 
-	public final static String 
-			MYSQL_CONNECTION = "jdbc:mysql://192.168.1.200:3306/s2db"
-							+ "?autoReconnect=true&useSSL=false";
+//	public final static String 
+//			MYSQL_CONNECTION = "jdbc:mysql://192.168.1.200:3306/s2db"
+//							+ "?autoReconnect=true&useSSL=false";
 	
 	public final static String
 			MYSQL_DRIVER = "com.mysql.jdbc.Driver";
@@ -51,6 +54,15 @@ public class ConnectionProvider {
 	private ConnectionProvider() throws SQLException, ClassNotFoundException {
 		Class.forName( MYSQL_DRIVER );
 
+
+		final char[] cUsername = SystemUtil.getProperty( 
+						SUProperty.S2DB_USERNAME ).toCharArray(); 
+		final char[] cPassword = SystemUtil.getProperty( 
+						SUProperty.S2DB_PASSWORD ).toCharArray(); 
+		final String strURL = SystemUtil.getProperty( 
+						SUProperty.S2DB_CONNECTION ); 
+
+		
 //		this.conn = DriverManager.getConnection( 
 //				MYSQL_CONNECTION, "s2_full", "s2db" );
 //		this.conn.setSchema( "s2db" );
@@ -58,11 +70,15 @@ public class ConnectionProvider {
 		bds = new BasicDataSource();
 		
 		bds.setDriverClassName( MYSQL_DRIVER );
-		bds.setUrl( MYSQL_CONNECTION );
-		bds.setUsername( "s2_full" );
-		bds.setPassword( "s2db" );
+		bds.setUrl( strURL );
+		bds.setUsername( new String( cUsername ) );
+		bds.setPassword( new String( cPassword ) );
 		bds.setMaxActive( 10 );
 		bds.setMaxOpenPreparedStatements( 10 );
+		
+		bds.setRemoveAbandoned( true );
+//		bds.setLogAbandoned( true );
+		bds.setRemoveAbandonedTimeout( 60 );
 		
 		Runtime.getRuntime().addShutdownHook( new Thread( 
 							"Shutdown Hook - ConnectionProvider.close()" ) {

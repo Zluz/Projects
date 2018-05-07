@@ -214,18 +214,30 @@ public class Event extends TableBase {
 								final Long seqTrigger,
 								final Long seqLog
 								) {
+		System.out.println( "--> Event.add()" );
+		
 		try {
 			
 			final Event event = add_unchecked( type, 
 					strSubject, strValue, strThreshold, strData,
 					lTime, seqPage, seqTrigger, seqLog );
+
+			if ( null!=event ) {
+				System.out.println( "<-- Event.add(), seq=" + event.getEventSeq() );
+			} else {
+				System.out.println( "<-- Event.add(), event is null" );
+			}
+
 			return event;
 			
 		} catch ( final Throwable t ) {
-			
-			System.err.println( "ERROR when creating event: " + t.toString() );
+
+			System.err.println( "<-- Event.add() - "
+						+ "ERROR when creating event: " + t.toString() );
 			t.printStackTrace();
 			return null;
+//		} finally {
+//			System.out.println( "<-- Event.add().." );
 		}
 	}
 
