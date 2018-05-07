@@ -9,6 +9,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.gson.JsonObject;
 
+import jmr.pr115.actions.SendMessage;
+import jmr.pr115.actions.SendMessage.MessageType;
 import jmr.pr115.schedules.run.NestJob;
 import jmr.pr115.schedules.run.TeslaJob;
 import jmr.s2.ingest.Import;
@@ -17,6 +19,7 @@ import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
 import jmr.s2db.tables.Job.JobState;
 import jmr.util.TimeUtil;
+import jmr.util.transform.JsonUtils;
 
 public class Simple {
 	
@@ -119,6 +122,7 @@ public class Simple {
 		if ( null==jobs ) return;
 		if ( jobs.isEmpty() ) return;
 		
+		final LocalDateTime now = LocalDateTime.now();
 		final JobType type = jobs.get( 0 ).getJobType();
 		
 		if ( ( JobType.TESLA_READ == type ) 
@@ -138,6 +142,23 @@ public class Simple {
 			} else {
 				System.err.println( "Combined JsonObject from Tesla is null" );
 			}
+			
+			if ( jobs.size() >= 3 ) {
+				final StringBuilder strbuf = new StringBuilder();
+				strbuf.append( "Tesla Combined JSON\n"
+						+ now.toString() + "\n\n"
+						+ "Jobs:\n" );
+				for ( final Job job : jobs ) {
+					strbuf.append( "\t" + job.getJobSeq() );
+					strbuf.append( "\t" + job.getRequest() + "\n" );
+				}
+				strbuf.append( "\n\nCombined JSON:\n" );
+				strbuf.append( JsonUtils.getPretty( jo ) );
+				
+				SendMessage.send( MessageType.EMAIL, 
+						"Tesla Combined JSON", strbuf.toString() );
+			}
+			
 			
 			for ( final Job job : jobs ) {
 				job.setState( JobState.COMPLETE );

@@ -203,8 +203,7 @@ public class Event extends TableBase {
 		return null;
 	}
 	
-	
-	
+
 	public static Event add(	final EventType type,
 								final String strSubject,
 								final String strValue,
@@ -215,12 +214,38 @@ public class Event extends TableBase {
 								final Long seqTrigger,
 								final Long seqLog
 								) {
+		try {
+			
+			final Event event = add_unchecked( type, 
+					strSubject, strValue, strThreshold, strData,
+					lTime, seqPage, seqTrigger, seqLog );
+			return event;
+			
+		} catch ( final Throwable t ) {
+			
+			System.err.println( "ERROR when creating event: " + t.toString() );
+			t.printStackTrace();
+			return null;
+		}
+	}
+
+	
+	private static Event add_unchecked(	final EventType type,
+										final String strSubject,
+										final String strValue,
+										final String strThreshold,
+										final String strData,
+										final long lTime,
+										final Long seqPage,
+										final Long seqTrigger,
+										final Long seqLog
+								) {
 		if ( null==type ) return null;
 		
 		final Long lSession = Session.getSessionSeq();
 		if ( null==lSession ) {
 			LOGGER.log( Level.SEVERE, 
-					"Session not initialized, cannot create Triggers." );
+					"Session not initialized, cannot create Events." );
 			return null;
 		}
 		

@@ -8,6 +8,10 @@ public enum SUProperty {
 	NEST_USERNAME( "nest.username" ),
 	NEST_PASSWORD( "nest.password" ),
 	
+	CONTROL_EMAIL_USERNAME( "email.sender.address" ),
+	CONTROL_EMAIL_PASSWORD( "email.sender.password" ),
+	CONTROL_EMAIL_PROVIDER( "email.sender.provider" ),
+	
 	S2DB_CONNECTION( "s2db.connection" ),
 	S2DB_USERNAME( "s2db.username" ),
 	S2DB_PASSWORD( "s2db.password" ),

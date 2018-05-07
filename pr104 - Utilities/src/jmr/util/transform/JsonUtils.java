@@ -1,6 +1,9 @@
 package jmr.util.transform;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -112,8 +115,31 @@ public class JsonUtils {
 	
 	public static String getPretty( final JsonElement je ) {
 		if ( null==je ) return "<null>";
-		final String strPretty = GSON_PRETTY.toJson( je );
-		return strPretty;
+		if ( je instanceof JsonObject ) {
+			final JsonObject jo = je.getAsJsonObject();
+			final StringBuilder sb = new StringBuilder();
+			sb.append( "{\n" );
+			final List<String> list = new LinkedList<>();
+			for ( final Entry<String, JsonElement> entry : jo.entrySet() ) {
+				list.add( entry.getKey() );
+			}
+			Collections.sort( list );
+			boolean bFirst = true;
+			for ( final String strKey : list ) {
+				if ( bFirst ) {
+					bFirst = false;
+				} else {
+					sb.append( ",\n" );
+				}
+				sb.append( "  \"" + strKey + "\": " );
+				sb.append( GSON_PRETTY.toJson( jo.get( strKey ) ) );
+			}
+			sb.append( "\n}" );
+			return sb.toString();
+		} else {
+			final String strPretty = GSON_PRETTY.toJson( je );
+			return strPretty;
+		}
 	}
 
 	public static String getPretty( final String str ) {

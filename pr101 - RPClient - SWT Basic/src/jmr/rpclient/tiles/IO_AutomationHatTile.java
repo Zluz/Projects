@@ -93,6 +93,13 @@ public class IO_AutomationHatTile extends TileBase {
 		System.out.println( "Input event for port: " + port.name() );
 
 		final HardwareInput input = hat.getHardwareInputForPort( port );
+		
+		if ( null==input ) {
+			System.err.println( "HardwareInput for port " 
+					+ port.name() + " not found. Event not recorded.");
+			return;
+		}
+		
 		final JsonPrimitive jsonValue;
 		final JsonObject jsonMap = new JsonObject();
 		jsonMap.addProperty( "port", port.name() );
@@ -113,6 +120,8 @@ public class IO_AutomationHatTile extends TileBase {
 			jsonValue = null;
 			strValue = "";
 		}
+		System.out.println( "\t" + port.name() 
+					+ " = " + strValue + " (" + input.name() + ")" );
 		
 		if ( null!=input && null!=jsonValue ) {
 			
@@ -122,11 +131,24 @@ public class IO_AutomationHatTile extends TileBase {
 //			final String strData = jsonValue.getAsString();
 			final String strData = jsonMap.toString();
 			
-			final Event event = Event.add( 
+			final Event event = Event.add(
 					EventType.INPUT, strSubject, strValue, strThreshold, 
 					strData, lTime, null, null, null );
 			
 			System.out.println( "Event created: seq " + event.getEventSeq() );
+		} else {
+			System.err.print( "Event NOT created" );
+			if ( null==input ) {
+				System.err.print( ", input is null" );
+			} 
+			if ( null==jsonValue ) {
+				System.err.print( ", jsonValue is null" );
+			}
+			System.err.println( "." );
+			System.out.println( "\tbValue = " + bValue );
+			System.out.println( "\tfValue = " + fValue );
+			System.out.println( "\tstrValue = " + strValue );
+			System.out.println( "\tjsonValue = " + jsonValue );
 		}
 	}
 	
