@@ -14,6 +14,7 @@ public enum Command {
 	NEST_SET_TEMPERATURE( Parameter.TEMPERATURE ),
 
 	GET_SCREENSHOT( Parameter.DEVICE ),
+	GET_ALL_SCREENSHOTS,
 	GET_THREADS( Parameter.DEVICE ),
 	;
 

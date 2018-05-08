@@ -1,10 +1,13 @@
 package jmr.pr115.rules.drl;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import com.google.gson.JsonObject;
@@ -19,6 +22,8 @@ import jmr.s2db.imprt.WebImport;
 import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
 import jmr.s2db.tables.Job.JobState;
+import jmr.s2fs.FileSession;
+import jmr.s2fs.FileSessionManager;
 import jmr.util.TimeUtil;
 import jmr.util.transform.JsonUtils;
 import jmr.pr120.EmailEvent;
@@ -231,6 +236,50 @@ public class Simple {
 	}
 	
 	
+	public static void emailSendDeviceScreenshots() {
+		final FileSessionManager fsm = FileSessionManager.getInstance();
+		final Map<String, FileSession> map = fsm.getSessionMap();
+
+		final StringBuilder strbuf = new StringBuilder();
+//		final File[] attachments = new File[ map.size() ];
+		final List<File> listFiles = new LinkedList<>();
+		
+		strbuf.append( "Device listing:\n" );
+		
+		final long lCutoff = 
+				System.currentTimeMillis() - TimeUnit.DAYS.toMillis( 1 );
+		
+		for ( final Entry<String, FileSession> entry : map.entrySet() ) {
+			final String strKey = entry.getKey();
+			final FileSession session = entry.getValue();
+
+			final boolean bCurrent;
+			final File file = session.getScreenshotImageFile();
+			if ( null!=file && file.isFile() ) {
+				if ( file.lastModified() > lCutoff ) {
+					listFiles.add( file );
+					bCurrent = true;
+				} else {
+					bCurrent = false;
+				}
+			} else {
+				bCurrent = false;
+			}
+
+			if ( bCurrent ) {
+				strbuf.append( "\t" + strKey + "\n" );
+				strbuf.append( "\t\tDeviceInfo: " + session.getDeviceInfo() + "\n" );
+				strbuf.append( "\t\tAllSystemInfo: " + session.getAllSystemInfo() + "\n" );
+				strbuf.append( "\n" );
+			}
+		}
+		
+		SendMessage.send( MessageType.EMAIL, "Device details", 
+					strbuf.toString(), 
+					listFiles.toArray( new File[ listFiles.size() ] ) );
+	}
+	
+	
 	public static void doHandleEmailEvent( final EmailEvent event ) {
 		if ( null==event ) return;
 		
@@ -251,6 +300,10 @@ public class Simple {
 				Job.add( JobType.TESLA_READ, set, DataRequest.CHARGE_STATE.name() );
 				Job.add( JobType.TESLA_READ, set, DataRequest.VEHICLE_STATE.name() );
 				Job.add( JobType.TESLA_READ, set, DataRequest.CLIMATE_STATE.name() );
+				break;
+			}
+			case GET_SCREENSHOT: {
+				emailSendDeviceScreenshots();
 				break;
 			}
 			default: {
