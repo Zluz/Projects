@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.gson.JsonObject;
 
+import jmr.pr102.DataRequest;
 import jmr.pr115.actions.SendMessage;
 import jmr.pr115.actions.SendMessage.MessageType;
 import jmr.pr115.schedules.run.NestJob;
@@ -20,6 +21,8 @@ import jmr.s2db.tables.Job;
 import jmr.s2db.tables.Job.JobState;
 import jmr.util.TimeUtil;
 import jmr.util.transform.JsonUtils;
+import jmr.pr120.EmailEvent;
+import jmr.pr120.Command;
 
 public class Simple {
 	
@@ -213,5 +216,49 @@ public class Simple {
 		return null;
 		
 	}
+	
+	
+	
+	public static String getEmailCommandHelp() {
+		final StringBuilder strbuf = new StringBuilder();
+		
+		strbuf.append( "Available email commands:\n" );
+		for ( final Command command : Command.values() ) {
+			strbuf.append( "\t" + command.name() + "\n" );
+		}
+		
+		return strbuf.toString();
+	}
+	
+	
+	public static void doHandleEmailEvent( final EmailEvent event ) {
+		if ( null==event ) return;
+		
+		final Command command = event.getCommand();
+		if ( null==command ) return;
+		
+		System.out.println( "--- Simple.doHandleEmailEvent() - "
+							+ "Command: " + command.name() );
+		
+		switch ( command ) {
+			case HELP: {
+				SendMessage.send( MessageType.EMAIL, 
+						"Email Command Help", getEmailCommandHelp() );
+				break;
+			}
+			case TESLA_REFRESH: {
+				final Job.JobSet set = new Job.JobSet( 3 );
+				Job.add( JobType.TESLA_READ, set, DataRequest.CHARGE_STATE.name() );
+				Job.add( JobType.TESLA_READ, set, DataRequest.VEHICLE_STATE.name() );
+				Job.add( JobType.TESLA_READ, set, DataRequest.CLIMATE_STATE.name() );
+				break;
+			}
+			default: {
+				System.out.println( "Command not matched, no action performed." );
+			}
+		}
+	}
+	
+	
 	
 }

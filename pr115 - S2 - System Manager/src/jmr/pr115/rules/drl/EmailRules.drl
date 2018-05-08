@@ -1,0 +1,22 @@
+package pr115.rules.drl;
+
+import jmr.util.TimeUtil;
+import jmr.pr115.rules.drl.Simple;
+
+import jmr.pr120.EmailEvent;
+import jmr.pr120.Command;
+
+
+dialect "mvel"
+
+
+rule "Email Event"
+	when
+		// e : EmailEvent( getCommand() == Command.HELP )
+		e : EmailEvent()
+	then
+		System.out.println( "Email command recieved, Help requested" );
+		Simple.doHandleEmailEvent( e );
+		// Simple.doCheckTeslaState( null );
+end
+

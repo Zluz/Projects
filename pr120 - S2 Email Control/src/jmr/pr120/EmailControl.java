@@ -39,31 +39,98 @@ public class EmailControl {
 	
 	private boolean bActive = false;
 	
+	private final EmailEventListener listener;
 	
-	public static class EmailEvent {
-		
-		public final Command command;
-		public final Parameter parameter;
-		
-		EmailEvent( final Command command,
-					final Parameter parameter ) {
-			this.command = command;
-			this.parameter = parameter;
-		}
-	}
-	
-	public static interface EmailEventListener {
-		public void incoming( final EmailEvent event );
-	}
 	
 	
 	public EmailControl(	final char[] cEmailAddress,
-							final char[] cEmailPassword ) {
+							final char[] cEmailPassword,
+							final EmailEventListener listener ) {
 		this.cEmailAddress = cEmailAddress;
 		this.cEmailPassword = cEmailPassword;
+		this.listener = listener;
 	}
 
 	
+	public void start() {
+		try {
+			this.initializeInbox();
+		} catch ( final MessagingException | IOException e ) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public void stop() {
+		this.bActive = false;
+	}
+	
+	
+	private void submitCommand(	final Command command ) {
+		if ( null==command ) return;
+		if ( null==listener ) return;
+		
+		final EmailEvent event = new EmailEvent( command, null );
+		listener.incoming( event );
+	}
+	
+	
+	private void processContent(	final Message message,
+									final String strContent ) {
+		if ( null==message ) return;
+		if ( null==strContent ) return;
+		
+		System.out.println( "Processing content.. "
+				+ "(" + strContent.length() + " chars)" );
+		
+		int iNonBlankCount = 0;
+		int iCommandLineCount = 0;
+		
+		for ( String strLine : strContent.split( "\n" ) ) {
+			strLine = strLine.trim();
+			
+			if ( !strLine.isEmpty() ) {
+				final char cFirst = strLine.charAt( 0 );
+				
+				if ( Command.COMMAND_PREFIX==cFirst ) {
+					// interpret as command
+					System.out.println( "Examine as command: " + strLine );
+					iCommandLineCount++;
+					
+					final Command command = Command.getCommandFrom( strLine );
+					submitCommand( command );
+					
+				} else if ( Character.isAlphabetic( cFirst ) ) {
+					if ( strLine.startsWith( "On " ) 
+//							&& strLine.endsWith( " wrote:" ) ) {
+							&& strLine.contains( " at " ) ) {
+						// this is the first of the quoted section. ignore.
+					} else if ( strLine.endsWith( "wrote:" ) ) {
+						// ignore this line also
+					} else {
+						iNonBlankCount++;
+						System.out.println( "Non-blank line ignored: " + strLine );
+					}
+				} else if ( ( '>'==cFirst ) || ( '|'==cFirst ) ) {
+					// ignore
+				} else {
+					// probably not important.. ignore also
+				}
+			}
+		}
+		
+		
+		if ( iCommandLineCount>0 ) {
+			// commands issued (possibly)
+		} else if ( iNonBlankCount>0 ) {
+			// some text. ignore.
+		} else { // no commands, blank content, return HELP
+			System.out.println( "No text, handle as HELP request" );
+			submitCommand( Command.HELP );
+		}
+		
+	}
 	
 	
 	private void processMessage( final Message message ) {
@@ -102,7 +169,9 @@ public class EmailControl {
 					
 					/*
 					 * Typically 2 parts (text and html)
-					 * strType will typically be "TEXT/PLAIN" and "TEXT/HTML"
+					 * strType will typically be 
+					 * 		(1) "type TEXT/PLAIN; charset=UTF-8" and 
+					 * 		(2) "type TEXT/HTML; charset=UTF-8" 
 					 * strClass will typically be java.lang.String
 					 */
 					
@@ -113,6 +182,11 @@ public class EmailControl {
 //					System.out.println( "\t\t  content toString(): " + 
 //							strPart.substring( 0, 
 //									Math.min( 60, strPart.length() ) ) );
+					
+//					if ( "TEXT/PLAIN".equalsIgnoreCase( strType ) ) {
+					if ( strType.toUpperCase().startsWith( "TEXT/PLAIN" ) ) {
+						processContent( message, strPart );
+					}
 				}
 			} else {
 				System.out.println( "      body: " + 
@@ -170,117 +244,87 @@ public class EmailControl {
 		}
 		
 		
+		if ( !Boolean.TRUE.equals( bSupportsIDLE ) ) {
+			throw new IllegalStateException( 
+					"Email (" + new String( this.cEmailAddress ) 
+					+ ") does not seem to support IMAP IDLE." );
+		}
 		
 		
-		
-		if ( bSupportsIDLE ) {
-			this.imapInbox = (IMAPFolder) imapstore.getFolder( "INBOX" );
-			
-			System.out.println( "Email supports IDLE. Adding listener.." );
-			
-			imapInbox.addMessageCountListener( new MessageCountListener() {
-				
-				@Override
-				public void messagesRemoved( final MessageCountEvent event ) {
-					System.out.println( "MessageCountListener.messagesRemoved()" );
-				}
-				
-				@Override
-				public void messagesAdded( final MessageCountEvent event ) {
-					System.out.println( "MessageCountListener.messagesAdded()" );
-
-					System.out.println( "\tprocessing " 
-								+ event.getMessages().length + " message(s)" );
-
-					for ( final Message message : event.getMessages() ) {
-						processMessage( message );
-					}
-				}
-			} );
-			
-			this.bActive = true;
-			
-			this.threadMonitorInbox = new Thread( "Monitor IMAP Inbox" ) {
-				@Override
-				public void run() {
-					try {
-						while ( bActive ) {
 	
-							try {
-								
-								if ( !imapInbox.isOpen() ) {
-									System.out.println( "Opening IMAPFolder.." );
-									imapInbox.open( Folder.READ_ONLY );
-								}
-								
-								final Store storeTest = imapInbox.getStore();
-								if ( null!=storeTest && storeTest.isConnected() ) {
-								
-									imapInbox.idle();
-									
-								} else {
-									
-									System.out.println( "Reconnecting Store.." );
-									storeTest.connect( 	"imap.gmail.com", 
-											new String( cEmailAddress ), 
-											new String( cEmailPassword )  );
-									
-								}
-								
-							} catch ( final Exception e ) {
-								System.err.println( 
-	//									"Exception during IMAPFolder.idle(): " 
-										"Exception while maintaining IMAPFolder: " 
-														+ e.toString() );
-								e.printStackTrace();
-							}
 	
-							Thread.sleep( 100 );
-							
-						}
-					} catch ( final InterruptedException e ) {
-						// quitting..
-						bActive = false;
-					}
-				}
-			};
-			
-			threadMonitorInbox.start();
-			
-			
-		} else {
-			System.out.println( "Email does NOT support IDLE." );
+		this.imapInbox = (IMAPFolder) imapstore.getFolder( "INBOX" );
 		
-//			this.bActive = true;
+		System.out.println( "Email supports IDLE. Adding listener.." );
+		
+		imapInbox.addMessageCountListener( new MessageCountListener() {
 			
-			final Folder folder = store.getFolder( "INBOX" );
-			folder.open( Folder.READ_ONLY );
-			
-			final int count = folder.getMessageCount();
-			System.out.println( "Message count: " + count );
-	//		final Message messages[] = folder.getMessages();
-	//		for ( final Message message : messages ) {
-			for ( int i=count; i>count-4; i-- ) {
-	//			final Message message = messages[i];
-				final Message message = folder.getMessage( i );
-				
-				final long lDate = message.getSentDate().getTime();
-	//			final ZoneOffset tz = ZoneOffset.of( "EST" );
-				final ZoneOffset tz = ZoneOffset.UTC;
-				final LocalDateTime ldt = LocalDateTime.ofEpochSecond( lDate, 0, tz ) ;
-				
-				System.out.println( "  Email " + i + ", "
-							+ "size:" + message.getSize() + " bytes,  "
-							+ "sent:" + ldt.toString() + ",  "
-							+ "subject:" + message.getSubject() );
-				final String strContent = message.getContent().toString();
-				System.out.println( "      body: " + 
-							strContent.substring( 0, Math.min( 60, strContent.length() ) ) );
+			@Override
+			public void messagesRemoved( final MessageCountEvent event ) {
+				System.out.println( "MessageCountListener.messagesRemoved()" );
 			}
 			
-			folder.close();
-			store.close();
-		}
+			@Override
+			public void messagesAdded( final MessageCountEvent event ) {
+				System.out.println( "MessageCountListener.messagesAdded()" );
+
+				System.out.println( "\tprocessing " 
+							+ event.getMessages().length + " message(s)" );
+
+				for ( final Message message : event.getMessages() ) {
+					processMessage( message );
+				}
+			}
+		} );
+		
+		this.bActive = true;
+		
+		this.threadMonitorInbox = new Thread( "Monitor IMAP Inbox" ) {
+			@Override
+			public void run() {
+				try {
+					while ( bActive ) {
+
+						try {
+							
+							if ( !imapInbox.isOpen() ) {
+								System.out.println( "Opening IMAPFolder.." );
+								imapInbox.open( Folder.READ_ONLY );
+							}
+							
+							final Store storeTest = imapInbox.getStore();
+							if ( null!=storeTest && storeTest.isConnected() ) {
+							
+								imapInbox.idle();
+								
+							} else {
+								
+								System.out.println( "Reconnecting Store.." );
+								storeTest.connect( 	"imap.gmail.com", 
+										new String( cEmailAddress ), 
+										new String( cEmailPassword )  );
+								
+							}
+							
+						} catch ( final Exception e ) {
+							System.err.println( 
+//									"Exception during IMAPFolder.idle(): " 
+									"Exception while maintaining IMAPFolder: " 
+													+ e.toString() );
+							e.printStackTrace();
+						}
+
+						Thread.sleep( 100 );
+						
+					}
+				} catch ( final InterruptedException e ) {
+					// quitting..
+					bActive = false;
+				}
+			}
+		};
+		
+		threadMonitorInbox.start();
 	}
 	
 	
@@ -305,8 +349,17 @@ public class EmailControl {
 
 		System.out.println( "Retrieving recent email.." );
 
-		final EmailControl control = new EmailControl( cUsername, cPassword );
-		control.initializeInbox();
+		final EmailEventListener listener = new EmailEventListener() {
+			@Override
+			public void incoming( final EmailEvent event ) {
+				System.out.println( "EmailEventListener.incoming() - " 
+													+ event.command );
+			}
+		};
+		
+		final EmailControl 
+				control = new EmailControl( cUsername, cPassword, listener );
+		control.start();
 
 		for (;;) {
 			Thread.sleep( 100 );

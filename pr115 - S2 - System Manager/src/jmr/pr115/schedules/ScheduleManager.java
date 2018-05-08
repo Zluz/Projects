@@ -8,7 +8,12 @@ import jmr.pr115.schedules.run.Heartbeat;
 import jmr.pr115.schedules.run.JobWorker;
 import jmr.pr119.ScheduleManager.Listener;
 import jmr.pr119.TimeEvent;
+import jmr.pr120.EmailControl;
+import jmr.pr120.EmailEvent;
+import jmr.pr120.EmailEventListener;
 import jmr.s2db.Client;
+import jmr.util.SUProperty;
+import jmr.util.SystemUtil;
 
 public class ScheduleManager {
 
@@ -19,7 +24,31 @@ public class ScheduleManager {
 		RulesProcessing.get(); // just initialize, have it register..
 		createCronJobs();
 		new SubmitJobs();
+		
+		registerEmailListener();
 	}
+	
+	
+	private void registerEmailListener() {
+		
+		final EmailEventListener listener = new EmailEventListener() {
+			@Override
+			public void incoming( final EmailEvent event ) {
+				System.out.println( "Calling: RulesProcessing.get().process( EmailEvent );");
+				RulesProcessing.get().process( event );
+			}
+		};
+		
+		final char[] cUsername = SystemUtil.getProperty( 
+						SUProperty.CONTROL_EMAIL_USERNAME ).toCharArray(); 
+		final char[] cPassword = SystemUtil.getProperty( 
+						SUProperty.CONTROL_EMAIL_PASSWORD ).toCharArray(); 
+
+		final EmailControl 
+				control = new EmailControl( cUsername, cPassword, listener );
+		control.start();
+	}
+	
 	
 	public void createCronJobs() {
 		final jmr.pr119.ScheduleManager sm = new jmr.pr119.ScheduleManager();
