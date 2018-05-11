@@ -12,6 +12,7 @@ public class FileSession {
 		SYSTEM_INFO( true, "uname.out" ),
 		IFCONFIG( true, "ifconfig.out" ),
 		SCREENSHOT( false, "screenshot.png" ),
+		CAPTURE_STILL( false, "capture_still_now.jpg" ),
 		;
 		
 		public final String strFilename;
@@ -29,6 +30,7 @@ public class FileSession {
 			mapFileContents = new EnumMap<>( SessionFile.class );
 	
 	private File fileImage;
+	private File fileCaptureStill;
 	
 	
 	public FileSession( final File dir ) {
@@ -66,10 +68,17 @@ public class FileSession {
 	}
 	
 	public File getScreenshotImageFile() {
-		if ( null==this.fileImage ) {
+		if ( null==this.fileImage || !this.fileImage.exists() ) {
 			this.fileImage = getFile( SessionFile.SCREENSHOT );
 		}
 		return this.fileImage;
+	}
+
+	public File getCaptureStillImageFile() {
+		if ( null==this.fileCaptureStill || !this.fileCaptureStill.exists() ) {
+			this.fileCaptureStill = getFile( SessionFile.CAPTURE_STILL );
+		}
+		return this.fileCaptureStill;
 	}
 
 	public String getAllSystemInfo() {

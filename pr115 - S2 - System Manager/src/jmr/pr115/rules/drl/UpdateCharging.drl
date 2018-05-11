@@ -18,8 +18,9 @@ rule "HomeArrival-Reset"
 		h : Heartbeat( getTimeUnit() == TimeUnit.HOURS )
 		eval( TimeUtil.isHourOfDay( 15 ) )
 	then
-		System.out.println( "Resetting home arrival trigger." );
-		bCheckedHomeArrival = false;
+		// System.out.println( "Resetting home arrival trigger." );
+		// bCheckedHomeArrival = false;
+		Simple.resetHomeArrival();
 end
 
 
@@ -34,10 +35,12 @@ rule "GaragePedDoor-RequestChargeStatus"
 		eval( TimeUtil.isHourOfDay( 16,17,18,19,20,21 ) )
 		// eval( not bCheckedHomeArrival ) // lets run this anyway
 	then
-		System.out.println( "Garage pedestrian door opened (home arrival trigger)." );
-		if ( bCheckedHomeArrival ) return; // already home
+		//System.out.println( "Garage pedestrian door opened (home arrival trigger)." );
+		//if ( bCheckedHomeArrival ) return; // already home
 		
-		bCheckedHomeArrival = true;
+		//bCheckedHomeArrival = true;
 		
-		Simple.doCheckTeslaState( null );
+		// Simple.doCheckTeslaState( null );
+
+		Simple.doHomeArrival();
 end

@@ -307,11 +307,17 @@ public class EmailControl {
 							}
 							
 						} catch ( final Exception e ) {
-							System.err.println( 
-//									"Exception during IMAPFolder.idle(): " 
-									"Exception while maintaining IMAPFolder: " 
-													+ e.toString() );
-							e.printStackTrace();
+							if ( e.toString().contains( " * BYE" ) ) {
+								System.out.println( "IMAP connection dropped." );
+								// normal for the server to drop the 
+								// connection periodically. just reconnect.
+							} else {
+								System.err.println( 
+	//									"Exception during IMAPFolder.idle(): " 
+										"Exception while maintaining IMAPFolder: " 
+														+ e.toString() );
+								e.printStackTrace();
+							}
 						}
 
 						Thread.sleep( 100 );

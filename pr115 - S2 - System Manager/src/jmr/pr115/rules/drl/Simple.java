@@ -235,8 +235,16 @@ public class Simple {
 		return strbuf.toString();
 	}
 	
-	
+	public static void emailSendDeviceCaptureStills() {
+		emailSendDeviceFiles( false, true );
+	}
+
 	public static void emailSendDeviceScreenshots() {
+		emailSendDeviceFiles( true, false );
+	}
+
+	public static void emailSendDeviceFiles(	final boolean bScreenshot,
+												final boolean bCaptureStill ) {
 		final FileSessionManager fsm = FileSessionManager.getInstance();
 		final Map<String, FileSession> map = fsm.getSessionMap();
 
@@ -253,17 +261,26 @@ public class Simple {
 			final String strKey = entry.getKey();
 			final FileSession session = entry.getValue();
 
-			final boolean bCurrent;
-			final File file = session.getScreenshotImageFile();
-			if ( null!=file && file.isFile() ) {
-				if ( file.lastModified() > lCutoff ) {
-					listFiles.add( file );
-					bCurrent = true;
-				} else {
-					bCurrent = false;
+			boolean bCurrent = false;
+
+			if ( bScreenshot ) {
+				final File fileScreenshot = session.getScreenshotImageFile();
+				if ( null!=fileScreenshot && fileScreenshot.isFile() ) {
+					if ( fileScreenshot.lastModified() > lCutoff ) {
+						listFiles.add( fileScreenshot );
+						bCurrent = true;
+					}
 				}
-			} else {
-				bCurrent = false;
+			}
+
+			if ( bCaptureStill ) {
+				final File fileCaptureStill = session.getCaptureStillImageFile();
+				if ( null!=fileCaptureStill && fileCaptureStill.isFile() ) {
+					if ( fileCaptureStill.lastModified() > lCutoff ) {
+						listFiles.add( fileCaptureStill );
+						bCurrent = true;
+					}
+				}
 			}
 
 			if ( bCurrent ) {
@@ -277,6 +294,44 @@ public class Simple {
 		SendMessage.send( MessageType.EMAIL, "Device details", 
 					strbuf.toString(), 
 					listFiles.toArray( new File[ listFiles.size() ] ) );
+	}
+	
+	
+	public static void submitJob_TeslaRefresh3() {
+		System.out.println( "--- Simple.submitJob_TeslaRefresh3()" );
+		try {
+			final Job.JobSet set = new Job.JobSet( 3 );
+			Job.add( JobType.TESLA_READ, set, DataRequest.CHARGE_STATE.name() );
+			Job.add( JobType.TESLA_READ, set, DataRequest.VEHICLE_STATE.name() );
+			Job.add( JobType.TESLA_READ, set, DataRequest.CLIMATE_STATE.name() );
+		} catch ( final Throwable t ) {
+			System.err.println( "ERROR in Simple.submitJob_TeslaRefresh3()" );
+			t.printStackTrace();
+		}
+	}
+	
+	
+	public static boolean bCheckedHomeArrival = false;
+
+	public static void resetHomeArrival() {
+		System.out.println( "Resetting home arrival trigger." );
+		bCheckedHomeArrival = false;
+	}
+	
+	public static void doHomeArrival() {
+		try {
+			System.out.println( "Garage pedestrian door opened (home arrival trigger)." );
+
+			if ( bCheckedHomeArrival ) return; // already home
+
+			bCheckedHomeArrival = true;
+			
+			// Simple.doCheckTeslaState( null );
+			Simple.submitJob_TeslaRefresh3();
+			
+		} catch ( final Throwable t ) {
+			t.printStackTrace();
+		}
 	}
 	
 	
@@ -296,14 +351,15 @@ public class Simple {
 				break;
 			}
 			case TESLA_REFRESH: {
-				final Job.JobSet set = new Job.JobSet( 3 );
-				Job.add( JobType.TESLA_READ, set, DataRequest.CHARGE_STATE.name() );
-				Job.add( JobType.TESLA_READ, set, DataRequest.VEHICLE_STATE.name() );
-				Job.add( JobType.TESLA_READ, set, DataRequest.CLIMATE_STATE.name() );
+				submitJob_TeslaRefresh3();
 				break;
 			}
 			case GET_SCREENSHOT: {
 				emailSendDeviceScreenshots();
+				break;
+			}
+			case GET_CAPTURE_STILLS: {
+				emailSendDeviceCaptureStills();
 				break;
 			}
 			default: {
