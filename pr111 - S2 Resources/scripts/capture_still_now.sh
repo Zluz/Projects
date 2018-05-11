@@ -31,5 +31,8 @@ do
 	LAST=$NOW
 	NOW=$(date +"%M")
 done
+
+( ls /tmp/session && ls /tmp/capture_still_now.jpg && cp /tmp/capture_still_now.jpg /tmp/session )
+
 echo "Done."
 

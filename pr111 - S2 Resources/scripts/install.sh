@@ -25,3 +25,14 @@ rm -f /etc/network/if-up.d/STARTUP
 # sleep 1
 lxpanelctl restart
 
+
+
+# now setup wifi
+
+echo "network={" >> /etc/wpa_supplicant/wpa_supplicant.conf
+echo "  ssid=\"PNYZ6\"" >> /etc/wpa_supplicant/wpa_supplicant.conf
+echo "  psk=30400704366a929ca5e973da58738185859fe3293135025e19b79809a57b0b51" >> /etc/wpa_supplicant/wpa_supplicant.conf
+echo "}" >> /etc/wpa_supplicant/wpa_supplicant.conf
+
+wpa_cli -i wlan0 reconfigure
+
