@@ -3,6 +3,9 @@ LINE="alias dir='ls -alF'"
 grep -q -F "alias dir" /root/.bashrc || echo "$LINE" >> /root/.bashrc
 grep -q -F "alias dir" /home/pi/.bashrc || echo "$LINE" >> /home/pi/.bashrc
 
+# rsync -vcI /Local/scripts/* /Share/Resources/scripts/
+rsync -vcI /Share/Resources/fonts/truetype/droid/* /usr/share/fonts/truetype/droid/
+
 
 # edit swap
 
