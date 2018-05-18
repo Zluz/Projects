@@ -7,14 +7,8 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/SWT_Win32"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/px110 - KTable - Widget"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr105 - S2DB"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr110 - S2 File Session"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7">
-		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
@@ -31,5 +25,11 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/pr107 - S2 - Imports"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr119 - CronTrigger"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr120 - S2 Email Control"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="owner.project.facets" value="java"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/KTable 2.2.0"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
