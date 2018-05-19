@@ -2,6 +2,7 @@ package jmr.pr121.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -19,11 +20,18 @@ import javax.servlet.http.HttpServletResponse;
 
 @SuppressWarnings("serial")
 @WebServlet(
-    name = "Log",
-    urlPatterns = {"/log"}
+    name = "Status",
+    urlPatterns = {"/status"}
 )
-public class Log extends HttpServlet {
+public class Status extends HttpServlet {
 
+	final static LocalDateTime ldtStart;
+	
+	static {
+		ldtStart = LocalDateTime.now();
+	}
+	
+	
 	final static List<String> listLog = new LinkedList<>();
 
 	public static void add( final String strText ) {
@@ -42,8 +50,8 @@ public class Log extends HttpServlet {
 	    final PrintWriter writer = resp.getWriter();
     
 		try {
+			writer.print("Status\r\n");
 			
-			writer.print("\r\nLog:\r\n");
 			for ( final String line : listLog ) {
 				writer.print( line +"\r\n" );
 			}

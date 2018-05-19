@@ -1,6 +1,10 @@
 package jmr.pr115.rules.drl;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
@@ -10,6 +14,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.http.entity.ContentType;
+
 import com.google.gson.JsonObject;
 
 import jmr.pr102.DataRequest;
@@ -17,6 +23,10 @@ import jmr.pr115.actions.SendMessage;
 import jmr.pr115.actions.SendMessage.MessageType;
 import jmr.pr115.schedules.run.NestJob;
 import jmr.pr115.schedules.run.TeslaJob;
+import jmr.pr120.Command;
+import jmr.pr120.EmailEvent;
+import jmr.pr122.DocKey;
+import jmr.pr122.GAEComm;
 import jmr.s2.ingest.Import;
 import jmr.s2db.imprt.WebImport;
 import jmr.s2db.job.JobType;
@@ -26,8 +36,6 @@ import jmr.s2fs.FileSession;
 import jmr.s2fs.FileSessionManager;
 import jmr.util.TimeUtil;
 import jmr.util.transform.JsonUtils;
-import jmr.pr120.EmailEvent;
-import jmr.pr120.Command;
 
 public class Simple {
 	
@@ -161,10 +169,14 @@ public class Simple {
 					strbuf.append( "\t" + job.getRequest() + "\n" );
 				}
 				strbuf.append( "\n\nCombined JSON:\n" );
-				strbuf.append( JsonUtils.getPretty( jo ) );
+				final String strPrettyCombined = JsonUtils.getPretty( jo );
+				strbuf.append( strPrettyCombined );
 				
 				SendMessage.send( MessageType.EMAIL, 
 						"Tesla Combined JSON", strbuf.toString() );
+				
+				final GAEComm comm = new GAEComm();
+				comm.store( DocKey.TESLA_COMBINED, strPrettyCombined );
 			}
 			
 			
@@ -269,6 +281,24 @@ public class Simple {
 					if ( fileScreenshot.lastModified() > lCutoff ) {
 						listFiles.add( fileScreenshot );
 						bCurrent = true;
+						
+						
+						// special case (garage entrance)
+						if ( "B8-27-EB-13-8B-C0".equals( strKey ) ) {
+							final GAEComm comm = new GAEComm();
+							final Path path = Paths.get( fileScreenshot.toURI() );
+							
+							try {
+								final byte[] data = Files.readAllBytes( path );
+								comm.store( "SCREENSHOT_" + strKey, 
+										null, ContentType.DEFAULT_BINARY, data );
+								
+							} catch ( final IOException e ) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						
 					}
 				}
 			}

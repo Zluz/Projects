@@ -110,12 +110,14 @@ public class ContentRetriever {
 	
 	
 	
-
 	public String postContent( final String strPost ) throws Exception {
+		return postContent( strPost.getBytes( StandardCharsets.UTF_8 ) );
+	}
+
+	public String postContent( final byte[] data ) throws Exception {
 		
 //		byte[] postData       = strURLParams.getBytes( StandardCharsets.UTF_8 );
-		byte[] postData       = strPost.getBytes( StandardCharsets.UTF_8 );
-		int    postDataLength = postData.length;
+		int    postDataLength = data.length;
 //		String request        = "http://example.com/index.php";
 		URL    url            = new URL( strURL );
 		
@@ -136,8 +138,9 @@ public class ContentRetriever {
 		
 		conn.setUseCaches( false );
 		
-		try( DataOutputStream wr = new DataOutputStream( conn.getOutputStream() )) {
-		   wr.write( postData );
+		try ( final DataOutputStream wr = 
+						new DataOutputStream( conn.getOutputStream() )) {
+		   wr.write( data );
 		}
 
 		final StringBuffer strbuf = new StringBuffer();
