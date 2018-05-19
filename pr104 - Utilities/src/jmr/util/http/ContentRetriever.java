@@ -21,8 +21,30 @@ public class ContentRetriever {
 	final private String strURL;
 	
 	
-	public ContentRetriever(	final String strURL ) {
+	public ContentRetriever( final String strURL ) {
 		this.strURL = strURL;
+	}
+
+	public static String cleanURL( final String strInput ) {
+		if ( null==strInput ) throw new IllegalStateException();
+		if ( strInput.isEmpty() ) throw new IllegalStateException();
+		
+		final int iHostPos = strInput.indexOf( "://" ) + 3;
+		if ( iHostPos<0 ) throw new IllegalStateException();
+		
+		int iParamPos = (strInput + "?").indexOf( "?" );
+		
+		String strTarget = strInput;
+		
+		int iDoublePos = strTarget.indexOf( "//", iHostPos );
+		while ( iDoublePos>0 && iDoublePos<iParamPos ) {
+			strTarget = strTarget.substring( 0, iDoublePos ) 
+					+ strTarget.substring( iDoublePos + 1 );
+			iDoublePos = strTarget.indexOf( "//", iHostPos );
+			iParamPos = (strInput + "?").indexOf( "?" );
+		}
+		
+		return strTarget;
 	}
 	
 	

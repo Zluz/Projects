@@ -17,6 +17,8 @@ public enum SUProperty {
 	S2DB_PASSWORD( "s2db.password" ),
 	S2DB_SCHEMA( "s2db.schema" ),
 	
+	GAE_URL( "gae.url" ),
+	
 	;
 	
 	private String strName;
