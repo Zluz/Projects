@@ -1,10 +1,6 @@
 package jmr.pr115.rules.drl;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
@@ -14,7 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.http.entity.ContentType;
+//import org.apache.http.entity.ContentType;
 
 import com.google.gson.JsonObject;
 
@@ -35,6 +31,7 @@ import jmr.s2db.tables.Job.JobState;
 import jmr.s2fs.FileSession;
 import jmr.s2fs.FileSessionManager;
 import jmr.util.TimeUtil;
+import jmr.util.http.ContentType;
 import jmr.util.transform.JsonUtils;
 
 public class Simple {
@@ -269,6 +266,8 @@ public class Simple {
 		final long lCutoff = 
 				System.currentTimeMillis() - TimeUnit.DAYS.toMillis( 1 );
 		
+		final GAEComm comm = new GAEComm();
+
 		for ( final Entry<String, FileSession> entry : map.entrySet() ) {
 			final String strKey = entry.getKey();
 			final FileSession session = entry.getValue();
@@ -282,22 +281,25 @@ public class Simple {
 						listFiles.add( fileScreenshot );
 						bCurrent = true;
 						
+						final String strName = "SCREENSHOT_" + strKey;
 						
-						// special case (garage entrance)
-						if ( "B8-27-EB-13-8B-C0".equals( strKey ) ) {
-							final GAEComm comm = new GAEComm();
-							final Path path = Paths.get( fileScreenshot.toURI() );
-							
-							try {
-								final byte[] data = Files.readAllBytes( path );
-								comm.store( "SCREENSHOT_" + strKey, 
-										null, ContentType.DEFAULT_BINARY, data );
-								
-							} catch ( final IOException e ) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
+						comm.store( fileScreenshot, strName, ContentType.IMAGE_PNG );
+						
+//						// special case (garage entrance)
+////						if ( "B8-27-EB-13-8B-C0".equals( strKey ) ) {
+//							final Path path = Paths.get( fileScreenshot.toURI() );
+//							
+//							try {
+//								final byte[] data = Files.readAllBytes( path );
+//								comm.store( "SCREENSHOT_" + strKey, 
+//										null, ContentType.IMAGE_PNG, data );
+//								comm.store( fileScreenshot, ContentType.IMAGE_PNG );
+//								
+//							} catch ( final IOException e ) {
+//								// TODO Auto-generated catch block
+//								e.printStackTrace();
+//							}
+////						}
 						
 					}
 				}
@@ -398,6 +400,18 @@ public class Simple {
 		}
 	}
 	
+	
+	
+	public static void main( final String[] args ) {
+
+		final GAEComm comm = new GAEComm();
+
+		final File file = new File( "S:\\Sessions\\B8-27-EB-13-8B-C0\\screenshot.png" );
+		final String strName = "SCREENSHOT_B8-27-EB-13-8B-C0";
+		
+		comm.store( file, strName, ContentType.IMAGE_PNG );
+
+	}
 	
 	
 }

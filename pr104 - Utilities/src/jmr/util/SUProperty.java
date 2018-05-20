@@ -19,6 +19,9 @@ public enum SUProperty {
 	
 	GAE_URL( "gae.url" ),
 	
+	BROWSER_ACCEPT_001( "browser_accept.001" ),
+	BROWSER_ACCEPT_PRE( "browser_accept" ),
+	
 	;
 	
 	private String strName;

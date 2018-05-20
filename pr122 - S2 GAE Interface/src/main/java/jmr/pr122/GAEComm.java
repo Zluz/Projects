@@ -7,14 +7,16 @@ import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import org.apache.http.entity.ContentType;
+//import org.apache.http.entity.ContentType;
 
 import jmr.util.SUProperty;
 import jmr.util.SystemUtil;
 import jmr.util.http.ContentRetriever;
+import jmr.util.http.ContentType;
 
 public class GAEComm {
 
@@ -72,6 +74,47 @@ public class GAEComm {
 			e.printStackTrace();
 		}
 	}
+
+	public void configure(	final String strName,
+							final String strData ) {
+		try {
+			final StringBuilder sbURL = new StringBuilder();
+			sbURL.append( ContentRetriever.cleanURL( 
+						strGAEUrl + "/status?name=" ) );
+			sbURL.append( URLEncoder.encode( strName, UTF_8.name() ) );
+			
+			final String strURL = sbURL.toString(); 
+			final ContentRetriever retriever = new ContentRetriever( strURL );
+			retriever.postContent( strData );
+			
+		} catch ( final UnsupportedEncodingException e ) {
+			throw new IllegalStateException( e );
+			
+		} catch ( final Exception e ) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public void store(	final File file,
+						final String strName,
+						final ContentType type ) {
+		if ( null==file ) throw new IllegalStateException();
+		if ( !file.isFile() ) return;
+		if ( null==type ) throw new IllegalStateException();
+
+		final Path path = Paths.get( file.toURI() );
+		
+		try {
+			final byte[] data = Files.readAllBytes( path );
+			store( strName, null, type, data );
+			
+		} catch ( final IOException e ) {
+			e.printStackTrace();
+		}
+	}
+	
 	
 	
 	/*
@@ -88,7 +131,8 @@ http://localhost:8080/map?name=SCREENSHOT_B8-27-EB-13-8B-C0
 	
 	public static void main( final String[] args ) throws IOException {
 		
-		final GAEComm comm = new GAEComm( "http://localhost:8080/" );
+//		final GAEComm comm = new GAEComm( "http://localhost:8080/" );
+		final GAEComm comm = new GAEComm();
 		
 		comm.store( "test_name", "test_value: this is the large stored data" );
 		
@@ -101,7 +145,15 @@ http://localhost:8080/map?name=SCREENSHOT_B8-27-EB-13-8B-C0
 		System.out.println( "Byte array: " + data.length );
 		comm.store( "SCREENSHOT_B8-27-EB-13-8B-C0", 
 						null, ContentType.IMAGE_PNG, data );
-			
+		
+//		final String strConfig_Accept001 = 
+//						SystemUtil.getProperty( SUProperty.BROWSER_ACCEPT_001 );
+//		comm.configure( SUProperty.BROWSER_ACCEPT_001.name(), strConfig_Accept001 );
+		
+		final List<String> listAccept = 
+					SystemUtil.getProperties( SUProperty.BROWSER_ACCEPT_PRE );
+		final String strAccept = String.join( "\n", listAccept );
+		comm.configure( SUProperty.BROWSER_ACCEPT_PRE.getName(), strAccept );
 	}
 
 }

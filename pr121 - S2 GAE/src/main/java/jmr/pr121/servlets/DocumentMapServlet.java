@@ -13,6 +13,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.http.entity.ContentType;
 
 import jmr.pr121.doc.DocumentData;
 import jmr.pr121.doc.DocumentMap;
@@ -88,29 +89,98 @@ public class DocumentMapServlet extends HttpServlet {
 			
 			
 
-			    resp.setContentType("text/plain");
-			    resp.setCharacterEncoding("UTF-8");
-			
+//			    resp.setContentType("text/plain");
+//			    resp.setCharacterEncoding("UTF-8");
+
+			    resp.setContentType( ContentType.TEXT_HTML.getMimeType() );
+//			    resp.setCharacterEncoding("UTF-8");
+
 			    final PrintWriter writer = resp.getWriter();
+			    
+
+			    writer.print( "<h1 style=\"color: #5e9ca0;\">Documents</h1>\n" );
+			    
+			    writer.print( "<p>" + req.getRequestURL() + "</p>\n" );
+			    
+			    writer.print( "<table>\n" );
+			    writer.print( "<tbody>\n" );
+			    writer.print( "<tr>\n" );
+			    writer.print( "<td><strong>Time</strong></td>\n" );
+			    writer.print( "<td><strong>Key</strong></td>\n" );
+			    writer.print( "<td><strong>ContentType</strong></td>\n" );
+			    writer.print( "<td><strong>Class</strong></td>\n" );
+			    writer.print( "<td><strong>Length</strong></td>\n" );
+			    writer.print( "<td><strong>Textual</strong></td>\n" );
+			    writer.print( "</tr>\n" );
+
+				for ( final Entry<String, DocumentData> 
+									entry : DocumentMap.get().entrySet()) {
+					final String key = entry.getKey();
+					final DocumentData item = entry.getValue();
+
+//					writer.print("\t" + item.time.toString() 
+//							+ "\t" + key + "\t" + item.strClass + "\t"
+//							+ item.asString(60) + "\r\n");
+					
+					// <a href="host/get?name=my_image">my_image</a>
+					
+					final String strURL = req.getRequestURL() + "?name=" + key;
+					final String strLink = "<a href=\"" + strURL + "\">" + key + "</a>";
+					
+					writer.print( "\t<tr>\n" );
+					writer.print( "\t\t<td>" + item.time.toString() + "</td>\n" );
+					writer.print( "\t\t<td>" + strLink + "</td>\n" );
+					writer.print( "\t\t<td>" + item.strContentType + "</td>\n" );
+					writer.print( "\t\t<td>" + item.strClass + "</td>\n" );
+					writer.print( "\t\t<td>" + item.data.length + "</td>\n" );
+					writer.print( "\t\t<td>" + item.asString() + "</td>\n" );
+					writer.print( "\t</tr>\n" );
+					
+				}
+			    
+
+
+			    writer.print( "</tbody>\n" );
+			    writer.print( "</table>\n" );
+			    writer.print( "<h1 style=\"color: #5e9ca0;\">History</h1>\n" );
+			    writer.print( "<table>\n" );
+			    writer.print( "<tbody>\n" );
+			    writer.print( "<tr>\n" );
+			    writer.print( "<td><strong>Time</strong></td>\n" );
+			    writer.print( "<td><strong>URL</strong></td>\n" );
+			    writer.print( "<td><strong>Parameters</strong></td>\n" );
+			    writer.print( "</tr>\n" );
+			    writer.print( "<tr>\n" );
+			    writer.print( "<td>&nbsp;</td>\n" );
+			    writer.print( "<td>&nbsp;</td>\n" );
+			    writer.print( "<td>&nbsp;</td>\n" );
+			    writer.print( "</tr>\n" );
+			    writer.print( "</tbody>\n" );
+			    writer.print( "</table>\n" );
+			    writer.print( "<p>&nbsp;</p>\n" );
+			    
+			    
+			    
+			    
 				writer.print("DataMap\r\n");
 			
 				writer.print( sbWriter.toString() );
 			
 				
-				
-				writer.print("\r\nDocuments:\r\n");
-				for ( final Entry<String, DocumentData> 
-									entry : DocumentMap.get().entrySet() ) {
-					final String key = entry.getKey();
-					final DocumentData item = entry.getValue();
-					
-					writer.print( "\t" + item.time.toString()
-							+ "\t" + key
-							+ "\t" + item.strClass 
-							+ "\t" + item.asString( 60 )
-							+ "\r\n" );
-				}
-				
+//				
+////				writer.print("\r\nDocuments:\r\n");
+//				for ( final Entry<String, DocumentData> 
+//									entry : DocumentMap.get().entrySet() ) {
+//					final String key = entry.getKey();
+//					final DocumentData item = entry.getValue();
+//					
+//					writer.print( "\t" + item.time.toString()
+//							+ "\t" + key
+//							+ "\t" + item.strClass 
+//							+ "\t" + item.asString( 60 )
+//							+ "\r\n" );
+//				}
+//				
 				writer.print("\r\nHistory:\r\n");
 				for ( final String line : listHistory ) {
 					writer.print("\t" + line +"\r\n");
@@ -129,12 +199,12 @@ public class DocumentMapServlet extends HttpServlet {
 		}
 
 	
-	  }
+	}
+	
 	
 	@Override
 	public void doPost(	final HttpServletRequest req, 
-		  				final HttpServletResponse resp ) 
-		  									throws IOException {
+		  				final HttpServletResponse resp ) throws IOException {
 		Log.add( this.getClass().getName() + ".doPost()" );
 		
 		final LocalDateTime now = LocalDateTime.now();
@@ -163,28 +233,10 @@ public class DocumentMapServlet extends HttpServlet {
 			writer.print( "\r\nPOST data:\r\n" );
 
 			{
-//				final StringBuffer strbuf = new StringBuffer();
-//				String line = null;
-//				try {
-//					BufferedReader reader = req.getReader();
-//					while ((line = reader.readLine()) != null)
-//						strbuf.append(line);
-//				} catch (Exception e) {
-//				/* report an error */ 
-//				}
-//				final int iLength = req.getContentLength();
-//				final byte[] data = new byte[ iLength ];
-					
-				
-//				writer.print( strbuf.toString() + "\r\n" );
-				
+
 				if ( null!=strName && !strName.isEmpty() ) {
-//					final String str = strbuf.toString();
 					
 				    try {
-//				        final ServletInputStream sis = req.getInputStream();
-//				        final byte[] data = new byte[sis.available()];
-//				        sis.read( data );
 				    	
 				    	final byte[] data = new byte[ req.getContentLength() ];
 				        
@@ -193,18 +245,15 @@ public class DocumentMapServlet extends HttpServlet {
 				        int r;
 				        int pos = 0;
 				        while ((r = in.read(buf)) != -1) {
-//				            data.write(buf, 0, r);
 				        	System.arraycopy( buf, 0, data, pos, r );
 				        	pos = pos + r;
 				        }
 				        
 				        
 				        
-//						final DocumentData doc = new DocumentData( now, str );
 						final DocumentData doc = new DocumentData( 
 								now, strClass, strContentType, data );
 						
-//						mapDoc.put( strName, doc );
 						DocumentMap.get().put( strName, doc );
 						
 						Log.add( "Storing data (" + data.length + " bytes)." );
@@ -220,15 +269,6 @@ public class DocumentMapServlet extends HttpServlet {
 				}
 			}
 
-
-			writer.print("\r\nHistory:\r\n");
-			
-			{
-				writer.print("\r\nHistory:\r\n");
-				for ( final String line : listHistory ) {
-					writer.print("\t" + line +"\r\n");
-				}
-			}
 			
 			listHistory.add( req.getRequestURL().toString() );
 			listHistory.add( "\t\t" + req.getQueryString() );
@@ -237,6 +277,6 @@ public class DocumentMapServlet extends HttpServlet {
 			writer.print("\r\nError: " + e.toString() + "\r\n");
 		}
 
-
-	  }
+	}
+	
 }

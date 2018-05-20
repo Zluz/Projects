@@ -2,6 +2,8 @@ package jmr.util;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
 
@@ -39,6 +41,28 @@ public abstract class SystemUtil {
 		final String strName = property.getName();
 		final String strValue = getProperties().getProperty( strName );
 		return strValue;
+	}
+	
+
+	public static List<String> getProperties( final SUProperty property ) {
+		final List<String> list = new LinkedList<>();
+		if ( null==property ) return list;
+		
+		int i = 1;
+		boolean bFound = true;
+		while ( bFound ) {
+			final String strName = 
+						property.getName() + "." + String.format("%03d", i );
+			final String strValue = getProperties().getProperty( strName );
+			if ( null!=strValue && !strValue.isEmpty() ) {
+				bFound = true;
+				list.add( strValue );
+			} else {
+				bFound = false;
+			}
+			i++;
+		}
+		return list;
 	}
 	
 	
