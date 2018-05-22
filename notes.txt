@@ -8,6 +8,13 @@
   remove weather icons from S2 client
   add time check to MonitorProcess.java: if process exits too quickly, record error?, echo to console
   
+  add auth to gae
+      see:
+        https://www.programcreek.com/java-api-examples/?class=javax.servlet.http.HttpServletRequest&method=login
+        https://www.logicbig.com/tutorials/java-ee-tutorial/java-servlet/programmatic-security.html
+  
+  modify picture-taking cron to support usb cameras. run cron on all RPis.
+  
   (dev env)
     install Classic Start Menu (4.3.0+)  www.classicshell.net
   (home network)
