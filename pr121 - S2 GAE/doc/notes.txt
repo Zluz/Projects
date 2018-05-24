@@ -1,0 +1,16 @@
+
+design
+
+  2 servlets
+    (1) user interface
+    (2) s2/home comm
+
+to do
+
+  add uptime
+
+  add user authentication
+  
+  add supports for alerts
+  add support for missing beacon detection, alert
+  
