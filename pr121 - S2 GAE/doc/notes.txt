@@ -14,6 +14,9 @@ to do
   add supports for alerts
   add support for missing beacon detection, alert
   
+  check,report versions at runtime
+    https://cloud.google.com/appengine/docs/standard/java/javadoc/com/google/appengine/api/utils/SystemProperty
+  
 
 
 
