@@ -22,7 +22,7 @@ import jmr.pr115.schedules.run.TeslaJob;
 import jmr.pr120.Command;
 import jmr.pr120.EmailEvent;
 import jmr.pr122.DocKey;
-import jmr.pr122.GAEComm;
+import jmr.pr122.CommGAE;
 import jmr.s2.ingest.Import;
 import jmr.s2db.imprt.WebImport;
 import jmr.s2db.job.JobType;
@@ -172,7 +172,7 @@ public class Simple {
 				SendMessage.send( MessageType.EMAIL, 
 						"Tesla Combined JSON", strbuf.toString() );
 				
-				final GAEComm comm = new GAEComm();
+				final CommGAE comm = new CommGAE();
 				comm.store( DocKey.TESLA_COMBINED, strPrettyCombined );
 			}
 			
@@ -266,7 +266,7 @@ public class Simple {
 		final long lCutoff = 
 				System.currentTimeMillis() - TimeUnit.DAYS.toMillis( 1 );
 		
-		final GAEComm comm = new GAEComm();
+		final CommGAE comm = new CommGAE();
 
 		for ( final Entry<String, FileSession> entry : map.entrySet() ) {
 			final String strKey = entry.getKey();
@@ -404,7 +404,7 @@ public class Simple {
 	
 	public static void main( final String[] args ) {
 
-		final GAEComm comm = new GAEComm();
+		final CommGAE comm = new CommGAE();
 
 		final File file = new File( "S:\\Sessions\\B8-27-EB-13-8B-C0\\screenshot.png" );
 		final String strName = "SCREENSHOT_B8-27-EB-13-8B-C0";

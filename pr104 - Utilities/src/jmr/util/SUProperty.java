@@ -18,6 +18,9 @@ public enum SUProperty {
 	S2DB_SCHEMA( "s2db.schema" ),
 	
 	GAE_URL( "gae.url" ),
+	GAE_USERNAME( "gae.username" ),
+	GAE_PASSWORD( "gae.password" ),
+	GAE_USER_PRE( "gae.user" ),
 	
 	BROWSER_ACCEPT_001( "browser_accept.001" ),
 	BROWSER_ACCEPT_PRE( "browser_accept" ),

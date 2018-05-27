@@ -18,17 +18,17 @@ import jmr.util.SystemUtil;
 import jmr.util.http.ContentRetriever;
 import jmr.util.http.ContentType;
 
-public class GAEComm {
+public class CommGAE {
 
 	final String strGAEUrl;
 	
 	
 	
-	public GAEComm( final String strURL ) {
+	public CommGAE( final String strURL ) {
 		this.strGAEUrl = strURL; 
 	}
 
-	public GAEComm() {
+	public CommGAE() {
 		this( SystemUtil.getProperty( SUProperty.GAE_URL ) ); 
 	}
 	
@@ -127,12 +127,17 @@ http://localhost:8080/map?name=SCREENSHOT_B8-27-EB-13-8B-C0
 
 
 	 */
+
+	private void loadProperty( final SUProperty property ) {
+		final String value = SystemUtil.getProperty( property );
+		this.configure( property.getName(), value );
+	}
 	
 	
 	public static void main( final String[] args ) throws IOException {
 		
-//		final GAEComm comm = new GAEComm( "http://localhost:8080/" );
-		final GAEComm comm = new GAEComm();
+		final CommGAE comm = new CommGAE( "http://localhost:8080/" );
+//		final CommGAE comm = new CommGAE();
 		
 		comm.store( "test_name", "test_value: this is the large stored data" );
 		
@@ -149,11 +154,22 @@ http://localhost:8080/map?name=SCREENSHOT_B8-27-EB-13-8B-C0
 //		final String strConfig_Accept001 = 
 //						SystemUtil.getProperty( SUProperty.BROWSER_ACCEPT_001 );
 //		comm.configure( SUProperty.BROWSER_ACCEPT_001.name(), strConfig_Accept001 );
-		
+
+		comm.loadProperty( SUProperty.GAE_USERNAME );
+		comm.loadProperty( SUProperty.GAE_PASSWORD );
+
 		final List<String> listAccept = 
 					SystemUtil.getProperties( SUProperty.BROWSER_ACCEPT_PRE );
 		final String strAccept = String.join( "\n", listAccept );
 		comm.configure( SUProperty.BROWSER_ACCEPT_PRE.getName(), strAccept );
+
+		final List<String> listUser = 
+				SystemUtil.getProperties( SUProperty.GAE_USER_PRE );
+	final String strUsers = String.join( "\n", listUser );
+	comm.configure( SUProperty.GAE_USER_PRE.getName(), strUsers );
+	
+
+		
 	}
 
 }

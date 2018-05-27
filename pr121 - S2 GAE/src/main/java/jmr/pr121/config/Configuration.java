@@ -7,6 +7,9 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
+import org.omg.PortableInterceptor.SUCCESSFUL;
+
 import jmr.pr121.servlets.Log;
 
 public class Configuration {
@@ -39,6 +42,67 @@ public class Configuration {
 		return map.entrySet();
 	}
 
+	
+	public boolean isBrowserTestInitialized() {
+		if ( map.isEmpty() ) return false;
+		final String strTestList = map.get( "browser_accept" );
+		if ( null==strTestList ) return false;
+		return ( ! strTestList.isEmpty() );
+	}
+	
+	
+	public boolean isValidUser(	final String strUsr,
+								final String strPwd ) {
+		
+		Log.add( "--- Configuration.isValidUser()" );
+		
+		if ( StringUtils.isEmpty( strUsr ) ) return false;
+
+		Log.add( "\tstrUsr = " + strUsr );
+
+		final String strConfigUsers = this.get( "gae.user" );
+		if ( StringUtils.isEmpty( strConfigUsers ) ) return false;
+
+//		Log.add( "\tstrConfigUsers = " + strConfigUsers );
+
+		final String[] arrConfigUsers = strConfigUsers.split( "\n" );
+		for ( final String strConfigLine : arrConfigUsers ) {
+			
+			Log.add( "\tstrConfigLine = " + strConfigLine );
+			
+			final String[] arrUserDetail = strConfigLine.split( "\\|" );
+			
+			boolean bCandidate = true;
+			bCandidate = bCandidate && arrUserDetail.length > 0;
+			if ( bCandidate ) {
+				final String strConfigUser = arrUserDetail[0].trim();
+				
+				Log.add( "\tstrConfigUser = " + strConfigUser );
+				
+				if ( !strUsr.equals( strConfigUser ) ) {
+					bCandidate = false;
+				}
+			}
+			
+			if ( bCandidate && null!=strPwd ) {
+				bCandidate = bCandidate && arrUserDetail.length > 1;
+				if ( bCandidate ) {
+					final String strConfigPwd = arrUserDetail[1].trim();
+					if ( !strPwd.equals( strConfigPwd ) ) {
+						bCandidate = false;
+					}
+				}
+			}
+			
+			if ( bCandidate ) {
+				Log.add( "\tUser authorized." );
+				return true;
+			}
+		}
+		Log.add( "\tUser NOT authorized." );
+		return false;
+	}
+	
 	
 	/*
 	 * Super simple authentication. 

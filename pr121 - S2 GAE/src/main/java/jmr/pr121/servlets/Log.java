@@ -5,10 +5,12 @@ import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /*
 	http://localhost:8080/hello?name=value&name_2=value_2
@@ -34,13 +36,27 @@ public class Log extends HttpServlet {
 	@Override
 	public void doGet(	final HttpServletRequest req, 
 		  				final HttpServletResponse resp ) 
-		  							throws IOException {
-      
+		  							throws IOException, ServletException {
+//		req.logout();
+//		req.authenticate( resp );
+//		req.login( "121", "4559" );
+		
+//		final UserAuth ua = new UserAuth( req, resp );
+//		if ( !ua.require( 2 ) ) {
+//			return;
+//		}
+//		SessionRegistry.register( req );
+		
+//		final UserAuth auth = new UserAuth( req, resp );
+//		if ( auth.isAborted() ) return;
+		
 	    resp.setContentType("text/plain");
 	    resp.setCharacterEncoding("UTF-8");
 	
 	    final PrintWriter writer = resp.getWriter();
     
+		writer.print( "\tHttpServletRequest.getUserPrincipal(): " + req.getUserPrincipal() + "\r\n" );
+
 		try {
 			
 			writer.print("\r\nLog:\r\n");

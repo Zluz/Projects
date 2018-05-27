@@ -8,12 +8,14 @@ import java.nio.ByteBuffer;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.annotation.WebServlet;
@@ -25,6 +27,7 @@ import javax.servlet.http.HttpSession;
 import com.google.appengine.api.utils.SystemProperty;
 
 import jmr.pr121.config.Configuration;
+import jmr.pr121.doc.DocumentMap;
 
 //import com.google.apphosting.runtime.jetty9.AppEngineAuthentication;
 
@@ -37,10 +40,10 @@ import jmr.pr121.config.Configuration;
 
 @SuppressWarnings("serial")
 @WebServlet(
-    name = "Status",
-    urlPatterns = {"/status"}
+    name = "User Interface",
+    urlPatterns = { "/ui","/ui/map" }
 )
-public class Status extends HttpServlet {
+public class UIServlet extends HttpServlet {
 
 	final static LocalDateTime ldtStart;
 	
@@ -49,38 +52,60 @@ public class Status extends HttpServlet {
 	}
 	
 	
-	final static List<String> listLog = new LinkedList<>();
-
-	public static void add( final String strText ) {
-		listLog.add( strText );
-	}
-
-	
-//	final static Map<String,String> CONFIG = new HashMap<>();
-	
-	
-	
 	
 	@Override
 	public void doGet(	final HttpServletRequest req, 
 		  				final HttpServletResponse resp ) 
 		  							throws IOException, ServletException {
-		
+
 		final LocalDateTime ldtNow = LocalDateTime.now();
-    
+
+		// authenticate, authorize
 		final UserAuth user = new UserAuth( req, resp );
 		if ( !user.require( 2 ) ) return;
 		if ( user.isAborted() ) return;
-
+		
+		
+//		for ( final Entry<String, String[]> 
+//					entry : req.getParameterMap().entrySet() ) {
+//		}
+		
+		final EnumMap<ParameterName, String> params = 
+				ParameterName.getEnumMapOf( req.getParameterMap().entrySet() );
+		params.put( ParameterName.REQUEST_URL, req.getRequestURL().toString() );
+		
+		
 		
 
+		
+		
+
+		final String strURI = req.getRequestURI().trim();
+		
+		if ( strURI.startsWith( "/ui/map" ) ) {
+			
+			
+			final DocumentMapServlet pageMap = new DocumentMapServlet();
+			pageMap.doGet( params, resp );
+			
+			return;
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		
 	    resp.setContentType("text/plain");
 	    resp.setCharacterEncoding("UTF-8");
 	
 	    final PrintWriter writer = resp.getWriter();
     
 		try {
-			writer.print( Status.class.getName() + "\r\n\r\n");
+			writer.print( UIServlet.class.getName() + "\r\n\r\n");
 
 			writer.print("Request Details:");
 			writer.print("\r\n\tgetQueryString(): " + req.getQueryString() );
@@ -115,9 +140,9 @@ public class Status extends HttpServlet {
 
 			writer.print("\r\n");
 			writer.print("Additional Request Information:\r\n");
-			final Principal prinicipal = req.getUserPrincipal();
-			writer.print( "\tHttpServletRequest.getUserPrincipal(): " + prinicipal + "\r\n" );
-			writer.print( "\t\tPrincipal.class: " + prinicipal.getClass().getName() + "\r\n" );
+			final Principal pu = req.getUserPrincipal();
+			writer.print( "\tHttpServletRequest.getUserPrincipal(): " + pu + "\r\n" );
+			writer.print( "\t\tPrincipal.class: " + pu.getClass().getName() + "\r\n" );
 			writer.print( "\tHttpServletRequest.getLocale(): " + req.getLocale() + "\r\n" );
 			try {
 				writer.print( "\tHttpServletRequest.getParts().size(): " + req.getParts().size() + "\r\n" );
@@ -188,16 +213,6 @@ public class Status extends HttpServlet {
 			writer.print( "\tConfiguration.isBrowserAccepted(): " + bAccepted + "\r\n" );
 
 
-			writer.print("\r\n");
-			writer.print("History\r\n");
-			
-			for ( final String line : listLog ) {
-				writer.print( line +"\r\n" );
-			}
-			
-			listLog.add( req.getRequestURL().toString() );
-			listLog.add( "\t\t" + req.getQueryString() );
-			
 		} catch ( final Throwable e ) {
 			writer.print("\r\nError: " + e.toString() + "\r\n");
 		}
