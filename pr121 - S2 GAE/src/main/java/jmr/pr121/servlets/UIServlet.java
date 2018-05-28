@@ -10,12 +10,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.EnumMap;
 import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.annotation.WebServlet;
@@ -27,7 +24,6 @@ import javax.servlet.http.HttpSession;
 import com.google.appengine.api.utils.SystemProperty;
 
 import jmr.pr121.config.Configuration;
-import jmr.pr121.doc.DocumentMap;
 
 //import com.google.apphosting.runtime.jetty9.AppEngineAuthentication;
 
@@ -41,7 +37,9 @@ import jmr.pr121.doc.DocumentMap;
 @SuppressWarnings("serial")
 @WebServlet(
     name = "User Interface",
-    urlPatterns = { "/ui","/ui/map" }
+    urlPatterns = {	"/ui",
+    				"/ui/map",
+    				"/ui/log" }
 )
 public class UIServlet extends HttpServlet {
 
@@ -57,6 +55,7 @@ public class UIServlet extends HttpServlet {
 	public void doGet(	final HttpServletRequest req, 
 		  				final HttpServletResponse resp ) 
 		  							throws IOException, ServletException {
+		Log.add( req );
 
 		final LocalDateTime ldtNow = LocalDateTime.now();
 
@@ -152,7 +151,7 @@ public class UIServlet extends HttpServlet {
 			final HttpSession session = req.getSession();
 			writer.print( "\treq.getSession(): " + session + "\r\n" );
 			writer.print( "\t\tHttpSession.getId(): " + session.getId() + "\r\n" );
-			writer.print( "\t\tHttpSession.getSessionContext(): " + session.getSessionContext() + "\r\n" );
+//			writer.print( "\t\tHttpSession.getSessionContext(): " + session.getSessionContext() + "\r\n" );
 			writer.print( "\t\tHttpSession.getServletContext(): " + session.getServletContext() + "\r\n" );
 //			final ServletContext context = session.getServletContext();
 //			writer.print( "\t\t\tServletContext: " + context + "\r\n" );

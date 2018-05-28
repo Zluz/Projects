@@ -8,7 +8,6 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.omg.PortableInterceptor.SUCCESSFUL;
 
 import jmr.pr121.servlets.Log;
 
@@ -17,7 +16,8 @@ public class Configuration {
 
 	final static Configuration instance = new Configuration();
 	
-	final static Map<String,String> map = new HashMap<>();
+	final static Map<String,String> mapString = new HashMap<>();
+	final static Map<String,Long> mapLong = new HashMap<>();
 	
 	private Configuration() {};
 	
@@ -30,22 +30,42 @@ public class Configuration {
 		if ( null==strName ) return;
 		if ( strName.isEmpty() ) return;
 		
-		map.put( strName, strValue );
+		mapString.put( strName, strValue );
+		try {
+			final long lValue = Long.parseLong( strValue );
+			mapLong.put( strName, lValue );
+		} catch ( NumberFormatException e ) {
+//			mapLong.put( strName, null );
+			mapLong.remove( strName );
+		}
+	}
+
+	public void put( 	final String strName,
+						final Long lValue ) {
+		if ( null==strName ) return;
+		if ( strName.isEmpty() ) return;
+		
+		mapString.put( strName, lValue.toString() );
+		mapLong.put( strName, lValue );
 	}
 	
 	public String get( final String strName ) {
-		return map.get( strName );
+		return mapString.get( strName );
+	}
+
+	public Long getAsLong( final String strName ) {
+		return mapLong.get( strName );
 	}
 
 	
 	public Set<Entry<String, String>> entrySet() {
-		return map.entrySet();
+		return mapString.entrySet();
 	}
 
 	
 	public boolean isBrowserTestInitialized() {
-		if ( map.isEmpty() ) return false;
-		final String strTestList = map.get( "browser_accept" );
+		if ( mapString.isEmpty() ) return false;
+		final String strTestList = mapString.get( "browser_accept" );
 		if ( null==strTestList ) return false;
 		return ( ! strTestList.isEmpty() );
 	}
@@ -122,7 +142,7 @@ public class Configuration {
 				strUserAgent + "||" + strAccept + "||" + strAcceptLanguage;
 		Log.add( "isBrowserAccepted() - Testing: " + strMatch );
 		
-		final String strTestList = map.get( "browser_accept" );
+		final String strTestList = mapString.get( "browser_accept" );
 		if ( null==strTestList ) {
 			Log.add( "isBrowserAccepted() - No accept config loaded." );
 			return false;

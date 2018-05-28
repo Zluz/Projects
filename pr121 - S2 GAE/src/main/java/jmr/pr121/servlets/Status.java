@@ -56,16 +56,14 @@ public class Status extends HttpServlet {
 	}
 
 	
-//	final static Map<String,String> CONFIG = new HashMap<>();
-	
-	
 	
 	
 	@Override
 	public void doGet(	final HttpServletRequest req, 
 		  				final HttpServletResponse resp ) 
 		  							throws IOException, ServletException {
-		
+		Log.add( req );
+
 		final LocalDateTime ldtNow = LocalDateTime.now();
     
 		final UserAuth user = new UserAuth( req, resp );
@@ -89,6 +87,7 @@ public class Status extends HttpServlet {
 			writer.print("\r\n\tgetLocalName(): " + req.getLocalName() );
 			writer.print("\r\n");
 
+			writer.print("\r\n");
 			writer.print("Request Headers:\r\n");
 			{
 				final Enumeration<String> names = req.getHeaderNames();
@@ -100,6 +99,7 @@ public class Status extends HttpServlet {
 			}
 
 
+			writer.print("\r\n");
 			writer.print("Request Attributes:\r\n");
 			{
 				final Enumeration<String> names = req.getAttributeNames();
@@ -127,7 +127,7 @@ public class Status extends HttpServlet {
 			final HttpSession session = req.getSession();
 			writer.print( "\treq.getSession(): " + session + "\r\n" );
 			writer.print( "\t\tHttpSession.getId(): " + session.getId() + "\r\n" );
-			writer.print( "\t\tHttpSession.getSessionContext(): " + session.getSessionContext() + "\r\n" );
+//			writer.print( "\t\tHttpSession.getSessionContext(): " + session.getSessionContext() + "\r\n" );
 			writer.print( "\t\tHttpSession.getServletContext(): " + session.getServletContext() + "\r\n" );
 //			final ServletContext context = session.getServletContext();
 //			writer.print( "\t\t\tServletContext: " + context + "\r\n" );
@@ -180,7 +180,17 @@ public class Status extends HttpServlet {
 								entry : Configuration.get().entrySet() ) {
 					final String name = entry.getKey();
 					final Object value = entry.getValue();
-					writer.print( "\t" + name + " = " + value + "\r\n" );
+					writer.print( "\t" + name + " = " );
+					if ( value instanceof String 
+							&& value.toString().contains( "\n" ) ) {
+						final String[] items = value.toString().split( "\n" );
+						writer.print( "(" + items.length + " items)\r\n" );
+						for ( final String item : items ) {
+							writer.print( "\t\t\t" + item + "\r\n" );
+						}
+					} else {
+						writer.print( value + "\r\n" );
+					}
 				}
 			}
 			writer.print("\r\n");

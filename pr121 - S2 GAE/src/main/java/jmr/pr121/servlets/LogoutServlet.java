@@ -34,6 +34,8 @@ public class LogoutServlet extends HttpServlet {
 	protected void doGet(	final HttpServletRequest request, 
 							final HttpServletResponse response
 									) throws ServletException, IOException {
+		Log.add( request );
+
 		request.logout();
 		final HttpSession session = request.getSession(true);
 		session.invalidate();
