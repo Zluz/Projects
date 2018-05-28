@@ -88,7 +88,7 @@ public class Configuration {
 		final String[] arrConfigUsers = strConfigUsers.split( "\n" );
 		for ( final String strConfigLine : arrConfigUsers ) {
 			
-			Log.add( "\tstrConfigLine = " + strConfigLine );
+//			Log.add( "\tstrConfigLine = " + strConfigLine );
 			
 			final String[] arrUserDetail = strConfigLine.split( "\\|" );
 			
@@ -97,7 +97,7 @@ public class Configuration {
 			if ( bCandidate ) {
 				final String strConfigUser = arrUserDetail[0].trim();
 				
-				Log.add( "\tstrConfigUser = " + strConfigUser );
+//				Log.add( "\tstrConfigUser = " + strConfigUser );
 				
 				if ( !strUsr.equals( strConfigUser ) ) {
 					bCandidate = false;
@@ -136,11 +136,16 @@ public class Configuration {
 		// User-Agent||Accept||Accept-Language
 
 		final String strUserAgent = req.getHeader( "User-Agent" );
-		final String strAccept = req.getHeader( "Accept" );
+//		final String strAccept = req.getHeader( "Accept" );
 		final String strAcceptLanguage = req.getHeader( "Accept-Language" );
-		final String strMatch = 
-				strUserAgent + "||" + strAccept + "||" + strAcceptLanguage;
-		Log.add( "isBrowserAccepted() - Testing: " + strMatch );
+
+		final String strMatchExact = 
+//				strUserAgent + "||" + strAccept + "||" + strAcceptLanguage;
+				strUserAgent + "||" + strAcceptLanguage;
+//		final String strMatchClose01 = 
+//				strUserAgent + "||*/*||" + strAcceptLanguage;
+		
+		Log.add( "isBrowserAccepted() - Testing: " + strMatchExact );
 		
 		final String strTestList = mapString.get( "browser_accept" );
 		if ( null==strTestList ) {
@@ -150,7 +155,17 @@ public class Configuration {
 		
 		final String[] strings = strTestList.split( "\n" );
 		for ( final String strTest : strings ) {
-			if ( strMatch.equals( strTest ) ) return true;
+			if ( strMatchExact.equals( strTest ) ) return true;
+//			if ( strMatchClose01.equals( strTest ) ) return true;
+			
+//			final String[] parts = strTest.split( "||" );
+//			if ( strMatchExact.startsWith( parts[0] ) 
+//					&& strMatchExact.endsWith( parts[2] ) ) {
+//				Log.add( "matched on "
+//						+ "\"" + parts[0] + "\" and \"" + parts[2] + "\"" );
+//				return true;
+//			}
+			
 		}
 		Log.add( "isBrowserAccepted() - "
 				+ "Tested " + strings.length + " lines, no matches." );

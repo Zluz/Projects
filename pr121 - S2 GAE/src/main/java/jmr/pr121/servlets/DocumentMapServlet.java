@@ -76,6 +76,46 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 
 		    final PrintWriter writer = resp.getWriter();
 		    
+		    writer.print( "<!DOCTYPE html>\n"
+		    		+ "<html><head>\n"
+		    		+ "<title>Documents</title>\n"
+		    		+ "\n\n"
+		    		+ "<script>\n"
+		    		+ "\n\n\n"
+		    		+ "// https://stackoverflow.com/questions/247483/http-get-request-in-javascript"
+		    		+ "\n"
+		    		+ "function httpGetAsync(theUrl, callback)\n" + 
+		    		"{\n" + 
+		    		"    var xmlHttp = new XMLHttpRequest();\n" + 
+		    		"    xmlHttp.onreadystatechange = function() { \n" + 
+		    		"        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)\n" + 
+		    		"            callback(xmlHttp.responseText);\n" + 
+		    		"    }\n" + 
+		    		"    xmlHttp.open(\"GET\", theUrl, true); // true for asynchronous \n" + 
+		    		"    xmlHttp.send(null);\n" + 
+		    		"}\n"
+		    		+ "</script>\n"
+		    		+ "\n"
+		    		+ "\n"
+		    		+ "<script>\n"
+		    		+ "// https://www.w3schools.com/Jquery/jquery_get_started.asp"
+		    		+ "\n"
+		    		+ "function doUpdate_Test() {\n"
+		    		+ "    //alert( 'request submitted..' );\n"
+		    		+ "    $.get(\"/status\", function(data, status){\n" 
+		    		+ "        alert(\"Data: \" + data + \"\\nStatus: \" + status);\n" 
+		    		+ "    });\n"
+		    		+ "}"
+		    		+ "\n\n\n"
+		    		+ ""
+		    		+ "</script>\n"
+
+		    		+ "\n"
+		    		+ "<script src=\"https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js\"></script>"
+		    		+ "\n\n\n"
+		    		+ ""
+		    		+ "</head>\n"
+		    		+ "<body>\n" );
 
 		    writer.print( "<h1 style=\"color: #5e9ca0;\">Documents</h1>\n" );
 		    
@@ -113,6 +153,46 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 
 		    writer.print( "</tbody>\n" );
 		    writer.print( "</table>\n" );
+		    
+		    writer.print( "<form action='/status' method='post'>\n"
+		    		+ "(form)<input type='submit' value='Submit-normal'>\n"
+		    		+ "(form)<input type='submit' value='Submit-onclick' "
+		    				+ "onclick=\"httpGetAsync( '/status' )\" >\n"
+		    		+ "(form)<input type='submit' value='Submit-jQuery' \n"
+    						+ "onclick=\" $.get( '/status', null ); \" >\n"
+		    		+ "</form><br>\n" );
+
+//		    writer.print( "<form action='/status' method='post'>\n" );
+
+		    writer.print( "\n\n" );
+		    
+//		    writer.print( "<button type='button' "
+//	    		+ "onclick=\" $.get( '/status', "
+//	    				+ "function(data, status){\n" + 
+//	    				"  alert(\"Data: \" + data + \"\\nStatus: \" + status);\n" + 
+//	    		"    } ); \">"
+//		    		+ "jQuery-button 01</button>\n" );
+
+		    writer.print( "\n\n" );
+
+		    writer.print( "<button type='button' "
+		    		+ "onclick=\"doUpdate_Test();\">"
+			    		+ "jQuery-button 02</button>\n" );
+
+		    writer.print( "\n\n" );
+			    
+		    writer.print( "<button type='button' "
+		    		+ "onclick=\"alert('test');\">"
+			    		+ "alert-test</button>\n" );
+
+		    writer.print( "\n\n" );
+
+		    writer.print( "<button type='button' "
+		    		+ "onclick=''>"
+			    		+ "do nothing</button>\n" );
+
+		    writer.print( "\n\n" );
+
 		    writer.print( "<h1 style=\"color: #5e9ca0;\">History</h1>\n" );
 		    writer.print( "<table>\n" );
 		    writer.print( "<tbody>\n" );
@@ -128,12 +208,13 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 		    writer.print( "</tr>\n" );
 		    writer.print( "</tbody>\n" );
 		    writer.print( "</table>\n" );
-		    writer.print( "<p>&nbsp;</p>\n" );
+//		    writer.print( "<p>&nbsp;</p>\n" );
+		    
+		    writer.print( "</body>\n</html>" );
 		    
 		    
 		    
-		    
-			writer.print("DataMap\r\n");
+//			writer.print("DataMap\r\n");
 		
 			Log.add( "DocumentMap content complete." );
 		}

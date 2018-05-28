@@ -81,8 +81,9 @@ public class Status extends HttpServlet {
 			writer.print( Status.class.getName() + "\r\n\r\n");
 
 			writer.print("Request Details:");
-			writer.print("\r\n\tgetQueryString(): " + req.getQueryString() );
 			writer.print("\r\n\tgetRequestURI(): " + req.getRequestURI() );
+			writer.print("\r\n\tgetQueryString(): " + req.getQueryString() );
+			writer.print("\r\n\tgetProtocol(): " + req.getProtocol() );
 			writer.print("\r\n\tgetPathInfo(): " + req.getPathInfo() );
 			writer.print("\r\n\tgetLocalName(): " + req.getLocalName() );
 			writer.print("\r\n");
