@@ -39,6 +39,7 @@ public class UserAuth {
 	
 	public final static boolean AUTH_USER_BY_HTTP = false;
 	public final static boolean AUTH_USER_BY_GAE = true;
+	public final static boolean CHECK_HTTPS = true;
 	
 	
 	public UserAuth(	final HttpServletRequest request,
@@ -114,7 +115,7 @@ public class UserAuth {
 	
 							Log.add( "\tclass: " + user.getClass().getName() );
 							Log.add( "\temail: " + user.getEmail() );
-							Log.add( "\tuser id: " + user.getUserId() );
+//							Log.add( "\tuser id: " + user.getUserId() );
 							Log.add( "\tdomain: " + user.getAuthDomain() );
 							
 							final String strUserGAE = user.getEmail();
@@ -128,6 +129,26 @@ public class UserAuth {
 							final boolean bIsValid = 
 									Configuration.get().isValidUser( strUserGAE, null );
 							iTest = bIsValid ? 2 : 1;
+						}
+					}
+					
+					if ( CHECK_HTTPS ) {
+						final boolean bHTTPS;
+						final String strUpgrade = "" + request.getHeader( 
+										"upgrade-insecure-requests" );
+//						final String strReferred = "" + request.getHeader( 
+//										"referer" );
+						bHTTPS = strUpgrade.equals( "1" )
+								; // && strReferred.startsWith( "https://" );
+						
+						if ( bHTTPS ) {
+							Log.add( "HTTPS connection detected." );
+						} else if ( Configuration.isGAEDevelopment() ) {
+							Log.add( "Not using HTTPS, but is Development." );
+						} else {
+							Log.add( "Not using HTTPS, not Development. "
+									+ "Reducing authentication level." );
+							iTest = 1;
 						}
 					}
 					

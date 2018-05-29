@@ -107,6 +107,17 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 		    		+ "    });\n"
 		    		+ "}"
 		    		+ "\n\n\n"
+		    		+ "\n"
+		    		+ "function doUpdate_Test03() {\n"
+		    		+ "    //alert( 'request submitted..' );\n"
+		    		+ "    var img = $('#img-status');\n"
+		    		+ "    img.attr( 'src', '/images/status-loading.gif' );\n"
+		    		+ "    $.get(\"/ui/input?button=test03\", function(data, status){\n" 
+		    		+ "        img.attr( 'src', '/images/check-outline-512.png' );\n"
+		    		+ "        alert(\"Data: \" + data + \"\\nStatus: \" + status);\n" 
+		    		+ "    });\n"
+		    		+ "}"
+		    		+ "\n\n\n"
 		    		+ ""
 		    		+ "</script>\n"
 
@@ -177,13 +188,21 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 
 		    writer.print( "<button type='button' "
 		    		+ "onclick=\"doUpdate_Test();\">"
-			    		+ "jQuery-button 02</button>\n" );
+			    		+ "jQuery-button 02</button> <br>\n" );
+
+		    writer.print( "\n\n" );
+
+		    writer.print( "<img id='img-status' src='/images/info-outline-512.png' alt=\"\" height='18'>\n" );
+//		    writer.print( "<img src='images/status-loading.gif' alt=\"\" height='18'>" );
+		    writer.print( "<button type='button' "
+		    		+ "onclick=\"doUpdate_Test03();\">"
+			    		+ "jQuery-button 03</button> <br>\n" );
 
 		    writer.print( "\n\n" );
 			    
 		    writer.print( "<button type='button' "
 		    		+ "onclick=\"alert('test');\">"
-			    		+ "alert-test</button>\n" );
+			    		+ "alert-test</button> <br>\n" );
 
 		    writer.print( "\n\n" );
 

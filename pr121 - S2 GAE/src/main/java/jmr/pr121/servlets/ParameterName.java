@@ -10,6 +10,7 @@ public enum ParameterName {
 
 	REQUEST_URL,
 	NAME,
+	BUTTON,
 	;
 	
 	public static ParameterName getParameterName( final String text ) {

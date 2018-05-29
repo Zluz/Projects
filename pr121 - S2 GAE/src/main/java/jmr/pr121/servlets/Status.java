@@ -22,6 +22,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.google.appengine.api.capabilities.CapabilitiesService;
+import com.google.appengine.api.capabilities.CapabilityStatus;
+import com.google.appengine.api.oauth.OAuthService;
 import com.google.appengine.api.utils.SystemProperty;
 
 import jmr.pr121.config.Configuration;
@@ -162,16 +165,41 @@ public class Status extends HttpServlet {
 			writer.print( "\tSystemProperty.environment.value(): " 
 						+ SystemProperty.environment.value() + "\r\n" );
 			writer.print( "\tSystemProperty.version.get(): " 
-					+ SystemProperty.version.get() + "\r\n" );
-			writer.print("\tInstance time: " + ldtStart.toString() + "\r\n");
-			final long lElapsed = ldtNow.toEpochSecond( ZoneOffset.UTC ) 
-						- ldtStart.toEpochSecond( ZoneOffset.UTC );
-			writer.print("\tTime elapsed: " + lElapsed + "s\r\n");
+						+ SystemProperty.version.get() + "\r\n" );
+			
+//			java.lang.NoClassDefFoundError: Could not initialize class com.google.appengine.spi.ServiceFactoryFactory$RuntimeRegistry
+//			final OAuthService oauth = com.google.appengine.api.oauth
+//					.OAuthServiceFactory.getOAuthService();
+//			writer.print( "\tOAuthService.toString(): " 
+//						+ oauth.toString() + "\r\n" );
+//			writer.print( "\tOAuthService.getCurrentUser(): " 
+//						+ oauth.getCurrentUser() + "\r\n" );
+//			writer.print( "\tOAuthService.getOAuthConsumerKey(): " 
+//					+ oauth.getOAuthConsumerKey() + "\r\n" );
+
+//			writer.print( "\tCapabilities\r\n" ); 
+//			final CapabilitiesService cs = com.google.appengine.api.capabilities
+//					.CapabilitiesServiceFactory.getCapabilitiesService();
+//			writer.print( "\t\tCapabilitiesService: " + cs.toString() + "\r\n" );
+//			cs.
+//			com.google.appengine.api.capabilities.
+//			for ( final CapabilityStatus status : 
+//					com.google.appengine.api.capabilities.CapabilityStatus.values() ) {
+//				final int value = cs.getStatus( status. );
+//				writer.print( "\t\t" + status.name() + ": " +  
+//			}
+
 			
 //			if ( SystemProperty.environment.value() == 
 //							SystemProperty.Environment.Value.Production ) {
 //				   // do something that's production-only
 //				 }
+
+			writer.print("\tInstance time: " + ldtStart.toString() + "\r\n");
+			final long lElapsed = ldtNow.toEpochSecond( ZoneOffset.UTC ) 
+						- ldtStart.toEpochSecond( ZoneOffset.UTC );
+			writer.print("\tTime elapsed: " + lElapsed + "s\r\n");
+			
 
 			
 			writer.print("\r\n");

@@ -9,6 +9,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.appengine.api.utils.SystemProperty;
+import com.google.appengine.api.utils.SystemProperty.Environment.Value;
+
 import jmr.pr121.servlets.Log;
 
 public class Configuration {
@@ -171,5 +174,12 @@ public class Configuration {
 				+ "Tested " + strings.length + " lines, no matches." );
 		return false;
 	}
+	
+	
+	public static boolean isGAEDevelopment() {
+		final Value env = SystemProperty.environment.value();
+		return SystemProperty.Environment.Value.Development.equals( env );
+	}
+	
 
 }

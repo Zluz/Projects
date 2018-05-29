@@ -38,7 +38,8 @@ import jmr.pr121.config.Configuration;
 @WebServlet(
     name = "User Interface",
     urlPatterns = {	"/ui",
-    				"/ui/map",
+					"/ui/map",
+					"/ui/input",
     				"/ui/log" }
 )
 public class UIServlet extends HttpServlet {
@@ -81,11 +82,25 @@ public class UIServlet extends HttpServlet {
 
 		final String strURI = req.getRequestURI().trim();
 		
+		Log.add( "Handling UI request.." );
+		Log.add( "\tstrURI = " + strURI );
+		Log.add( "\tparameters:" );
+		for ( final Entry<ParameterName, String> entry : params.entrySet() ) {
+			Log.add( "\t\t" + entry.getKey() + " = " + entry.getValue() );
+		}
+		
+		
 		if ( strURI.startsWith( "/ui/map" ) ) {
 			
 			
 			final DocumentMapServlet pageMap = new DocumentMapServlet();
 			pageMap.doGet( params, resp );
+			
+			return;
+		} else if ( strURI.startsWith( "/ui/input" ) ) {
+			
+			final Input input = new Input();
+			input.doGet( params, resp );
 			
 			return;
 		}
