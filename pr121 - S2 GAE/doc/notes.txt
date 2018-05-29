@@ -7,16 +7,18 @@ design
 
 to do
 
-  add uptime
-
-  add user authentication
-  
   add supports for alerts
   add support for missing beacon detection, alert
-  
-  check,report versions at runtime
-    https://cloud.google.com/appengine/docs/standard/java/javadoc/com/google/appengine/api/utils/SystemProperty
-  
+
+  add support for email notification and email communication
+      see
+          https://cloud.google.com/appengine/docs/standard/java/mail/sending-mail-with-mail-api
+
+          anything@[APP_NAME].appspotmail.com
+          anything@[APP_ALIAS].appspotmail.com
+          
+          alert@pr121-s2gae.appspotmail.com
+
 
 
 
