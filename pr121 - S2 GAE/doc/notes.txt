@@ -9,6 +9,8 @@ to do
 
   add supports for alerts
   add support for missing beacon detection, alert
+  
+  top page should show uptime
 
   add support for email notification and email communication
       see
@@ -18,7 +20,21 @@ to do
           anything@[APP_ALIAS].appspotmail.com
           
           alert@pr121-s2gae.appspotmail.com
+      does not work ......
+      
+      try:
+          https://stackoverflow.com/questions/7464997/classnotfoundexception-using-google-app-engine-for-java/7465893#7465893
+          (ensure jars are in WEB_INF/lib)
+          
+      also see:
+          https://cloud.google.com/appengine/docs/standard/java/java8-runtime-faq
+          
+          in  appengine-web.xml,
+            <system-properties>
+              <property name="appengine.api.legacy.repackaging" value="true">
+            </system-properties>
 
+          
 
 
 
