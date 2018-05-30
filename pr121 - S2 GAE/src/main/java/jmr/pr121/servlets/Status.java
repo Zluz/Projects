@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -22,9 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.google.appengine.api.capabilities.CapabilitiesService;
-import com.google.appengine.api.capabilities.CapabilityStatus;
-import com.google.appengine.api.oauth.OAuthService;
 import com.google.appengine.api.utils.SystemProperty;
 
 import jmr.pr121.config.Configuration;
@@ -158,6 +156,21 @@ public class Status extends HttpServlet {
 				writer.print( "\tHttpServletRequest.getLocale() is null\r\n" );
 			}
 
+			
+			
+
+			writer.print("\r\n");
+			writer.print("Java Runtime Information:\r\n");
+
+			writer.print( "\tRuntime.toString(): " 
+						+ Runtime.getRuntime().toString() + "\r\n" );
+			writer.print( "\tSystem properties:\r\n" ); 
+			final Properties properties = System.getProperties();
+			for ( final Entry<Object, Object> entry : properties.entrySet() ) {
+				writer.print( "\t\t" + entry.getKey() + " = " + entry.getValue() + "\r\n" ); 
+			}
+			
+			
 			
 			writer.print("\r\n");
 			writer.print("App Engine Information:\r\n");

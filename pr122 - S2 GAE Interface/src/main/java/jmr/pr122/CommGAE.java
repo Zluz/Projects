@@ -158,6 +158,12 @@ http://localhost:8080/map?name=SCREENSHOT_B8-27-EB-13-8B-C0
 		comm.loadProperty( SUProperty.GAE_USERNAME );
 		comm.loadProperty( SUProperty.GAE_PASSWORD );
 
+		comm.loadProperty( SUProperty.NEST_USERNAME );
+
+//		comm.loadProperty( SUProperty.CONTROL_EMAIL_USERNAME );
+//		comm.loadProperty( SUProperty.CONTROL_EMAIL_PROVIDER );
+//		comm.loadProperty( SUProperty.CONTROL_EMAIL_PASSWORD );
+
 		final List<String> listAccept = 
 					SystemUtil.getProperties( SUProperty.BROWSER_ACCEPT_PRE );
 		final String strAccept = String.join( "\n", listAccept );

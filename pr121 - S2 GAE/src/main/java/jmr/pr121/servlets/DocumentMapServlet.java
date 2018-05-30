@@ -19,6 +19,7 @@ import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 
+import jmr.p121.comm.GAEEmail;
 import jmr.pr121.doc.DocumentData;
 import jmr.pr121.doc.DocumentMap;
 
@@ -57,6 +58,8 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 		if ( null!=doc ) {
 
 			Log.add( "Showing document: " + strName );
+			
+			GAEEmail.sendTestEmail();
 
 			resp.setContentType( doc.strContentType );
 			final ServletOutputStream out = resp.getOutputStream();
@@ -113,6 +116,16 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 		    		+ "    var img = $('#img-status');\n"
 		    		+ "    img.attr( 'src', '/images/status-loading.gif' );\n"
 		    		+ "    $.get(\"/ui/input?button=test03\", function(data, status){\n" 
+		    		+ "        img.attr( 'src', '/images/check-outline-512.png' );\n"
+		    		+ "        alert(\"Data: \" + data + \"\\nStatus: \" + status);\n" 
+		    		+ "    });\n"
+		    		+ "}"
+		    		+ "\n"
+		    		+ "function doEmailRequest( img_id, command ) {\n"
+		    		+ "    alert( 'preparing to send email..' );\n"
+		    		+ "    var img = $( '#' + img_id );\n"
+		    		+ "    img.attr( 'src', '/images/status-loading.gif' );\n"
+		    		+ "    $.get(\"/ui/input?email=\" + command + \"\", function(data, status){\n" 
 		    		+ "        img.attr( 'src', '/images/check-outline-512.png' );\n"
 		    		+ "        alert(\"Data: \" + data + \"\\nStatus: \" + status);\n" 
 		    		+ "    });\n"
@@ -197,6 +210,15 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 		    writer.print( "<button type='button' "
 		    		+ "onclick=\"doUpdate_Test03();\">"
 			    		+ "jQuery-button 03</button> <br>\n" );
+
+		    writer.print( "\n\n" );
+
+		    writer.print( "<img id='img-email-stills' src='/images/info-outline-512.png' alt=\"\" height='18'>\n" );
+//		    writer.print( "<img src='images/status-loading.gif' alt=\"\" height='18'>" );
+		    writer.print( "<button type='button' "
+//		    		+ "onclick=\"doEmailRequest( $.get('#img-email-stills'), 'GET_CAPTURE_STILLS' );\">"
+		    		+ "onclick=\"doEmailRequest( 'img-email-stills', 'GET_CAPTURE_STILLS' );\">"
+			    		+ "GET_CAPTURE_STILLS</button> <br>\n" );
 
 		    writer.print( "\n\n" );
 			    
