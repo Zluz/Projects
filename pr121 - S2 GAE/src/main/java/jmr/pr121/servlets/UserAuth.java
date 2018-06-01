@@ -39,7 +39,7 @@ public class UserAuth {
 	
 	public final static boolean AUTH_USER_BY_HTTP = false;
 	public final static boolean AUTH_USER_BY_GAE = true;
-	public final static boolean CHECK_HTTPS = true;
+	public final static boolean CHECK_HTTPS = false; // web.xml enforces HTTPS
 	
 	
 	public UserAuth(	final HttpServletRequest request,

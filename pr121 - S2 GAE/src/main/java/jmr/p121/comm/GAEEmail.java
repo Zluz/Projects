@@ -1,14 +1,8 @@
 package jmr.p121.comm;
 
-/*
-https://cloud.google.com/appengine/docs/standard/java/mail/sending-mail-with-mail-api
-https://github.com/GoogleCloudPlatform/java-docs-samples/blob/master/appengine-java8/mail/src/main/java/com/example/appengine/mail/MailServlet.java
-https://github.com/GoogleCloudPlatform/java-docs-samples/blob/master/appengine/mail/src/main/java/com/example/appengine/mail/MailServlet.java
- */
-
-//[START simple_includes]
-import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Properties;
+
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -17,23 +11,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 //[END simple_includes]
-
-//[START multipart_includes]
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import java.io.UnsupportedEncodingException;
-import javax.activation.DataHandler;
-import javax.mail.Multipart;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMultipart;
-//[END multipart_includes]
-
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-
-
 
 /*
 import java.io.ByteArrayInputStream;
@@ -103,7 +80,17 @@ public class GAEEmail {
 			try {
 				Log.add( "Experimenting with classes.." );
 
-			    Class.forName("com.google.appengine.repackaged.com.google.common.base.internal.Finalizer");
+//			    Class.forName("com.google.appengine.repackaged.com.google.common.base.internal.Finalizer");
+/*
+java.lang.ClassNotFoundException: com.google.appengine.repackaged.com.google.common.base.internal.Finalizer
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:381)
+	at com.google.apphosting.runtime.ApplicationClassLoader.findClass(ApplicationClassLoader.java:135)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:265)
+	at jmr.p121.comm.GAEEmail.sendTestEmail(GAEEmail.java:106)
+ */
 //			    Class.forName("com.google.appengine.api.mail.MailServicePb$MailMessage");
 //			    final com.google.appengine.api.mail.MailServicePb msp = null;
 //			    final com.google.appengine.api.mail.MailServicePb.MailMessage mm = null;
@@ -124,7 +111,9 @@ public class GAEEmail {
 				final com.google.appengine.api.mail.MailService.Message 
 						message = new MailService.Message( strSender, strTo, strSubject, strBody );
 				
+				Log.add( "\tAbout to send (service).." );
 				service.send( message );
+				Log.add( "\tSent! (service)" );
 /*
 java.lang.AssertionError: java.lang.NoSuchMethodException: com.google.appengine.repackaged.com.google.common.base.internal.Finalizer.startFinalizer(java.lang.Class, java.lang.Object)
 	at com.google.appengine.repackaged.com.google.common.base.FinalizableReferenceQueue.getStartFinalizer(FinalizableReferenceQueue.java:313)
@@ -166,9 +155,10 @@ java.lang.AssertionError: java.lang.NoSuchMethodException: com.google.appengine.
 			  msg.setText("Test Email (simple) - Text");
 			  
 			  
-			  Log.add( "\tAbout to send.." );
-			  
+			  Log.add( "\tAbout to send (simple).." );
 			  Transport.send(msg);
+			  Log.add( "\tSent! (simple)" );
+
 /*
 java.lang.NoClassDefFoundError: Could not initialize class com.google.appengine.api.mail.MailServicePb$MailMessage
 	at com.google.appengine.api.mail.MailServiceImpl.doSend(MailServiceImpl.java:49)
@@ -215,60 +205,79 @@ java.lang.NoClassDefFoundError: Could not initialize class com.google.appengine.
 //			
 			
 			
-		    Properties props = new Properties();
-		    Session session = Session.getDefaultInstance(props, null);
-
-		    String msgBody = "Test Email (multi) - Text";
-
-		    try {
-		      Message msg = new MimeMessage(session);
-//		      msg.setFrom(new InternetAddress("admin@example.com", "Example.com Admin"));
-			  msg.setFrom(new InternetAddress( strSender, "Test Email Sender"));
-//		      msg.addRecipient(Message.RecipientType.TO,
-//		                       new InternetAddress("user@example.com", "Mr. User"));
-			  msg.addRecipient(Message.RecipientType.TO,
-	                   new InternetAddress( strTo, "Test Email Recipient"));
-			  msg.setSubject("Test Email (multi) - Subject");
-//		      msg.setSubject("Your Example.com account has been activated");
-		      msg.setText(msgBody);
-
-		      // [START multipart_example]
-		      String htmlBody = "<html>html body</html>";          // ...
-		      byte[] attachmentData = "Attachment data".getBytes();
-		      Multipart mp = new MimeMultipart();
-
-		      MimeBodyPart htmlPart = new MimeBodyPart();
-		      htmlPart.setContent(htmlBody, "text/html");
-		      mp.addBodyPart(htmlPart);
-
-		      MimeBodyPart attachment = new MimeBodyPart();
-		      InputStream attachmentDataStream = new ByteArrayInputStream(attachmentData);
-		      attachment.setFileName("manual.pdf");
-		      attachment.setContent(attachmentDataStream, "application/pdf");
-		      mp.addBodyPart(attachment);
-
-		      msg.setContent(mp);
-		      // [END multipart_example]
-
-			  Log.add( "\tAbout to send.." );
-
-		      Transport.send(msg);
-/*
-java.lang.NoClassDefFoundError: Could not initialize class com.google.appengine.api.mail.MailServicePb$MailMessage
-	at com.google.appengine.api.mail.MailServiceImpl.doSend(MailServiceImpl.java:49)
-	at com.google.appengine.api.mail.MailServiceImpl.send(MailServiceImpl.java:32)
-	at com.google.appengine.api.mail.stdimpl.GMTransport.sendMessage(GMTransport.java:247)
-	at javax.mail.Transport.send(Transport.java:95)
-	at javax.mail.Transport.send(Transport.java:48)
-	at jmr.p121.comm.GAEEmail.sendTestEmail(GAEEmail.java:240)
- */
-		    } catch (AddressException e) {
-		      // ...
-		    } catch (MessagingException e) {
-		      // ...
-		    } catch (UnsupportedEncodingException e) {
-		      // ...
-		}
+//		    Properties props = new Properties();
+//		    Session session = Session.getDefaultInstance(props, null);
+//
+//		    String msgBody = "Test Email (multi) - Text";
+//
+//		    try {
+//		      Message msg = new MimeMessage(session);
+////		      msg.setFrom(new InternetAddress("admin@example.com", "Example.com Admin"));
+//			  msg.setFrom(new InternetAddress( strSender, "Test Email Sender"));
+////		      msg.addRecipient(Message.RecipientType.TO,
+////		                       new InternetAddress("user@example.com", "Mr. User"));
+//			  msg.addRecipient(Message.RecipientType.TO,
+//	                   new InternetAddress( strTo, "Test Email Recipient"));
+//			  msg.setSubject("Test Email (multi) - Subject");
+////		      msg.setSubject("Your Example.com account has been activated");
+//		      msg.setText(msgBody);
+//
+//		      // [START multipart_example]
+//		      String htmlBody = "<html>html body</html>";          // ...
+//		      byte[] attachmentData = "Attachment data".getBytes();
+//		      Multipart mp = new MimeMultipart();
+//
+//		      MimeBodyPart htmlPart = new MimeBodyPart();
+//		      htmlPart.setContent(htmlBody, "text/html");
+//		      mp.addBodyPart(htmlPart);
+//
+//		      MimeBodyPart attachment = new MimeBodyPart();
+//		      InputStream attachmentDataStream = new ByteArrayInputStream(attachmentData);
+//		      attachment.setFileName("manual.pdf");
+//		      attachment.setContent(attachmentDataStream, "application/pdf");
+//		      mp.addBodyPart(attachment);
+//
+//		      msg.setContent(mp);
+//		      // [END multipart_example]
+//
+//			  Log.add( "\tAbout to send.." );
+//
+//		      Transport.send(msg);
+///*
+//com.google.apphosting.api.ApiProxy$OverQuotaException: The API call mail.Send() required more quota than is available.
+//	at java.lang.Thread.getStackTrace(Thread.java:1556)
+//	at com.google.apphosting.runtime.ApiProxyImpl.doSyncCall(ApiProxyImpl.java:328)
+//	at com.google.apphosting.runtime.ApiProxyImpl.access$000(ApiProxyImpl.java:69)
+//	at com.google.apphosting.runtime.ApiProxyImpl$1.run(ApiProxyImpl.java:242)
+//	at com.google.apphosting.runtime.ApiProxyImpl$1.run(ApiProxyImpl.java:239)
+//	at java.security.AccessController.doPrivileged(Native Method)
+//	at com.google.apphosting.runtime.ApiProxyImpl.makeSyncCall(ApiProxyImpl.java:238)
+//	at com.google.apphosting.runtime.ApiProxyImpl.makeSyncCall(ApiProxyImpl.java:69)
+//	at com.google.apphosting.api.ApiProxy.makeSyncCall(ApiProxy.java:119)
+//	at com.google.apphosting.api.ApiProxy.makeSyncCall(ApiProxy.java:66)
+//	at com.google.appengine.api.mail.MailServiceImpl.doSend(MailServiceImpl.java:111)
+//	at com.google.appengine.api.mail.MailServiceImpl.send(MailServiceImpl.java:34)
+//	at com.google.appengine.api.mail.stdimpl.GMTransport.sendMessage(GMTransport.java:269)
+//	at javax.mail.Transport.send(Transport.java:95)
+//	at javax.mail.Transport.send(Transport.java:48)
+//	at jmr.p121.comm.GAEEmail.sendTestEmail(GAEEmail.java:255)
+// */
+///*
+//java.lang.NoClassDefFoundError: Could not initialize class com.google.appengine.api.mail.MailServicePb$MailMessage
+//	at com.google.appengine.api.mail.MailServiceImpl.doSend(MailServiceImpl.java:49)
+//	at com.google.appengine.api.mail.MailServiceImpl.send(MailServiceImpl.java:32)
+//	at com.google.appengine.api.mail.stdimpl.GMTransport.sendMessage(GMTransport.java:247)
+//	at javax.mail.Transport.send(Transport.java:95)
+//	at javax.mail.Transport.send(Transport.java:48)
+//	at jmr.p121.comm.GAEEmail.sendTestEmail(GAEEmail.java:240)
+// */
+//		    } catch (AddressException e) {
+//		      // ...
+//		    } catch (MessagingException e) {
+//		      // ...
+//		    } catch (UnsupportedEncodingException e) {
+//		      // ...
+//		}
 			
 			
 			

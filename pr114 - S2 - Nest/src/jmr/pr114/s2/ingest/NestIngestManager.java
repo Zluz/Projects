@@ -67,8 +67,8 @@ public class NestIngestManager {
 		if ( ECHO ) System.out.println( "Requesting Nest (thermostat) status.." );
 		final FullStatus status = session.getStatus();
 		
-		if ( ECHO ) System.out.println( "Saving page.." );
-		{
+		if ( null!=status ) {
+			if ( ECHO ) System.out.println( "Saving page.." );
 			final Path path = new Path();
 			final Page page = new Page();
 
@@ -82,6 +82,8 @@ public class NestIngestManager {
 			} else {
 				if ( ECHO ) System.err.println( "Failed to get a Path seq." );
 			}
+		} else {
+			if ( ECHO ) System.out.println( "Nest data is null, not saving." );
 		}
 		
 //		return status.getDeviceDetailJSON();

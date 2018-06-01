@@ -2,26 +2,32 @@ package jmr.pr121.doc;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DocumentData {
 
 
 	final public LocalDateTime time;
-	final public String strClass;
+//	final public String strClass;
 	final public String strContentType;
 	
 	final public byte[] data;
 	public String strData;
 	
+	final Map<String, String> mapMetadata; 
+	
 	
 	public DocumentData( 	final LocalDateTime time,
-							final String strClass,
+//							final String strClass,
 							final String strContentType,
+							final Map<String,String> map,
 							final byte[] data ) {
 		this.time = time;
-		this.strClass = strClass;
+//		this.strClass = strClass;
 		this.strContentType = strContentType;
 		this.data = data;
+		this.mapMetadata = null!=map ? map : new HashMap<String,String>();
 	}
 	
 	public DocumentData( 	final LocalDateTime time,
@@ -43,12 +49,16 @@ public class DocumentData {
 				return strData;
 			}
 		} else {
-			return "[class:" + strClass + ", length:" + data.length + "]"; 
+			return "[type:" + strContentType + ", length:" + data.length + "]"; 
 		}
 	}
 	
 	public byte[] asBytes() {
 		return data;
+	}
+
+	public String get( final String strKey ) {
+		return this.mapMetadata.get( strKey );
 	}
 	
 }

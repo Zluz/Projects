@@ -158,20 +158,6 @@ public class Status extends HttpServlet {
 
 			
 			
-
-			writer.print("\r\n");
-			writer.print("Java Runtime Information:\r\n");
-
-			writer.print( "\tRuntime.toString(): " 
-						+ Runtime.getRuntime().toString() + "\r\n" );
-			writer.print( "\tSystem properties:\r\n" ); 
-			final Properties properties = System.getProperties();
-			for ( final Entry<Object, Object> entry : properties.entrySet() ) {
-				writer.print( "\t\t" + entry.getKey() + " = " + entry.getValue() + "\r\n" ); 
-			}
-			
-			
-			
 			writer.print("\r\n");
 			writer.print("App Engine Information:\r\n");
 
@@ -208,10 +194,11 @@ public class Status extends HttpServlet {
 //				   // do something that's production-only
 //				 }
 
-			writer.print("\tInstance time: " + ldtStart.toString() + "\r\n");
+			writer.print("\tInstance start : " + ldtStart.toString() + "\r\n");
 			final long lElapsed = ldtNow.toEpochSecond( ZoneOffset.UTC ) 
 						- ldtStart.toEpochSecond( ZoneOffset.UTC );
-			writer.print("\tTime elapsed: " + lElapsed + "s\r\n");
+			writer.print("\tTime now       : " + ldtNow.toString() + "\r\n");
+			writer.print("\tTime elapsed   : " + lElapsed + "s\r\n");
 			
 
 			
@@ -239,6 +226,20 @@ public class Status extends HttpServlet {
 			final boolean bAccepted = Configuration.get().isBrowserAccepted( req );
 			writer.print( "\tConfiguration.isBrowserAccepted(): " + bAccepted + "\r\n" );
 
+			
+
+			writer.print("\r\n");
+			writer.print("Java Runtime Information:\r\n");
+
+			writer.print( "\tRuntime.toString(): " 
+						+ Runtime.getRuntime().toString() + "\r\n" );
+			writer.print( "\tSystem properties:\r\n" ); 
+			final Properties properties = System.getProperties();
+			for ( final Entry<Object, Object> entry : properties.entrySet() ) {
+				writer.print( "\t\t" + entry.getKey() + " = " + entry.getValue() + "\r\n" ); 
+			}
+			
+			
 
 			writer.print("\r\n");
 			writer.print("History\r\n");

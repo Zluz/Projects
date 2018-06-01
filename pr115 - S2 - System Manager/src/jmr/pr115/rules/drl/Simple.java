@@ -4,6 +4,7 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -21,8 +22,9 @@ import jmr.pr115.schedules.run.NestJob;
 import jmr.pr115.schedules.run.TeslaJob;
 import jmr.pr120.Command;
 import jmr.pr120.EmailEvent;
-import jmr.pr122.DocKey;
 import jmr.pr122.CommGAE;
+import jmr.pr122.DocKey;
+import jmr.pr122.DocMetadataKey;
 import jmr.s2.ingest.Import;
 import jmr.s2db.imprt.WebImport;
 import jmr.s2db.job.JobType;
@@ -31,7 +33,6 @@ import jmr.s2db.tables.Job.JobState;
 import jmr.s2fs.FileSession;
 import jmr.s2fs.FileSessionManager;
 import jmr.util.TimeUtil;
-import jmr.util.http.ContentType;
 import jmr.util.transform.JsonUtils;
 
 public class Simple {
@@ -273,6 +274,9 @@ public class Simple {
 			final FileSession session = entry.getValue();
 
 			boolean bCurrent = false;
+			
+			final EnumMap<DocMetadataKey, String> 
+					mapMetadata = new EnumMap<>( DocMetadataKey.class );
 
 			if ( bScreenshot ) {
 				final File fileScreenshot = session.getScreenshotImageFile();
@@ -281,9 +285,11 @@ public class Simple {
 						listFiles.add( fileScreenshot );
 						bCurrent = true;
 						
-						final String strName = "SCREENSHOT_" + strKey;
-						
-						comm.store( fileScreenshot, strName, ContentType.IMAGE_PNG );
+//						final String strName = "SCREENSHOT_" + strKey;
+//						comm.store( fileScreenshot, strName, 
+//												ContentType.IMAGE_PNG );
+						comm.store( DocKey.DEVICE_SCREENSHOT, strKey, 
+										fileScreenshot, mapMetadata );
 						
 //						// special case (garage entrance)
 ////						if ( "B8-27-EB-13-8B-C0".equals( strKey ) ) {
@@ -311,6 +317,10 @@ public class Simple {
 					if ( fileCaptureStill.lastModified() > lCutoff ) {
 						listFiles.add( fileCaptureStill );
 						bCurrent = true;
+						
+//						final String strName = "STILL_" + strKey;
+						comm.store( DocKey.DEVICE_STILL_CAPTURE, strKey, 
+										fileCaptureStill, mapMetadata );
 					}
 				}
 			}
@@ -407,9 +417,10 @@ public class Simple {
 		final CommGAE comm = new CommGAE();
 
 		final File file = new File( "S:\\Sessions\\B8-27-EB-13-8B-C0\\screenshot.png" );
-		final String strName = "SCREENSHOT_B8-27-EB-13-8B-C0";
+		final String strId = "B8-27-EB-13-8B-C0";
 		
-		comm.store( file, strName, ContentType.IMAGE_PNG );
+//		comm.store( file, strName, ContentType.IMAGE_PNG );
+		comm.store( DocKey.DEVICE_SCREENSHOT, strId, file, null  );
 
 	}
 	

@@ -149,9 +149,10 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 		    writer.print( "<td><strong>Time</strong></td>\n" );
 		    writer.print( "<td><strong>Key</strong></td>\n" );
 		    writer.print( "<td><strong>ContentType</strong></td>\n" );
-		    writer.print( "<td><strong>Class</strong></td>\n" );
+//		    writer.print( "<td><strong>Class</strong></td>\n" );
 		    writer.print( "<td><strong>Length</strong></td>\n" );
 		    writer.print( "<td><strong>Textual</strong></td>\n" );
+		    writer.print( "<td><strong>Filename</strong></td>\n" );
 		    writer.print( "</tr>\n" );
 
 			for ( final Entry<String, DocumentData> 
@@ -166,9 +167,10 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 				writer.print( "\t\t<td>" + item.time.toString() + "</td>\n" );
 				writer.print( "\t\t<td>" + strLink + "</td>\n" );
 				writer.print( "\t\t<td>" + item.strContentType + "</td>\n" );
-				writer.print( "\t\t<td>" + item.strClass + "</td>\n" );
+//				writer.print( "\t\t<td>" + item.strClass + "</td>\n" );
 				writer.print( "\t\t<td>" + item.data.length + "</td>\n" );
 				writer.print( "\t\t<td>" + item.asString() + "</td>\n" );
+				writer.print( "\t\t<td>" + item.get( "FILENAME" ) + "</td>\n" );
 				writer.print( "\t</tr>\n" );
 				
 			}
@@ -362,7 +364,7 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 		
 			final String strName = req.getParameter( "name" );
 			final String strContentType = req.getParameter( "type" );
-			final String strClass = req.getParameter( "class" );
+//			final String strClass = req.getParameter( "class" );
 			
 			writer.print( "\r\nPOST data:\r\n" );
 
@@ -384,7 +386,8 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 			        
 			        
 					final DocumentData doc = new DocumentData( 
-							now, strClass, strContentType, data );
+//							now, strClass, strContentType, data );
+							now, strContentType, null, data );
 					
 					DocumentMap.get().put( strName, doc );
 					

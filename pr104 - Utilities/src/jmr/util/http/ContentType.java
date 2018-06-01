@@ -15,6 +15,9 @@ public enum ContentType {
     
 	IMAGE_PNG( "image/png" ),
     IMAGE_JPEG( "image/jpeg" ),
+    
+    APP_JSON( "application/json" ),
+    JSON_TEXT( "application/json" ),
 	;
 	
 	private final String strMimeType;

@@ -12,6 +12,8 @@ import jmr.pr113.FullStatus;
 import jmr.pr114.s2.ingest.NestIngestManager;
 import jmr.pr115.actions.ReportNestLowHumidity;
 import jmr.pr115.actions.ReportNestLowTemperature;
+import jmr.pr122.CommGAE;
+import jmr.pr122.DocKey;
 import jmr.s2db.Client;
 import jmr.s2db.event.EventType;
 import jmr.s2db.event.TimeEvent;
@@ -138,6 +140,10 @@ public class NestJob extends JobWorker {
 		System.out.println( "Processing Nest response "
 				+ "(" + status.getMap().size() + " entries)" );
 		final boolean bResult = process( lNow, status );
+		
+		final CommGAE comm = new CommGAE();
+		comm.store( DocKey.NEST_SHARED_DETAIL, status.getDeviceDetailJSON() );
+		comm.store( DocKey.NEST_DEVICE_DETAIL, status.getSharedDetailJSON() );
 		
 		return bResult;
 	}
