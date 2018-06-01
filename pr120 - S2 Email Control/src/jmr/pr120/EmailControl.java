@@ -192,6 +192,7 @@ public class EmailControl {
 				System.out.println( "      body: " + 
 							strContent.substring( 0, 
 									Math.min( 60, strContent.length() ) ) );
+				processContent( message, strContent );
 			}
 			
 		} catch ( final MessagingException e ) {

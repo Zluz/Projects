@@ -59,7 +59,12 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 
 			Log.add( "Showing document: " + strName );
 			
-			GAEEmail.sendTestEmail();
+			
+			{
+				if ( "text/plain".equals( doc.strContentType ) ) {
+					GAEEmail.sendTestEmail();
+				}
+			}
 
 			resp.setContentType( doc.strContentType );
 			final ServletOutputStream out = resp.getOutputStream();

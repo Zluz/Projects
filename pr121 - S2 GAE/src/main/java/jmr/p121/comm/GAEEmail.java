@@ -112,7 +112,7 @@ java.lang.ClassNotFoundException: com.google.appengine.repackaged.com.google.com
 						message = new MailService.Message( strSender, strTo, strSubject, strBody );
 				
 				Log.add( "\tAbout to send (service).." );
-				service.send( message );
+				service.send( message ); // this works on Production
 				Log.add( "\tSent! (service)" );
 /*
 java.lang.AssertionError: java.lang.NoSuchMethodException: com.google.appengine.repackaged.com.google.common.base.internal.Finalizer.startFinalizer(java.lang.Class, java.lang.Object)
@@ -156,7 +156,7 @@ java.lang.AssertionError: java.lang.NoSuchMethodException: com.google.appengine.
 			  
 			  
 			  Log.add( "\tAbout to send (simple).." );
-			  Transport.send(msg);
+			  Transport.send(msg); // this works on Production
 			  Log.add( "\tSent! (simple)" );
 
 /*
