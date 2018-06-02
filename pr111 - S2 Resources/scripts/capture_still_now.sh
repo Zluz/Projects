@@ -31,10 +31,11 @@ fi
 
 
 echo "Time now: $(date)"
-#DATE=$(date +"%Y-%m-%d_%H%M")
+DATE=$(date +"%Y%m%d_%H%M")
 NOW=$(date +"%M")
 LAST=$NOW
 code=0
+MAC=$( file -b /tmp/session | cut -d '/' -f 4 )
 
 while [[ "$NOW" == "$LAST" ]]
 do
@@ -77,9 +78,13 @@ do
 			# may have in output:
 			# GD Error: gd-jpeg: JPEG library reports unrecoverable error: Unsupported marker type 0xa0
 
+			CMD="fswebcam -r 1280x1024 --banner-colour #FF000000 --line-colour #FF000000 --shadow --timestamp %Y%m%d-%H%M  --title $MAC -d /dev/video$vid_count /tmp/capture_vid$vid_count._jpg --log /tmp/cap.log"
+
 			rm -rf /tmp/cap.out
+			rm -rf /tmp/cap.log
 			# CAP_CMD=$(fswebcam -r 1280x1024 -d /dev/video$vid_count --no-banner /tmp/capture_vid$vid_count._jpg --log /tmp/cap.log 2>&1 > /tmp/cap.out)
-			CAP_CMD=$(fswebcam -r 1280x1024 -d /dev/video$vid_count --no-banner /tmp/capture_vid$vid_count._jpg --log /dev/null 2>&1 > /tmp/cap.out )
+			# CAP_CMD=$(fswebcam -r 1280x1024 -d /dev/video$vid_count --no-banner /tmp/capture_vid$vid_count._jpg --log /dev/null 2>&1 > /tmp/cap.out )
+			CAP_CMD=$( $CMD 2>&1 > /tmp/cap.out )
 			# echo "CAP_CMD: $CAP_CMD"
 			# CAP_ERR=$(cat /tmp/cap.log /tmp/cap.out | grep rror | wc -l)
 			CAP_ERR=$(echo $CAP_CMD | grep rror | wc -l)
