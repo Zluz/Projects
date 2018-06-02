@@ -21,6 +21,15 @@ then
 fi
 
 
+if [[ -e "/tmp/session" ]]
+then
+	echo "RPi camera: $(vcgencmd get_camera)" > /tmp/session/capture_list.txt
+	echo "" >> /tmp/session/capture_list.txt
+	echo "ls /dev/v4l/by-id/ -lh" >> /tmp/session/capture_list.txt
+	ls /dev/v4l/by-id/ -lh | grep video >> /tmp/session/capture_list.txt
+fi
+
+
 echo "Time now: $(date)"
 #DATE=$(date +"%Y-%m-%d_%H%M")
 NOW=$(date +"%M")
@@ -99,10 +108,6 @@ do
 	sleep 1
 	LAST=$NOW
 	NOW=$(date +"%M")
-
-
-	echo "Exiting!"
-	exit
 
 done
 
