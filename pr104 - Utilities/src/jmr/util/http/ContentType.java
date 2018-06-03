@@ -30,4 +30,19 @@ public enum ContentType {
 		return strMimeType;
 	}
 	
+	public static ContentType getContentType( final String strValue ) {
+		if ( null==strValue ) return null;
+		
+		for ( final ContentType type : ContentType.values() ) {
+			if ( type.name().equalsIgnoreCase( strValue ) ) {
+				return type;
+			}
+			
+			if ( type.getMimeType().equalsIgnoreCase( strValue ) ) {
+				return type;
+			}
+		}
+		return null;
+	}
+	
 }

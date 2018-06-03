@@ -2,37 +2,45 @@ package jmr.pr121.doc;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.EnumMap;
+
+import jmr.pr122.DocMetadataKey;
+import jmr.util.http.ContentType;
 
 public class DocumentData {
 
 
 	final public LocalDateTime time;
-//	final public String strClass;
-	final public String strContentType;
+	final public ContentType type;
 	
 	final public byte[] data;
+	
+	final public String strSource;
+	
 	public String strData;
 	
-	final Map<String, String> mapMetadata; 
-	
+	final public EnumMap<DocMetadataKey, String> 
+			mapMetadata = new EnumMap<>( DocMetadataKey.class );
+
 	
 	public DocumentData( 	final LocalDateTime time,
-//							final String strClass,
-							final String strContentType,
-							final Map<String,String> map,
+							final ContentType type,
+							final String strSource,
+							final EnumMap<DocMetadataKey, String> map,
 							final byte[] data ) {
 		this.time = time;
-//		this.strClass = strClass;
-		this.strContentType = strContentType;
+		this.type = type;
+		this.strSource = strSource;
 		this.data = data;
-		this.mapMetadata = null!=map ? map : new HashMap<String,String>();
+		if ( null!=map ) {
+			this.mapMetadata.putAll( map );
+		}
 	}
 	
 	public DocumentData( 	final LocalDateTime time,
+							final String strSource,
 							final String strData ) {
-		this( time, String.class.getName(), null, 
+		this( time, ContentType.TEXT_PLAIN, strSource, null, 
 							strData.getBytes( StandardCharsets.UTF_8 ) );
 		this.strData = strData;
 	}
@@ -49,7 +57,7 @@ public class DocumentData {
 				return strData;
 			}
 		} else {
-			return "[type:" + strContentType + ", length:" + data.length + "]"; 
+			return "[type:" + type.name() + ", length:" + data.length + "]"; 
 		}
 	}
 	
@@ -57,8 +65,11 @@ public class DocumentData {
 		return data;
 	}
 
-	public String get( final String strKey ) {
-		return this.mapMetadata.get( strKey );
+	public String get( final DocMetadataKey key ) {
+		if ( null==key ) return "<DocMetadataKey is null>";
+		final String strValue = this.mapMetadata.get( key );
+		if ( null!=strValue ) return strValue;
+		return "";
 	}
 	
 }

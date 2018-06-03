@@ -1,6 +1,9 @@
 package jmr.pr121.doc;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -28,6 +31,12 @@ public class DocumentMap {
 	
 	public Set<Entry<String, DocumentData>> entrySet() {
 		return map.entrySet();
+	}
+	
+	public List<String> getOrderedKeys() {
+		final List<String> list = new LinkedList<>( map.keySet() );
+		Collections.sort( list );
+		return list;
 	}
 	
 }

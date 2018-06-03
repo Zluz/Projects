@@ -73,8 +73,11 @@ public class CommGAE {
 //			}
 			if ( null!=map ) {
 				for ( final Entry<DocMetadataKey, String> entry : map.entrySet() ) {
-					sbURL.append( "&" + entry.getKey().name() );
-					sbURL.append( "=" + entry.getValue() );
+					final String strValue = entry.getValue();
+					if ( null!=strValue ) {
+						sbURL.append( "&" + entry.getKey().name() + "=" );
+						sbURL.append( URLEncoder.encode( strValue, UTF_8.name() ) );
+					}
 				}
 			}
 			
@@ -144,9 +147,9 @@ public class CommGAE {
 			mapMetadata.put( DocMetadataKey.FILENAME, file.getName() );
 			final Instant time = Instant.ofEpochMilli( file.lastModified() );
 			mapMetadata.put( DocMetadataKey.FILE_DATE, time.toString() );
-			
+
 			//			store( strName, null, type, data );
-			store( key, strIndex, map, data );
+			store( key, strIndex, mapMetadata, data );
 			
 		} catch ( final IOException e ) {
 			e.printStackTrace();
@@ -188,7 +191,8 @@ http://localhost:8080/map?name=SCREENSHOT_B8-27-EB-13-8B-C0
 		System.out.println( "Byte array: " + data.length );
 //		comm.store( "SCREENSHOT_B8-27-EB-13-8B-C0", 
 //						null, ContentType.IMAGE_PNG, data );
-		comm.store( DocKey.DEVICE_SCREENSHOT, "B8-27-EB-13-8B-C0", null, data );
+//		comm.store( DocKey.DEVICE_SCREENSHOT, "B8-27-EB-13-8B-C0", null, data );
+		comm.store( DocKey.DEVICE_SCREENSHOT, "B8-27-EB-13-8B-C0", file, null );
 		
 //		final String strConfig_Accept001 = 
 //						SystemUtil.getProperty( SUProperty.BROWSER_ACCEPT_001 );

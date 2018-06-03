@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.entity.ContentType;
 
 import com.google.appengine.api.users.User;
@@ -105,7 +106,13 @@ public class UserAuth {
 						Log.add( "UserService: " + service );
 						Log.add( "User: " + user );
 						
-						if ( null==user ) {
+						if ( Configuration.isGAEDevelopment() ) {
+							
+							Log.add( "GAE instance is Development, "
+									+ "skipping user login." );
+							iTest = 2;
+						
+						} else if ( null==user ) {
 							
 							iTest = 0;
 							this.login( service );
@@ -155,6 +162,7 @@ public class UserAuth {
 				} catch ( final Exception e ) {
 					Log.add( "Exception encountered while authenticating: " 
 										+ e.toString() );
+					Log.add( ExceptionUtils.getStackTrace( e ) );
 					iTest = 1;
 				}
 				

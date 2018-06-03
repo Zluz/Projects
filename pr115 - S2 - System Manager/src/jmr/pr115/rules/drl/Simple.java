@@ -278,6 +278,11 @@ public class Simple {
 			final EnumMap<DocMetadataKey, String> 
 					mapMetadata = new EnumMap<>( DocMetadataKey.class );
 
+			final String strIP = session.getIP();
+			mapMetadata.put( DocMetadataKey.DEVICE_IP, strIP );
+			mapMetadata.put( DocMetadataKey.DEVICE_MAC, strKey );
+			
+			
 			if ( bScreenshot ) {
 				final File fileScreenshot = session.getScreenshotImageFile();
 				if ( null!=fileScreenshot && fileScreenshot.isFile() ) {
@@ -312,17 +317,41 @@ public class Simple {
 			}
 
 			if ( bCaptureStill ) {
-				final File fileCaptureStill = session.getCaptureStillImageFile();
-				if ( null!=fileCaptureStill && fileCaptureStill.isFile() ) {
-					if ( fileCaptureStill.lastModified() > lCutoff ) {
-						listFiles.add( fileCaptureStill );
-						bCurrent = true;
-						
-//						final String strName = "STILL_" + strKey;
-						comm.store( DocKey.DEVICE_STILL_CAPTURE, strKey, 
-										fileCaptureStill, mapMetadata );
+				
+//				final File fileCaptureStill = session.getCaptureStillImageFile();
+//				if ( null!=fileCaptureStill && fileCaptureStill.isFile() ) {
+//					if ( fileCaptureStill.lastModified() > lCutoff ) {
+//						listFiles.add( fileCaptureStill );
+//						bCurrent = true;
+//						
+////						final String strName = "STILL_" + strKey;
+//						comm.store( DocKey.DEVICE_STILL_CAPTURE, strKey, 
+//										fileCaptureStill, mapMetadata );
+//					}
+//				}
+				
+				final List<File> files = session.getCaptureStillImageFiles();
+				for ( final File file : files ) {
+					if ( null!=file && file.isFile() ) {
+						if ( file.lastModified() > lCutoff ) {
+							listFiles.add( file );
+							bCurrent = true;
+							
+							final String strDescription = 
+									session.getDescriptionForImageSource( file );
+							
+							mapMetadata.put( DocMetadataKey.SENSOR_DESC, 
+									null!=strDescription ? strDescription : "" );
+							
+	//						final String strName = "STILL_" + strKey;
+							comm.store( DocKey.DEVICE_STILL_CAPTURE, 
+									strKey + "/" + file.getName(), 
+											file, mapMetadata );
+						}
 					}
 				}
+				
+				
 			}
 
 			if ( bCurrent ) {
@@ -414,13 +443,15 @@ public class Simple {
 	
 	public static void main( final String[] args ) {
 
-		final CommGAE comm = new CommGAE();
-
-		final File file = new File( "S:\\Sessions\\B8-27-EB-13-8B-C0\\screenshot.png" );
-		final String strId = "B8-27-EB-13-8B-C0";
+		emailSendDeviceFiles( true, true );
 		
-//		comm.store( file, strName, ContentType.IMAGE_PNG );
-		comm.store( DocKey.DEVICE_SCREENSHOT, strId, file, null  );
+//		final CommGAE comm = new CommGAE();
+//
+//		final File file = new File( "S:\\Sessions\\B8-27-EB-13-8B-C0\\screenshot.png" );
+//		final String strId = "B8-27-EB-13-8B-C0";
+//		
+////		comm.store( file, strName, ContentType.IMAGE_PNG );
+//		comm.store( DocKey.DEVICE_SCREENSHOT, strId, file, null  );
 
 	}
 	

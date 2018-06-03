@@ -4,6 +4,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.ByteBuffer;
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -22,6 +24,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.google.appengine.api.utils.SystemProperty;
 
@@ -119,7 +123,9 @@ public class Status extends HttpServlet {
 			writer.print("Additional Request Information:\r\n");
 			final Principal prinicipal = req.getUserPrincipal();
 			writer.print( "\tHttpServletRequest.getUserPrincipal(): " + prinicipal + "\r\n" );
-			writer.print( "\t\tPrincipal.class: " + prinicipal.getClass().getName() + "\r\n" );
+			if ( null!=prinicipal ) {
+				writer.print( "\t\tPrincipal.class: " + prinicipal.getClass().getName() + "\r\n" );
+			}
 			writer.print( "\tHttpServletRequest.getLocale(): " + req.getLocale() + "\r\n" );
 			try {
 				writer.print( "\tHttpServletRequest.getParts().size(): " + req.getParts().size() + "\r\n" );
@@ -233,10 +239,22 @@ public class Status extends HttpServlet {
 
 			writer.print( "\tRuntime.toString(): " 
 						+ Runtime.getRuntime().toString() + "\r\n" );
-			writer.print( "\tSystem properties:\r\n" ); 
+			
+			writer.print( "\tSystem properties:\r\n" );
 			final Properties properties = System.getProperties();
 			for ( final Entry<Object, Object> entry : properties.entrySet() ) {
 				writer.print( "\t\t" + entry.getKey() + " = " + entry.getValue() + "\r\n" ); 
+			}
+
+			writer.print( "\tLoaded JARs (discovered):\r\n" );
+			final ClassLoader cl = Status.class.getClassLoader();
+			if ( cl instanceof URLClassLoader ) {
+				final URL[] urls = ((URLClassLoader) cl).getURLs();
+				for ( final URL url : urls ) {
+					writer.print( "\t\t" + url.toString() + "\r\n" );
+				}
+			} else {
+				writer.print( "\t\tClassLoader is not URLClassLoader.\r\n" ); 
 			}
 			
 			
@@ -253,6 +271,7 @@ public class Status extends HttpServlet {
 			
 		} catch ( final Throwable e ) {
 			writer.print("\r\nError: " + e.toString() + "\r\n");
+			writer.print("\r\n" + ExceptionUtils.getStackTrace( e ) + "\r\n");
 		}
 
 	}
