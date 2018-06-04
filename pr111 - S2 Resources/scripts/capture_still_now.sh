@@ -56,8 +56,14 @@ do
 			if [[ -e "/tmp/session" ]]
 			then
 				cp /tmp/capture_still_now.jpg /tmp/session/capture_cam._jpg
+				cp /tmp/capture_still_now.jpg /tmp/session/capture_cam-thumb._jpg
+
 				rm -rf /tmp/session/capture_cam.jpg
 				mv /tmp/session/capture_cam._jpg /tmp/session/capture_cam.jpg
+
+				mogrify -scale 300x /tmp/session/capture_cam-thumb._jpg
+				rm -rf /tmp/session/capture_cam-thumb.jpg
+				mv /tmp/session/capture_cam-thumb._jpg /tmp/session/capture_cam-thumb.jpg
 			fi
 
 		else
@@ -97,8 +103,14 @@ do
 				if [[ -e "/tmp/session" ]]
 				then
 					cp /tmp/capture_vid$vid_count.jpg /tmp/session/capture_vid$vid_count._jpg
+					cp /tmp/capture_vid$vid_count.jpg /tmp/session/capture_vid$vid_count-thumb._jpg
+
 					rm -rf /tmp/session/capture_vid$vid_count.jpg
 					mv /tmp/session/capture_vid$vid_count._jpg /tmp/session/capture_vid$vid_count.jpg
+
+					mogrify -scale 300x /tmp/session/capture_vid$vid_count-thumb._jpg
+					rm -rf /tmp/session/capture_vid$vid_count-thumb.jpg
+					mv /tmp/session/capture_vid$vid_count-thumb._jpg /tmp/session/capture_vid$vid_count-thumb.jpg
 				fi
 
 			else
