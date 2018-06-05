@@ -41,7 +41,18 @@ ln -s $dirSession /tmp/session
 #/usr/bin/scrot -z -u $dirSession/screenshot-focused.png
 #DISPLAY=:0 /usr/bin/scrot -z /tmp/screenshot-root.png
 # only the pi user works, run cron for scrot there, copy to share here
-cp /tmp/screenshot.png $dirSession/screenshot.png
+
+
+cp /tmp/screenshot.png $dirSession/screenshot._png
+cp /tmp/screenshot.png $dirSession/screenshot-thumb._png
+
+rm -rf $dirSession/screenshot.png
+mv $dirSession/screenshot._png $dirSession/screenshot.png
+
+mogrify -scale 300x $dirSession/screenshot-thumb._png
+rm -rf $dirSession/screenshot-thumb.png
+mv $dirSession/screenshot-thumb._png $dirSession/screenshot-thumb.png
+
 
 #rsync -uv --checksum --ignore-times $dirSession/config.txt /boot/config.txt 
 #rsync -vcI $dirSession/config.txt /boot/config.txt 
