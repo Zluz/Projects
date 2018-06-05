@@ -284,34 +284,37 @@ public class Simple {
 			
 			
 			if ( bScreenshot ) {
-				final File fileScreenshot = session.getScreenshotImageFile();
-				if ( null!=fileScreenshot && fileScreenshot.isFile() ) {
-					if ( fileScreenshot.lastModified() > lCutoff ) {
-						listFiles.add( fileScreenshot );
-						bCurrent = true;
-						
-//						final String strName = "SCREENSHOT_" + strKey;
-//						comm.store( fileScreenshot, strName, 
-//												ContentType.IMAGE_PNG );
-						comm.store( DocKey.DEVICE_SCREENSHOT, strKey, 
-										fileScreenshot, mapMetadata );
-						
-//						// special case (garage entrance)
-////						if ( "B8-27-EB-13-8B-C0".equals( strKey ) ) {
-//							final Path path = Paths.get( fileScreenshot.toURI() );
-//							
-//							try {
-//								final byte[] data = Files.readAllBytes( path );
-//								comm.store( "SCREENSHOT_" + strKey, 
-//										null, ContentType.IMAGE_PNG, data );
-//								comm.store( fileScreenshot, ContentType.IMAGE_PNG );
-//								
-//							} catch ( final IOException e ) {
-//								// TODO Auto-generated catch block
-//								e.printStackTrace();
-//							}
-////						}
-						
+				final File[] arrScreenshots = session.getScreenshotImageFiles();
+				for ( final File file : arrScreenshots ) {
+					if ( null!=file && file.isFile() ) {
+						if ( file.lastModified() > lCutoff ) {
+							listFiles.add( file );
+							bCurrent = true;
+							
+	//						final String strName = "SCREENSHOT_" + strKey;
+	//						comm.store( fileScreenshot, strName, 
+	//												ContentType.IMAGE_PNG );
+							comm.store( DocKey.DEVICE_SCREENSHOT, 
+											strKey + "/" + file.getName(), 
+											file, mapMetadata );
+							
+	//						// special case (garage entrance)
+	////						if ( "B8-27-EB-13-8B-C0".equals( strKey ) ) {
+	//							final Path path = Paths.get( fileScreenshot.toURI() );
+	//							
+	//							try {
+	//								final byte[] data = Files.readAllBytes( path );
+	//								comm.store( "SCREENSHOT_" + strKey, 
+	//										null, ContentType.IMAGE_PNG, data );
+	//								comm.store( fileScreenshot, ContentType.IMAGE_PNG );
+	//								
+	//							} catch ( final IOException e ) {
+	//								// TODO Auto-generated catch block
+	//								e.printStackTrace();
+	//							}
+	////						}
+							
+						}
 					}
 				}
 			}

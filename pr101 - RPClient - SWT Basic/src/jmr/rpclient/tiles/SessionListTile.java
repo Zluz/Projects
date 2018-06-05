@@ -214,7 +214,7 @@ public class SessionListTile extends TileBase {
 				final FileSessionManager fsm = FileSessionManager.getInstance();
 				final FileSession session = fsm.getFileSession( strMAC );
 				if ( null!=session ) {
-					final File file = session.getScreenshotImageFile();
+					final File file = session.getScreenshotImageFiles()[0];
 					if ( null!=file && file.isFile() ) {
 						
 						Image imgCapture = null;

@@ -39,7 +39,7 @@ public class CameraTile extends TileBase {
 									fileLastImage.delete();
 									fileLastImage = null;
 								}
-								final File file = camera.getStillPictureFile();
+								final File file = camera.getStillThumbnailFile();
 								if ( null!=file ) {
 									final Image imgRaw = new Image( 
 											UI.display, file.getAbsolutePath() );
@@ -47,7 +47,7 @@ public class CameraTile extends TileBase {
 														UI.display, 
 														ptDesiredImageSize.x, 
 														ptDesiredImageSize.y );
-									final GC gc = new GC( imgScaled );
+									final GC gc = new GC( imgScaled ); // NPE?
 									if ( !GRAPHICS_ADVANCED ) {
 										gc.setAdvanced( false );
 										gc.setAntialias( SWT.OFF );
@@ -73,6 +73,10 @@ public class CameraTile extends TileBase {
 							}
 						}
 					} catch ( final InterruptedException e ) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch ( final Exception e ) {
+						// can arrive here from NPE on new GC() above..
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}

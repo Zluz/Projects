@@ -138,9 +138,9 @@ public class IO_AutomationHatTile extends TileBase {
 			System.out.println( "Event created: seq " + event.getEventSeq() );
 		} else {
 			System.err.print( "Event NOT created" );
-			if ( null==input ) {
-				System.err.print( ", input is null" );
-			} 
+//			if ( null==input ) {
+//				System.err.print( ", input is null" );
+//			} 
 			if ( null==jsonValue ) {
 				System.err.print( ", jsonValue is null" );
 			}

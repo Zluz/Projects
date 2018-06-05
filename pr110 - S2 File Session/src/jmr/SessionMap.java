@@ -137,7 +137,7 @@ public class SessionMap extends EnumMap<Field,Element> {
 				return new Element( getISOTime( lValue ) );
 			}
 			case TIMEUXT_SCREENSHOT: {
-				final File file = this.getScreenshot();
+				final File file = this.getScreenshots()[0];
 				final long lModified;
 				if ( null!=file ) {
 					lModified = file.lastModified();
@@ -148,11 +148,11 @@ public class SessionMap extends EnumMap<Field,Element> {
 				return new Element( strValue );
 			}
 			case FILE_SCREENSHOT: {
-				final File file = this.getScreenshot();
+				final File file = this.getScreenshots()[0];
 				return new Element( file );
 			}
 			case IMAGE_SCREENSHOT: {
-				final File file = this.getScreenshot();
+				final File file = this.getScreenshots()[0];
 				return new Element( file );
 			}
 			case OS_VERSION: {
@@ -174,7 +174,7 @@ public class SessionMap extends EnumMap<Field,Element> {
 				return new Element( lElapsed );
 			}
 			case TIMEELP_SCREENSHOT: {
-				final File file = this.getScreenshot();
+				final File file = this.getScreenshots()[0];
 				if ( null!=file ) {
 					final long lModified = file.lastModified();
 					final long lElapsed = this.lSnapshotTime - lModified;
@@ -240,11 +240,11 @@ public class SessionMap extends EnumMap<Field,Element> {
 	}
 	
 	
-	public File getScreenshot() {
+	public File[] getScreenshots() {
 		if ( null!=fs ) {
-			return fs.getScreenshotImageFile();
+			return fs.getScreenshotImageFiles();
 		}
-		return null;
+		return new File[] { null, null };
 	}
 	
 	

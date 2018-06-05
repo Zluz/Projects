@@ -15,7 +15,8 @@ public class FileSession {
 		DEVICE_INFO( true, "conky-device_info.txt" ),
 		SYSTEM_INFO( true, "uname.out" ),
 		IFCONFIG( true, "ifconfig.out" ),
-		SCREENSHOT( false, "screenshot.png" ),
+		SCREENSHOT_FULL( false, "screenshot.png" ),
+		SCREENSHOT_THUMB( false, "screenshot-thumb.png" ),
 		CAPTURE_STILL( false, "capture_still_now.jpg" ),
 		CAPTURE_LIST( true, "capture_list.txt" ),
 		;
@@ -35,6 +36,7 @@ public class FileSession {
 			mapFileContents = new EnumMap<>( SessionFile.class );
 	
 	private File fileImage;
+	private File fileThumb;
 	private File fileCaptureStill;
 	
 	
@@ -73,11 +75,26 @@ public class FileSession {
 		return mapFileContents.get( key );
 	}
 	
-	public File getScreenshotImageFile() {
+	/**
+	 * Two screenshot images:
+	 *   first the full size screenshot,
+	 *   second the thumbnail of the same image.
+	 * @return
+	 */
+	public File[] getScreenshotImageFiles() {
+		final File[] list = new File[] { null, null };
+		
 		if ( null==this.fileImage || !this.fileImage.exists() ) {
-			this.fileImage = getFile( SessionFile.SCREENSHOT );
+			this.fileImage = getFile( SessionFile.SCREENSHOT_FULL );
 		}
-		return this.fileImage;
+		list[0] = this.fileImage;
+		
+		if ( null==this.fileThumb || !this.fileThumb.exists() ) {
+			this.fileThumb = getFile( SessionFile.SCREENSHOT_THUMB );
+		}
+		list[1] = this.fileThumb;
+
+		return list;
 	}
 
 	public File getCaptureStillImageFile() {

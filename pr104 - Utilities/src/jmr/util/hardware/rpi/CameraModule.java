@@ -29,6 +29,7 @@ public class CameraModule {
 	
 
 
+	@SuppressWarnings("unused")
 	private File _capture() {
 //		if ( OSUtil.isWin() ) return null;
 //		if ( !isCameraPresent() ) return null;
@@ -64,12 +65,13 @@ public class CameraModule {
 		return null;
 	}
 
-	private File capture() {
+	private File captureThumbnail() {
 //		if ( OSUtil.isWin() ) return null;
 //		if ( !isCameraPresent() ) return null;
 
 		try {
-			final File file = new File( "/tmp/capture_still_now.jpg" );
+//			final File file = new File( "/tmp/capture_still_now.jpg" );
+			final File file = new File( "/tmp/capture_cam-thumb.jpg" );
 			if ( file.exists() ) {
 				return file;
 			} else {
@@ -84,10 +86,10 @@ public class CameraModule {
 	}
 	
 	
-	public File getStillPictureFile() {
+	public File getStillThumbnailFile() {
 		if ( !isCameraPresent() ) return null;
 		
-		final File file = capture();
+		final File file = captureThumbnail();
 		return file;
 	}
 	
@@ -98,7 +100,7 @@ public class CameraModule {
 				LOGGER.info( "RPi Camera Module is not present (Windows OS)" );
 				bCameraPresent = false;
 			} else {
-				final File file = capture();
+				final File file = captureThumbnail();
 				if ( null!=file ) {
 					LOGGER.info( "RPi Camera Module available" );
 					bCameraPresent = true;
