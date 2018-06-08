@@ -11,7 +11,11 @@ public abstract class SystemUtil {
 
 
 	//	final String strPropertiesFile = "H:\\Share\\settings.ini";
-	final public static String SYSTEM_PROPERTIES_FILE = "S:\\settings.ini";
+	final public static String SYSTEM_PROPERTIES_FILE_WIN = "S:\\settings.ini";
+	final public static String SYSTEM_PROPERTIES_FILE_UNIX = "/Share/settings.ini";
+	final public static String SYSTEM_PROPERTIES_FILE = OSUtil.isWin() 
+											? SYSTEM_PROPERTIES_FILE_WIN 
+											: SYSTEM_PROPERTIES_FILE_UNIX;
 
 	final public static String PROCESS_KILL_SELF = "/bin/kill -9 `pgrep -f pr101_ -U 1000`";
 

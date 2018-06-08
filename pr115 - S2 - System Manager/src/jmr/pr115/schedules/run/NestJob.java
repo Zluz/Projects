@@ -136,16 +136,22 @@ public class NestJob extends JobWorker {
 		System.out.println( "NestJob.run()");
 		
 		final FullStatus status = nim.callNest();
+		if ( null!=status ) {
 		
-		System.out.println( "Processing Nest response "
-				+ "(" + status.getMap().size() + " entries)" );
-		final boolean bResult = process( lNow, status );
-		
-		final CommGAE comm = new CommGAE();
-		comm.store( DocKey.NEST_SHARED_DETAIL, status.getDeviceDetailJSON() );
-		comm.store( DocKey.NEST_DEVICE_DETAIL, status.getSharedDetailJSON() );
-		
-		return bResult;
+			System.out.println( "Processing Nest response "
+					+ "(" + status.getMap().size() + " entries)" );
+			final boolean bResult = process( lNow, status );
+			
+			final CommGAE comm = new CommGAE();
+			comm.store( DocKey.NEST_SHARED_DETAIL, status.getDeviceDetailJSON() );
+			comm.store( DocKey.NEST_DEVICE_DETAIL, status.getSharedDetailJSON() );
+			
+			return bResult;
+			
+		} else {
+			System.out.println( "Status from callNest() was null." );
+			return false;
+		}
 	}
 	
 	

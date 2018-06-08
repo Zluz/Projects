@@ -111,9 +111,14 @@ public class FileSession {
 		final long lRecent = 
 					System.currentTimeMillis() - TimeUnit.DAYS.toMillis( 1 );
 		
-		final File fileCam = new File( this.dir, "capture_cam.jpg" );
-		if ( fileCam.exists() && fileCam.lastModified() > lRecent ) {
-			list.add( fileCam );
+		final File fileCamFull = new File( this.dir, "capture_cam.jpg" );
+		if ( fileCamFull.exists() && fileCamFull.lastModified() > lRecent ) {
+			list.add( fileCamFull );
+		}
+		
+		final File fileCamThumb = new File( this.dir, "capture_cam-thumb.jpg" );
+		if ( fileCamThumb.exists() && fileCamThumb.lastModified() > lRecent ) {
+			list.add( fileCamThumb );
 		}
 		
 		final File[] files = this.dir.listFiles( new FilenameFilter() {

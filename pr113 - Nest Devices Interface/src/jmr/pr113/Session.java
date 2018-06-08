@@ -42,6 +42,8 @@ public class Session {
 	}
 	
 	public FullStatus getStatus() {
+		if ( null==session ) return null;
+		
 		try {
 			final Nest nest = new Nest( session );
 	

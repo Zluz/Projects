@@ -175,7 +175,6 @@ public abstract class UI {
     		public void run() {
 				try {
 					while ( !display.isDisposed() ) {
-						Thread.sleep( REFRESH_SLEEP );
 						display.asyncExec( new Runnable() {
 							@Override
 							public void run() {
@@ -198,6 +197,7 @@ public abstract class UI {
 								UI.notifyUIIdle();
 							}
 						});
+						Thread.sleep( REFRESH_SLEEP );
 					};
 				} catch ( final InterruptedException e ) {
 					// TODO Auto-generated catch block

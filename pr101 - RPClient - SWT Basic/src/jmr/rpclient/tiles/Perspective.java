@@ -12,7 +12,8 @@ public enum Perspective {
 	TOP_PAGE( 5, 3, true, false ),
 	DAILY( 5, 3, true, false ),
 	TESLA( 5, 3, true, false ),
-	CAMERA( 5, 3, true, false ),
+	CAMERA_LOCAL( 5, 3, true, false ),
+	CAMERA_REMOTE( 5, 3, true, false ),
 	DESKTOP( 5, 6, false, false ),
 	DAILY_ROTATE( 3, 5, true, true ),
 	REMOTE( 6, 2, false, false ),
@@ -75,13 +76,14 @@ public enum Perspective {
 				case TOP_PAGE: this.build_TopPage( mapOptions ); break;
 				case DAILY: this.build_Daily(); break;
 				case TESLA: this.build_Tesla( mapOptions ); break;
-				case CAMERA: this.build_Camera(); break;
+				case CAMERA_LOCAL: this.build_CameraLocal(); break;
+				case CAMERA_REMOTE: this.build_CameraRemote(); break;
 				case TEST: this.build_Test(); break;
-				case DESKTOP: this.build_Desktop( mapOptions ); break;
 				case DAILY_ROTATE: this.build_DailyRotate(); break;
 				case REMOTE: this.build_Remote( mapOptions ); break;
 				case GPIO: this.build_GPIO( mapOptions ); break;
 				case AUTO_HAT: this.build_AutoHAT( mapOptions ); break;
+				case DESKTOP: this.build_Desktop( mapOptions ); break;
 			}
 			validate();
 		}
@@ -168,7 +170,8 @@ public enum Perspective {
 		list.add( new TileGeometry( new SystemInfoTile(), 
 						new Rectangle( 2, 1, 1, 1 ) ) );
 
-		list.add( new TileGeometry( new CameraTile(), 
+		list.add( new TileGeometry( 
+						new CameraTile( CameraTile.CameraLocation.LOCAL ), 
 						new Rectangle( 3, 0, 2, 2 ) ) ); 
 
 		list.add( new TileGeometry( new TeslaTile(), 
@@ -184,8 +187,8 @@ public enum Perspective {
 						new Rectangle( 0, 2, 5, 1 ) ) ); 
 	}
 	
-	
-	private void build_Camera() {
+
+	private void build_CameraLocal() {
 		list.add( new TileGeometry( new ClockTile(), 
 						new Rectangle( 0, 0, 3, 1 ) ) );
 
@@ -195,7 +198,8 @@ public enum Perspective {
 		list.add( new TileGeometry( new AudioSelectionTile(), 
 						new Rectangle( 0, 1, 3, 1 ) ) ); 
 
-		list.add( new TileGeometry( new CameraTile(), 
+		list.add( new TileGeometry( 
+						new CameraTile( CameraTile.CameraLocation.LOCAL ), 
 						new Rectangle( 3, 0, 2, 2 ) ) ); 
 
 //		list.add( new TileGeometry( new PerformanceMonitorTile(), 
@@ -203,6 +207,12 @@ public enum Perspective {
 		
 		list.add( new TileGeometry( new WeatherForecastTile(), 
 						new Rectangle( 0, 2, 5, 1 ) ) ); 
+	}
+
+	private void build_CameraRemote() {
+		list.add( new TileGeometry( 
+						new CameraTile( CameraTile.CameraLocation.DRIVEWAY ), 
+						new Rectangle( 0, 0, 5, 3 ) ) ); 
 	}
 	
 
