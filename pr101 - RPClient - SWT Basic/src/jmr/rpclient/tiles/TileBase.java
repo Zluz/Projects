@@ -198,13 +198,13 @@ public abstract class TileBase implements Tile {
 	}
 	
 	
-	protected void addButton(	final GC gc,
-								final int iIndex,
-								final int iX, final int iY,
-								final int iW, final int iH,
-								final String strText ) {
-		if ( null==gc || gc.isDisposed() ) return;
-		if ( null==strText ) return;
+	protected S2Button addButton(	final GC gc,
+									final int iIndex,
+									final int iX, final int iY,
+									final int iW, final int iH,
+									final String strText ) {
+		if ( null==gc || gc.isDisposed() ) return null;
+		if ( null==strText ) return null;
 
 		final S2Button button;
 		final int iBrightBase;
@@ -346,6 +346,8 @@ public abstract class TileBase implements Tile {
 //		}
 //		this.buttons.add( button );
 //		this.buttons.put( iIndex, button );
+		
+		return button;
 	}
 
 

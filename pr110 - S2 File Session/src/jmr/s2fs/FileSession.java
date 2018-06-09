@@ -2,6 +2,8 @@ package jmr.s2fs;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -138,6 +140,15 @@ public class FileSession {
 				list.add( file );
 			}
 		}
+		
+		final Comparator<File> comparator = new Comparator<File>() {
+			@Override
+			public int compare(	final File lhs, 
+								final File rhs ) {
+				return lhs.getName().compareTo( rhs.getName() );
+			}
+		};
+		Collections.sort( list, comparator );
 		
 		return list;
 	}

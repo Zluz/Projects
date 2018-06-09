@@ -71,7 +71,8 @@ public class CameraModule {
 
 		try {
 //			final File file = new File( "/tmp/capture_still_now.jpg" );
-			final File file = new File( "/tmp/capture_cam-thumb.jpg" );
+//			final File file = new File( "/tmp/capture_cam-thumb.jpg" );
+			final File file = new File( "/tmp/session/capture_cam-thumb.jpg" );
 			if ( file.exists() ) {
 				return file;
 			} else {
