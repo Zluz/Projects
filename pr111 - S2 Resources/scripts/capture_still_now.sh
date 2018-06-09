@@ -61,7 +61,7 @@ do
 				rm -rf /tmp/session/capture_cam.jpg
 				mv /tmp/session/capture_cam._jpg /tmp/session/capture_cam.jpg
 
-				mogrify -scale 300x /tmp/session/capture_cam-thumb._jpg
+				mogrify -scale 300x -quality 50 /tmp/session/capture_cam-thumb._jpg
 				rm -rf /tmp/session/capture_cam-thumb.jpg
 				mv /tmp/session/capture_cam-thumb._jpg /tmp/session/capture_cam-thumb.jpg
 			fi
@@ -84,7 +84,7 @@ do
 			# may have in output:
 			# GD Error: gd-jpeg: JPEG library reports unrecoverable error: Unsupported marker type 0xa0
 
-			CMD="fswebcam -r 1280x1024 --banner-colour #FF000000 --line-colour #FF000000 --shadow --timestamp %Y%m%d-%H%M  --title $MAC -d /dev/video$vid_count /tmp/capture_vid$vid_count._jpg --log /tmp/cap.log"
+			CMD="fswebcam -r 1280x1024 --jpeg 80 --banner-colour #FF000000 --line-colour #FF000000 --shadow --timestamp %Y%m%d-%H%M  --title $MAC -d /dev/video$vid_count --skip 1 /tmp/capture_vid$vid_count._jpg --log /tmp/cap.log"
 
 			rm -rf /tmp/cap.out
 			rm -rf /tmp/cap.log
@@ -94,7 +94,7 @@ do
 			# echo "CAP_CMD: $CAP_CMD"
 			# CAP_ERR=$(cat /tmp/cap.log /tmp/cap.out | grep rror | wc -l)
 			CAP_ERR=$(echo $CAP_CMD | grep rror | wc -l)
-			if [[ "$CAP_ERR" == "0" ]]
+			if [[ "$CAP_ERR" == "0" && -e "/tmp/capture_vid$vid_count._jpg" ]]
 			then
 				echo "Done."
 				rm -rf /tmp/capture_vid$vid_count.jpg
@@ -108,7 +108,7 @@ do
 					rm -rf /tmp/session/capture_vid$vid_count.jpg
 					mv /tmp/session/capture_vid$vid_count._jpg /tmp/session/capture_vid$vid_count.jpg
 
-					mogrify -scale 300x /tmp/session/capture_vid$vid_count-thumb._jpg
+					mogrify -scale 300x -quality 50 /tmp/session/capture_vid$vid_count-thumb._jpg
 					rm -rf /tmp/session/capture_vid$vid_count-thumb.jpg
 					mv /tmp/session/capture_vid$vid_count-thumb._jpg /tmp/session/capture_vid$vid_count-thumb.jpg
 				fi
@@ -128,7 +128,7 @@ do
 
 done
 
-( ls /tmp/session && ls /tmp/capture_still_now.jpg && cp /tmp/capture_still_now.jpg /tmp/session )
+# ( ls /tmp/session && ls /tmp/capture_still_now.jpg && cp /tmp/capture_still_now.jpg /tmp/session )
 
 echo "Done."
 
