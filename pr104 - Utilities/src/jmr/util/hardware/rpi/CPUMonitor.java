@@ -39,8 +39,12 @@ public class CPUMonitor {
 		final String[] arrCommand = OSUtil.isWin() 
 				? COMMAND_MONITOR_CPU_WIN : COMMAND_MONITOR_CPU_RPI;
 		
-		mp = new MonitorProcess( "Monitor CPU temperature", arrCommand );
-		mp.start();
+		if ( ! OSUtil.isWin() ) {
+			mp = new MonitorProcess( "Monitor CPU temperature", arrCommand );
+			mp.start();
+		} else {
+			mp = null;
+		}
 	};
 	
 	
@@ -53,6 +57,7 @@ public class CPUMonitor {
 
 
 	public JsonObject updateData() {
+		if ( null==mp ) return null;
 		
 		// {"temp":"temp=63.4'C","core":"volt=1.2313V","sdram_c":"volt=1.2000V","sdram_i":"volt=1.2000V","sdram_p":"volt=1.2250V"}
 		

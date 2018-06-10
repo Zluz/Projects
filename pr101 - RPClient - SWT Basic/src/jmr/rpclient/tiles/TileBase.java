@@ -36,6 +36,7 @@ public abstract class TileBase implements Tile {
 	protected int iYC;
 	
 	protected long iNowPaint;
+	private boolean bQueueRemoveButtons = false;
 
 
 	
@@ -60,6 +61,10 @@ public abstract class TileBase implements Tile {
 		this.iYC = rect.y + rect.height / 2;
 
 //		buttons.clear();
+		if ( bQueueRemoveButtons ) {
+			this.buttons.clear();
+			bQueueRemoveButtons = false;
+		}
 		
 		paint( gc, imageBuffer );
 		gc.dispose();
@@ -197,6 +202,11 @@ public abstract class TileBase implements Tile {
 		}
 	}
 	
+	
+	protected void removeAllButtons() {
+//		this.buttons.clear();
+		this.bQueueRemoveButtons = true;
+	}
 	
 	protected S2Button addButton(	final GC gc,
 									final int iIndex,

@@ -57,8 +57,12 @@ public class CameraTile extends TileBase {
 	private Image imageStill = null;
 //	private Object semaphore = "semaphore";
 	private File fileLastImage;
+	private long lLastFileModified = 0;
+	private String strLastMessage = null;
 	
 	private Point ptDesiredImageSize = null;
+	
+	private Point ptTouch = null;
 	
 	private final CameraLocation location;
 	
@@ -75,6 +79,10 @@ public class CameraTile extends TileBase {
 	
 	private DisplayMode mode = DisplayMode.SINGLE_FULL;
 	
+//	String strImageDetails = null;
+	
+	FileSession filesession = null;
+
 	
 	
 	public CameraTile( final CameraLocation location ) {
@@ -101,7 +109,7 @@ public class CameraTile extends TileBase {
 					try {
 						for (;;) {
 							Thread.sleep( 1000 );
-							refreshImageData();
+							refreshImageData( false );
 						}
 					} catch ( final InterruptedException e ) {
 						// TODO Auto-generated catch block
@@ -118,7 +126,7 @@ public class CameraTile extends TileBase {
 	}
 	
 	
-	private synchronized void refreshImageData() {
+	private synchronized void refreshImageData( final boolean bFast ) {
 
 		if ( UI.display.isDisposed() ) return;
 		
@@ -134,7 +142,7 @@ public class CameraTile extends TileBase {
 				case SHOW_CONTROLS:
 				case SINGLE_FULL:
 				default: {
-					image = prerenderSingleImage(); 
+					image = prerenderSingleImage( bFast ); 
 				}
 			}
 			
@@ -245,17 +253,31 @@ public class CameraTile extends TileBase {
 	}
 	
 	
-	private Image prerenderSingleImage() {
+	private Image prerenderSingleImage( final boolean bFast ) {
 
 		mapClickRegions.clear();
 		
+		final File file = getImageFile( bFast );
 		if ( null!=fileLastImage ) {
-//			fileLastImage.delete();
+			if ( lLastFileModified == file.lastModified() 
+						&& null!=strLastMessage ) {
+				this.strMessage = strLastMessage;
+				return null;
+			}
+			
 			fileLastImage = null;
 		}
-		final File file = getImageFile();
 		if ( null!=file ) {
 			try {
+				
+				if ( DisplayMode.SHOW_CONTROLS.equals( this.mode ) ) {
+					this.strMessage += "\n"
+							+ "" + file.getParent() + "\n"
+							+ "File size: " + file.length() + "\n";
+				}
+				
+				
+				
 				final Image imgRaw = new Image( 
 						UI.display, file.getAbsolutePath() );
 				final Image imgScaled = new Image( 
@@ -272,19 +294,40 @@ public class CameraTile extends TileBase {
 					gc.setAdvanced( false );
 					gc.setAntialias( SWT.OFF );
 				}
-				gc.drawImage( imgRaw, 0, 0,
-						imgRaw.getBounds().width,
-						imgRaw.getBounds().height,
+				final int iRX = imgRaw.getBounds().width;
+				final int iRY = imgRaw.getBounds().height;
+				
+				if ( DisplayMode.SHOW_CONTROLS.equals( this.mode ) ) {
+					this.strMessage += "\n"
+							+ "Image size: " + iRX + " x " + iRY + "\n";
+					this.strMessage += ""
+							+ "bytesPerLine: " 
+							+ imgRaw.getImageData().bytesPerLine + "\n";
+					
+					if ( null!=filesession ) {
+						final String strDescription = 
+								filesession.getDescriptionForImageSource( file );
+						this.strMessage += "\n\n\n\n\n\n\n" 
+								+ strDescription + "\n";
+					}
+					
+				}
+				
+				
+				gc.drawImage( imgRaw, 0, 0, iRX, iRY, 
 						0, 0,
 						ptDesiredImageSize.x,
 						ptDesiredImageSize.y );
-				
+
+
 				gc.dispose();
 				imgRaw.dispose();
 				
 				fileLastImage = file;
+				lLastFileModified = file.lastModified();
 				
 				this.lImageAge = file.lastModified();
+				this.strLastMessage = this.strMessage;
 				
 				return imgScaled;
 				
@@ -292,6 +335,8 @@ public class CameraTile extends TileBase {
 				// may run into FileNotFoundException here
 				// because image file may update during this method.
 				// just skip.
+				this.strMessage += "\n"
+						+ e.toString();
 			}
 		}
 				
@@ -300,7 +345,7 @@ public class CameraTile extends TileBase {
 	}
 	
 	
-	public File getImageFile() {
+	public File getImageFile( final boolean bFast ) {
 		if ( CameraLocation.LOCAL.equals( location ) ) {
 			final CameraModule module = CameraModule.get();
 			if ( module.isCameraPresent() ) {
@@ -332,7 +377,9 @@ public class CameraTile extends TileBase {
 			}
 			
 			final boolean bRequireThumb;
-			if ( null!=this.ptDesiredImageSize 
+			if ( bFast ) {
+				bRequireThumb = true;
+			} else if ( null!=this.ptDesiredImageSize 
 					&& this.ptDesiredImageSize.x <= 300 ) {
 				bRequireThumb = true;
 			} else {
@@ -387,6 +434,7 @@ public class CameraTile extends TileBase {
 					}
 
 					if ( bGood && strFilename.contains( strFileMatch ) ) {
+						filesession = session;
 						strMessage = strFilename;
 						return file;
 					}
@@ -450,7 +498,7 @@ public class CameraTile extends TileBase {
 					gc.setForeground( UI.COLOR_WHITE );
 					gc.drawText( strLine, 19, iY + 1, true );
 				}
-				iY += 30;
+				iY += 28;
 			}
 		}
 		
@@ -473,14 +521,21 @@ public class CameraTile extends TileBase {
 		if ( DisplayMode.SHOW_CONTROLS.equals( this.mode ) ) {
 			
 			super.addButton( gc, BUTTON_SHOW_ALL, 
-							20, r.height - 130, 120, 40, "Show All" );
+							20, r.height - 180, 120, 40, "Show All" );
 			final S2Button btnShowLocal = 
 					super.addButton( gc, BUTTON_SHOW_LOCAL, 
-							20, r.height -  70, 120, 40, "Show Local" );
+							20, r.height - 120, 120, 40, "Show Local" );
 			if ( Boolean.FALSE.equals( this.bHasCameraModule ) ) {
 				btnShowLocal.setState( ButtonState.DISABLED );
 			}
 		}
+		
+		final Point pt = this.ptTouch;
+		if ( null!=pt ) {
+			gc.setForeground( UI.COLOR_BLUE );
+			gc.drawOval( pt.x - 10, pt.y - 10, 20, 20 );
+		}
+		
 	}
 	
 	
@@ -489,23 +544,41 @@ public class CameraTile extends TileBase {
 		
 		if ( this.mode == mode ) return;
 		
+		this.strLastMessage = null;
 		final DisplayMode modeLast = this.mode;
 		this.mode = mode;
+		this.filesession = null;
 		
 		switch ( mode ) {
 			case SHOW_ALL: {
-				refreshImageData();
+				refreshImageData( true );
 				break;
 			}
 			case SHOW_CONTROLS: {
 				if ( DisplayMode.SHOW_ALL.equals( modeLast ) ) {
-					refreshImageData();
+					refreshImageData( true );
 				}
 				break;
 			}
 			case SINGLE_FULL: {
 				if ( DisplayMode.SHOW_ALL.equals( modeLast ) ) {
-					refreshImageData();
+					this.strMessage = null;
+					refreshImageData( true );
+//					new Thread() {
+//						public void run() {
+//							try {
+//								Thread.sleep( 200 );
+//								UI.display.asyncExec( new Runnable() {
+//									@Override
+//									public void run() {
+//										refreshImageData( false );
+//									}
+//								});
+//							} catch ( final InterruptedException e ) {
+//								// ignore
+//							}
+//						};
+//					}.start();
 				}
 				break;
 			}
@@ -518,10 +591,12 @@ public class CameraTile extends TileBase {
 		if ( null==button ) return;
 		
 		button.setState( ButtonState.WORKING );
+		this.strLastMessage = null;
 		
 		switch ( button.getIndex() ) {
 			case BUTTON_SHOW_ALL: {
 				setMode( DisplayMode.SHOW_ALL );
+				this.removeAllButtons();
 				break;
 			}
 		}
@@ -539,17 +614,23 @@ public class CameraTile extends TileBase {
 									mapClickRegions.entrySet() ) {
 				final Rectangle r = entry.getKey();
 				if ( r.contains( point ) ) {
+					this.ptTouch = null;
 					this.strLocationMatch = entry.getValue();
 //					bShowAll = false;
 					this.setMode( DisplayMode.SINGLE_FULL );
 					return true;
 				}
 			}
+			
+			this.ptTouch = point;
 			return false;
 			
 		} else if ( DisplayMode.SHOW_CONTROLS.equals( this.mode ) ) {
+			this.ptTouch = null;
+			this.removeAllButtons();
 			this.setMode( DisplayMode.SINGLE_FULL );
 		} else {
+			this.ptTouch = null;
 			this.setMode( DisplayMode.SHOW_CONTROLS );
 		}
 		return true;
