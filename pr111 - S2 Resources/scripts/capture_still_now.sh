@@ -34,6 +34,8 @@ echo "Time now: $(date)"
 DATE=$(date +"%Y%m%d_%H%M")
 NOW=$(date +"%M")
 LAST=$NOW
+NOW_VLMSG=$( stat -c %Y /var/log/messages )
+LAST_VLMSG=$NOW_VLMSG
 code=0
 MAC=$( file -b /tmp/session | cut -d '/' -f 4 )
 
@@ -79,12 +81,23 @@ do
 		do
 			# echo "video $vid_count exists"
 
+
+			NOW_VLMSG=$( stat -c %Y /var/log/messages )
+			if [[ "$LAST_VLMSG" != "$NOW_VLMSG" ]]
+			then
+				echo "WARNING: /var/log/messages updated. Pausing for 20s."
+				sleep 20
+			fi
+			LAST_VLMSG=$NOW_VLMSG
+
+
 			echo -n "Taking picture from camera on /dev/video$vid_count..."
 
 			# may have in output:
 			# GD Error: gd-jpeg: JPEG library reports unrecoverable error: Unsupported marker type 0xa0
 
-			CMD="fswebcam -r 1280x1024 --jpeg 80 --banner-colour #FF000000 --line-colour #FF000000 --shadow --timestamp %Y%m%d-%H%M  --title $MAC -d /dev/video$vid_count --skip 1 /tmp/capture_vid$vid_count._jpg --log /tmp/cap.log"
+			# CMD="fswebcam -r 1280x1024 --banner-colour #FF000000 --line-colour #FF000000 --shadow --timestamp %Y%m%d-%H%M  --title $MAC -d /dev/video$vid_count /tmp/capture_vid$vid_count._jpg --log /tmp/cap.log"
+			CMD="fswebcam -r 1280x1024 --jpeg 80 --banner-colour #FF000000 --line-colour #FF000000 --shadow --timestamp %Y%m%d-%H%M  --title $MAC -d /dev/video$vid_count --skip 2 /tmp/capture_vid$vid_count._jpg --log /tmp/cap.log"
 
 			rm -rf /tmp/cap.out
 			rm -rf /tmp/cap.log
@@ -114,17 +127,20 @@ do
 				fi
 
 			else
-				echo "Error detected."
+				echo -n "Error detected, pausing for 2s..."
+				sleep 2
+				echo "Done."
 			fi
 
+			sleep 2
 			vid_count=$((vid_count+1))
 		done
 
 	fi
 
-	sleep 1
+	sleep 2
 	LAST=$NOW
-	NOW=$(date +"%M")
+#	NOW=$(date +"%M")
 
 done
 
