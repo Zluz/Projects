@@ -68,6 +68,7 @@ do
 				mv /tmp/session/capture_cam-thumb._jpg /tmp/session/capture_cam-thumb.jpg
 			fi
 
+			sleep 1
 		else
 			sleep 2
 		fi
@@ -85,8 +86,9 @@ do
 			NOW_VLMSG=$( stat -c %Y /var/log/messages )
 			if [[ "$LAST_VLMSG" != "$NOW_VLMSG" ]]
 			then
-				echo "WARNING: /var/log/messages updated. Pausing for 20s."
-				sleep 20
+				echo -n "WARNING: /var/log/messages updated. Pausing for 120s..."
+				sleep 120
+				echo "Done."
 			fi
 			LAST_VLMSG=$NOW_VLMSG
 
@@ -96,7 +98,6 @@ do
 			# may have in output:
 			# GD Error: gd-jpeg: JPEG library reports unrecoverable error: Unsupported marker type 0xa0
 
-			# CMD="fswebcam -r 1280x1024 --banner-colour #FF000000 --line-colour #FF000000 --shadow --timestamp %Y%m%d-%H%M  --title $MAC -d /dev/video$vid_count /tmp/capture_vid$vid_count._jpg --log /tmp/cap.log"
 			CMD="fswebcam -r 1280x1024 --jpeg 80 --banner-colour #FF000000 --line-colour #FF000000 --shadow --timestamp %Y%m%d-%H%M  --title $MAC -d /dev/video$vid_count --skip 2 /tmp/capture_vid$vid_count._jpg --log /tmp/cap.log"
 
 			rm -rf /tmp/cap.out
@@ -109,36 +110,47 @@ do
 			CAP_ERR=$(echo $CAP_CMD | grep rror | wc -l)
 			if [[ "$CAP_ERR" == "0" && -e "/tmp/capture_vid$vid_count._jpg" ]]
 			then
-				echo "Done."
-				rm -rf /tmp/capture_vid$vid_count.jpg
-				mv /tmp/capture_vid$vid_count._jpg /tmp/capture_vid$vid_count.jpg
+				echo -n "Done. Examining..."
 
-				if [[ -e "/tmp/session" ]]
+				BLANK_TEST=$( convert /tmp/capture_vid$vid_count._jpg -format '%[mean]' info:- )
+				# echo -n "($BLANK_TEST)"
+				# if (( $BLANK_TEST < 100 ))
+				if (( $(echo "$BLANK_TEST < 100" | bc -l ) ))
 				then
-					cp /tmp/capture_vid$vid_count.jpg /tmp/session/capture_vid$vid_count._jpg
-					cp /tmp/capture_vid$vid_count.jpg /tmp/session/capture_vid$vid_count-thumb._jpg
+					echo "Image is blank. Skipping."
+				else
+					echo "Done."
 
-					rm -rf /tmp/session/capture_vid$vid_count.jpg
-					mv /tmp/session/capture_vid$vid_count._jpg /tmp/session/capture_vid$vid_count.jpg
+					rm -rf /tmp/capture_vid$vid_count.jpg
+					mv /tmp/capture_vid$vid_count._jpg /tmp/capture_vid$vid_count.jpg
 
-					mogrify -scale 300x -quality 50 /tmp/session/capture_vid$vid_count-thumb._jpg
-					rm -rf /tmp/session/capture_vid$vid_count-thumb.jpg
-					mv /tmp/session/capture_vid$vid_count-thumb._jpg /tmp/session/capture_vid$vid_count-thumb.jpg
+					if [[ -e "/tmp/session" ]]
+					then
+						cp /tmp/capture_vid$vid_count.jpg /tmp/session/capture_vid$vid_count._jpg
+						cp /tmp/capture_vid$vid_count.jpg /tmp/session/capture_vid$vid_count-thumb._jpg
+
+						rm -rf /tmp/session/capture_vid$vid_count.jpg
+						mv /tmp/session/capture_vid$vid_count._jpg /tmp/session/capture_vid$vid_count.jpg
+
+						mogrify -scale 300x -quality 50 /tmp/session/capture_vid$vid_count-thumb._jpg
+						rm -rf /tmp/session/capture_vid$vid_count-thumb.jpg
+						mv /tmp/session/capture_vid$vid_count-thumb._jpg /tmp/session/capture_vid$vid_count-thumb.jpg
+					fi
 				fi
 
 			else
-				echo -n "Error detected, pausing for 2s..."
-				sleep 2
+				echo -n "Error detected, pausing for 8s..."
+				sleep 8
 				echo "Done."
 			fi
 
-			sleep 2
+			sleep 6   # 10 is last good
 			vid_count=$((vid_count+1))
 		done
 
 	fi
 
-	sleep 2
+	sleep 1
 	LAST=$NOW
 #	NOW=$(date +"%M")
 
