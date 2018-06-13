@@ -30,6 +30,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import com.google.appengine.api.utils.SystemProperty;
 
 import jmr.pr121.config.Configuration;
+import jmr.pr121.storage.CloudStorage;
+import jmr.pr121.storage.CloudStorage02;
 
 //import com.google.apphosting.runtime.jetty9.AppEngineAuthentication;
 
@@ -232,6 +234,15 @@ public class Status extends HttpServlet {
 			final boolean bAccepted = Configuration.get().isBrowserAccepted( req );
 			writer.print( "\tConfiguration.isBrowserAccepted(): " + bAccepted + "\r\n" );
 
+			
+
+			writer.print("\r\n");
+			writer.print("Cloud Storage:\r\n");
+
+//			final CloudStorage storage = new CloudStorage();
+			final CloudStorage02 storage = new CloudStorage02();
+			final String strResult = storage.test();
+			writer.print( "\tResult of test(): " + strResult ); 
 			
 
 			writer.print("\r\n");

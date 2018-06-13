@@ -22,8 +22,8 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 
 import jmr.p121.comm.GAEEmail;
-import jmr.pr121.doc.DocumentData;
-import jmr.pr121.doc.DocumentMap;
+import jmr.pr121.storage.DocumentData;
+import jmr.pr121.storage.DocumentMap;
 import jmr.pr122.DocMetadataKey;
 import jmr.util.http.ContentType;
 
@@ -47,6 +47,8 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 								final String strURL,
 								final DocumentData item ) {
 
+		if ( ! strDocName.contains( "-thumb." ) ) return;
+		
 //		final String strURL = strRequestURL + "?name=" + strDocName;
 		final String strLink = "<a href=\"" + strURL + "\">" + strDocName + "</a>";
 		final String strImage = "<img width='300' src='" + strURL + "'>";

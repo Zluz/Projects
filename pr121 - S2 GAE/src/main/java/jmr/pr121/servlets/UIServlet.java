@@ -156,7 +156,9 @@ public class UIServlet extends HttpServlet {
 			writer.print("Additional Request Information:\r\n");
 			final Principal pu = req.getUserPrincipal();
 			writer.print( "\tHttpServletRequest.getUserPrincipal(): " + pu + "\r\n" );
-			writer.print( "\t\tPrincipal.class: " + pu.getClass().getName() + "\r\n" );
+			if ( null!=pu ) {
+				writer.print( "\t\tPrincipal.class: " + pu.getClass().getName() + "\r\n" );
+			}
 			writer.print( "\tHttpServletRequest.getLocale(): " + req.getLocale() + "\r\n" );
 			try {
 				writer.print( "\tHttpServletRequest.getParts().size(): " + req.getParts().size() + "\r\n" );
