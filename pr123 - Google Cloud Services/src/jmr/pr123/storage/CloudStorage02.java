@@ -1,34 +1,12 @@
-package jmr.pr121.storage;
+package jmr.pr123.storage;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
-
-import com.google.cloud.storage.Acl;
-import com.google.cloud.storage.Acl.Role;
-import com.google.cloud.storage.Acl.User;
-import com.google.cloud.storage.BlobInfo;
-import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
-
-import com.google.cloud.storage.Acl;
-import com.google.cloud.storage.Acl.Role;
-import com.google.cloud.storage.Acl.User;
-import com.google.cloud.storage.BlobInfo;
-import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -40,7 +18,10 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-
+import com.google.cloud.storage.Acl;
+import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 
 import jmr.util.http.ContentType;
 
@@ -88,11 +69,17 @@ public class CloudStorage02 {
 //				Arrays.asList( Acl.of( entity, Role.READER ) ) );
 				);
 				
+		final Map<String, String> map = new HashMap<>();
+		map.put( "test_name", "test_value" );
+		map.put( "project", "pr123" );
+		map.put( "filename", file.getName() );
+		map.put( "file size", "" + file.length() );
 		final BlobInfo blobInfo = storage.create(
-				BlobInfo.newBuilder( bucketName, fileName )
+				BlobInfo.newBuilder( bucketName, "test_dir/" + fileName )
 				// Modify access list to allow all users with link to read file
 					.setAcl( arrACL )
 					.setContentType( ContentType.IMAGE_JPEG.getMimeType() )
+					.setMetadata( map  )
 					.build(),
 //				filePart.getInputStream());
 				stream );

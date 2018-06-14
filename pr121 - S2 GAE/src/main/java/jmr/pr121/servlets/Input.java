@@ -8,10 +8,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.entity.ContentType;
 
-//import jmr.pr116.messaging.EmailMessage;
-//import jmr.pr116.messaging.EmailProvider;
-import jmr.pr121.config.Configuration;
-
 public class Input implements IPage {
 
 	@Override
@@ -34,8 +30,8 @@ public class Input implements IPage {
 		    
 			Thread.sleep( 100 );
 		    
-		    final String strAddress = Configuration.get().get( "CONTROL_EMAIL_USERNAME" );
-		    final String strPassword = Configuration.get().get( "CONTROL_EMAIL_PASSWORD" );
+//		    final String strAddress = Configuration.get().get( "CONTROL_EMAIL_USERNAME" );
+//		    final String strPassword = Configuration.get().get( "CONTROL_EMAIL_PASSWORD" );
 
 		    
 //		    final EmailControl email = new EmailControl();

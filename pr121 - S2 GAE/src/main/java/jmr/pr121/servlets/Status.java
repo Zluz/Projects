@@ -30,7 +30,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import com.google.appengine.api.utils.SystemProperty;
 
 import jmr.pr121.config.Configuration;
-import jmr.pr121.storage.CloudStorage;
 import jmr.pr121.storage.CloudStorage02;
 
 //import com.google.apphosting.runtime.jetty9.AppEngineAuthentication;
