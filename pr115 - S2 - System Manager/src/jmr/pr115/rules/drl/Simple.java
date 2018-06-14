@@ -31,8 +31,10 @@ import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
 import jmr.s2db.tables.Job.JobState;
 import jmr.s2fs.FileSession;
+import jmr.s2fs.FileSession.ImageLookupOptions;
 import jmr.s2fs.FileSessionManager;
 import jmr.util.TimeUtil;
+import jmr.util.http.ContentType;
 import jmr.util.transform.JsonUtils;
 
 public class Simple {
@@ -246,15 +248,25 @@ public class Simple {
 	}
 	
 	public static void emailSendDeviceCaptureStills() {
-		emailSendDeviceFiles( false, true );
+		sendDeviceFiles( false, true, true );
 	}
 
 	public static void emailSendDeviceScreenshots() {
-		emailSendDeviceFiles( true, false );
+		sendDeviceFiles( true, false, true );
+	}
+	
+	public static void updateDeviceThumbnails() {
+		final ImageLookupOptions[] options = { 
+						FileSession.ImageLookupOptions.ONLY_THUMB,
+						FileSession.ImageLookupOptions.SINCE_PAST_HOUR };
+		sendDeviceFiles( false, true, false, options );
 	}
 
-	public static void emailSendDeviceFiles(	final boolean bScreenshot,
-												final boolean bCaptureStill ) {
+	public static void sendDeviceFiles(	
+							final boolean bScreenshot,
+							final boolean bCaptureStill,
+							final boolean bSendEmail,
+							final FileSession.ImageLookupOptions... options ) {
 		final FileSessionManager fsm = FileSessionManager.getInstance();
 		final Map<String, FileSession> map = fsm.getSessionMap();
 
@@ -298,6 +310,11 @@ public class Simple {
 											strKey + "/" + file.getName(), 
 											file, mapMetadata );
 							
+							final String strGCSName = 
+									"SCREENSHOT_" + strKey + "_" + file.getName();
+							CloudUtilities.saveImage( strGCSName, file, 
+									ContentType.IMAGE_PNG, mapMetadata );
+
 	//						// special case (garage entrance)
 	////						if ( "B8-27-EB-13-8B-C0".equals( strKey ) ) {
 	//							final Path path = Paths.get( fileScreenshot.toURI() );
@@ -333,7 +350,8 @@ public class Simple {
 //					}
 //				}
 				
-				final List<File> files = session.getCaptureStillImageFiles();
+				final List<File> files = 
+								session.getCaptureStillImageFiles( options);
 				for ( final File file : files ) {
 					if ( null!=file && file.isFile() ) {
 						if ( file.lastModified() > lCutoff ) {
@@ -347,9 +365,15 @@ public class Simple {
 									null!=strDescription ? strDescription : "" );
 							
 	//						final String strName = "STILL_" + strKey;
+							final String strCommName = 
+										strKey + "/" + file.getName();
 							comm.store( DocKey.DEVICE_STILL_CAPTURE, 
-									strKey + "/" + file.getName(), 
-											file, mapMetadata );
+										strCommName, file, mapMetadata );
+							
+							final String strGCSName = 
+									"CAPTURE_" + strKey + "_" + file.getName();
+							CloudUtilities.saveImage( strGCSName, file, 
+									ContentType.IMAGE_JPEG, mapMetadata );
 						}
 					}
 				}
@@ -365,9 +389,11 @@ public class Simple {
 			}
 		}
 		
-		SendMessage.send( MessageType.EMAIL, "Device details", 
-					strbuf.toString(), 
-					listFiles.toArray( new File[ listFiles.size() ] ) );
+		if ( bSendEmail ) {
+			SendMessage.send( MessageType.EMAIL, "Device details", 
+						strbuf.toString(), 
+						listFiles.toArray( new File[ listFiles.size() ] ) );
+		}
 	}
 	
 	
@@ -446,7 +472,9 @@ public class Simple {
 	
 	public static void main( final String[] args ) {
 
-		emailSendDeviceFiles( true, true );
+//		sendDeviceFiles( true, true, false );
+		
+		updateDeviceThumbnails();
 		
 //		final CommGAE comm = new CommGAE();
 //

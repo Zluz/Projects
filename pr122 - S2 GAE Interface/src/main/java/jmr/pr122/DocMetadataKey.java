@@ -17,7 +17,7 @@ public enum DocMetadataKey {
 	SENSOR_DESC,
 	;
 	
-	final public static DocMetadataKey getKeyFor( final String strValue ) {
+	public final static DocMetadataKey getKeyFor( final String strValue ) {
 		if ( null==strValue ) return null;
 		for ( final DocMetadataKey key : DocMetadataKey.values() ) {
 			if ( key.name().equals( strValue ) ) {

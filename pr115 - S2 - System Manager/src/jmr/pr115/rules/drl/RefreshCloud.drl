@@ -1,0 +1,20 @@
+package pr115.rules.drl;
+
+import jmr.util.TimeUtil;
+import jmr.pr115.rules.drl.Simple;
+import jmr.pr115.schedules.run.Heartbeat;
+
+
+dialect "mvel"
+
+
+rule "Refresh Cloud Capture Thumbnails"
+	when
+		// h : Heartbeat( getTimeUnit() == TimeUnit.HOURS )
+		h : Heartbeat( getTimeUnit() == TimeUnit.MINUTES )
+		eval( TimeUtil.isMinuteInHour( 0,10,20,30,40,50 ) )
+	then
+		System.out.println( "Refreshing cloud thumbnails.." );
+
+		Simple.updateDeviceThumbnails();
+end

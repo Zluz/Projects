@@ -2,11 +2,14 @@ package jmr.s2fs;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import jmr.util.FileUtil;
@@ -31,6 +34,21 @@ public class FileSession {
 			this.strFilename = strFilename;
 		}
 	}
+
+	
+	/**
+	 * Image search criteria. Currently only applies to still captures.
+	 */
+	public enum ImageLookupOptions {
+		ALL,
+		SINCE_PAST_DAY,
+		SINCE_PAST_HOUR,
+		ONLY_FULL,
+		ONLY_THUMB,
+		;
+	}
+	
+
 	
 	private final File dir; 
 	
@@ -107,27 +125,59 @@ public class FileSession {
 	}
 
 	
-	public List<File> getCaptureStillImageFiles() {
+	public List<File> getCaptureStillImageFiles( 
+								final ImageLookupOptions... options ) {
+		final Set<ImageLookupOptions> setOptions = new HashSet<>();
+		setOptions.addAll( Arrays.asList( options ) );
+		
 		final List<File> list = new LinkedList<>();
 		
-		final long lRecent = 
-					System.currentTimeMillis() - TimeUnit.DAYS.toMillis( 1 );
-		
-		final File fileCamFull = new File( this.dir, "capture_cam.jpg" );
-		if ( fileCamFull.exists() && fileCamFull.lastModified() > lRecent ) {
-			list.add( fileCamFull );
+		final long lRecent;
+		if ( setOptions.contains( ImageLookupOptions.SINCE_PAST_HOUR ) ) {
+			lRecent = System.currentTimeMillis() - TimeUnit.HOURS.toMillis( 1 );
+		} else if ( setOptions.contains( ImageLookupOptions.SINCE_PAST_DAY ) ) {
+			lRecent = System.currentTimeMillis() - TimeUnit.DAYS.toMillis( 1 );
+		} else {
+			lRecent = 0;
 		}
 		
-		final File fileCamThumb = new File( this.dir, "capture_cam-thumb.jpg" );
-		if ( fileCamThumb.exists() && fileCamThumb.lastModified() > lRecent ) {
-			list.add( fileCamThumb );
+		final boolean bFull;
+		final boolean bThumb;
+		if ( setOptions.contains( ImageLookupOptions.ONLY_FULL ) ) {
+			bFull = true;
+			bThumb = false;
+		} else if ( setOptions.contains( ImageLookupOptions.ONLY_THUMB ) ) {
+			bFull = false;
+			bThumb = true;
+		} else {
+			bFull = true;
+			bThumb = true;
+		}
+		
+		if ( bFull ) {
+			final File fileCamFull = new File( this.dir, "capture_cam.jpg" );
+			if ( fileCamFull.exists() && fileCamFull.lastModified() > lRecent ) {
+				list.add( fileCamFull );
+			}
+		}
+		
+		if ( bThumb ) {
+			final File fileCamThumb = new File( this.dir, "capture_cam-thumb.jpg" );
+			if ( fileCamThumb.exists() && fileCamThumb.lastModified() > lRecent ) {
+				list.add( fileCamThumb );
+			}
 		}
 		
 		final File[] files = this.dir.listFiles( new FilenameFilter() {
 			@Override
-			public boolean accept( final File dir, final String name ) {
-				if ( name.toLowerCase().endsWith( ".jpg" )
-						&& name.toLowerCase().startsWith( "capture_vid" ) ) {
+			public boolean accept(	final File dir, 
+									final String strName ) {
+				final String strTest = strName.toLowerCase();
+				if ( bThumb 
+						&& strTest.matches( "capture_vid[0-9]+\\-thumb\\.jpg" ) ) {
+					return true;
+				} else if ( bFull 
+						&& strTest.matches( "capture_vid[0-9]+\\.jpg" ) ) {
 					return true;
 				} else {
 					return false;
@@ -141,13 +191,15 @@ public class FileSession {
 			}
 		}
 		
-		final Comparator<File> comparator = new Comparator<File>() {
-			@Override
-			public int compare(	final File lhs, 
-								final File rhs ) {
-				return lhs.getName().compareTo( rhs.getName() );
-			}
-		};
+//		final Comparator<File> comparator = new Comparator<File>() {
+//			@Override
+//			public int compare(	final File lhs, 
+//								final File rhs ) {
+//				return lhs.getName().compareTo( rhs.getName() );
+//			}
+//		};
+		final Comparator<File> comparator = 
+					(lhs, rhs) -> lhs.getName().compareTo( rhs.getName() );
 		Collections.sort( list, comparator );
 		
 		return list;

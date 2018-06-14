@@ -22,6 +22,8 @@ public enum SUProperty {
 	GAE_PASSWORD( "gae.password" ),
 	GAE_USER_PRE( "gae.user" ),
 	
+	GCS_BUCKET( "gcs.bucket" ),
+	
 	BROWSER_ACCEPT_001( "browser_accept.001" ),
 	BROWSER_ACCEPT_PRE( "browser_accept" ),
 	

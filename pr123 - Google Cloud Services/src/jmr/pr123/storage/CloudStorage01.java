@@ -15,7 +15,7 @@ import com.google.appengine.tools.cloudstorage.GcsServiceFactory;
 import com.google.appengine.tools.cloudstorage.RetryParams;
 
 
-public class CloudStorage {
+public class CloudStorage01 {
 
 	/*
 
@@ -31,7 +31,7 @@ public class CloudStorage {
 	private GcsService gcsService;
 
 	
-	public CloudStorage() {
+	public CloudStorage01() {
 
 		gcsService = GcsServiceFactory.createGcsService(
 		    new RetryParams.Builder()
@@ -84,7 +84,7 @@ public class CloudStorage {
 	public String test() {
 //		final String strData = "This is a text string as sample data.";
 		
-		final CloudStorage storage = new CloudStorage();
+		final CloudStorage01 storage = new CloudStorage01();
 		try {
 			
 			final File fileTest = TestUtils.getFile();
@@ -105,7 +105,7 @@ public class CloudStorage {
 		
 //		final String strData = "This is a text string as sample data.";
 		
-		final CloudStorage storage = new CloudStorage();
+		final CloudStorage01 storage = new CloudStorage01();
 //		storage.storeData( "Test.txt", strData );
 		storage.test();
 

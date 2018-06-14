@@ -32,5 +32,6 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/KTable 2.2.0"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr122 - S2 GAE Interface"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr123 - Google Cloud Services"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
