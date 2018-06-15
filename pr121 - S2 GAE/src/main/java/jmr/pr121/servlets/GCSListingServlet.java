@@ -1,11 +1,13 @@
 package jmr.pr121.servlets;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.ServletInputStream;
@@ -23,12 +25,14 @@ import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 
-import jmr.p121.comm.GAEEmail;
 import jmr.pr121.storage.DocumentData;
 import jmr.pr121.storage.DocumentMap;
 import jmr.pr121.storage.GCSHelper;
+//import jmr.pr121.storage.DocumentData;
+//import jmr.pr121.storage.DocumentMap;
 import jmr.pr122.DocMetadataKey;
-import jmr.pr123.storage.GCSFileWriter;
+import jmr.pr123.storage.GCSFactory;
+import jmr.pr123.storage.GCSFileReader;
 import jmr.util.http.ContentType;
 
 /*
@@ -40,16 +44,17 @@ import jmr.util.http.ContentType;
 
 @SuppressWarnings("serial")
 @WebServlet(
-    name = "DocumentMap",
-    urlPatterns = {"/map"}
+    name = "GCSListing",
+    urlPatterns = {"/gcs"}
 )
-public class DocumentMapServlet extends HttpServlet implements IPage {
+public class GCSListingServlet extends HttpServlet implements IPage {
 
 
 	public void writeImageCell( final PrintWriter writer,
 								final String strDocName,
 								final String strURL,
-								final DocumentData item ) {
+//								final DocumentData item ) {
+								final GCSFileReader item ) {
 
 		if ( ! strDocName.contains( "-thumb." ) ) return;
 		
@@ -62,14 +67,17 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 		
 		writer.print( "\t\t<td width='100%'>" );
 		writer.print( strLink + "<br>\n" );
-		writer.print( item.time.toString() + "<br>\n" );
-		final float fSize = 1.0f / 1024 * item.data.length;
+//		writer.print( item.time.toString() + "<br>\n" );
+		writer.print( item.get( DocMetadataKey.FILE_DATE ) + "<br>\n" );
+//		final float fSize = 1.0f / 1024 * item.data.length;
+		final float fSize = 1.0f / 1024 * item.getSize();
 		final String strSize = String.format( "%.3f", fSize );
 		writer.print( "Size: " + strSize + " KB<br>\n" );
 		writer.print( "<br>\n" );
 		
 		for ( final Entry<DocMetadataKey, String> md : 
-								item.mapMetadata.entrySet() ) {
+//								item.mapMetadata.entrySet() ) {
+								item.getMap().entrySet() ) {
 			final DocMetadataKey key = md.getKey();
 			final String value = md.getValue();
 			
@@ -83,7 +91,8 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 		
 		writer.print( "\t</tr>\n" );
 		writer.print( "\t<tr>\n" );
-		writer.print( "\t\t<td colspan='2'>" + item.strSource + "<br><hr></td>\n" );
+//		writer.print( "\t\t<td colspan='2'>" + item.strSource + "<br><hr></td>\n" );
+//		writer.print( "\t\t<td colspan='2'>" + item. + "<br><hr></td>\n" );
 		writer.print( "\t</tr>\n" );
 	}
 	
@@ -97,28 +106,38 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 		
 		final String strName = map.get( ParameterName.NAME );
 
-		DocumentData doc = null;
+//		DocumentData doc = null;
+//		final DocumentMap docs = DocumentMap.get();
+		GCSFileReader reader = null;
 		
-		final DocumentMap docs = DocumentMap.get();
+		final GCSFactory factory = GCSHelper.GCS_FACTORY;
+		
+		final Map<String, GCSFileReader> listing = factory.getListing();
 		
 		if ( null!=strName && !strName.isEmpty() ) {
-			doc = docs.get( strName );
+//			doc = docs.get( strName );
+//			for ( final GCSFileReader file : listing.values() ) {
+//				final String strFilename = file.getName();
+//				if ( strName.equals( strFilename ) ) {
+//					reader = file;
+//				}
+//			}
+			reader = listing.get( strName );
 		}
 
-		if ( null!=doc ) {
+		if ( null!=reader ) {
 
 			Log.add( "Showing document: " + strName );
 			
-			
-			{
-				if ( ContentType.TEXT_PLAIN.equals( doc.type ) ) {
-					GAEEmail.sendTestEmail();
-				}
-			}
+//			{
+//				if ( ContentType.TEXT_PLAIN.equals( doc.type ) ) {
+//					GAEEmail.sendTestEmail();
+//				}
+//			}
 
-			resp.setContentType( doc.type.getMimeType() );
+			resp.setContentType( reader.getContentType() );
 			final ServletOutputStream out = resp.getOutputStream();
-			out.write( doc.data );
+			out.write( reader.getContent() );
 			
 		} else {
 		
@@ -215,11 +234,29 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 //			for ( final Entry<String, DocumentData> 
 //								entry : DocumentMap.get().entrySet()) {
 //		    final List<String> listDocs = DocumentMap.get().entrySet().
-			for ( final String key : docs.getOrderedKeys() ) { 
+		    
+//			for ( final String key : docs.getOrderedKeys() ) {
+
+		    final List<String> listOrdered = new LinkedList<>( listing.keySet() );
+		    Collections.sort( listOrdered );
+		    
+			for ( final String key : listOrdered ) { 
+				
 //				final String key = entry.getKey();
 //				final DocumentData item = entry.getValue();
-				final DocumentData item = docs.get( key );
+//				final DocumentData item = docs.get( key );
+				final GCSFileReader item = listing.get( key );
 //				final String strDocName = entry.getKey();
+				
+//				final Map<String, String> mapMeta = item.getMap();
+				final Map<DocMetadataKey, String> mapMeta = item.getMap();
+				
+				final String strType = item.getContentType();
+				final String strFilename = item.get( DocMetadataKey.FILENAME );
+				final String strFileDate = item.get( DocMetadataKey.FILE_DATE );
+				final String strDeviceIP = item.get( DocMetadataKey.DEVICE_IP );
+				final String strDeviceMAC = item.get( DocMetadataKey.DEVICE_MAC );
+				final String strSensorDesc = item.get( DocMetadataKey.SENSOR_DESC );
 
 				final String strURL = strRequestURL + "?name=" + key;
 				
@@ -228,13 +265,13 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 				final String strLink = "<a href=\"" + strURL + "\">" + key + "</a>";
 				
 				writer.print( "\t<tr>\n" );
-				writer.print( "\t\t<td>" + item.time.toString() + "</td>\n" );
+				writer.print( "\t\t<td>" + strFileDate + "</td>\n" );
 				writer.print( "\t\t<td>" + strLink + "</td>\n" );
-				writer.print( "\t\t<td>" + item.type.name() + "</td>\n" );
+				writer.print( "\t\t<td>" + strType + "</td>\n" );
 //				writer.print( "\t\t<td>" + item.strClass + "</td>\n" );
-				writer.print( "\t\t<td>" + item.data.length + "</td>\n" );
+				writer.print( "\t\t<td>" + item.getSize() + "</td>\n" );
 //				writer.print( "\t\t<td>" + item.asString() + "</td>\n" );
-				writer.print( "\t\t<td>" + item.get( DocMetadataKey.FILENAME ) + "</td>\n" );
+				writer.print( "\t\t<td>" + strFilename + "</td>\n" );
 //				writer.print( "\t\t<td>" + item.get( DocMetadataKey.SENSOR_DESC ) + "</td>\n" );
 				writer.print( "\t</tr>\n" );
 				
@@ -313,18 +350,20 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 		    
 //			for ( final Entry<String, DocumentData> 
 //								entry : DocumentMap.get().entrySet()) {
-			for ( final String strDocName : docs.getOrderedKeys() ) { 
+//			for ( final String strDocName : docs.getOrderedKeys() ) { 
+			for ( final String key : listOrdered ) { 
 
 //				final String strDocName = entry.getKey();
 				
-				if ( strDocName.startsWith( "DEVICE_SCREENSHOT" ) ) {
+				if ( key.startsWith( "SCREENSHOT" ) ) {
 					
 //					final DocumentData item = entry.getValue();
-					final DocumentData item = docs.get( strDocName );
+//					final DocumentData item = docs.get( strDocName );
+					final GCSFileReader item = listing.get( key );
 	
-					final String strURL = strRequestURL + "?name=" + strDocName;
+					final String strURL = strRequestURL + "?name=" + key;
 					
-					writeImageCell( writer, strDocName, strURL, item );
+					writeImageCell( writer, key, strURL, item );
 				}
 			}
 		    
@@ -352,17 +391,19 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 		    
 //			for ( final Entry<String, DocumentData> 
 //								entry : docs.entrySet()) {
-			for ( final String strDocName : docs.getOrderedKeys() ) { 
+//			for ( final String strDocName : docs.getOrderedKeys() ) { 
+			for ( final String key : listOrdered ) { 
 //				final String strDocName = entry.getKey();
 				
-				if ( strDocName.startsWith( "DEVICE_STILL" ) ) {
+				if ( key.startsWith( "CAPTURE_" ) ) {
 					
 //					final DocumentData item = entry.getValue();
-					final DocumentData item = docs.get( strDocName );
+//					final DocumentData item = docs.get( strDocName );
+					final GCSFileReader item = listing.get( key );
 
-					final String strURL = strRequestURL + "?name=" + strDocName;
+					final String strURL = strRequestURL + "?name=" + key;
 					
-					writeImageCell( writer, strDocName, strURL, item );
+					writeImageCell( writer, key, strURL, item );
 
 				}
 			}
@@ -417,13 +458,14 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 	public void doGet(	final HttpServletRequest req, 
 		  				final HttpServletResponse resp ) 
 		  									throws IOException {
+		Log.add( this.getClass().getName() + ".doGet()" );
+
 		Log.add( req );
 		final UserAuth ua = new UserAuth( req, resp );
 		if ( !ua.require( 99 ) ) return;
 		if ( ua.isAborted() ) return;
 		
 		
-		Log.add( this.getClass().getName() + ".doGet()" );
 		
 		final UserService service = UserServiceFactory.getUserService();
 		final User user = service.getCurrentUser();
@@ -551,13 +593,6 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 					
 					Log.add( "Storing data (" + data.length + " bytes)." );
 
-					if ( ContentType.TEXT_PLAIN.equals( type ) ) {
-						final String strKey = "TEXT_" + strName;
-						final GCSFileWriter gcsfile = 
-								GCSHelper.GCS_FACTORY.create( strKey, type );
-						final InputStream stream = new ByteArrayInputStream( data );
-						gcsfile.upload( stream );
-					}
 			        
 			    } catch ( final Exception e ) {
 					Log.add( "Failed to retrieve POST data." );

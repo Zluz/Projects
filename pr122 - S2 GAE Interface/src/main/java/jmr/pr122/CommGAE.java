@@ -14,6 +14,8 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.google.gson.JsonObject;
+
 //import org.apache.http.entity.ContentType;
 
 import jmr.util.SUProperty;
@@ -23,7 +25,9 @@ import jmr.util.http.ContentRetriever;
 public class CommGAE {
 
 	final String strGAEUrl;
+
 	
+	final JsonObject joConfig = new JsonObject();
 	
 	
 	public CommGAE( final String strURL ) {
@@ -58,6 +62,8 @@ public class CommGAE {
 						final EnumMap<DocMetadataKey,String> map,
 //						final ContentType type,
 						final byte[] data ) {
+		if ( null==this.strGAEUrl ) return;
+		
 		try {
 			final StringBuilder sbURL = new StringBuilder();
 			sbURL.append( ContentRetriever.cleanURL( 
@@ -99,8 +105,16 @@ public class CommGAE {
 		}
 	}
 
+
+	public static final String GCS_FILENAME = "CONFIG.txt";
+	
+	
 	public void configure(	final String strName,
 							final String strData ) {
+		joConfig.addProperty( strName, strData );
+		
+		if ( null==this.strGAEUrl ) return;
+		
 		try {
 			final StringBuilder sbURL = new StringBuilder();
 			sbURL.append( ContentRetriever.cleanURL( 
@@ -175,10 +189,13 @@ http://localhost:8080/map?name=SCREENSHOT_B8-27-EB-13-8B-C0
 	}
 	
 	
-	public static void main( final String[] args ) throws IOException {
+	
+	public void generateConfig() throws IOException {
 		
 //		final CommGAE comm = new CommGAE( "http://localhost:8080/" );
-		final CommGAE comm = new CommGAE();
+//		final CommGAE comm = new CommGAE();
+		final CommGAE comm = this;
+		
 		
 		comm.store( DocKey.TEST, "test_value: this is the large stored data" );
 		
@@ -192,7 +209,19 @@ http://localhost:8080/map?name=SCREENSHOT_B8-27-EB-13-8B-C0
 //		comm.store( "SCREENSHOT_B8-27-EB-13-8B-C0", 
 //						null, ContentType.IMAGE_PNG, data );
 //		comm.store( DocKey.DEVICE_SCREENSHOT, "B8-27-EB-13-8B-C0", null, data );
-		comm.store( DocKey.DEVICE_SCREENSHOT, "B8-27-EB-13-8B-C0", file, null );
+		comm.store( DocKey.DEVICE_SCREENSHOT, "B8-27-EB-13-8B-C0/test-full.png", file, null );
+
+		
+		final File fileThumb = new File( "S:\\Sessions\\B8-27-EB-13-8B-C0\\screenshot-thumb.png" );
+//		System.out.println( "File size: " + fileThumb.length() );
+//		final Path path = Paths.get( file.toURI() );
+//		
+//		final byte[] data = Files.readAllBytes( path );
+//		System.out.println( "Byte array: " + data.length );
+//		comm.store( "SCREENSHOT_B8-27-EB-13-8B-C0", 
+//						null, ContentType.IMAGE_PNG, data );
+//		comm.store( DocKey.DEVICE_SCREENSHOT, "B8-27-EB-13-8B-C0", null, data );
+		comm.store( DocKey.DEVICE_SCREENSHOT, "B8-27-EB-13-8B-C0/test-thumb.png", fileThumb, null );
 		
 //		final String strConfig_Accept001 = 
 //						SystemUtil.getProperty( SUProperty.BROWSER_ACCEPT_001 );
@@ -217,5 +246,27 @@ http://localhost:8080/map?name=SCREENSHOT_B8-27-EB-13-8B-C0
 		final String strUsers = String.join( "\n", listUser );
 		comm.configure( SUProperty.GAE_USER_PRE.getName(), strUsers );
 	}
+	
+	
+	public JsonObject getConfig() {
+		try {
+			this.generateConfig();
+			return this.joConfig;
+		} catch ( final IOException e ) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+
+	// NOTE: to update the GCS JSON config, run 
+	// 			jmr.pr121.config.Configuration.main(String[])
+	public static void main( final String[] args ) throws IOException {
+		final CommGAE comm = new CommGAE( "http://localhost:8080/" );
+//		final CommGAE comm = new CommGAE();
+		comm.generateConfig();
+	}
+
 
 }

@@ -1,5 +1,6 @@
 package jmr.pr123.storage;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -54,6 +55,13 @@ public class GCSFileWriter {
 	
 	public String upload( final File file ) throws IOException {
 		final InputStream stream = new FileInputStream( file );
+		final String strResult = this.upload( stream );
+		return strResult;
+	}
+
+	
+	public String upload( final byte[] data ) {
+		final InputStream stream = new ByteArrayInputStream( data );
 		final String strResult = this.upload( stream );
 		return strResult;
 	}

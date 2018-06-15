@@ -1,10 +1,11 @@
 package jmr.pr123.storage;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.Storage.BlobListOption;
 import com.google.cloud.storage.StorageOptions;
@@ -14,8 +15,12 @@ import jmr.util.http.ContentType;
 public class GCSFactory {
 
 /*
-javadoc:
+	javadoc:
 https://googlecloudplatform.github.io/google-cloud-java/google-cloud-clients/apidocs/index.html
+
+	also good example/explanations:
+		http://www.baeldung.com/java-google-cloud-storage
+
  */
 	
 	
@@ -40,23 +45,34 @@ https://googlecloudplatform.github.io/google-cloud-java/google-cloud-clients/api
 		return file;
 	}
 	
-	public List<GCSFileReader> getListing() {
+	
+	public Map<String,GCSFileReader> getListing() {
 		final BlobListOption option = BlobListOption.currentDirectory();
 		final Page<Blob> page = storage.list( this.strBucketName, option );
 		final Iterable<Blob> iterator = page.iterateAll();
-		final List<GCSFileReader> list = new LinkedList<>();
+		final Map<String, GCSFileReader> map = new HashMap<>();
 		for ( final Blob blob : iterator ) {
 			final GCSFileReader file = new GCSFileReader( blob );
-			list.add( file );
+			
+			final String strName = file.getName();
+			map.put( strName, file );
 		}
-		return list;
+		return map;
+	}
+	
+	
+	public GCSFileReader getFile( final String strKey ) {
+		final BlobId id = BlobId.of( strBucketName, strKey );
+		final Blob blob = storage.get( id );
+		final GCSFileReader file = new GCSFileReader( blob );
+		return file;
 	}
 	
 	
 	public static void main( final String[] args ) {
 		final GCSFactory factory = new GCSFactory( TestUtils.BUCKET_NAME );
-		final List<GCSFileReader> list = factory.getListing();
-		for ( final GCSFileReader file : list ) {
+		final Map<String, GCSFileReader> list = factory.getListing();
+		for ( final GCSFileReader file : list.values() ) {
 			
 			System.out.print( "\t" + file.getContentType() );
 			final byte[] data = file.getContent();
