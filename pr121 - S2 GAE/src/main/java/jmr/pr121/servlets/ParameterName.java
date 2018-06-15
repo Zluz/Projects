@@ -12,6 +12,7 @@ public enum ParameterName {
 	NAME,
 	BUTTON,
 	EMAIL,
+	CLIENT_INFO,
 	;
 	
 	public static ParameterName getParameterName( final String text ) {

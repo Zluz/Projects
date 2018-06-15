@@ -24,6 +24,7 @@ import javax.servlet.http.HttpSession;
 import com.google.appengine.api.utils.SystemProperty;
 
 import jmr.pr121.config.Configuration;
+import jmr.pr121.storage.ClientData;
 
 //import com.google.apphosting.runtime.jetty9.AppEngineAuthentication;
 
@@ -67,6 +68,8 @@ public class UIServlet extends HttpServlet {
 		if ( !user.require( 2 ) ) return;
 		if ( user.isAborted() ) return;
 		
+		final ClientData client = ClientData.register( req );
+		
 		
 //		for ( final Entry<String, String[]> 
 //					entry : req.getParameterMap().entrySet() ) {
@@ -95,19 +98,19 @@ public class UIServlet extends HttpServlet {
 		if ( strURI.startsWith( "/ui/map" ) ) {
 			
 			final DocumentMapServlet pageMap = new DocumentMapServlet();
-			pageMap.doGet( params, resp );
+			pageMap.doGet( params, resp, client );
 			
 			return;
 		} else if ( strURI.startsWith( "/ui/gcs" ) ) {
 
 			final GCSListingServlet pageGCS = new GCSListingServlet();
-			pageGCS.doGet( params, resp );
+			pageGCS.doGet( params, resp, client );
 			
 			return;
 		} else if ( strURI.startsWith( "/ui/input" ) ) {
 			
 			final Input input = new Input();
-			input.doGet( params, resp );
+			input.doGet( params, resp, client );
 			
 			return;
 		}

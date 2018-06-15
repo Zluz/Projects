@@ -3,7 +3,6 @@ package jmr.pr121.servlets;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -11,13 +10,9 @@ import java.util.Map.Entry;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
-
+import jmr.pr121.storage.ClientData;
 import jmr.pr121.storage.GCSHelper;
 import jmr.pr122.DocMetadataKey;
 import jmr.pr123.storage.GCSFactory;
@@ -80,8 +75,9 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 	
 	
 	@Override
-	public boolean doGet(	final EnumMap<ParameterName,String> map,
-							final HttpServletResponse resp ) throws IOException {
+	public boolean doGet(	final Map<ParameterName,String> map,
+							final HttpServletResponse resp,
+							final ClientData client ) throws IOException {
 		Log.add( this.getClass().getName() + ".doGet()" );		
 		
 		final String strName = map.get( ParameterName.NAME );
@@ -90,19 +86,12 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 		
 		final GCSFactory factory = GCSHelper.GCS_FACTORY;
 		
-		final Map<String, GCSFileReader> listing = factory.getListing();
-		
-		Log.add( "Listing loaded. " + listing.size() + " files." );
+//		final Map<String, GCSFileReader> listing = factory.getListing();
+//		Log.add( "Listing loaded. " + listing.size() + " files." );
 		
 		if ( null!=strName && !strName.isEmpty() ) {
-//			doc = docs.get( strName );
-//			for ( final GCSFileReader file : listing.values() ) {
-//				final String strFilename = file.getName();
-//				if ( strName.equals( strFilename ) ) {
-//					reader = file;
-//				}
-//			}
-			reader = listing.get( strName );
+			reader = factory.getFile( strName );
+//			reader = listing.get( strName );
 		}
 
 		if ( null!=reader ) {
@@ -123,6 +112,9 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 		
 			Log.add( "Showing GCS file listing." );
 
+			final Map<String, GCSFileReader> listing = factory.getListing();
+			Log.add( "Listing loaded. " + listing.size() + " files." );
+
 			final String strRequestURL = map.get( ParameterName.REQUEST_URL );
 
 //		    resp.setContentType("text/plain");
@@ -133,61 +125,11 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 
 		    final PrintWriter writer = resp.getWriter();
 		    
-		    writer.print( "<!DOCTYPE html>\n"
+			writer.print( "<!DOCTYPE html>\n"
 		    		+ "<html><head>\n"
 		    		+ "<title>Google Cloud Storage Listing</title>\n"
 		    		+ "\n\n"
-		    		+ "<script>\n"
-		    		+ "\n\n\n"
-		    		+ "// https://stackoverflow.com/questions/247483/http-get-request-in-javascript"
-		    		+ "\n"
-		    		+ "function httpGetAsync(theUrl, callback)\n" + 
-		    		"{\n" + 
-		    		"    var xmlHttp = new XMLHttpRequest();\n" + 
-		    		"    xmlHttp.onreadystatechange = function() { \n" + 
-		    		"        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)\n" + 
-		    		"            callback(xmlHttp.responseText);\n" + 
-		    		"    }\n" + 
-		    		"    xmlHttp.open(\"GET\", theUrl, true); // true for asynchronous \n" + 
-		    		"    xmlHttp.send(null);\n" + 
-		    		"}\n"
-		    		+ "</script>\n"
-		    		+ "\n"
-		    		+ "\n"
-		    		+ "<script>\n"
-		    		+ "// https://www.w3schools.com/Jquery/jquery_get_started.asp"
-		    		+ "\n"
-		    		+ "function doUpdate_Test() {\n"
-		    		+ "    //alert( 'request submitted..' );\n"
-		    		+ "    $.get(\"/status\", function(data, status){\n" 
-		    		+ "        alert(\"Data: \" + data + \"\\nStatus: \" + status);\n" 
-		    		+ "    });\n"
-		    		+ "}"
-		    		+ "\n\n\n"
-		    		+ "\n"
-		    		+ "function doUpdate_Test03() {\n"
-		    		+ "    //alert( 'request submitted..' );\n"
-		    		+ "    var img = $('#img-status');\n"
-		    		+ "    img.attr( 'src', '/images/status-loading.gif' );\n"
-		    		+ "    $.get(\"/ui/input?button=test03\", function(data, status){\n" 
-		    		+ "        img.attr( 'src', '/images/check-outline-512.png' );\n"
-		    		+ "        alert(\"Data: \" + data + \"\\nStatus: \" + status);\n" 
-		    		+ "    });\n"
-		    		+ "}"
-		    		+ "\n"
-		    		+ "function doEmailRequest( img_id, command ) {\n"
-		    		+ "    alert( 'preparing to send email..' );\n"
-		    		+ "    var img = $( '#' + img_id );\n"
-		    		+ "    img.attr( 'src', '/images/status-loading.gif' );\n"
-		    		+ "    $.get(\"/ui/input?email=\" + command + \"\", function(data, status){\n" 
-		    		+ "        img.attr( 'src', '/images/check-outline-512.png' );\n"
-		    		+ "        alert(\"Data: \" + data + \"\\nStatus: \" + status);\n" 
-		    		+ "    });\n"
-		    		+ "}"
-		    		+ "\n\n\n"
-		    		+ ""
-		    		+ "</script>\n"
-
+		    		+ ServletConstants.strJS
 		    		+ "\n"
 		    		+ "<script src=\"https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js\"></script>"
 		    		+ "\n\n\n"
@@ -224,7 +166,7 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 //				final String strDocName = entry.getKey();
 				
 //				final Map<String, String> mapMeta = item.getMap();
-				final Map<DocMetadataKey, String> mapMeta = item.getMap();
+//				final Map<DocMetadataKey, String> mapMeta = item.getMap();
 				
 				final String strType = item.getContentType();
 				final String strFilename = item.get( DocMetadataKey.FILENAME );
@@ -244,7 +186,7 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 				writer.print( "\t\t<td>" + strLink + "</td>\n" );
 				writer.print( "\t\t<td>" + strType + "</td>\n" );
 //				writer.print( "\t\t<td>" + item.strClass + "</td>\n" );
-				writer.print( "\t\t<td>" + item.getSize() + "</td>\n" );
+				writer.print( "\t\t<td align='right'>" + item.getSize() + "</td>\n" );
 //				writer.print( "\t\t<td>" + item.asString() + "</td>\n" );
 				writer.print( "\t\t<td>" + strFilename + "</td>\n" );
 //				writer.print( "\t\t<td>" + item.get( DocMetadataKey.SENSOR_DESC ) + "</td>\n" );
@@ -323,17 +265,10 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 			writer.print( "\t</tr>\n" );
 		    writer.print( "<tr>\n" );
 		    
-//			for ( final Entry<String, DocumentData> 
-//								entry : DocumentMap.get().entrySet()) {
-//			for ( final String strDocName : docs.getOrderedKeys() ) { 
 			for ( final String key : listOrdered ) { 
 
-//				final String strDocName = entry.getKey();
-				
 				if ( key.startsWith( "SCREENSHOT" ) ) {
 					
-//					final DocumentData item = entry.getValue();
-//					final DocumentData item = docs.get( strDocName );
 					final GCSFileReader item = listing.get( key );
 	
 					final String strURL = strRequestURL + "?name=" + key;
@@ -364,16 +299,10 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 			writer.print( "\t</tr>\n" );
 		    writer.print( "<tr>\n" );
 		    
-//			for ( final Entry<String, DocumentData> 
-//								entry : docs.entrySet()) {
-//			for ( final String strDocName : docs.getOrderedKeys() ) { 
 			for ( final String key : listOrdered ) { 
-//				final String strDocName = entry.getKey();
 				
 				if ( key.startsWith( "CAPTURE_" ) ) {
 					
-//					final DocumentData item = entry.getValue();
-//					final DocumentData item = docs.get( strDocName );
 					final GCSFileReader item = listing.get( key );
 
 					final String strURL = strRequestURL + "?name=" + key;
@@ -420,8 +349,6 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 		    writer.print( "</body>\n</html>" );
 		    
 		    
-		    
-//			writer.print("DataMap\r\n");
 		
 			Log.add( "GCS listing complete." );
 		}
@@ -429,76 +356,75 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 	}
 	
 	
-	@Override
-	public void doGet(	final HttpServletRequest req, 
-		  				final HttpServletResponse resp ) 
-		  									throws IOException {
-		Log.add( this.getClass().getName() + ".doGet()" );
-
-		Log.add( req );
-		final UserAuth ua = new UserAuth( req, resp );
-		if ( !ua.require( 99 ) ) return;
-		if ( ua.isAborted() ) return;
-		
-		
-		
-		final UserService service = UserServiceFactory.getUserService();
-		final User user = service.getCurrentUser();
-
-		Log.add( "UserService: " + service );
-		Log.add( "User: " + user );
-
-		
-		
-		if ( null==user ) {
-
-		    resp.setContentType( ContentType.TEXT_HTML.getMimeType() );
-
-			Log.add( "User is null, showing log in screen." );
-
-			final PrintWriter out = resp.getWriter();
-			out.println( "Please <a href='"
-					+ service.createLoginURL(req.getRequestURI())
-					+ "'> Log In </a>" );
-			out.flush();
-			return;
-		}
-		
-		Log.add( "User is " + user.toString() + ", showing log out link." );
-		
-		
-		
-		
-		Log.add( "\tclass: " + user.getClass().getName() );
-		Log.add( "\temail: " + user.getEmail() );
-		Log.add( "\tuser id: " + user.getUserId() );
-		Log.add( "\tdomain: " + user.getAuthDomain() );
-
-		// later versions of gae api
-		Log.add( "\tnickname: " + user.getNickname() );
-//		Log.add( "\tfed id: " + user.getFederatedIdentity() );
-
-//		SecurityUtils.getSubject();
-		
-
-		try {
-			
-			Log.add( "Examining parameters.." );
-			
-			final EnumMap<ParameterName,String> 
-					mapParams = new EnumMap<>( ParameterName.class );
-			
-
-			final String strName = req.getParameter( "name" );
-
-			mapParams.put( ParameterName.NAME, strName );
-			
-			this.doGet( mapParams, resp );
-		} catch ( final Throwable e ) {
-//			writer.print("\r\nError: " + e.toString() + "\r\n");
-			Log.add( "\r\nError: " + e.toString() );
-		}
-	
-	}
+//	@Override
+//	public void doGet(	final HttpServletRequest req, 
+//		  				final HttpServletResponse resp ) 
+//		  									throws IOException {
+//		Log.add( this.getClass().getName() + ".doGet()" );
+//
+//		Log.add( req );
+//		final UserAuth ua = new UserAuth( req, resp );
+//		if ( !ua.require( 99 ) ) return;
+//		if ( ua.isAborted() ) return;
+//		
+//		
+//		
+//		final UserService service = UserServiceFactory.getUserService();
+//		final User user = service.getCurrentUser();
+//
+//		Log.add( "UserService: " + service );
+//		Log.add( "User: " + user );
+//
+//		
+//		
+//		if ( null==user ) {
+//
+//		    resp.setContentType( ContentType.TEXT_HTML.getMimeType() );
+//
+//			Log.add( "User is null, showing log in screen." );
+//
+//			final PrintWriter out = resp.getWriter();
+//			out.println( "Please <a href='"
+//					+ service.createLoginURL(req.getRequestURI())
+//					+ "'> Log In </a>" );
+//			out.flush();
+//			return;
+//		}
+//		
+//		Log.add( "User is " + user.toString() + ", showing log out link." );
+//		
+//		
+//		
+//		
+//		Log.add( "\tclass: " + user.getClass().getName() );
+//		Log.add( "\temail: " + user.getEmail() );
+//		Log.add( "\tuser id: " + user.getUserId() );
+//		Log.add( "\tdomain: " + user.getAuthDomain() );
+//
+//		// later versions of gae api
+//		Log.add( "\tnickname: " + user.getNickname() );
+////		Log.add( "\tfed id: " + user.getFederatedIdentity() );
+//
+////		SecurityUtils.getSubject();
+//		
+//
+//		try {
+//			
+//			Log.add( "Examining parameters.." );
+//			
+//			final EnumMap<ParameterName,String> 
+//					mapParams = new EnumMap<>( ParameterName.class );
+//			
+//
+//			final String strName = req.getParameter( "name" );
+//
+//			mapParams.put( ParameterName.NAME, strName );
+//			
+//			this.doGet( mapParams, resp );
+//		} catch ( final Throwable e ) {
+////			writer.print("\r\nError: " + e.toString() + "\r\n");
+//			Log.add( "\r\nError: " + e.toString() );
+//		}
+//	}
 		
 }

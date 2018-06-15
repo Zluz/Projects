@@ -13,6 +13,7 @@ public class GCSFileReader {
 	private final Blob blob;
 	
 	public GCSFileReader( final Blob blob ) {
+		if ( null==blob ) throw new IllegalStateException( "Blob is null" );
 		this.blob = blob;
 	}
 	
@@ -47,7 +48,7 @@ public class GCSFileReader {
 		final EnumMap<DocMetadataKey, String> 
 						mapDMK = new EnumMap<>( DocMetadataKey.class );
 		final Map<String, String> mapRaw = this.blob.getMetadata();
-		if ( null!=mapRaw ) {
+		if ( null!=mapRaw && !mapRaw.isEmpty() ) {
 			for ( final DocMetadataKey key : DocMetadataKey.values() ) {
 				final String strKey = key.name();
 				if ( mapRaw.containsKey( strKey ) ) {
@@ -70,23 +71,4 @@ public class GCSFileReader {
 		return strResult;
 	}
 	
-	// remove this in the future?
-//	public Blob getBlob() {
-//		return this.blob;
-//	}
-	
-	
-//	public InputStream asInputStream() {
-//		
-//		final long lSize = this.blob.getSize();
-//		
-//		try ( final ReadChannel reader = this.blob.reader() ) {
-//			
-//			final ByteBuffer bytes = ByteBuffer.allocate( 1024 * 64 );
-//			while ( reader.read( bytes ) > 0 ) {
-//				
-//			}
-//		}
-//	}
-
 }

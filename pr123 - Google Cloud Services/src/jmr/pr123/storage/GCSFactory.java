@@ -9,6 +9,7 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.Storage.BlobListOption;
+import com.google.cloud.storage.StorageException;
 import com.google.cloud.storage.StorageOptions;
 
 import jmr.util.http.ContentType;
@@ -40,7 +41,7 @@ https://googlecloudplatform.github.io/google-cloud-java/google-cloud-clients/api
 	
 	
 	public GCSFileWriter create(	final String strFilename,
-							final ContentType type ) {
+									final ContentType type ) {
 		final GCSFileWriter file = new GCSFileWriter( 
 				GCSFactory.storage, this.strBucketName, strFilename, type );
 		return file;
@@ -69,12 +70,17 @@ https://googlecloudplatform.github.io/google-cloud-java/google-cloud-clients/api
 				// final BucketGetOption bgo = BucketGetOption.;
 				final Bucket bucket = storage.get( this.strBucketName );
 				page = bucket.list( blo );
+			} catch ( final StorageException e ) {
+				/*
+				exception through
+				jmr.pr123.storage.GCSFactory.getListing(GCSFactory.java:70)
+				 */
 			} catch ( final NoSuchMethodError t ) {
 				/*
 				Can run into java.lang.NoSuchMethodError through
 				com.google.cloud.storage.Bucket.list(Bucket.java:732)
 			 	ignore for now, try the call below..
-			 */ 
+				 */ 
 			}
 		}
 
@@ -82,6 +88,12 @@ https://googlecloudplatform.github.io/google-cloud-java/google-cloud-clients/api
 			try {
 				final Bucket bucket = storage.get( this.strBucketName );
 				page = bucket.list();
+			} catch ( final StorageException e ) {
+				/*
+				exception through
+				com.google.cloud.storage.StorageImpl.get(StorageImpl.java:172)
+				// this happened while deploying to App Engine standard..
+				 */
 			} catch ( final NoSuchMethodError t ) {
 				/*
 				Can run into java.lang.NoSuchMethodError through

@@ -30,7 +30,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import com.google.appengine.api.utils.SystemProperty;
 
 import jmr.pr121.config.Configuration;
-import jmr.pr121.storage.CloudStorage02;
+import jmr.pr121.storage.ClientData;
 
 //import com.google.apphosting.runtime.jetty9.AppEngineAuthentication;
 
@@ -144,6 +144,19 @@ public class Status extends HttpServlet {
 //			writer.print( "\t\tHttpSession.getServletContext(): " + req.au + "\r\n" );
 			
 
+			writer.print("\r\n");
+			writer.print("Registered Clients:\r\n");
+			for ( final Entry<String, ClientData> entry : 
+										ClientData.CLIENTS.entrySet() ) {
+				final String strSession = entry.getKey();
+				final ClientData client = entry.getValue();
+
+				writer.print("\tSession: " + strSession + "\r\n" );
+
+				writer.print("\t\tUser-Agent: " + client.getUserAgent() + "\r\n" );
+				writer.print("\t\tClient info: " + client.getClientInfo() + "\r\n" );
+			}
+
 			
 			writer.print("\r\n");
 			writer.print("Object Classes:\r\n");
@@ -238,11 +251,6 @@ public class Status extends HttpServlet {
 			writer.print("\r\n");
 			writer.print("Cloud Storage:\r\n");
 
-//			final CloudStorage storage = new CloudStorage();
-			final CloudStorage02 storage = new CloudStorage02();
-			final String strResult = storage.test();
-			writer.print( "\tResult of test(): " + strResult ); 
-			
 
 			writer.print("\r\n");
 			writer.print("Java Runtime Information:\r\n");

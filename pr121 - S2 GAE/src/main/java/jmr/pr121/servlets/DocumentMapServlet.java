@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.util.EnumMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.ServletInputStream;
@@ -16,11 +17,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
-
 import jmr.p121.comm.GAEEmail;
+import jmr.pr121.storage.ClientData;
 import jmr.pr121.storage.DocumentData;
 import jmr.pr121.storage.DocumentMap;
 import jmr.pr121.storage.GCSHelper;
@@ -86,8 +84,9 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 	
 	
 	@Override
-	public boolean doGet(	final EnumMap<ParameterName,String> map,
-							final HttpServletResponse resp ) throws IOException {
+	public boolean doGet(	final Map<ParameterName,String> map,
+							final HttpServletResponse resp,
+							final ClientData client ) throws IOException {
 		Log.add( this.getClass().getName() + ".doGet()" );		
 		
 		
@@ -134,57 +133,7 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 		    		+ "<html><head>\n"
 		    		+ "<title>Internal Document Map</title>\n"
 		    		+ "\n\n"
-		    		+ "<script>\n"
-		    		+ "\n\n\n"
-		    		+ "// https://stackoverflow.com/questions/247483/http-get-request-in-javascript"
-		    		+ "\n"
-		    		+ "function httpGetAsync(theUrl, callback)\n" + 
-		    		"{\n" + 
-		    		"    var xmlHttp = new XMLHttpRequest();\n" + 
-		    		"    xmlHttp.onreadystatechange = function() { \n" + 
-		    		"        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)\n" + 
-		    		"            callback(xmlHttp.responseText);\n" + 
-		    		"    }\n" + 
-		    		"    xmlHttp.open(\"GET\", theUrl, true); // true for asynchronous \n" + 
-		    		"    xmlHttp.send(null);\n" + 
-		    		"}\n"
-		    		+ "</script>\n"
-		    		+ "\n"
-		    		+ "\n"
-		    		+ "<script>\n"
-		    		+ "// https://www.w3schools.com/Jquery/jquery_get_started.asp"
-		    		+ "\n"
-		    		+ "function doUpdate_Test() {\n"
-		    		+ "    //alert( 'request submitted..' );\n"
-		    		+ "    $.get(\"/status\", function(data, status){\n" 
-		    		+ "        alert(\"Data: \" + data + \"\\nStatus: \" + status);\n" 
-		    		+ "    });\n"
-		    		+ "}"
-		    		+ "\n\n\n"
-		    		+ "\n"
-		    		+ "function doUpdate_Test03() {\n"
-		    		+ "    //alert( 'request submitted..' );\n"
-		    		+ "    var img = $('#img-status');\n"
-		    		+ "    img.attr( 'src', '/images/status-loading.gif' );\n"
-		    		+ "    $.get(\"/ui/input?button=test03\", function(data, status){\n" 
-		    		+ "        img.attr( 'src', '/images/check-outline-512.png' );\n"
-		    		+ "        alert(\"Data: \" + data + \"\\nStatus: \" + status);\n" 
-		    		+ "    });\n"
-		    		+ "}"
-		    		+ "\n"
-		    		+ "function doEmailRequest( img_id, command ) {\n"
-		    		+ "    alert( 'preparing to send email..' );\n"
-		    		+ "    var img = $( '#' + img_id );\n"
-		    		+ "    img.attr( 'src', '/images/status-loading.gif' );\n"
-		    		+ "    $.get(\"/ui/input?email=\" + command + \"\", function(data, status){\n" 
-		    		+ "        img.attr( 'src', '/images/check-outline-512.png' );\n"
-		    		+ "        alert(\"Data: \" + data + \"\\nStatus: \" + status);\n" 
-		    		+ "    });\n"
-		    		+ "}"
-		    		+ "\n\n\n"
-		    		+ ""
-		    		+ "</script>\n"
-
+		    		+ ServletConstants.strJS
 		    		+ "\n"
 		    		+ "<script src=\"https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js\"></script>"
 		    		+ "\n\n\n"
@@ -409,77 +358,72 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 	}
 	
 	
-	@Override
-	public void doGet(	final HttpServletRequest req, 
-		  				final HttpServletResponse resp ) 
-		  									throws IOException {
-		Log.add( this.getClass().getName() + ".doGet()" );		
-
-		Log.add( req );
-		final UserAuth ua = new UserAuth( req, resp );
-		if ( !ua.require( 99 ) ) return;
-		if ( ua.isAborted() ) return;
-		
-		
-		final UserService service = UserServiceFactory.getUserService();
-		final User user = service.getCurrentUser();
-
-		Log.add( "UserService: " + service );
-		Log.add( "User: " + user );
-
-		
-		
-		if ( null==user ) {
-
-		    resp.setContentType( ContentType.TEXT_HTML.getMimeType() );
-
-			Log.add( "User is null, showing log in screen." );
-
-			final PrintWriter out = resp.getWriter();
-			out.println( "Please <a href='"
-					+ service.createLoginURL(req.getRequestURI())
-					+ "'> Log In </a>" );
-			out.flush();
-			return;
-		}
-		
-		Log.add( "User is " + user.toString() + ", showing log out link." );
-		
-		
-		
-		
-		Log.add( "\tclass: " + user.getClass().getName() );
-		Log.add( "\temail: " + user.getEmail() );
-		Log.add( "\tuser id: " + user.getUserId() );
-		Log.add( "\tdomain: " + user.getAuthDomain() );
-
-		// later versions of gae api
-		Log.add( "\tnickname: " + user.getNickname() );
-//		Log.add( "\tfed id: " + user.getFederatedIdentity() );
-
-//		SecurityUtils.getSubject();
-		
-
-		try {
-			
-			Log.add( "Examining parameters.." );
-			
-			final EnumMap<ParameterName,String> 
-					mapParams = new EnumMap<>( ParameterName.class );
-			
-
-			final String strName = req.getParameter( "name" );
-
-			mapParams.put( ParameterName.NAME, strName );
-			
-			this.doGet( mapParams, resp );
-		} catch ( final Throwable e ) {
-//			writer.print("\r\nError: " + e.toString() + "\r\n");
-			Log.add( "\r\nError: " + e.toString() );
-		}
-
-	
-	}
+//	@Override
+//	public void doGet(	final HttpServletRequest req, 
+//		  				final HttpServletResponse resp ) 
+//		  									throws IOException {
+//		Log.add( this.getClass().getName() + ".doGet()" );		
+//
+//		Log.add( req );
+//		final UserAuth ua = new UserAuth( req, resp );
+//		if ( !ua.require( 99 ) ) return;
+//		if ( ua.isAborted() ) return;
+//		
+//		
+//		final UserService service = UserServiceFactory.getUserService();
+//		final User user = service.getCurrentUser();
+//
+//		Log.add( "UserService: " + service );
+//		Log.add( "User: " + user );
+//
+//		
+//		
+//		if ( null==user ) {
+//
+//		    resp.setContentType( ContentType.TEXT_HTML.getMimeType() );
+//
+//			Log.add( "User is null, showing log in screen." );
+//
+//			final PrintWriter out = resp.getWriter();
+//			out.println( "Please <a href='"
+//					+ service.createLoginURL(req.getRequestURI())
+//					+ "'> Log In </a>" );
+//			out.flush();
+//			return;
+//		}
+//		
+//		Log.add( "User is " + user.toString() + ", showing log out link." );
+//		
+//		
+//		Log.add( "\tclass: " + user.getClass().getName() );
+//		Log.add( "\temail: " + user.getEmail() );
+//		Log.add( "\tuser id: " + user.getUserId() );
+//		Log.add( "\tdomain: " + user.getAuthDomain() );
+//
+//		// later versions of gae api
+//		Log.add( "\tnickname: " + user.getNickname() );
+////		Log.add( "\tfed id: " + user.getFederatedIdentity() );
+//
+////		SecurityUtils.getSubject();
+//
+//		try {
+//			
+//			Log.add( "Examining parameters.." );
+//			
+//			final EnumMap<ParameterName,String> 
+//					mapParams = new EnumMap<>( ParameterName.class );
+//			
+//
+//			final String strName = req.getParameter( "name" );
+//
+//			mapParams.put( ParameterName.NAME, strName );
+//			
+//			this.doGet( mapParams, resp );
+//		} catch ( final Throwable e ) {
+////			writer.print("\r\nError: " + e.toString() + "\r\n");
+//			Log.add( "\r\nError: " + e.toString() );
+//		}
+//	}
 	
 	
 	@Override
