@@ -2,7 +2,6 @@ package jmr.pr121.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedList;
@@ -10,50 +9,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
-//import org.apache.http.entity.ContentType;
 
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 
-import jmr.pr121.storage.DocumentData;
-import jmr.pr121.storage.DocumentMap;
 import jmr.pr121.storage.GCSHelper;
-//import jmr.pr121.storage.DocumentData;
-//import jmr.pr121.storage.DocumentMap;
 import jmr.pr122.DocMetadataKey;
 import jmr.pr123.storage.GCSFactory;
 import jmr.pr123.storage.GCSFileReader;
 import jmr.util.http.ContentType;
 
-/*
-	http://localhost:8080/hello?name=value&name_2=value_2
-
-	https://pr121-s2gae.appspot.com/hello
- */
-
 
 @SuppressWarnings("serial")
-@WebServlet(
-    name = "GCSListing",
-    urlPatterns = {"/gcs"}
-)
+//@WebServlet(
+//    name = "GCSListing",
+//    urlPatterns = {"/ui/gcs"}
+//)
 public class GCSListingServlet extends HttpServlet implements IPage {
 
 
 	public void writeImageCell( final PrintWriter writer,
 								final String strDocName,
 								final String strURL,
-//								final DocumentData item ) {
 								final GCSFileReader item ) {
 
 		if ( ! strDocName.contains( "-thumb." ) ) return;
@@ -100,19 +82,17 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 	@Override
 	public boolean doGet(	final EnumMap<ParameterName,String> map,
 							final HttpServletResponse resp ) throws IOException {
-
-		Log.add( "DocumentMapServlet.doGet()" );		
-		
+		Log.add( this.getClass().getName() + ".doGet()" );		
 		
 		final String strName = map.get( ParameterName.NAME );
 
-//		DocumentData doc = null;
-//		final DocumentMap docs = DocumentMap.get();
 		GCSFileReader reader = null;
 		
 		final GCSFactory factory = GCSHelper.GCS_FACTORY;
 		
 		final Map<String, GCSFileReader> listing = factory.getListing();
+		
+		Log.add( "Listing loaded. " + listing.size() + " files." );
 		
 		if ( null!=strName && !strName.isEmpty() ) {
 //			doc = docs.get( strName );
@@ -127,7 +107,7 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 
 		if ( null!=reader ) {
 
-			Log.add( "Showing document: " + strName );
+			Log.add( "Showing file: " + strName );
 			
 //			{
 //				if ( ContentType.TEXT_PLAIN.equals( doc.type ) ) {
@@ -141,7 +121,7 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 			
 		} else {
 		
-			Log.add( "Showing document listing." );
+			Log.add( "Showing GCS file listing." );
 
 			final String strRequestURL = map.get( ParameterName.REQUEST_URL );
 
@@ -155,7 +135,7 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 		    
 		    writer.print( "<!DOCTYPE html>\n"
 		    		+ "<html><head>\n"
-		    		+ "<title>Documents</title>\n"
+		    		+ "<title>Google Cloud Storage Listing</title>\n"
 		    		+ "\n\n"
 		    		+ "<script>\n"
 		    		+ "\n\n\n"
@@ -215,7 +195,7 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 		    		+ "</head>\n"
 		    		+ "<body>\n" );
 
-		    writer.print( "<h1 style=\"color: #5e9ca0;\">Documents</h1>\n" );
+		    writer.print( "<h1 style=\"color: #5e9ca0;\">Files</h1>\n" );
 		    
 //		    writer.print( "<table width='100%'>\n" );
 		    writer.print( "<table>\n" );
@@ -231,11 +211,6 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 //		    writer.print( "<td><strong>Sensor</strong></td>\n" );
 		    writer.print( "</tr>\n" );
 
-//			for ( final Entry<String, DocumentData> 
-//								entry : DocumentMap.get().entrySet()) {
-//		    final List<String> listDocs = DocumentMap.get().entrySet().
-		    
-//			for ( final String key : docs.getOrderedKeys() ) {
 
 		    final List<String> listOrdered = new LinkedList<>( listing.keySet() );
 		    Collections.sort( listOrdered );
@@ -254,9 +229,9 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 				final String strType = item.getContentType();
 				final String strFilename = item.get( DocMetadataKey.FILENAME );
 				final String strFileDate = item.get( DocMetadataKey.FILE_DATE );
-				final String strDeviceIP = item.get( DocMetadataKey.DEVICE_IP );
-				final String strDeviceMAC = item.get( DocMetadataKey.DEVICE_MAC );
-				final String strSensorDesc = item.get( DocMetadataKey.SENSOR_DESC );
+//				final String strDeviceIP = item.get( DocMetadataKey.DEVICE_IP );
+//				final String strDeviceMAC = item.get( DocMetadataKey.DEVICE_MAC );
+//				final String strSensorDesc = item.get( DocMetadataKey.SENSOR_DESC );
 
 				final String strURL = strRequestURL + "?name=" + key;
 				
@@ -448,7 +423,7 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 		    
 //			writer.print("DataMap\r\n");
 		
-			Log.add( "DocumentMap content complete." );
+			Log.add( "GCS listing complete." );
 		}
 		return true;
 	}
@@ -523,96 +498,7 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 //			writer.print("\r\nError: " + e.toString() + "\r\n");
 			Log.add( "\r\nError: " + e.toString() );
 		}
-
 	
 	}
-	
-	
-	@Override
-	public void doPost(	final HttpServletRequest req, 
-		  				final HttpServletResponse resp ) throws IOException {
-		Log.add( this.getClass().getName() + ".doPost()" );
 		
-		final LocalDateTime now = LocalDateTime.now();
-      
-	    resp.setContentType("text/plain");
-	    resp.setCharacterEncoding("UTF-8");
-	
-	    final PrintWriter writer = resp.getWriter();
-		writer.print("DataMap\r\n");
-    
-		try {
-
-			final EnumMap<DocMetadataKey, String> map = 
-							new EnumMap<>( DocMetadataKey.class );
-
-			writer.print("\r\nParameters:\r\n");
-			for ( final Entry<String, String[]> entry : 
-						req.getParameterMap().entrySet() ) {
-				
-				final String strName = entry.getKey();
-				final String strValue = req.getParameter( strName );
-				writer.print( "\t" + strName + " = " + strValue + "\r\n" );
-				
-				final DocMetadataKey key = DocMetadataKey.getKeyFor( strName );
-				if ( null!=key ) {
-					map.put( key, strValue );
-				}
-			}
-		
-			final String strName = req.getParameter( "name" );
-			final String strContentType = req.getParameter( "type" );
-//			final String strClass = req.getParameter( "class" );
-			
-			final String strURL = req.getRequestURL().toString() 
-									+ "?" + req.getQueryString();
-			
-			final ContentType type = ContentType.getContentType( strContentType );
-			
-			writer.print( "\r\nPOST data:\r\n" );
-
-			if ( null!=strName && !strName.isEmpty() ) {
-				
-			    try {
-			    	
-			    	final byte[] data = new byte[ req.getContentLength() ];
-			        
-			        final ServletInputStream in = req.getInputStream();
-			        byte[] buf = new byte[1024];
-			        int r;
-			        int pos = 0;
-			        while ((r = in.read(buf)) != -1) {
-			        	System.arraycopy( buf, 0, data, pos, r );
-			        	pos = pos + r;
-			        }
-			        
-					final DocumentData doc = new DocumentData( 
-								now, type, strURL, map, data );
-					
-					DocumentMap.get().put( strName, doc );
-					
-					Log.add( "Storing data (" + data.length + " bytes)." );
-
-			        
-			    } catch ( final Exception e ) {
-					Log.add( "Failed to retrieve POST data." );
-					Log.add( ExceptionUtils.getStackTrace( e ) );
-					resp.setStatus( 500 );
-			    }
-			    
-			    
-			} else {
-				Log.add( "Data not stored because name is empty." );
-			}
-			
-			resp.setStatus( 200 );
-
-		} catch ( final Throwable e ) {
-			Log.add( "Error: " + e.toString() );
-			Log.add( ExceptionUtils.getStackTrace( e ) );
-			resp.setStatus( 500 );
-		}
-
-	}
-	
 }

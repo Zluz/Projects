@@ -39,6 +39,7 @@ import jmr.pr121.config.Configuration;
     name = "User Interface",
     urlPatterns = {	"/ui",
 					"/ui/map",
+					"/ui/gcs",
 					"/ui/input",
     				"/ui/log" }
 )
@@ -56,6 +57,7 @@ public class UIServlet extends HttpServlet {
 	public void doGet(	final HttpServletRequest req, 
 		  				final HttpServletResponse resp ) 
 		  							throws IOException, ServletException {
+		Log.add( this.getClass().getName() + ".doGet()" );		
 		Log.add( req );
 
 		final LocalDateTime ldtNow = LocalDateTime.now();
@@ -92,9 +94,14 @@ public class UIServlet extends HttpServlet {
 		
 		if ( strURI.startsWith( "/ui/map" ) ) {
 			
-			
 			final DocumentMapServlet pageMap = new DocumentMapServlet();
 			pageMap.doGet( params, resp );
+			
+			return;
+		} else if ( strURI.startsWith( "/ui/gcs" ) ) {
+
+			final GCSListingServlet pageGCS = new GCSListingServlet();
+			pageGCS.doGet( params, resp );
 			
 			return;
 		} else if ( strURI.startsWith( "/ui/input" ) ) {

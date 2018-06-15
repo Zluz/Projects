@@ -10,14 +10,11 @@ import java.util.Map.Entry;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-
-//import org.apache.http.entity.ContentType;
 
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
@@ -39,10 +36,10 @@ import jmr.util.http.ContentType;
 
 
 @SuppressWarnings("serial")
-@WebServlet(
-    name = "DocumentMap",
-    urlPatterns = {"/map"}
-)
+//@WebServlet(
+//    name = "DocumentMap",
+//    urlPatterns = {"/map"}
+//)
 public class DocumentMapServlet extends HttpServlet implements IPage {
 
 
@@ -91,8 +88,7 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 	@Override
 	public boolean doGet(	final EnumMap<ParameterName,String> map,
 							final HttpServletResponse resp ) throws IOException {
-
-		Log.add( "DocumentMapServlet.doGet()" );		
+		Log.add( this.getClass().getName() + ".doGet()" );		
 		
 		
 		final String strName = map.get( ParameterName.NAME );
@@ -136,7 +132,7 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 		    
 		    writer.print( "<!DOCTYPE html>\n"
 		    		+ "<html><head>\n"
-		    		+ "<title>Documents</title>\n"
+		    		+ "<title>Internal Document Map</title>\n"
 		    		+ "\n\n"
 		    		+ "<script>\n"
 		    		+ "\n\n\n"
@@ -417,13 +413,13 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 	public void doGet(	final HttpServletRequest req, 
 		  				final HttpServletResponse resp ) 
 		  									throws IOException {
+		Log.add( this.getClass().getName() + ".doGet()" );		
+
 		Log.add( req );
 		final UserAuth ua = new UserAuth( req, resp );
 		if ( !ua.require( 99 ) ) return;
 		if ( ua.isAborted() ) return;
 		
-		
-		Log.add( this.getClass().getName() + ".doGet()" );
 		
 		final UserService service = UserServiceFactory.getUserService();
 		final User user = service.getCurrentUser();

@@ -6,6 +6,7 @@ import java.util.Map;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.Storage.BlobListOption;
 import com.google.cloud.storage.StorageOptions;
@@ -47,16 +48,65 @@ https://googlecloudplatform.github.io/google-cloud-java/google-cloud-clients/api
 	
 	
 	public Map<String,GCSFileReader> getListing() {
-		final BlobListOption option = BlobListOption.currentDirectory();
-		final Page<Blob> page = storage.list( this.strBucketName, option );
-		final Iterable<Blob> iterator = page.iterateAll();
+
 		final Map<String, GCSFileReader> map = new HashMap<>();
-		for ( final Blob blob : iterator ) {
-			final GCSFileReader file = new GCSFileReader( blob );
-			
-			final String strName = file.getName();
-			map.put( strName, file );
+		final BlobListOption blo = BlobListOption.currentDirectory();
+
+		Page<Blob> page = null;
+
+		try {
+			page = storage.list( this.strBucketName, blo );
+		} catch ( final NoSuchMethodError t ) {
+			/*
+				Can run into java.lang.NoSuchMethodError through 
+				com.google.cloud.storage.StorageImpl.list(StorageImpl.java:262)
+			 	ignore for now, try the call below..
+			 */ 
 		}
+		
+		if ( null==page || !page.hasNextPage() ) {
+			try {
+				// final BucketGetOption bgo = BucketGetOption.;
+				final Bucket bucket = storage.get( this.strBucketName );
+				page = bucket.list( blo );
+			} catch ( final NoSuchMethodError t ) {
+				/*
+				Can run into java.lang.NoSuchMethodError through
+				com.google.cloud.storage.Bucket.list(Bucket.java:732)
+			 	ignore for now, try the call below..
+			 */ 
+			}
+		}
+
+		if ( null==page || !page.hasNextPage() ) {
+			try {
+				final Bucket bucket = storage.get( this.strBucketName );
+				page = bucket.list();
+			} catch ( final NoSuchMethodError t ) {
+				/*
+				Can run into java.lang.NoSuchMethodError through
+				com.google.cloud.storage.Bucket.list(Bucket.java:732)
+			 	ignore for now, try the call below..
+			 */ 
+			}
+		}
+
+		
+		if ( null!=page ) {
+			try {
+				final Iterable<Blob> iterator = page.iterateAll();
+				for ( final Blob blob : iterator ) {
+					final GCSFileReader file = new GCSFileReader( blob );
+					
+					final String strName = file.getName();
+					map.put( strName, file );
+				}
+				return map;
+			} catch ( final Exception e ) {
+				// bummer..
+			}
+		}
+		
 		return map;
 	}
 	

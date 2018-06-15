@@ -47,11 +47,13 @@ public class GCSFileReader {
 		final EnumMap<DocMetadataKey, String> 
 						mapDMK = new EnumMap<>( DocMetadataKey.class );
 		final Map<String, String> mapRaw = this.blob.getMetadata();
-		for ( final DocMetadataKey key : DocMetadataKey.values() ) {
-			final String strKey = key.name();
-			if ( mapRaw.containsKey( strKey ) ) {
-				final String strValue = mapRaw.get( strKey );
-				mapDMK.put( key, strValue );
+		if ( null!=mapRaw ) {
+			for ( final DocMetadataKey key : DocMetadataKey.values() ) {
+				final String strKey = key.name();
+				if ( mapRaw.containsKey( strKey ) ) {
+					final String strValue = mapRaw.get( strKey );
+					mapDMK.put( key, strValue );
+				}
 			}
 		}
 		return mapDMK;
@@ -59,9 +61,12 @@ public class GCSFileReader {
 	
 	public String get( final DocMetadataKey key ) {
 		if ( null==key ) return null;
-		
+
+		final Map<String, String> map = this.blob.getMetadata();
+		if ( null==map ) return null;
+
 		final String strKey = key.name();
-		final String strResult = this.blob.getMetadata().get( strKey );
+		final String strResult = map.get( strKey );
 		return strResult;
 	}
 	
