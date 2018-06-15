@@ -154,7 +154,13 @@ public class Status extends HttpServlet {
 				writer.print("\tSession: " + strSession + "\r\n" );
 
 				writer.print("\t\tUser-Agent: " + client.getUserAgent() + "\r\n" );
-				writer.print("\t\tClient info: " + client.getClientInfo() + "\r\n" );
+//				writer.print("\t\tClient info: " + client.getClientInfo() + "\r\n" );
+				final List<String> listInfo = client.getClientInfo();
+				writer.print("\t\tClient info: " + listInfo.size() + " items\r\n" );
+				for ( final String strInfo : listInfo ) {
+					writer.print("\t\t\t" + strInfo + "\r\n" );
+				}
+				
 			}
 
 			
@@ -183,6 +189,10 @@ public class Status extends HttpServlet {
 
 			writer.print( "\tSystemProperty.environment.value(): " 
 						+ SystemProperty.environment.value() + "\r\n" );
+//			writer.print( "\tSystemProperty.applicationId.key(): " 
+//						+ SystemProperty.applicationId.key() + "\r\n" );
+//			writer.print( "\tSystemProperty.applicationId.get(): " 
+//						+ SystemProperty.applicationId.get() + "\r\n" );
 			writer.print( "\tSystemProperty.version.get(): " 
 						+ SystemProperty.version.get() + "\r\n" );
 			

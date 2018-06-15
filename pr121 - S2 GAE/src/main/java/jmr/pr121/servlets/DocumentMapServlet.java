@@ -121,11 +121,8 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 
 			final String strRequestURL = map.get( ParameterName.REQUEST_URL );
 
-//		    resp.setContentType("text/plain");
-//		    resp.setCharacterEncoding("UTF-8");
-
 		    resp.setContentType( ContentType.TEXT_HTML.getMimeType() );
-//		    resp.setCharacterEncoding("UTF-8");
+		    resp.setCharacterEncoding("UTF-8");
 
 		    final PrintWriter writer = resp.getWriter();
 		    
@@ -356,74 +353,6 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 		}
 		return true;
 	}
-	
-	
-//	@Override
-//	public void doGet(	final HttpServletRequest req, 
-//		  				final HttpServletResponse resp ) 
-//		  									throws IOException {
-//		Log.add( this.getClass().getName() + ".doGet()" );		
-//
-//		Log.add( req );
-//		final UserAuth ua = new UserAuth( req, resp );
-//		if ( !ua.require( 99 ) ) return;
-//		if ( ua.isAborted() ) return;
-//		
-//		
-//		final UserService service = UserServiceFactory.getUserService();
-//		final User user = service.getCurrentUser();
-//
-//		Log.add( "UserService: " + service );
-//		Log.add( "User: " + user );
-//
-//		
-//		
-//		if ( null==user ) {
-//
-//		    resp.setContentType( ContentType.TEXT_HTML.getMimeType() );
-//
-//			Log.add( "User is null, showing log in screen." );
-//
-//			final PrintWriter out = resp.getWriter();
-//			out.println( "Please <a href='"
-//					+ service.createLoginURL(req.getRequestURI())
-//					+ "'> Log In </a>" );
-//			out.flush();
-//			return;
-//		}
-//		
-//		Log.add( "User is " + user.toString() + ", showing log out link." );
-//		
-//		
-//		Log.add( "\tclass: " + user.getClass().getName() );
-//		Log.add( "\temail: " + user.getEmail() );
-//		Log.add( "\tuser id: " + user.getUserId() );
-//		Log.add( "\tdomain: " + user.getAuthDomain() );
-//
-//		// later versions of gae api
-//		Log.add( "\tnickname: " + user.getNickname() );
-////		Log.add( "\tfed id: " + user.getFederatedIdentity() );
-//
-////		SecurityUtils.getSubject();
-//
-//		try {
-//			
-//			Log.add( "Examining parameters.." );
-//			
-//			final EnumMap<ParameterName,String> 
-//					mapParams = new EnumMap<>( ParameterName.class );
-//			
-//
-//			final String strName = req.getParameter( "name" );
-//
-//			mapParams.put( ParameterName.NAME, strName );
-//			
-//			this.doGet( mapParams, resp );
-//		} catch ( final Throwable e ) {
-////			writer.print("\r\nError: " + e.toString() + "\r\n");
-//			Log.add( "\r\nError: " + e.toString() );
-//		}
-//	}
 	
 	
 	@Override

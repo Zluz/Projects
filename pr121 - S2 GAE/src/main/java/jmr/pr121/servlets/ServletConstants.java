@@ -2,8 +2,80 @@ package jmr.pr121.servlets;
 
 public interface ServletConstants {
 
+	/*
+	 * Tesla browser characteristics:
+
+			User-Agent: Mozilla/5.0 (X11; GNU/Linux) AppleWebKit/601.1 (KHTML, like Gecko) Tesla QtCarBrowser Safari/601.1
+
+			color_depth:24
+			inner:1200x1465
+			inner:1200x690
+			jqdim:1200x1465
+			jqdim:1200x690
+			outer:0x0
+			pixel_depth:24
+			screen:1080x1920
+
+	 */
 	
-	
+	final String strStyle = 
+			"<style>\n" +
+			"    @font-face {\n" + 
+			"      font-family: fontNormal;\n" + 
+			"        src: \n" + 
+			"          url( '/fonts/MADE Evolve Sans Light (PERSONAL USE).otf' );\n" + 
+//			"          url( '/fonts/MADE Evolve Sans Bold (PERSONAL USE).otf' );\n" + 
+			"    }\n" +
+			"    @font-face {\n" + 
+			"      font-family: fontThin;\n" + 
+			"        src: \n" + 
+			"          url( '/fonts/MADE Evolve Sans Thin (PERSONAL USE).otf' );\n" + 
+//			"          url( '/fonts/MADE Evolve Sans Bold (PERSONAL USE).otf' );\n" + 
+			"    }\n" +
+			"    @font-face {\n" + 
+			"      font-family: fontHeavy;\n" + 
+			"        src: \n" + 
+//			"          url( '/fonts/MADE Evolve Sans Light (PERSONAL USE).otf' ),\n" + 
+			"          url( '/fonts/MADE Evolve Sans Bold (PERSONAL USE).otf' );\n" + 
+			"    }\n" +
+			"    p.normal { \n" + 
+			"        font-family: fontNormal;\n" + 
+			"        font-weight: normal;\n" + 
+			"    }\n" +
+			"    p { \n" + 
+			"        font-family: fontNormal;\n" + 
+			"        font-weight: normal;\n" + 
+			"    }\n" +
+			"    p.thin { \n" + 
+			"        font-family: fontHeavy;\n" + 
+			"        font-weight: heavy;\n" + 
+			"    }\n" +
+			
+			"    h1 { \n" + 
+			"        font-family: fontHeavy;\n" + 
+			"        font-weight: bold;\n" + 
+			"    }\n" +
+			"    h2 { \n" + 
+			"        font-family: fontHeavy;\n" + 
+			"        font-weight: bold;\n" + 
+			"    }\n" +
+			
+			"    .info { \n" + 
+			"        font-family: fontThin;\n" + 
+			"        font-weight: normal;\n" + 
+			"        font-size: 16px;\n" + 
+			"    }\n" +
+			"    .nav { \n" + 
+			"        font-family: fontNormal;\n" + 
+			"        font-weight: normal;\n" + 
+			"        font-size: 20px;\n" + 
+			"    }\n" +
+			"    .nav-selected { \n" + 
+			"        font-family: fontHeavy;\n" + 
+			"        font-weight: bold;\n" + 
+			"        font-size: 20px;\n" + 
+			"    }\n" +
+			"</style>\n";
 
     final String strJS = 
     		"<script>\n"
@@ -55,16 +127,45 @@ public interface ServletConstants {
 	    		+ "}"
 	    		+ "\n"
 	    		+ "function sendClientInfo() {\n"
-	    		+ "    const width = window.outerWidth;\n"
-	    		+ "    const height = window.outerHeight;\n"
+	    		
+	    		// does not work in the Tesla
+//	    		+ "    const outerX = window.outerWidth;\n"
+//	    		+ "    const outerY = window.outerHeight;\n"
+//	    		+ "    const outer = 'outer:' + outerX + 'x' + outerY;\n"
+//				+ "    $.get(\"/ui/input?CLIENT_INFO=\" + outer, function(data, status){});\n" 
+	    		
+				// preferred: ui client space
+	    		+ "    const innerX = window.innerWidth;\n"
+	    		+ "    const innerY = window.innerHeight;\n"
+	    		+ "    const inner = 'inner:' + innerX + 'x' + innerY;\n"
+				+ "    $.get(\"/ui/input?CLIENT_INFO=\" + inner, function(data, status){});\n" 
+	    		
+				// preferred: screen device
 	    		+ "    const screenX = window.screen.width;\n"
 	    		+ "    const screenY = window.screen.height;\n"
-	    		+ "    const info = '' + width + 'x' + height "
-	    					+ "+ ',' + screenX + 'x' + screenY;\n"
-	    		+ "    $.get(\"/ui/input?CLIENT_INFO=\" + info + \"\", function(data, status){\n" 
+	    		+ "    const screen = 'screen:' + screenX + 'x' + screenY;\n"
+				+ "    $.get(\"/ui/input?CLIENT_INFO=\" + screen, function(data, status){});\n" 
+
+				// works but skip
+//	    		+ "    const jqwinX = $(window).width();\n"
+//	    		+ "    const jqwinY = $(window).height();\n"
+//	    		+ "    const jqdim = 'jqdim:' + jqwinX + 'x' + jqwinY;\n"
+//				+ "    $.get(\"/ui/input?CLIENT_INFO=\" + jqdim, function(data, status){});\n" 
+
+	    		// works but skip
+//	    		+ "    const color_depth = 'color_depth:' + window.screen.colorDepth;\n"
+//				+ "    $.get(\"/ui/input?CLIENT_INFO=\" + color_depth, function(data, status){});\n" 
+
+				// preferred: color depth
+	    		+ "    const pixel_depth = 'pixel_depth:' + window.screen.pixelDepth;\n"
+				+ "    $.get(\"/ui/input?CLIENT_INFO=\" + pixel_depth, function(data, status){});\n" 
+
+//	    		+ "    const info = '' + width + 'x' + height "
+//	    					+ "+ ',' + screenX + 'x' + screenY;\n"
+//	    		+ "    $.get(\"/ui/input?CLIENT_INFO=\" + info + \"\", function(data, status){\n" 
 //	    		+ "        img.attr( 'src', '/images/check-outline-512.png' );\n"
 //	    		+ "        alert(\"Data: \" + data + \"\\nStatus: \" + status);\n" 
-	    		+ "    });\n"
+//	    		+ "    });\n"
 	    		+ "}\n"
 	    		+ "\n"
 	    		+ "document.addEventListener( 'load', sendClientInfo );\n"

@@ -1,7 +1,12 @@
 package jmr.pr121.storage;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -17,10 +22,11 @@ public class ClientData {
 
 	final String strUserAgent;
 
-	String strInfo = null;
+//	String strInfo = null;
 	Integer iWidth = null;
 	Integer iHeight = null;
 	
+	final Set<String> setInfo = new HashSet<>(); 
 	
 	
 	
@@ -55,7 +61,8 @@ public class ClientData {
 		Log.add( "Recording client info: " + strInfo );
 		if ( StringUtils.isEmpty( strInfo ) ) return;
 		
-		this.strInfo = strInfo;
+//		this.strInfo = strInfo;
+		this.setInfo.add( strInfo );
 		
 		final String[] arrParts = strInfo.split( "," );
 		
@@ -76,8 +83,14 @@ public class ClientData {
 	}
 	
 
-	public String getClientInfo() {
-		return this.strInfo;
+//	public String getClientInfo() {
+//		return this.strInfo;
+//	}
+
+	public List<String> getClientInfo() {
+		final List<String> list = new LinkedList<>( this.setInfo );
+		Collections.sort( list );
+		return list;
 	}
 	
 	

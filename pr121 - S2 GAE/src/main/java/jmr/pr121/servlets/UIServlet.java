@@ -8,9 +8,9 @@ import java.nio.ByteBuffer;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.ServletException;
@@ -41,12 +41,17 @@ import jmr.pr121.storage.ClientData;
     urlPatterns = {	"/ui",
 					"/ui/map",
 					"/ui/gcs",
+					"/ui/tesla",
 					"/ui/input",
     				"/ui/log" }
 )
 public class UIServlet extends HttpServlet {
 
 	final static LocalDateTime ldtStart;
+	private Input pageInput;
+	private TeslaUIServlet pageTesla;
+	private GCSListingServlet pageGCS;
+	private DocumentMapServlet pageMap;
 	
 	static {
 		ldtStart = LocalDateTime.now();
@@ -75,9 +80,12 @@ public class UIServlet extends HttpServlet {
 //					entry : req.getParameterMap().entrySet() ) {
 //		}
 		
-		final EnumMap<ParameterName, String> params = 
+		final Map<ParameterName, String> params = 
 				ParameterName.getEnumMapOf( req.getParameterMap().entrySet() );
-		params.put( ParameterName.REQUEST_URL, req.getRequestURL().toString() );
+		final String strURL = req.getRequestURL().toString();
+		params.put( ParameterName.REQUEST_URL, strURL );
+		params.put( ParameterName.REQUEST_BASE, 
+				strURL.split( "/" )[0] + "//" + strURL.split( "/" )[2] );
 		
 		
 		
@@ -97,20 +105,34 @@ public class UIServlet extends HttpServlet {
 		
 		if ( strURI.startsWith( "/ui/map" ) ) {
 			
-			final DocumentMapServlet pageMap = new DocumentMapServlet();
+			if ( null==pageMap ) {
+				pageMap = new DocumentMapServlet();
+			}
 			pageMap.doGet( params, resp, client );
 			
 			return;
 		} else if ( strURI.startsWith( "/ui/gcs" ) ) {
 
-			final GCSListingServlet pageGCS = new GCSListingServlet();
+			if ( null==pageGCS ) {
+				pageGCS = new GCSListingServlet();
+			}
 			pageGCS.doGet( params, resp, client );
+			
+			return;
+		} else if ( strURI.startsWith( "/ui/tesla" ) ) {
+
+			if ( null==pageTesla ) {
+				pageTesla = new TeslaUIServlet();
+			}
+			pageTesla.doGet( params, resp, client );
 			
 			return;
 		} else if ( strURI.startsWith( "/ui/input" ) ) {
 			
-			final Input input = new Input();
-			input.doGet( params, resp, client );
+			if ( null==pageInput ) {
+				pageInput = new Input();
+			}
+			pageInput.doGet( params, resp, client );
 			
 			return;
 		}

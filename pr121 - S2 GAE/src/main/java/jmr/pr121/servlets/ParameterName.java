@@ -1,6 +1,7 @@
 package jmr.pr121.servlets;
 
 import java.util.EnumMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -9,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 public enum ParameterName {
 
 	REQUEST_URL,
+	REQUEST_BASE,
 	NAME,
 	BUTTON,
 	EMAIL,
@@ -30,7 +32,7 @@ public enum ParameterName {
 		return null;
 	}
 	
-	public static EnumMap<ParameterName,String>
+	public static Map<ParameterName,String>
 			getEnumMapOf( final Set<Entry<String, String[]>> entries ) {
 
 		final EnumMap<ParameterName,String> 

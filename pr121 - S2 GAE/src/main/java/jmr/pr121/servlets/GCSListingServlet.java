@@ -86,23 +86,13 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 		
 		final GCSFactory factory = GCSHelper.GCS_FACTORY;
 		
-//		final Map<String, GCSFileReader> listing = factory.getListing();
-//		Log.add( "Listing loaded. " + listing.size() + " files." );
-		
 		if ( null!=strName && !strName.isEmpty() ) {
 			reader = factory.getFile( strName );
-//			reader = listing.get( strName );
 		}
 
 		if ( null!=reader ) {
 
 			Log.add( "Showing file: " + strName );
-			
-//			{
-//				if ( ContentType.TEXT_PLAIN.equals( doc.type ) ) {
-//					GAEEmail.sendTestEmail();
-//				}
-//			}
 
 			resp.setContentType( reader.getContentType() );
 			final ServletOutputStream out = resp.getOutputStream();
@@ -117,11 +107,8 @@ public class GCSListingServlet extends HttpServlet implements IPage {
 
 			final String strRequestURL = map.get( ParameterName.REQUEST_URL );
 
-//		    resp.setContentType("text/plain");
-//		    resp.setCharacterEncoding("UTF-8");
-
 		    resp.setContentType( ContentType.TEXT_HTML.getMimeType() );
-//		    resp.setCharacterEncoding("UTF-8");
+		    resp.setCharacterEncoding("UTF-8");
 
 		    final PrintWriter writer = resp.getWriter();
 		    

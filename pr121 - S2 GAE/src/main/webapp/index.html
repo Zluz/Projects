@@ -2,13 +2,27 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
-    <title>S2 GAE project</title>
+    <title>S2 Google App Engine project</title>
   </head>
+  <style>
+		@font-face {
+		  		font-family: fontCustom;
+		  		src: 
+		  			url( '/fonts/MADE Evolve Sans Light (PERSONAL USE).otf' ),
+		  			url( '/fonts/MADE Evolve Sans Bold (PERSONAL USE).otf' );
+		}
+		h1 { 
+			font-family: fontCustom;
+			font-weight: Bold;
+		}
+  </style>
 
-  <body>
-    <h1>S2 GAE project (pr121)</h1>
+<!--   <body style='font-family:"verdana"; background-color:"#DADADA";'> -->
+<!--   <body style='background-color:"#DADADA";'> -->
+  <body style='font-family:"fontCustom"; background-color:"#DADADA";'>
+    <h1>S2 APP ENGINE</h1>
   
-    <table>
+    <table style='font-size: 25px'>
       <tr>
         <td colspan="2" style="font-weight:bold;">Available Servlets:</td>        
       </tr>
@@ -16,13 +30,16 @@
         <td>&nbsp;&nbsp;&nbsp;</td>
       </tr>
       <tr>
-        <td><a href='/ui'>User Interface</a> <i>(top page, shows status)</i></td>
+        <td><a href='/ui'>User Interface</a> <i>(shows status)</i></td>
       </tr>
       <tr>
-        <td>&nbsp;&nbsp;&nbsp;<a href='/ui/map'>UI - Internal Document Map</a></td>
+        <td>&nbsp;&nbsp;&nbsp;<a href='/ui/map'>Internal Document Map</a></td>
       </tr>
       <tr>
-        <td>&nbsp;&nbsp;&nbsp;<a href='/ui/gcs'>UI - Google Cloud Storage Listing</a></td>
+        <td>&nbsp;&nbsp;&nbsp;<a href='/ui/gcs'>Google Cloud Storage Listing</a></td>
+      </tr>
+      <tr>
+        <td>&nbsp;&nbsp;&nbsp;<a href='/ui/tesla'>Tesla client</a></td>
       </tr>
       <tr>
         <td>&nbsp;&nbsp;&nbsp;</td>
