@@ -38,6 +38,8 @@ public interface ServletConstants {
 //			"          url( '/fonts/MADE Evolve Sans Light (PERSONAL USE).otf' ),\n" + 
 			"          url( '/fonts/MADE Evolve Sans Bold (PERSONAL USE).otf' );\n" + 
 			"    }\n" +
+			// useful reference:
+			// https://www.w3schools.com/Css/css_text.asp
 			"    p.normal { \n" + 
 			"        font-family: fontNormal;\n" + 
 			"        font-weight: normal;\n" + 
@@ -63,17 +65,51 @@ public interface ServletConstants {
 			"    .info { \n" + 
 			"        font-family: fontThin;\n" + 
 			"        font-weight: normal;\n" + 
-			"        font-size: 16px;\n" + 
+			"        font-size: 14px;\n" + 
+//			"        color: #606060;\n" + 
+			"        color: #000000;\n" + 
+			"    }\n" +
+			"    .table-nav { \n" + 
+//			"        border: 2px solid grey;\n" + 
+			"        width: 281px;\n" +
+			"        height: 100%;\n" +
+			"        border-collapse: collapse;\n" + 
+			"        padding: 0;\n" + 
+			"    }\n" +
+			"    .table-body { \n" + 
+//			"        border: 2px solid grey;\n" + 
+			"        width: 100%;\n" +
+			"        height: 100%;\n" +
+			"        border-collapse: collapse;\n" + 
+			"    }\n" +
+			"    .img-icon { \n" + 
+			"        width: 24px;\n" +
+			"        height: 24px;\n" +
+			"        margin-top: 5px;\n" +
+			"        margin-left: 9px;\n" +
+			"        margin-right: 40px;\n" +
+			"        align: center;\n" +
+			"        opacity: 0.5;\n" +
+			"        border-collapse: collapse;\n" + 
 			"    }\n" +
 			"    .nav { \n" + 
 			"        font-family: fontNormal;\n" + 
 			"        font-weight: normal;\n" + 
-			"        font-size: 20px;\n" + 
+			"        font-size: 24px;\n" + 
+//			"        padding: 20;\n" + 
+			"        color: #808080;\n" + 
+			"        height: 80px;\n" +
+			"        padding-right: 30px;\n" +
 			"    }\n" +
 			"    .nav-selected { \n" + 
-			"        font-family: fontHeavy;\n" + 
+			"        font-family: fontNormal;\n" + 
 			"        font-weight: bold;\n" + 
-			"        font-size: 20px;\n" + 
+			"        font-size: 28px;\n" + 
+//			"        padding: 22;\n" + 
+			"        color: #000000;\n" + 
+			"        height: 80px;\n" +
+			"        letter-spacing: 1px;\n" +
+			"        padding-right: 30px;\n" +
 			"    }\n" +
 			"</style>\n";
 
