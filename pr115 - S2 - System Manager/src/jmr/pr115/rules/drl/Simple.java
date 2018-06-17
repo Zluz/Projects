@@ -175,8 +175,18 @@ public class Simple {
 				SendMessage.send( MessageType.EMAIL, 
 						"Tesla Combined JSON", strbuf.toString() );
 				
+				CloudUtilities.saveJson( "TESLA_Combined.json", 
+							strPrettyCombined, ContentType.APP_JSON, null );
+				CloudUtilities.saveJson( "TESLA_Combined.txt", 
+							strbuf.toString(), ContentType.TEXT_PLAIN, null );
+
 				final CommGAE comm = new CommGAE();
-				comm.store( DocKey.TESLA_COMBINED, strPrettyCombined );
+				try {
+					comm.store( DocKey.TESLA_COMBINED, strPrettyCombined );
+				} catch ( final Exception e ) {
+					//TODO look into later..
+					e.printStackTrace();
+				}
 			}
 			
 			
@@ -351,7 +361,7 @@ public class Simple {
 //				}
 				
 				final List<File> files = 
-								session.getCaptureStillImageFiles( options);
+								session.getCaptureStillImageFiles( options );
 				for ( final File file : files ) {
 					if ( null!=file && file.isFile() ) {
 						if ( file.lastModified() > lCutoff ) {

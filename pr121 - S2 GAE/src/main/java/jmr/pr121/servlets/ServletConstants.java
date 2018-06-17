@@ -1,6 +1,17 @@
 package jmr.pr121.servlets;
 
+import com.google.gson.JsonParser;
+
+//import com.google.appengine.repackaged.com.google.gson.JsonParser;
+
 public interface ServletConstants {
+
+	public static final JsonParser JSON_PARSER = new JsonParser();
+	
+	public final static String COLOR_CONTENT_BACK = "#F2F2F2";
+	public final static String COLOR_FONT_DARK = "#606060";
+	public final static String COLOR_FONT_MED = "#808080";
+	
 
 	/*
 	 * Tesla browser characteristics:
@@ -18,7 +29,7 @@ public interface ServletConstants {
 
 	 */
 	
-	final String strStyle = 
+	final public static String strStyle = 
 			"<style>\n" +
 			"    @font-face {\n" + 
 			"      font-family: fontNormal;\n" + 
@@ -69,9 +80,24 @@ public interface ServletConstants {
 //			"        color: #606060;\n" + 
 			"        color: #000000;\n" + 
 			"    }\n" +
+			"    .text-normal { \n" + 
+			"        font-family: fontNormal;\n" + 
+			"        font-weight: normal;\n" + 
+			"        font-size: 22px;\n" + 
+			"        color: " + COLOR_FONT_MED + ";\n" + 
+			"    }\n" +
+			"    .text-title { \n" + 
+			"        font-family: fontHeavy;\n" + 
+			"        font-weight: bold;\n" + 
+			"        font-size: 20px;\n" + 
+			"        color: " + COLOR_FONT_MED + ";\n" + 
+//			"        color: " + "#808080" + ";\n" + 
+			"        letter-spacing: 1px;\n" +
+			"    }\n" +
 			"    .table-nav { \n" + 
 //			"        border: 2px solid grey;\n" + 
-			"        width: 281px;\n" +
+			"        width: " + ( TeslaPage.NAV_WIDTH + 1 ) + "px;\n" +
+//			"        width: 241px;\n" +
 			"        height: 100%;\n" +
 			"        border-collapse: collapse;\n" + 
 			"        padding: 0;\n" + 
@@ -98,8 +124,8 @@ public interface ServletConstants {
 			"        font-size: 24px;\n" + 
 //			"        padding: 20;\n" + 
 			"        color: #808080;\n" + 
-			"        height: 80px;\n" +
-			"        padding-right: 30px;\n" +
+			"        height: 90px;\n" +
+			"        padding-right: 26px;\n" +
 			"    }\n" +
 			"    .nav-selected { \n" + 
 			"        font-family: fontNormal;\n" + 
@@ -107,13 +133,137 @@ public interface ServletConstants {
 			"        font-size: 28px;\n" + 
 //			"        padding: 22;\n" + 
 			"        color: #000000;\n" + 
-			"        height: 80px;\n" +
+			"        height: 90px;\n" +
 			"        letter-spacing: 1px;\n" +
-			"        padding-right: 30px;\n" +
+			"        padding-right: 26px;\n" +
 			"    }\n" +
-			"</style>\n";
+			// see   https://www.w3schools.com/Css/css3_images.asp
+			"    .div-thumbnail { \n" +
+			"        width: 275px;\n" +
+			"        max-width: 275px;\n" + 
+			"        background-color: " +  COLOR_CONTENT_BACK + ";\n" + 
+			"        box-shadow: 0 10px 10px 0 rgba( 0, 0, 0, 0.5 ), "
+								+ "0 20px 20px 0 rgba( 0, 0, 0, 0.19 );\n" + 
+			"    }\n" +
+			"    .image-thumbnail { \n" + 
+//			"        width: 300px;\n" + 
+			"        width: 100%;\n" + 
+//			"        background-color: " +  TeslaUIServlet.COLOR_CONTENT_BACK + "\n" + 
+//			"        box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.2), 0 10px 10px 0 rgba(0, 0, 0, 0.19);\n" + 
+			"    }\n" +
+			// full screen
+			"    .div-fullimage { \n" +
+			"        width: 100%;\n" +
+//			"        height: 100%;\n" +
+//			"        max-width: 1100px;\n" + 
+			"        align: center;\n" + 
+//			"        background-color: " +  COLOR_CONTENT_BACK + ";\n" + 
+//			"        box-shadow: 0 10px 10px 0 rgba( 0, 0, 0, 0.5 ), "
+//								+ "0 20px 20px 0 rgba( 0, 0, 0, 0.19 );\n" + 
+			"    }\n" +
+			"    .image-fullimage { \n" + 
+//			"        width: 300px;\n" + 
+			"        align: center;\n" + 
+			"        width: 97%;\n" + 
+//			"        height: 90%;\n" + 
+			"        padding: 10px;\n" + 
+			"        border: 2px solid #ddd;\n" + 
+			"        border-radius: 8px;\n" + 
+			"        padding: 10px;\n" + 
+//			"        background-color: " +  TeslaUIServlet.COLOR_CONTENT_BACK + "\n" + 
+//			"        box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.2), 0 10px 10px 0 rgba(0, 0, 0, 0.19);\n" + 
+			"    }\n" +
 
-    final String strJS = 
+			// not used yet ..
+			"    .tr-even { \n" + 
+			"        font-family: fontNormal;\n" + 
+			"        font-weight: normal;\n" + 
+			"        font-size: 20px;\n" + 
+			"        color: #808080;\n" + 
+//			"        height: 70px;\n" +
+//			"        padding-right: 26px;\n" +
+			"    }\n" +
+
+			// http://divtable.com/table-styler/
+			"table.blueTable {\r\n" + 
+			"  border: 1px solid #E2E2E2;\r\n" + 
+			"  background-color: #EEEEEE;\r\n" + 
+//			"  width: 100%;\r\n" + 
+			"  max-width: 500px;\r\n" + 
+			"  text-align: left;\r\n" + 
+			"  border-collapse: collapse;\r\n" + 
+			"}\r\n" + 
+			"table.blueTable td, table.blueTable th {\r\n" + 
+			"  border: 0px solid #AAAAAA;\r\n" + 
+			"  padding: 3px 2px;\r\n" + 
+			"}\r\n" + 
+			"table.blueTable tbody td {\r\n" + 
+			"  font-size: 20px;\n" + 
+			"        font-family: fontNormal;\n" + 
+			"        color: #606060;" +
+			"}\n" + 
+			"table.blueTable tr:nth-child(even) {\r\n" + 
+			"  background: #EAEAEA;\r\n" + 
+			"}\r\n" + 
+			"table.blueTable thead {\r\n" + 
+			"  background: #1C6EA4;\r\n" + 
+			"  background: -moz-linear-gradient(top, #5592bb 0%, #327cad 66%, #1C6EA4 100%);\r\n" + 
+			"  background: -webkit-linear-gradient(top, #5592bb 0%, #327cad 66%, #1C6EA4 100%);\r\n" + 
+			"  background: linear-gradient(to bottom, #5592bb 0%, #327cad 66%, #1C6EA4 100%);\r\n" + 
+			"  border-bottom: 2px solid #444444;\r\n" + 
+			"}\r\n" + 
+			"table.blueTable thead th {\r\n" + 
+			"  font-size: 20px;\r\n" + 
+			"  font-weight: bold;\r\n" + 
+			"  color: #FFFFFF;\r\n" + 
+			"  border-left: 2px solid #444444;\r\n" + 
+			"}\r\n" + 
+			"table.blueTable thead th:first-child {\r\n" + 
+			"  border-left: none;\r\n" + 
+			"}\r\n" + 
+			"\r\n" + 
+			"table.blueTable tfoot {\r\n" + 
+			"  font-size: 14px;\r\n" + 
+			"  font-weight: bold;\r\n" + 
+			"  color: #FFFFFF;\r\n" + 
+			"  background: #D0E4F5;\r\n" + 
+			"  background: -moz-linear-gradient(top, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);\r\n" + 
+			"  background: -webkit-linear-gradient(top, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);\r\n" + 
+			"  background: linear-gradient(to bottom, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);\r\n" + 
+			"  border-top: 2px solid #444444;\r\n" + 
+			"}\r\n" + 
+			"table.blueTable tfoot td {\r\n" + 
+			"  font-size: 14px;\r\n" + 
+			"}\r\n" + 
+			"table.blueTable tfoot .links {\r\n" + 
+			"  text-align: right;\r\n" + 
+			"}\r\n" + 
+			"table.blueTable tfoot .links a{\r\n" + 
+			"  display: inline-block;\r\n" + 
+			"  background: #1C6EA4;\r\n" + 
+			"  color: #FFFFFF;\r\n" + 
+			"  padding: 2px 8px;\r\n" + 
+			"  border-radius: 5px;\r\n" + 
+			"}" +
+
+			// for custom scrollbars
+			"$(\"#content-4\").mCustomScrollbar({\n" + 
+			"    theme:\"rounded-dots\",\n" + 
+			"    scrollInertia:400\n" + 
+			"});" +
+			"" +
+			"</style>\n";
+	
+	final public static String strLoadFromCDNs =
+			
+    		"<script src=\"https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js\"></script>\n" +
+	
+    		// Custom scrollbars
+    		// http://manos.malihu.gr/repository/custom-scrollbar/demo/examples/complete_examples.html
+    		"<script src=\"http://manos.malihu.gr/repository/custom-scrollbar/demo/jquery.mCustomScrollbar.concat.min.js\"></script>\n"
+    		+ "";
+
+    final public static String strJS = 
     		"<script>\n"
 	    		+ "\n\n\n"
 	    		+ "// https://stackoverflow.com/questions/247483/http-get-request-in-javascript"
@@ -142,6 +292,7 @@ public interface ServletConstants {
 	    		+ "}"
 	    		+ "\n\n\n"
 	    		+ "\n"
+	    		
 	    		+ "function doUpdate_Test03() {\n"
 	    		+ "    //alert( 'request submitted..' );\n"
 	    		+ "    var img = $('#img-status');\n"
@@ -152,6 +303,7 @@ public interface ServletConstants {
 	    		+ "    });\n"
 	    		+ "}"
 	    		+ "\n"
+	    		
 	    		+ "function doEmailRequest( img_id, command ) {\n"
 	    		+ "    alert( 'preparing to send email..' );\n"
 	    		+ "    var img = $( '#' + img_id );\n"
@@ -160,8 +312,15 @@ public interface ServletConstants {
 	    		+ "        img.attr( 'src', '/images/check-outline-512.png' );\n"
 	    		+ "        alert(\"Data: \" + data + \"\\nStatus: \" + status);\n" 
 	    		+ "    });\n"
-	    		+ "}"
+	    		+ "}\n"
 	    		+ "\n"
+	    		
+	    		+ "function doGoTo( url ) {\n"
+	    		+ "    alert( 'going to: ' + url );\n"
+	    		+ "    window.open( url );\n"
+	    		+ "}\n"
+	    		+ "\n"
+	    		
 	    		+ "function sendClientInfo() {\n"
 	    		
 	    		// does not work in the Tesla

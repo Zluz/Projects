@@ -124,8 +124,11 @@ https://googlecloudplatform.github.io/google-cloud-java/google-cloud-clients/api
 	
 	
 	public GCSFileReader getFile( final String strKey ) {
+		if ( null==strKey ) return null;
 		final BlobId id = BlobId.of( strBucketName, strKey );
+		if ( null==id ) return null;
 		final Blob blob = storage.get( id );
+		if ( null==blob ) return null;
 		final GCSFileReader file = new GCSFileReader( blob );
 		return file;
 	}

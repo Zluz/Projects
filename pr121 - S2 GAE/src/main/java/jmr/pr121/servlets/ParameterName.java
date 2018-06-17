@@ -15,7 +15,9 @@ public enum ParameterName {
 	BUTTON,
 	EMAIL,
 	CLIENT_INFO,
-	PAGE,
+	
+	PAGE, // Tesla UI page
+	FULL_IMAGE, // Tesla UI view fullscreen image
 	;
 	
 	public static ParameterName getParameterName( final String text ) {

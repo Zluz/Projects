@@ -114,7 +114,7 @@ public class JsonUtils {
 	
 	
 	public static String getPretty( final JsonElement je ) {
-		if ( null==je ) return "<null>";
+		if ( null==je ) return "<null, JsonElement was null>";
 		if ( je instanceof JsonObject ) {
 			final JsonObject jo = je.getAsJsonObject();
 			final StringBuilder sb = new StringBuilder();
@@ -137,8 +137,18 @@ public class JsonUtils {
 			sb.append( "\n}" );
 			return sb.toString();
 		} else {
-			final String strPretty = GSON_PRETTY.toJson( je );
-			return strPretty;
+			try {
+				final String strPretty = GSON_PRETTY.toJson( je );
+				if ( null==strPretty ) {
+					return "<null, from toJson()>";
+				} else if ( strPretty.isEmpty() ) {
+					return "<empty, from toJson()>";
+				} else {
+					return strPretty;
+				}
+			} catch ( final Exception e ) {
+				return "<" + e.toString() + ">";
+			}
 		}
 	}
 
