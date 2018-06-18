@@ -17,7 +17,9 @@ public enum ParameterName {
 	CLIENT_INFO,
 	
 	PAGE, // Tesla UI page
-	FULL_IMAGE, // Tesla UI view fullscreen image
+	FULL_IMAGE, // Tesla UI view fullscreen image (may be large)
+	FAST_IMAGE, // used for fullscreen image, should load fast/first
+	
 	;
 	
 	public static ParameterName getParameterName( final String text ) {

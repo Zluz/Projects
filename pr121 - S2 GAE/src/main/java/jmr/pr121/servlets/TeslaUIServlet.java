@@ -85,7 +85,7 @@ public class TeslaUIServlet extends HttpServlet implements IPage {
 //		    		+ "<script src=\"https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js\"></script>"
 		    		+ ServletConstants.strLoadFromCDNs
 		    		+ "\n"
-		    		+ ServletConstants.strJS
+//		    		+ ServletConstants.strJS
 		    		+ "\n\n\n"
 		    		+ ""
 		    		+ "</head>\n" );
@@ -140,9 +140,10 @@ public class TeslaUIServlet extends HttpServlet implements IPage {
 
 
 			writer.println( "<!DOCTYPE html>\n"
-		    		+ "<html><head>\n"
+		    		+ "<html height='100%'><head>\n"
 		    		+ "<title>Tesla UI Frame: " + frame.name() + "</title>" );
 			writer.println( ServletConstants.strStyle );
+			writer.println( ServletConstants.strLoadFromCDNs );
 			writer.println( "</head>" );
 //			writer.println( "<STYLE>\n"
 //					+ "html {\n"
@@ -159,7 +160,7 @@ public class TeslaUIServlet extends HttpServlet implements IPage {
 				final String strColor = frame.strColor;
 				writer.print( "<body style='background-color:" + strColor + ";'>\n" );
 			} else {
-				writer.print( "<body>\n" );
+				writer.print( "<body height='100%'>\n" );
 			}
 			
 		    
@@ -291,14 +292,35 @@ public class TeslaUIServlet extends HttpServlet implements IPage {
 			    		final String strFull = 
 			    				strURLBase + "/ui/gcs?name=" + strFullImage;
 			    		
-				    	writer.println( "<table width='100%'>" );
-				    	writer.println( "<tr width='100%'><td align='center'>" );
+				    	writer.println( "<table width='100%' height='100%'>" );
+				    	writer.println( "<tr width='100%' height='100%'><td align='center'>" );
 
-						writer.println( "<div class='div-fullimage'>" );
+//						writer.println( "<div class='div-fullimage'>" );
+//						writer.println( "    <div height='100%' width='100%' \n"
+//								+ "                 style=\""
+//								+ "background-image: url('" + strFull + "'); "
+////								+ "background-repeat:no-repeat;"
+////								+ "background-size: 100% 100%;"
+//								+ "background-color: red; "
+//								+ "flex-direction: column; "
+//								+ "display: flex; "
+//								+ "flex: 1; "
+////								+ "background-size:cover;\">" );
+//								+ "\">" );
 						writer.println( "<img class='image-fullimage' "
 								+ "src='" + strFull + "' "
-								+ "onclick='window.history.back();'>" );
-						writer.println( "</div>" );
+								+ "onclick='doClickOnFullImage(this);' "
+//								+ "onload=\"alert('this: ' + this);\" "
+//								+ "onload=\"this.height='500px';\" "
+//								+ "onload=\"this.style.height='500px';\" "
+								+ "onload='doFullImageLoaded(this);' "
+								+ ">" );
+						
+//						writer.println( "        <p>test text</p>" );
+//						writer.println( "        test text" );
+
+//						writer.println( "    </div>" );
+//						writer.println( "</div>" );
 						
 				    	writer.println( "</td></tr></table>" );
 

@@ -130,7 +130,8 @@ public class DocumentMapServlet extends HttpServlet implements IPage {
 		    		+ "<html><head>\n"
 		    		+ "<title>Internal Document Map</title>\n"
 		    		+ "\n\n"
-		    		+ ServletConstants.strJS
+		    		+ ServletConstants.strLoadFromCDNs
+//		    		+ ServletConstants.strJS
 		    		+ "\n"
 		    		+ "<script src=\"https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js\"></script>"
 		    		+ "\n\n\n"

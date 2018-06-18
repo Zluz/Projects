@@ -131,6 +131,7 @@ public class TeslaPage {
 	
 
 	public static boolean generateImageList(	final PrintWriter writer,
+												final NavItem item, 
 												final String strURLBase,
 												final String strFilter ) {
 
@@ -148,15 +149,13 @@ public class TeslaPage {
 	    
 	    writer.print( "<script>\n"
 	    		+ "function doGoTo( url ) {\n"
-//	    		+ "    alert( 'going to: ' + url );\n"
-//	    		+ "    window.open( url );\n"
 	    		+ "    top.location.href = url;\n"
 	    		+ "}\n"
 	    		+ "</script>\n" );
 	    		
 	    
-	    writer.println( "<table width='" + BODY_WIDTH + "px'><tr>" );
-	    writer.println( "<tr><td height='30px'></td></tr>" );
+	    writer.println( "<table width='" + BODY_WIDTH + "px'>" );
+	    writer.println( "<tr><td height='30px'></td></tr>\n<tr>" );
 
 		for ( final String key : listOrdered ) { 
 			
@@ -165,29 +164,39 @@ public class TeslaPage {
 				
 				if ( iCount > 3 ) {
 				    writer.println( "</tr>" );
-				    writer.println( "<tr><td height='30px'></td></tr>" );
+				    writer.println( "<tr><td height='28px'></td></tr>" );
 				    writer.println( "<tr>" );
 				    iCount = 1;
 				}
 				
-				writer.println( "<td align='center'>" );
+				writer.print( "<td align='center'>" );
 				
 //				final GCSFileReader file = listing.get( key );
 
 				final String strThumbURL = strURLBase + "/ui/gcs?name=" + key;
 				
 //				final String strFullURL = strThumbURL.replace( "-thumb.j", ".j");
+				final String strFullImage = key.replace( "-thumb.", ".");
 				final String strFullURL = strURLBase + "/ui/tesla?"
-							+ "full_image=" + key.replace( "-thumb.", ".");
+							+ "full_image=" + strFullImage
+							+ "&fast_image=" + key
+							+ "&page=" + item.name();
+
+				String strCaption = strFullImage;
+				strCaption = strCaption.replace( "CAPTURE_", "" );
+				strCaption = strCaption.replace( "_capture_", "/" );
+				strCaption = strCaption.replace( "SCREENSHOT_", "" );
+				strCaption = strCaption.replace( "_screenshot.png", "" );
 
 //				writer.println( "<div class='div-thumbnail' style='max-width:320px;'>" );
-				writer.println( "<div class='div-thumbnail'>" );
+				writer.print( "<div class='div-thumbnail'>" );
 //				writer.println( "<a href='" + strFullURL + "'>" );
-				writer.println( "<img class='image-thumbnail' "
+				writer.print( "<img class='image-thumbnail' "
 							+ "src='" + strThumbURL + "' "
 							+ "onclick='doGoTo(\"" + strFullURL + "\");'>" );
 //				writer.println( "</a>" );
-				writer.println( "</div>" );
+				writer.print( "<div class='text-image-caption'>" + strCaption + "</div>" );
+				writer.print( "</div>" );
 				writer.println( "</td>" );
 			}
 		}
@@ -264,12 +273,12 @@ public class TeslaPage {
 			
 			case STILL_CAP: {
 				
-				return generateImageList( writer, strURLBase, "capture" );
+				return generateImageList( writer, item, strURLBase, "capture" );
 				
 			}
 			case SCREENSHOTS: {
 				
-				return generateImageList( writer, strURLBase, "screenshot" );
+				return generateImageList( writer, item, strURLBase, "screenshot" );
 				
 			}
 			case GAE_UTIL: {

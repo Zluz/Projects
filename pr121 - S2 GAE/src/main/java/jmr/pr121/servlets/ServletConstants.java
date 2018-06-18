@@ -11,7 +11,7 @@ public interface ServletConstants {
 	public final static String COLOR_CONTENT_BACK = "#F2F2F2";
 	public final static String COLOR_FONT_DARK = "#606060";
 	public final static String COLOR_FONT_MED = "#808080";
-	
+	public final static String COLOR_THUMBNAIL_BACK = "#D0D0D0";
 
 	/*
 	 * Tesla browser characteristics:
@@ -94,6 +94,19 @@ public interface ServletConstants {
 //			"        color: " + "#808080" + ";\n" + 
 			"        letter-spacing: 1px;\n" +
 			"    }\n" +
+			"    .text-image-caption { \n" + 
+			"        height: 18px;\n" +
+//			"        position: absolute;\n" +
+			"        top: -5px;\n" +
+			"        font-family: fontNormal;\n" + 
+			"        font-weight: normal;\n" + 
+			"        font-size: 16px;\n" + 
+//			"        vertical-align: middle;\n" + 
+			"        color: " + COLOR_FONT_DARK + ";\n" +
+			"        text-shadow: 0 0 12px #406080;\n" + 
+//			"        background-color: " +  COLOR_THUMBNAIL_BACK + ";\n" +
+			"        background: linear-gradient( " + COLOR_THUMBNAIL_BACK + ", #F0F0F0 );" +
+			"    }\n" +
 			"    .table-nav { \n" + 
 //			"        border: 2px solid grey;\n" + 
 			"        width: " + ( TeslaPage.NAV_WIDTH + 1 ) + "px;\n" +
@@ -125,25 +138,27 @@ public interface ServletConstants {
 //			"        padding: 20;\n" + 
 			"        color: #808080;\n" + 
 			"        height: 90px;\n" +
-			"        padding-right: 26px;\n" +
+			"        padding-right: 22px;\n" +
 			"    }\n" +
 			"    .nav-selected { \n" + 
-			"        font-family: fontNormal;\n" + 
+//			"        font-family: fontNormal;\n" + 
+			"        font-family: fontHeavy;\n" + 
 			"        font-weight: bold;\n" + 
-			"        font-size: 28px;\n" + 
+			"        font-size: 26px;\n" + 
 //			"        padding: 22;\n" + 
 			"        color: #000000;\n" + 
 			"        height: 90px;\n" +
-			"        letter-spacing: 1px;\n" +
-			"        padding-right: 26px;\n" +
+			"        letter-spacing: 0.7px;\n" +
+			"        padding-right: 22px;\n" +
+			"        text-shadow: 2px 2px 2px #E0E0E0;\n" +
 			"    }\n" +
 			// see   https://www.w3schools.com/Css/css3_images.asp
 			"    .div-thumbnail { \n" +
 			"        width: 275px;\n" +
-			"        max-width: 275px;\n" + 
-			"        background-color: " +  COLOR_CONTENT_BACK + ";\n" + 
-			"        box-shadow: 0 10px 10px 0 rgba( 0, 0, 0, 0.5 ), "
-								+ "0 20px 20px 0 rgba( 0, 0, 0, 0.19 );\n" + 
+//			"        max-width: 275px;\n" + 
+			"        background-color: " +  COLOR_THUMBNAIL_BACK + ";\n" + 
+			"        box-shadow: 10px 10px 30px rgba( 0, 0, 0, 0.4 ), " +
+								"0px 0px 8px rgba( 0, 0, 0, 0.7 );\n" + 
 			"    }\n" +
 			"    .image-thumbnail { \n" + 
 //			"        width: 300px;\n" + 
@@ -153,23 +168,30 @@ public interface ServletConstants {
 			"    }\n" +
 			// full screen
 			"    .div-fullimage { \n" +
-			"        width: 100%;\n" +
-//			"        height: 100%;\n" +
+//			"        width: 100%;\n" +
+			"        height: 100%;\n" +
+			"        min-height: 100%;\n" +
 //			"        max-width: 1100px;\n" + 
-			"        align: center;\n" + 
+//			"        align: center;\n" + 
+//			"        display: block;\n" + 
+			"        display: flex;\n" + 
+			"        flex-direction: column;\n" + 
 //			"        background-color: " +  COLOR_CONTENT_BACK + ";\n" + 
 //			"        box-shadow: 0 10px 10px 0 rgba( 0, 0, 0, 0.5 ), "
 //								+ "0 20px 20px 0 rgba( 0, 0, 0, 0.19 );\n" + 
 			"    }\n" +
 			"    .image-fullimage { \n" + 
 //			"        width: 300px;\n" + 
-			"        align: center;\n" + 
+//			"        align: center;\n" + 
 			"        width: 97%;\n" + 
 //			"        height: 90%;\n" + 
 			"        padding: 10px;\n" + 
 			"        border: 2px solid #ddd;\n" + 
 			"        border-radius: 8px;\n" + 
+			"        object-fit: fill;\n" + 
 			"        padding: 10px;\n" + 
+//			"        background-size: auto 100%;\n" + 
+//			"        display: flex;\n" + 
 //			"        background-color: " +  TeslaUIServlet.COLOR_CONTENT_BACK + "\n" + 
 //			"        box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.2), 0 10px 10px 0 rgba(0, 0, 0, 0.19);\n" + 
 			"    }\n" +
@@ -260,10 +282,14 @@ public interface ServletConstants {
 	
     		// Custom scrollbars
     		// http://manos.malihu.gr/repository/custom-scrollbar/demo/examples/complete_examples.html
-    		"<script src=\"http://manos.malihu.gr/repository/custom-scrollbar/demo/jquery.mCustomScrollbar.concat.min.js\"></script>\n"
-    		+ "";
+    		"<script src=\"http://manos.malihu.gr/repository/custom-scrollbar/demo/jquery.mCustomScrollbar.concat.min.js\"></script>\n" +
 
-    final public static String strJS = 
+    		// this JS
+    		"<script src=\"/js/all.js\"></script>\n" + 
+    		
+    		"";
+
+    final public static String _removed_strJS = 
     		"<script>\n"
 	    		+ "\n\n\n"
 	    		+ "// https://stackoverflow.com/questions/247483/http-get-request-in-javascript"
