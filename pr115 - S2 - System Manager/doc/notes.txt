@@ -1,0 +1,7 @@
+
+[TO DO]
+
+adjust the thumbnail upload interval. cannot be more than every 5 min. 
+    maybe adjust per time of day.
+    maybe make configurable (and consider time of day).
+
