@@ -313,7 +313,8 @@ public class Simple implements RulesConstants {
 			if ( bScreenshot ) {
 				final File[] arrScreenshots = session.getScreenshotImageFiles();
 				for ( final File file : arrScreenshots ) {
-					if ( null!=file && file.isFile() ) {
+					if ( null!=file && file.isFile() 
+							&& file.getName().contains( "thumb" ) ) {
 						if ( file.lastModified() > lCutoff ) {
 							listFiles.add( file );
 							bCurrent = true;

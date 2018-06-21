@@ -1,0 +1,7 @@
+
+html2canvas.js
+blog20_download*
+	resources for capturing and downloading screenshots
+	see: 
+		https://blog.jedox.com/screen-shot-web-via-javascript-saving-back-server/
+		http://html2canvas.hertzen.com/

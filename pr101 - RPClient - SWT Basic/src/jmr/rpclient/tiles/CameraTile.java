@@ -30,7 +30,6 @@ public class CameraTile extends TileBase {
 	public static enum CameraLocation {
 		
 		LOCAL( null ),
-		DRIVEWAY( "B8-27-EB-4E-46-E2/capture_vid0.jpg" ),
 		ALL_CAPTURES( null );
 		;
 		
@@ -55,7 +54,6 @@ public class CameraTile extends TileBase {
 
 	public static final boolean GRAPHICS_ADVANCED = false;
 	private Image imageStill = null;
-//	private Object semaphore = "semaphore";
 	private File fileLastImage;
 	private long lLastFileModified = 0;
 	private String strLastMessage = null;
@@ -71,18 +69,14 @@ public class CameraTile extends TileBase {
 	
 	Boolean bHasCameraModule = null;
 	
-//	boolean bShowAll = false;
-	
 	private final Map<Rectangle,String> mapClickRegions = new HashMap<>();
 	
 	Long lImageAge = null;
 	
 	private DisplayMode mode = DisplayMode.SINGLE_FULL;
 	
-//	String strImageDetails = null;
-	
 	FileSession filesession = null;
-
+	
 	
 	
 	public CameraTile( final CameraLocation location ) {
@@ -147,13 +141,11 @@ public class CameraTile extends TileBase {
 			}
 			
 			if ( null!=image ) {
-//			synchronized ( imageStill ) {
 				if ( null!=imageStill ) {
 					imageStill.dispose();
 					imageStill = null;
 				}
 				imageStill = image;
-//							}
 			}
 		}
 	}
@@ -194,9 +186,6 @@ public class CameraTile extends TileBase {
 		int iY = 60;
 		int iCount = 0;
 		
-//		for ( final Entry<String, FileSession> entry : map.entrySet() ) {
-//			final String strKey = entry.getKey();
-//			final FileSession session = entry.getValue();
 		final List<String> listKeys = new LinkedList<>( map.keySet() );
 		Collections.sort( listKeys );
 		for ( final String strKey : listKeys ) {
@@ -239,7 +228,6 @@ public class CameraTile extends TileBase {
 						iY = iY + 220;
 						if ( iY+100 > ptDesiredImageSize.y ) {
 							iY = 60;
-//							iX = iX + 150;
 							iX = iX + 240;
 						}
 					}
@@ -616,7 +604,6 @@ public class CameraTile extends TileBase {
 				if ( r.contains( point ) ) {
 					this.ptTouch = null;
 					this.strLocationMatch = entry.getValue();
-//					bShowAll = false;
 					this.setMode( DisplayMode.SINGLE_FULL );
 					return true;
 				}

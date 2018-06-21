@@ -11,7 +11,10 @@ Projects to include:
 
 
 checkboxes to be checked:
-	Export generated class files and resoures
+	
+	(Export generated class files and resoures) - (used to work)
+	Export all output folders for checked projects - (now works)
+
 	Compress the contents of the JAR file
 
 Save to JAR file:
@@ -20,3 +23,14 @@ Save to JAR file:
 Select:
 	Generate the manifest file
 	(Seal some packages) ?
+
+
+
+[stopped working]
+	cause: not sure. 
+		maybe installing azure? 
+		maybe setting up google cloud messaging?
+		etc?
+
+	"export all output folders for checked projects" seems to build, but may not work..
+	maybe? just remove all (~4) files from each project root

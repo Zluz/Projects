@@ -181,8 +181,12 @@ function doClickOnFullImage( image ) {
     window.history.back();
 }
 
+// web screenshot:
+//   https://blog.jedox.com/screen-shot-web-via-javascript-saving-back-server/
+// base64 encoding/decoding:
+//   https://opinionatedgeek.com/Codecs/Base64Decoder
+//   https://www.motobit.com/util/base64-decoder-encoder.asp
 
-// https://blog.jedox.com/screen-shot-web-via-javascript-saving-back-server/
 function doTakeScreenshot() {
 	console.log( 'Taking a screenshot..' );
 	
@@ -191,11 +195,10 @@ function doTakeScreenshot() {
 	
 	html2canvas( body, {
 		onrendered: function( canvas ) {
+			
 			console.log( 'In onrendered function..' );
-			var canvasData = canvas.toDataURL( "image/png" );
-			var ajax = new XMLHttpRequest();
-			// const iTime = (new Date).getTime();
-//			const strTime = (new Date).toISOString();
+
+			
 			const d = new Date;
 			function pad(n) {return n<10 ? '0'+n : n}
 			const strTime = '-' + d.getUTCFullYear()
@@ -204,7 +207,25 @@ function doTakeScreenshot() {
 			        + '-' + pad( d.getUTCHours() )
 			        + pad( d.getUTCMinutes() )
 			        + pad( d.getUTCSeconds() );
-			const strFilename = "web-screenshot-" + strTime + ".png"; 
+			
+			
+			var dataJPG = canvas.toDataURL( "image/jpeg", 0.5 );
+			var ajaxJPG = new XMLHttpRequest();
+			const strFilenameJPG = "web-screenshot-" + strTime + ".jpg-b64"; 
+			ajaxJPG.open( "POST", '/ui/input' 
+						+ '?name=' + strFilenameJPG + '&type=IMAGE_JPEG', false );
+			ajaxJPG.setRequestHeader( 'Content-Type', 'application/upload' );
+			
+			console.log( 'Sending data..' );
+			ajaxJPG.send( dataJPG );
+			
+			console.log( 'Screenshot saved as ' + strFilenameJPG 
+					+ ' in ' + dataJPG.length + ' bytes.' );
+			
+
+			var canvasData = canvas.toDataURL( "image/png" );
+			var ajax = new XMLHttpRequest();
+			const strFilename = "web-screenshot-" + strTime + ".png-b64"; 
 			ajax.open( "POST", '/ui/input' 
 						+ '?name=' + strFilename + '&type=IMAGE_PNG', false );
 			ajax.setRequestHeader( 'Content-Type', 'application/upload' );
@@ -214,6 +235,11 @@ function doTakeScreenshot() {
 			
 			console.log( 'Screenshot saved as ' + strFilename 
 					+ ' in ' + canvasData.length + ' bytes.' );
+
+			
+			
+			
+			
 //			alert( 'done' );
 		}
 	});

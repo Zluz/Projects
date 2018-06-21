@@ -20,7 +20,7 @@ public class AudioSelectionTile extends TileBase {
 	public static enum AudioProgram {
 		PLAY_SPOTIFY( "Spotify (ext)", "/Local/scripts/stop_all.sh" ),
 		CHANNEL_A( "Channel A", "/Local/scripts/stop_all.sh" ),
-		PLAY_LOVELINE( "Classic Loveline", "/Local/scripts/play_vlc.sh" ),
+		PLAY_VLC( "Queued VLC", "/Local/scripts/play_vlc.sh" ),
 		PLAY_TWIT( "TWiT (Twitch)", "/Local/scripts/play_twit.sh" ),
 		PLAY_WTOP( "WTOP stream", "/Local/scripts/play_wtop.sh" ),
 		PLAY_NPR( "NPR stream", "/Local/scripts/play_npr.sh" ),

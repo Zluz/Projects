@@ -3,6 +3,7 @@ package jmr.pr122;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -12,6 +13,7 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import com.google.gson.JsonObject;
@@ -22,6 +24,12 @@ import jmr.util.SUProperty;
 import jmr.util.SystemUtil;
 import jmr.util.http.ContentRetriever;
 
+
+/**
+ * Basic communication and simple local storage using Google App Engine.
+ * <br><br>
+ * This is not using advanced messaging or persistent storage.
+ */
 public class CommGAE {
 
 	final String strGAEUrl;
@@ -59,7 +67,7 @@ public class CommGAE {
 	public void store(	final DocKey key,
 						final String strIndex,
 //						final Class<?> classData,
-						final EnumMap<DocMetadataKey,String> map,
+						final Map<DocMetadataKey,String> map,
 //						final ContentType type,
 						final byte[] data ) {
 		if ( null==this.strGAEUrl ) return;
@@ -98,7 +106,10 @@ public class CommGAE {
 			
 		} catch ( final UnsupportedEncodingException e ) {
 			throw new IllegalStateException( e );
-			
+
+		} catch ( final FileNotFoundException e ) {
+			System.out.println( e.toString() + " encountered. "
+					+ "Service may not be running or may not be accepting input." );
 		} catch ( final Exception e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -163,7 +174,14 @@ public class CommGAE {
 			mapMetadata.put( DocMetadataKey.FILE_DATE, time.toString() );
 
 			//			store( strName, null, type, data );
-			store( key, strIndex, mapMetadata, data );
+			try {
+				store( key, strIndex, mapMetadata, data );
+			} catch ( final Exception e ) {
+				// FileNotFoundException
+				// service may not be accepting (because its not config'd) (?)
+				// just ignore for now ..
+				//TODO investigate, confirm, disable?
+			}
 			
 		} catch ( final IOException e ) {
 			e.printStackTrace();

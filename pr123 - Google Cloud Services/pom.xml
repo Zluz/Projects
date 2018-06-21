@@ -106,9 +106,17 @@
       <artifactId>guava</artifactId>  <!-- https://github.com/google/guava/wiki -->
       <version>23.0</version>
     </dependency>
-		 
-		 
-		 
+
+
+
+<!-- 
+	<!-x- https://cloud.google.com/pubsub/docs/reference/libraries  -x-> 
+	<dependency>
+		<groupId>com.google.cloud</groupId>
+		<artifactId>google-cloud-pubsub</artifactId>
+		<version>1.31.0</version>
+	</dependency>	 
+ -->
 		 
 		 
 		 

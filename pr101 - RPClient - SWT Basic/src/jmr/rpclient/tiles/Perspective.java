@@ -211,7 +211,7 @@ public enum Perspective {
 
 	private void build_CameraRemote() {
 		list.add( new TileGeometry( 
-						new CameraTile( CameraTile.CameraLocation.DRIVEWAY ), 
+						new CameraTile( CameraTile.CameraLocation.ALL_CAPTURES ), 
 						new Rectangle( 0, 0, 5, 3 ) ) ); 
 	}
 	
