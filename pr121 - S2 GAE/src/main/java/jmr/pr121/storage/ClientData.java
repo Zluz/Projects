@@ -94,6 +94,11 @@ public class ClientData {
 	}
 	
 	
+	public void clearClientInfo() {
+		this.setInfo.clear();
+	}
+	
+	
 	public String getUserAgent() {
 		return this.strUserAgent;
 	}

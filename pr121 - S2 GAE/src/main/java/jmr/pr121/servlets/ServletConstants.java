@@ -143,14 +143,15 @@ public interface ServletConstants {
 			"    .nav-selected { \n" + 
 //			"        font-family: fontNormal;\n" + 
 			"        font-family: fontHeavy;\n" + 
-			"        font-weight: bold;\n" + 
+//			"        font-weight: bold;\n" + 
+			"        font-weight: normal;\n" + 
 			"        font-size: 26px;\n" + 
 //			"        padding: 22;\n" + 
 			"        color: #000000;\n" + 
 			"        height: 90px;\n" +
-			"        letter-spacing: 0.7px;\n" +
+			"        letter-spacing: 1px;\n" +
 			"        padding-right: 22px;\n" +
-			"        text-shadow: 2px 2px 2px #E0E0E0;\n" +
+//			"        text-shadow: 2px 2px 9px #E0E0E0;\n" +
 			"    }\n" +
 			// see   https://www.w3schools.com/Css/css3_images.asp
 			"    .div-thumbnail { \n" +
@@ -282,11 +283,14 @@ public interface ServletConstants {
 	
     		// Custom scrollbars
     		// http://manos.malihu.gr/repository/custom-scrollbar/demo/examples/complete_examples.html
-    		"<script src=\"http://manos.malihu.gr/repository/custom-scrollbar/demo/jquery.mCustomScrollbar.concat.min.js\"></script>\n" +
+//    		"<script src=\"http://manos.malihu.gr/repository/custom-scrollbar/demo/jquery.mCustomScrollbar.concat.min.js\"></script>\n" +
 
     		// this JS
     		"<script src=\"/js/all.js\"></script>\n" + 
-    		
+
+    		// screenshot capture
+    		"<script src=\"/js/html2canvas.js\"></script>\n" + 
+
     		"";
 
     final public static String _removed_strJS = 

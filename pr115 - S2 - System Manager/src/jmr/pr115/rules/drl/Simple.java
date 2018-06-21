@@ -37,7 +37,9 @@ import jmr.util.TimeUtil;
 import jmr.util.http.ContentType;
 import jmr.util.transform.JsonUtils;
 
-public class Simple {
+public class Simple implements RulesConstants {
+	
+	
 	
 	static {
 		TimeUtil.isHourOfDay(); // just to get the import
@@ -180,12 +182,14 @@ public class Simple {
 				CloudUtilities.saveJson( "TESLA_Combined.txt", 
 							strbuf.toString(), ContentType.TEXT_PLAIN, null );
 
-				final CommGAE comm = new CommGAE();
-				try {
-					comm.store( DocKey.TESLA_COMBINED, strPrettyCombined );
-				} catch ( final Exception e ) {
-					//TODO look into later..
-					e.printStackTrace();
+				if ( STORE_TO_LOCAL_APP_ENGINE ) {
+					final CommGAE comm = new CommGAE();
+					try {
+						comm.store( DocKey.TESLA_COMBINED, strPrettyCombined );
+					} catch ( final Exception e ) {
+						//TODO look into later..
+						e.printStackTrace();
+					}
 				}
 			}
 			
@@ -270,6 +274,7 @@ public class Simple {
 						FileSession.ImageLookupOptions.ONLY_THUMB,
 						FileSession.ImageLookupOptions.SINCE_PAST_HOUR };
 		sendDeviceFiles( false, true, false, options );
+		sendDeviceFiles( true, false, false, options );
 	}
 
 	public static void sendDeviceFiles(	
@@ -313,52 +318,22 @@ public class Simple {
 							listFiles.add( file );
 							bCurrent = true;
 							
-	//						final String strName = "SCREENSHOT_" + strKey;
-	//						comm.store( fileScreenshot, strName, 
-	//												ContentType.IMAGE_PNG );
-							comm.store( DocKey.DEVICE_SCREENSHOT, 
-											strKey + "/" + file.getName(), 
-											file, mapMetadata );
+							if ( STORE_TO_LOCAL_APP_ENGINE) {
+								comm.store( DocKey.DEVICE_SCREENSHOT, 
+												strKey + "/" + file.getName(), 
+												file, mapMetadata );
+							}
 							
 							final String strGCSName = 
 									"SCREENSHOT_" + strKey + "_" + file.getName();
 							CloudUtilities.saveImage( strGCSName, file, 
 									ContentType.IMAGE_PNG, mapMetadata );
-
-	//						// special case (garage entrance)
-	////						if ( "B8-27-EB-13-8B-C0".equals( strKey ) ) {
-	//							final Path path = Paths.get( fileScreenshot.toURI() );
-	//							
-	//							try {
-	//								final byte[] data = Files.readAllBytes( path );
-	//								comm.store( "SCREENSHOT_" + strKey, 
-	//										null, ContentType.IMAGE_PNG, data );
-	//								comm.store( fileScreenshot, ContentType.IMAGE_PNG );
-	//								
-	//							} catch ( final IOException e ) {
-	//								// TODO Auto-generated catch block
-	//								e.printStackTrace();
-	//							}
-	////						}
-							
 						}
 					}
 				}
 			}
 
 			if ( bCaptureStill ) {
-				
-//				final File fileCaptureStill = session.getCaptureStillImageFile();
-//				if ( null!=fileCaptureStill && fileCaptureStill.isFile() ) {
-//					if ( fileCaptureStill.lastModified() > lCutoff ) {
-//						listFiles.add( fileCaptureStill );
-//						bCurrent = true;
-//						
-////						final String strName = "STILL_" + strKey;
-//						comm.store( DocKey.DEVICE_STILL_CAPTURE, strKey, 
-//										fileCaptureStill, mapMetadata );
-//					}
-//				}
 				
 				final List<File> files = 
 								session.getCaptureStillImageFiles( options );
@@ -374,11 +349,12 @@ public class Simple {
 							mapMetadata.put( DocMetadataKey.SENSOR_DESC, 
 									null!=strDescription ? strDescription : "" );
 							
-	//						final String strName = "STILL_" + strKey;
-							final String strCommName = 
-										strKey + "/" + file.getName();
-							comm.store( DocKey.DEVICE_STILL_CAPTURE, 
-										strCommName, file, mapMetadata );
+							if ( STORE_TO_LOCAL_APP_ENGINE) {
+								final String strCommName = 
+											strKey + "/" + file.getName();
+								comm.store( DocKey.DEVICE_STILL_CAPTURE, 
+											strCommName, file, mapMetadata );
+							}
 							
 							final String strGCSName = 
 									"CAPTURE_" + strKey + "_" + file.getName();
@@ -387,7 +363,6 @@ public class Simple {
 						}
 					}
 				}
-				
 				
 			}
 

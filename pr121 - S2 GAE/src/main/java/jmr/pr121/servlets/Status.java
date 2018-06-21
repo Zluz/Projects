@@ -155,7 +155,11 @@ public class Status extends HttpServlet {
 
 				writer.print("\t\tUser-Agent: " + client.getUserAgent() + "\r\n" );
 //				writer.print("\t\tClient info: " + client.getClientInfo() + "\r\n" );
+				
 				final List<String> listInfo = client.getClientInfo();
+				if ( listInfo.size() > 4 ) {
+					client.clearClientInfo();
+				}
 				writer.print("\t\tClient info: " + listInfo.size() + " items\r\n" );
 				for ( final String strInfo : listInfo ) {
 					writer.print("\t\t\t" + strInfo + "\r\n" );

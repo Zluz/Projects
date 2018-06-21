@@ -18,7 +18,14 @@ public enum ContentType {
     
     APP_JSON( "application/json" ),
     JSON_TEXT( "application/json" ),
-	;
+    XML( "application/xml" ),
+
+    JAVASCRIPT( "application/javascript" ),
+
+    BINARY( "application/octet-stream" ),
+    ZIP( "application/zip" ),
+    X7Z( "application/x-7z-compressed" ),
+    ;
 	
 	private final String strMimeType;
 	

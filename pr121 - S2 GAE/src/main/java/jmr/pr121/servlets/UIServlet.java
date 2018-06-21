@@ -21,10 +21,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.geronimo.mail.util.Base64;
+
 import com.google.appengine.api.utils.SystemProperty;
 
 import jmr.pr121.config.Configuration;
 import jmr.pr121.storage.ClientData;
+import jmr.pr121.storage.GCSHelper;
+import jmr.pr123.storage.GCSFactory;
+import jmr.pr123.storage.GCSFileWriter;
+import jmr.util.http.ContentType;
 
 //import com.google.apphosting.runtime.jetty9.AppEngineAuthentication;
 
@@ -317,12 +324,56 @@ public class UIServlet extends HttpServlet {
 				        
 				        final String strConfig = UTF_8.decode( bb ).toString();
 				        
-				        Configuration.get().put( strName, strConfig );
-						
-						Log.add( "Storing data (" + data.length + " bytes)." );
+						final String strType = req.getParameter( "type" );
+						final ContentType type = ContentType.getContentType( strType );
+						if ( null!=type ) {
+							Log.add( "Saving to GCS: " + strName );
+							
+							//TODO assume base-64 encoded ..
+							//     in the future the request should specify.
+//							final String strDataEnc = new String( data );
+//							final String strDataTrunc = 
+//									strDataEnc.substring( strDataEnc.indexOf( ',' ) + 1 );
+
+//							final byte[] arrDecoded = Base64.decode( strDataTrunc.getBytes() );
+
+							int i=0;
+							while ( i<data.length && data[i]!=',' ) {
+								i++;
+							}
+							
+							final int iOffs = i;
+							final byte[] arrTrunc = new byte[ data.length - i ];
+//							System.arraycopy( data, i+1, arrTrunc, 0, 
+//													arrTrunc.length - i );
+							for ( i=0; i<data.length - iOffs; i++ ) {
+								arrTrunc[ i ] = data[ i+iOffs ];
+							}
+
+							final byte[] arrDecoded = Base64.decode( arrTrunc );
+
+							final GCSFactory factory = GCSHelper.GCS_FACTORY;
+							final GCSFileWriter file = factory.create( strName, type );
+							file.upload( arrDecoded );
+
+							Log.add( "Saved PNG to GCS (" + arrDecoded.length + " bytes)." );
+
+							final String strFileRaw = strName + ".raw";
+							final GCSFileWriter fileRaw = factory.create( 
+										strFileRaw, ContentType.BINARY );
+							fileRaw.upload( data );
+							
+							Log.add( "Saved RAW to GCS (" + data.length + " bytes)." );
+						}
+				        
+						if ( data.length < 1024 * 2 ) {
+							Configuration.get().put( strName, strConfig );
+							Log.add( "Saved to config (" + data.length + " bytes)." );
+						}
 				        
 				    } catch ( final Exception e ) {
 						Log.add( "Failed to retrieve POST data." );
+						Log.add( ExceptionUtils.getStackTrace( e ));
 				    }
 				    
 				    
@@ -336,7 +387,7 @@ public class UIServlet extends HttpServlet {
 			writer.print("\r\nError: " + e.toString() + "\r\n");
 		}
 
-
+		writer.close();
 	}
 	
 	

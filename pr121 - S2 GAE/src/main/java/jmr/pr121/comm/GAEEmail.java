@@ -1,4 +1,4 @@
-package jmr.p121.comm;
+package jmr.pr121.comm;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Properties;

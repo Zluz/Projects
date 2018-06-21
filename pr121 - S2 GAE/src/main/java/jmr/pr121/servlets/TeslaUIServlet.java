@@ -106,24 +106,25 @@ public class TeslaUIServlet extends HttpServlet implements IPage {
 		    writer.print( "<frameset" + strFramesetOpts + "id='frameTop' name='frameTop' "
 		    		+ " rows='20px,*,46px'>\n" );
 		    
-		    writer.print( "  <frame" + strFrameOpts + "src='" + strURLHeader + "'/>\n" );
+		    writer.print( "  <frame id='frameHeader'" + strFrameOpts + "src='" + strURLHeader + "'/>\n" );
 		    
 		    if ( DisplayMode.NORMAL.equals( mode ) ) {
 		    
 			    writer.print( "  <frameset" + strFramesetOpts + "id='frameMiddle' name='frameMiddle' "
 			    		+ "cols='" + TeslaPage.NAV_WIDTH + "px,1,*,30px'>\n" );
 			    
-			    writer.print( "    <frame" + strFrameOpts + "src='" + strURLNav + "'/>\n" );
-			    writer.print( "    <frame" + strFrameOpts + "src='" + strURLLMargin + "'/>\n" );
-			    writer.print( "    <frame" + strFrameOptResize + "id='frameBody' "
+			    writer.print( "    <frame id='frameNav'" + strFrameOpts + "src='" + strURLNav + "'/>\n" );
+			    writer.print( "    <frame id='frameMargin'" + strFrameOpts + "src='" + strURLLMargin + "'/>\n" );
+			    writer.print( "    <frame id='frameBody'" + strFrameOptResize
 			    		+ "name='frameBody' src='" + strURLBody + "'/>\n" );
-			    writer.print( "    <frame" + strFrameOpts + "src='" + strURLRight + "'/>\n" );
+			    writer.print( "    <frame id='frameRight'" + strFrameOpts + "src='" + strURLRight + "'/>\n" );
 			    writer.print( "  </frameset>\n" );
 		    } else {
-			    writer.print( "    <frame" + strFrameOptResize + "id='frameBody' "
+			    writer.print( "    <frame id='frameBody'" + strFrameOptResize + "id='frameBody' "
 			    		+ "name='frameBody' src='" + strURLBodyImage + "'/>\n" );
 		    }
-		    writer.print( "  <frame" + strFrameOpts + "src='" + strURLFooter + "'/>\n" );
+		    writer.print( "  <frame id='frameFooter' name='frameFooter'" 
+		    			+ strFrameOpts + "src='" + strURLFooter + "'/>\n" );
 		    writer.print( "</frameset>\n" );
 	
 		    
@@ -173,7 +174,7 @@ public class TeslaUIServlet extends HttpServlet implements IPage {
 				    writer.println( "<script>\n"
 				    		+ "function selectNav( sender ) {\n"
 				    		+ "    const listNav = document.getElementsByClassName( 'nav-selected' );\n"
-				    		+ "    const listFrames = parent.frames;\n"
+//				    		+ "    const listFrames = parent.frames;\n"
 				    		+ "    var i;\n"
 				    		+ "    for ( i=0; i<listNav.length; i++ ) {\n"
 				    		+ "        listNav[i].classList.add('nav');\n"
@@ -181,14 +182,20 @@ public class TeslaUIServlet extends HttpServlet implements IPage {
 				    		+ "    }\n"
 				    		+ "    sender.classList.toggle('nav-selected');\n"
 				    		
-				    		+ "    for ( i=0; i<listFrames.length; i++ ) {\n"
-				    		+ "        const frame = listFrames[i];\n"
-				    		+ "        if ( frame.id=='frameBody' \n"
-				    		+ "                || frame.name=='frameBody' ) {\n"
+//				    		+ "    for ( i=0; i<listFrames.length; i++ ) {\n"
+//				    		+ "        const frame = listFrames[i];\n"
+//				    		+ "        if ( frame.id=='frameBody' \n"
+//				    		+ "                || frame.name=='frameBody' ) {\n"
+//							+ "            const strNewLocation = '" + strURLBody + "&PAGE=' + sender.id;\n"
+//							+ "            frame.location = strNewLocation;\n"
+//							+ "            return;\n"
+//				    		+ "        }\n"
+//				    		+ "    }\n"
+				    		+ "    const frameBody = getFrame('frameBody');\n"
+				    		+ "    if ( null!=frameBody ) {\n"
 							+ "            const strNewLocation = '" + strURLBody + "&PAGE=' + sender.id;\n"
-							+ "            frame.location = strNewLocation;\n"
+							+ "            frameBody.location = strNewLocation;\n"
 							+ "            return;\n"
-				    		+ "        }\n"
 				    		+ "    }\n"
 				    		+ "    alert('Body frame not found');\n"
 				    		+ "}\n"
@@ -233,6 +240,7 @@ public class TeslaUIServlet extends HttpServlet implements IPage {
 			    	final String strImgSquare = strURLBase + "/icons/iconmonstr-square-4.svg";
 			    	final String strImgSun    = strURLBase + "/icons/iconmonstr-weather-2.svg";
 			    	final String strImgMoon   = strURLBase + "/icons/iconmonstr-weather-115.svg";
+			    	final String strImgCamera = strURLBase + "/icons/iconmonstr-photo-camera-5.svg";
 			    	
 			    	writer.println( "<table width='100%'><tr>" );
 //			    	writer.println( "<td width='40px' align='right'>" );
@@ -241,6 +249,11 @@ public class TeslaUIServlet extends HttpServlet implements IPage {
 			    	writer.println( "<img class='img-icon' opacity='0.1' src='" + strImgSquare + "'>" );
 			    	writer.println( "</td><td width='40px' align='center'>" );
 //			    	writer.println( "<img align='right' width='30px' height='30px' src='" + strImgGear + "'>" );
+			    	
+			    	writer.println( "<img class='img-icon' "
+			    			+ "src='" + strImgCamera + "' onclick='doTakeScreenshot()'>" );
+			    	writer.println( "</td><td width='40px' align='center'>" );
+			    	
 			    	writer.println( "<img class='img-icon' src='" + strImgGear + "'>" );
 //			    	writer.println( "</td><td width='40px' align='center'>" );
 //			    	writer.println( "<img align='right' width='30px' height='30px' src='" + strImgWindow + "'>" );
@@ -263,8 +276,12 @@ public class TeslaUIServlet extends HttpServlet implements IPage {
 			    	writer.println( "</td>" );
 			    	
 
-			    	writer.println( "<td class='info' id='client_info' width='400px' align='right'>(right-1) Resolution: 1234x567<br>Connection: Good</td>" );
-			    	writer.println( "<td width='60px'></td>" );
+			    	writer.println( "<td class='info' id='client_info' width='400px' align='right'>" );
+
+			    	writer.println( "<div id='info-resolution'>Resolution: 1234x567</div>" );
+			    	writer.println( "<div id='info-active'>Client is Active</div>" );
+
+			    	writer.println( "</td><td width='60px'></td>" );
 			    	writer.println( "</tr></table>" );
 			    	break;
 			    }

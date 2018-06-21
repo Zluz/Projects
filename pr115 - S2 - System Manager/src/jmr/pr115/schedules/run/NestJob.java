@@ -13,6 +13,7 @@ import jmr.pr114.s2.ingest.NestIngestManager;
 import jmr.pr115.actions.ReportNestLowHumidity;
 import jmr.pr115.actions.ReportNestLowTemperature;
 import jmr.pr115.rules.drl.CloudUtilities;
+import jmr.pr115.rules.drl.RulesConstants;
 import jmr.pr122.CommGAE;
 import jmr.pr122.DocKey;
 import jmr.s2db.Client;
@@ -144,10 +145,7 @@ public class NestJob extends JobWorker {
 			System.out.println( "Processing Nest response "
 					+ "(" + status.getMap().size() + " entries)" );
 			final boolean bResult = process( lNow, status );
-
 			
-			
-			final CommGAE comm = new CommGAE();
 			
 			final String strDeviceDetail = 
 						JsonUtils.getPretty( status.getDeviceDetailJSON() );
@@ -159,12 +157,16 @@ public class NestJob extends JobWorker {
 			CloudUtilities.saveJson( "NEST_DEVICE_DETAIL.json", 
 					strSharedDetail, ContentType.APP_JSON, null );
 
-			try {
-				comm.store( DocKey.NEST_SHARED_DETAIL, strDeviceDetail );
-				comm.store( DocKey.NEST_DEVICE_DETAIL, strSharedDetail );
-			} catch ( final Exception e ) {
-				//TODO look into this ...
-				e.printStackTrace();
+			if ( RulesConstants.STORE_TO_LOCAL_APP_ENGINE ) {
+				try {
+					final CommGAE comm = new CommGAE();
+					
+					comm.store( DocKey.NEST_SHARED_DETAIL, strDeviceDetail );
+					comm.store( DocKey.NEST_DEVICE_DETAIL, strSharedDetail );
+				} catch ( final Exception e ) {
+					//TODO look into this ...
+					e.printStackTrace();
+				}
 			}
 
 			return bResult;
