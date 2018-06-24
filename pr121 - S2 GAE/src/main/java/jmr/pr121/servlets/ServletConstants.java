@@ -154,8 +154,15 @@ public interface ServletConstants {
 //			"        text-shadow: 2px 2px 9px #E0E0E0;\n" +
 			"    }\n" +
 			// see   https://www.w3schools.com/Css/css3_images.asp
-			"    .div-thumbnail { \n" +
+			"    .div-thumbnail-3 { \n" +
 			"        width: 275px;\n" +
+//			"        max-width: 275px;\n" + 
+			"        background-color: " +  COLOR_THUMBNAIL_BACK + ";\n" + 
+			"        box-shadow: 10px 10px 30px rgba( 0, 0, 0, 0.4 ), " +
+								"0px 0px 8px rgba( 0, 0, 0, 0.7 );\n" + 
+			"    }\n" +
+			"    .div-thumbnail-4 { \n" +
+			"        width: 200px;\n" +
 //			"        max-width: 275px;\n" + 
 			"        background-color: " +  COLOR_THUMBNAIL_BACK + ";\n" + 
 			"        box-shadow: 10px 10px 30px rgba( 0, 0, 0, 0.4 ), " +

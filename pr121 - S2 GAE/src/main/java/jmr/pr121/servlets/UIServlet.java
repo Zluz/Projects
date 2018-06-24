@@ -328,6 +328,7 @@ public class UIServlet extends HttpServlet {
 						final ContentType type = ContentType.getContentType( strType );
 						if ( null!=type ) {
 							Log.add( "Saving to GCS: " + strName );
+							final String strFilename = "web-upload/" + strName;
 							
 							//TODO assume base-64 encoded ..
 							//     in the future the request should specify.
@@ -353,12 +354,13 @@ public class UIServlet extends HttpServlet {
 							final byte[] arrDecoded = Base64.decode( arrTrunc );
 
 							final GCSFactory factory = GCSHelper.GCS_FACTORY;
-							final GCSFileWriter file = factory.create( strName, type );
+							final String strFileDecoded = strFilename.replace( "-b64", "" );
+							final GCSFileWriter file = factory.create( strFileDecoded, type );
 							file.upload( arrDecoded );
 
 							Log.add( "Saved PNG to GCS (" + arrDecoded.length + " bytes)." );
 
-							final String strFileRaw = strName + ".raw";
+							final String strFileRaw = strFilename + ".raw";
 							final GCSFileWriter fileRaw = factory.create( 
 										strFileRaw, ContentType.BINARY );
 							fileRaw.upload( data );

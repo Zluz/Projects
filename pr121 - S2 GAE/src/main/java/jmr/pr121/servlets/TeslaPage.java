@@ -143,7 +143,11 @@ public class TeslaPage {
 	    final List<String> listOrdered = new LinkedList<>( listing.keySet() );
 	    Collections.sort( listOrdered );
 	    
-	    int iCount = 0;
+	    int iRow = 1;
+	    int iCol = 0;
+	    int iColsPerRow = 3;
+	    
+	    int iPrefixLen = "B8-27-EB-".length();
 	    
 //	    writer.println( "<table width='100%'><tr>" );
 	    
@@ -154,19 +158,27 @@ public class TeslaPage {
 	    		+ "</script>\n" );
 	    		
 	    
+	    
 	    writer.println( "<table width='" + BODY_WIDTH + "px'>" );
-	    writer.println( "<tr><td height='30px'></td></tr>\n<tr>" );
+	    writer.println( "<tr><td height='14px'></td></tr>\n<tr>" );
 
 		for ( final String key : listOrdered ) { 
 			
 			if ( key.contains( "thumb" ) && key.contains( strFilter ) ) {
-				iCount++;
+				iCol++;
 				
-				if ( iCount > 3 ) {
+				if ( iCol > iColsPerRow ) {
 				    writer.println( "</tr>" );
+				    iRow++;
+				    iCol = 1;
+				    if ( 2==iRow ) {
+				    	iColsPerRow = 4;
+				    	
+					    writer.println( "</table>" );
+					    writer.println( "<table width='" + BODY_WIDTH + "px'>" );
+				    }
 				    writer.println( "<tr><td height='28px'></td></tr>" );
 				    writer.println( "<tr>" );
-				    iCount = 1;
 				}
 				
 				writer.print( "<td align='center'>" );
@@ -187,9 +199,10 @@ public class TeslaPage {
 				strCaption = strCaption.replace( "_capture_", "/" );
 				strCaption = strCaption.replace( "SCREENSHOT_", "" );
 				strCaption = strCaption.replace( "_screenshot.png", "" );
+				strCaption = "x-" + strCaption.substring( iPrefixLen );
 
 //				writer.println( "<div class='div-thumbnail' style='max-width:320px;'>" );
-				writer.print( "<div class='div-thumbnail'>" );
+				writer.print( "<div class='div-thumbnail-" + iColsPerRow + "'>" );
 //				writer.println( "<a href='" + strFullURL + "'>" );
 				writer.print( "<img class='image-thumbnail' "
 							+ "src='" + strThumbURL + "' "
