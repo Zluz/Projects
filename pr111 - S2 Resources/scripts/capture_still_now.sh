@@ -1,8 +1,8 @@
 #!/bin/bash
 # see: https://www.raspberrypi.org/documentation/usage/camera/raspicam/raspistill.md
 
-vid_detected=$(/bin/ls -l /dev/video* | wc -l)
-cam_detected=$(vcgencmd get_camera | grep "detected=1" | wc -l)
+vid_detected=$( /bin/ls -l /dev/video* 2> /dev/null | wc -l )
+cam_detected=$( vcgencmd get_camera | grep "detected=1" | wc -l )
 
 if [[ "$vid_detected" == "0" && "$cam_detected" == "0" ]]
 then
@@ -26,7 +26,7 @@ then
 	echo "RPi camera: $(vcgencmd get_camera)" > /tmp/session/capture_list.txt
 	echo "" >> /tmp/session/capture_list.txt
 	echo "ls /dev/v4l/by-id/ -lh" >> /tmp/session/capture_list.txt
-	ls /dev/v4l/by-id/ -lh | grep video >> /tmp/session/capture_list.txt
+	ls /dev/v4l/by-id/ -lh 2> /dev/null | grep video >> /tmp/session/capture_list.txt
 fi
 
 
