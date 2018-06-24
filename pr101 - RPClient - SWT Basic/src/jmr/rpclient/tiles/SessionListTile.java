@@ -353,7 +353,9 @@ public class SessionListTile extends TileBase {
 				}
 				
 //				final String strIP = SessionMap.getIP( map );
-				final String strIP = map.get( Field.IP.name() ).getAsString();
+				final Element element = map.get( Field.IP.name() );
+				final String strIP = null!=element 
+						? element.getAsString() : "<null>";
 				gc.setFont( Theme.get().getFont( 12 ) );
 				util.drawTextJustified( strIP, rect );
 				rect.y = rect.y + 18;

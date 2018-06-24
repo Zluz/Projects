@@ -182,7 +182,7 @@ public class CameraTile extends TileBase {
 		gc.setForeground( UI.COLOR_WHITE );
 		
 		
-		int iX = 30;
+		int iX = 20;
 		int iY = 60;
 		int iCount = 0;
 		
@@ -209,7 +209,7 @@ public class CameraTile extends TileBase {
 							int iRY = imgRaw.getBounds().height;
 							
 							final Rectangle r = new Rectangle( 
-										iX, iY, iRX * 200/300, iRY * 200/300 );
+										iX, iY, iRX * 165/300, iRY * 165/300 );
 							
 							gc.drawImage( imgRaw, 0, 0, iRX, iRY, 
 									r.x, r.y, r.width, r.height );
@@ -219,17 +219,26 @@ public class CameraTile extends TileBase {
 							
 						} catch ( final Exception e ) {
 							gc.drawText( e.toString(), iX, iY );
+							e.printStackTrace();
 						}
 						iCount++;
 
-						gc.drawText( strKey, iX, iY - 52 );
+						final String strDisplayKey = "x-" + strKey.substring( 9 );
+						
+						gc.drawText( strDisplayKey, iX, iY - 52 );
 						gc.drawText( strFull, iX, iY - 30 );
 
-						iY = iY + 220;
-						if ( iY+100 > ptDesiredImageSize.y ) {
-							iY = 60;
-							iX = iX + 240;
+						iX = iX + 185;
+						if ( iX + 100 > gc.getClipping().width ) {
+							iX = 20;
+							iY = iY + 200;
 						}
+						
+//						iY = iY + 220;
+//						if ( iY+100 > ptDesiredImageSize.y ) {
+//							iY = 60;
+//							iX = iX + 240;
+//						}
 					}
 				}
 			}
