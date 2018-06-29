@@ -19,6 +19,7 @@ public enum ParameterName {
 	PAGE, // Tesla UI page
 	FULL_IMAGE, // Tesla UI view fullscreen image (may be large)
 	FAST_IMAGE, // used for fullscreen image, should load fast/first
+	IMAGE_TIME, // age of thumbnail (ms past epoch) (may be full image)
 	
 	;
 	

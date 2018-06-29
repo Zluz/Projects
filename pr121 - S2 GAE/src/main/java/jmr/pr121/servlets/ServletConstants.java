@@ -8,10 +8,10 @@ public interface ServletConstants {
 
 	public static final JsonParser JSON_PARSER = new JsonParser();
 	
-	public final static String COLOR_CONTENT_BACK = "#F2F2F2";
-	public final static String COLOR_FONT_DARK = "#606060";
-	public final static String COLOR_FONT_MED = "#808080";
-	public final static String COLOR_THUMBNAIL_BACK = "#D0D0D0";
+	public static final String COLOR_CONTENT_BACK = "#F2F2F2";
+	public static final String COLOR_FONT_DARK = "#606060";
+	public static final String COLOR_FONT_MED = "#808080";
+	public static final String COLOR_THUMBNAIL_BACK = "#D0D0D0";
 
 	/*
 	 * Tesla browser characteristics:
@@ -28,8 +28,14 @@ public interface ServletConstants {
 			screen:1080x1920
 
 	 */
-	
-	final public static String strStyle = 
+
+	final public static String strStyle = ""
+			+ "<style>\n"
+			+ "    @import url('/js/all.css');\n"
+			+ "</style>\n"; 
+
+	/*
+	final public static String strStyle_ = 
 			"<style>\n" +
 			"    @font-face {\n" + 
 			"      font-family: fontNormal;\n" + 
@@ -88,7 +94,8 @@ public interface ServletConstants {
 			"    }\n" +
 			"    .text-title { \n" + 
 			"        font-family: fontHeavy;\n" + 
-			"        font-weight: bold;\n" + 
+//			"        font-weight: bold;\n" + 
+			"        font-weight: normal;\n" + 
 			"        font-size: 20px;\n" + 
 			"        color: " + COLOR_FONT_MED + ";\n" + 
 //			"        color: " + "#808080" + ";\n" + 
@@ -107,6 +114,7 @@ public interface ServletConstants {
 //			"        background-color: " +  COLOR_THUMBNAIL_BACK + ";\n" +
 			"        background: linear-gradient( " + COLOR_THUMBNAIL_BACK + ", #F0F0F0 );" +
 			"    }\n" +
+			
 			"    .table-nav { \n" + 
 //			"        border: 2px solid grey;\n" + 
 			"        width: " + ( TeslaPage.NAV_WIDTH + 1 ) + "px;\n" +
@@ -158,14 +166,14 @@ public interface ServletConstants {
 			"        width: 275px;\n" +
 //			"        max-width: 275px;\n" + 
 			"        background-color: " +  COLOR_THUMBNAIL_BACK + ";\n" + 
-			"        box-shadow: 10px 10px 30px rgba( 0, 0, 0, 0.4 ), " +
+			"        box-shadow: 10px 10px 25px rgba( 0, 0, 0, 0.4 ), " +
 								"0px 0px 8px rgba( 0, 0, 0, 0.7 );\n" + 
 			"    }\n" +
 			"    .div-thumbnail-4 { \n" +
 			"        width: 200px;\n" +
 //			"        max-width: 275px;\n" + 
 			"        background-color: " +  COLOR_THUMBNAIL_BACK + ";\n" + 
-			"        box-shadow: 10px 10px 30px rgba( 0, 0, 0, 0.4 ), " +
+			"        box-shadow: 10px 10px 20px rgba( 0, 0, 0, 0.4 ), " +
 								"0px 0px 8px rgba( 0, 0, 0, 0.7 );\n" + 
 			"    }\n" +
 			"    .image-thumbnail { \n" + 
@@ -229,8 +237,8 @@ public interface ServletConstants {
 			"}\r\n" + 
 			"table.blueTable tbody td {\r\n" + 
 			"  font-size: 20px;\n" + 
-			"        font-family: fontNormal;\n" + 
-			"        color: #606060;" +
+			"  font-family: fontNormal;\n" + 
+			"  color: #606060;" +
 			"}\n" + 
 			"table.blueTable tr:nth-child(even) {\r\n" + 
 			"  background: #EAEAEA;\r\n" + 
@@ -280,10 +288,47 @@ public interface ServletConstants {
 			"$(\"#content-4\").mCustomScrollbar({\n" + 
 			"    theme:\"rounded-dots\",\n" + 
 			"    scrollInertia:400\n" + 
-			"});" +
-			"" +
+			"});\n" +
+			"\n" +
+			
+			"table.tableRadio {\r\n" + 
+//			"  font-family: 'text-title';\n" +
+			
+//			"        font-family: fontHeavy;\n" + 
+//			"        font-weight: bold;\n" + 
+//			"        font-size: 30px;\n" + 
+			
+//			"  border: 2px solid #B0B0B0;\n" + 
+//			"  border: 1px solid #FDFDFD;\n" + 
+//			"    border-spacing: 0;\n" +
+//			"    margin: 0;\n" + 
+//			"    padding: 0;\n" + 
+//			"    border: 0;\n" +
+//			"  background-color: #FFFFFF;\n" + 
+//			"  width: 700px;\r\n" + 
+			"  text-align: center;\n" + 
+			"  border-collapse: collapse;\n" + 
+			"}\r\n" + 
+			
+			"table.tableRadio td, table.tableRadio th {\r\n" + 
+			"  padding: 16px 0px;\r\n" +
+			
+			"  width: 180px;\n" + 
+//			"  border-collapse: collapse;\n" + 
+			"  text-align: center;\n" + 
+			"  font-size: 18px;\n" + 
+//			"  font-family: fontHeavy;\n" + 
+			"  font-family: fontNormal;\n" + 
+			"  font-weight: bold;\n" + 
+//			"  font-weight: normal;\n" + 
+			"  letter-spacing: 1px;\n" +
+			"  background-color: #FFFFFF;\r\n" + 
+			"  color: #404040;\n" +
+			"}\n" +
+			"\n" +
+			
 			"</style>\n";
-	
+	*/
 	final public static String strLoadFromCDNs =
 			
     		"<script src=\"https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js\"></script>\n" +

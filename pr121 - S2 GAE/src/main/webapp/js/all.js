@@ -86,6 +86,42 @@ function getFrame( strFrameName ) {
     // alert( 'getFrame(): Frame not found: ' + strFrameName );
 }
 
+
+function doSelectOption( cell, bPost ) {
+	const row = cell.parentNode.children;
+	for ( var i=0; i<row.length; i++ ) {
+		row[i].style = "background-color: #FFFFFF; color: #404040; -webkit-border-radius: 0px;";
+	}
+							// was	 1470A8
+							//   	 1C78A0
+	cell.style = "background-color: #1C78A0; color: #FFFFFF; -webkit-border-radius: 6px;";
+	const table = cell.parentNode.parentNode.parentNode;
+	console.log( "table.id:" + table.id + " = " + cell.textContent );
+	if ( bPost ) {
+		$.get("/ui/input?CLIENT_INFO=OPTION/" + table.id + ":" + cell.textContent, 
+    					function(data, status){});
+	}
+}
+
+
+function doInitPage() {
+	console.log( '--> doInitPage()' );
+	
+	// activate options radio-table controls 
+	const elements = document.getElementsByClassName( 'init-option' );
+//	console.log( 'Initializing ' + elements.length + ' option(s).' );
+	for ( var i=0; i<elements.length; i++ ) {
+//		console.log( 'element ' + i + ' = ' + elements[i] );
+		doSelectOption( elements[i], false );
+	}
+	
+	// this tracks active/idle state
+	setupActivityMonitor();
+
+	console.log( '<-- doInitPage()' );
+}
+
+
 // there MUST be a simpler way to do this..
 function isCurrentFrame( strFrameName ) {
 	const frameTarget = getFrame( strFrameName );
@@ -158,11 +194,11 @@ function sendClientInfo() {
 // document.addEventListener( 'load', sendClientInfo );
 document.addEventListener( 'resize', sendClientInfo );
 window.addEventListener( 'load', sendClientInfo );
-// window.addEventListener( 'resize', sendClientInfo );
+window.addEventListener( 'resize', sendClientInfo );
 
 
 function doFullImageLoaded( image ) {
-    const iHeight = window.innerHeight - 50;
+    const iHeight = window.innerHeight - 80;
     const iWidth = window.innerWidth;
     const iMaxHeight = iWidth * 5/8;
     iFinalHeight = 0;
@@ -237,10 +273,78 @@ function doTakeScreenshot() {
 					+ ' in ' + canvasData.length + ' bytes.' );
 
 			
-			
-			
-			
 //			alert( 'done' );
 		}
 	});
 }
+
+
+
+
+/*----- monitor activity -----*/
+/*
+ * see https://www.kirupa.com/html5/detecting_if_the_user_is_idle_or_inactive.htm
+ */
+
+var timeoutID;
+var bIsActive = true;
+
+function setupActivityMonitor() {
+    this.addEventListener("mousemove", resetTimer, false);
+    this.addEventListener("mousedown", resetTimer, false);
+//    this.addEventListener("keypress", resetTimer, false);
+//    this.addEventListener("DOMMouseScroll", resetTimer, false);
+//    this.addEventListener("mousewheel", resetTimer, false);
+    this.addEventListener("touchmove", resetTimer, false);
+    this.addEventListener("MSPointerMove", resetTimer, false);
+ 
+    startTimer();
+}
+//setupActivityMonitor();
+ 
+function startTimer() {
+    // wait before calling goInactive
+	// original value: 2000 = 2s
+	// new value: 60000 = 60s
+//    timeoutID = window.setTimeout( goInactive, 60000 );
+    timeoutID = window.setTimeout( goInactive, 2000 );
+}
+ 
+function resetTimer(e) {
+    window.clearTimeout( timeoutID );
+ 
+    goActive();
+}
+ 
+function goInactive() {
+    // do something
+
+	bIsActive = false;
+
+    const frameFooter = getFrame( 'frameFooter' );
+    if ( null!=frameFooter ) {
+    	const e = frameFooter.document.getElementById('info-active');
+    	if ( null!=e ) {
+        	e.innerHTML = 'Client is IDLE';
+    	}
+	}
+}
+ 
+function goActive() {
+    // do something
+
+	bIsActive = true;
+	
+    const frameFooter = getFrame( 'frameFooter' );
+    if ( null!=frameFooter ) {
+    	const e = frameFooter.document.getElementById('info-active');
+    	if ( null!=e ) {
+    		e.innerHTML = 'Client is ACTIVE';
+    	}
+	}
+
+    startTimer();
+}
+
+
+

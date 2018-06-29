@@ -54,7 +54,7 @@ import jmr.util.http.ContentType;
 )
 public class UIServlet extends HttpServlet {
 
-	final static LocalDateTime ldtStart;
+	static final LocalDateTime ldtStart;
 	private Input pageInput;
 	private TeslaUIServlet pageTesla;
 	private GCSListingServlet pageGCS;

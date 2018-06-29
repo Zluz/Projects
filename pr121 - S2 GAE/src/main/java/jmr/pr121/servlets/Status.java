@@ -4,18 +4,22 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.ByteBuffer;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Vector;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -31,6 +35,8 @@ import com.google.appengine.api.utils.SystemProperty;
 
 import jmr.pr121.config.Configuration;
 import jmr.pr121.storage.ClientData;
+import jmr.pr121.storage.ClientData.Key;
+import jmr.pr122.DocMetadataKey;
 
 //import com.google.apphosting.runtime.jetty9.AppEngineAuthentication;
 
@@ -156,14 +162,24 @@ public class Status extends HttpServlet {
 				writer.print("\t\tUser-Agent: " + client.getUserAgent() + "\r\n" );
 //				writer.print("\t\tClient info: " + client.getClientInfo() + "\r\n" );
 				
-				final List<String> listInfo = client.getClientInfo();
+				
+				final Map<Key, String> mapInfo = client.getClientInfoMap();
+				writer.print("\t\tClient info map: " + mapInfo.size() + " items\r\n" );
+				for ( final Entry<Key, String> entryInfo : mapInfo.entrySet() ) {
+					final String strKey = entryInfo.getKey().getKey();
+					final String strValue = entryInfo.getValue();
+					writer.print("\t\t\t" + strKey + " = " + strValue + "\r\n" );
+				}
+				
+				final List<String> listInfo = client.getClientInfoList();
 				if ( listInfo.size() > 4 ) {
 					client.clearClientInfo();
 				}
-				writer.print("\t\tClient info: " + listInfo.size() + " items\r\n" );
+				writer.print("\t\tClient info list: " + listInfo.size() + " items\r\n" );
 				for ( final String strInfo : listInfo ) {
 					writer.print("\t\t\t" + strInfo + "\r\n" );
 				}
+				
 				
 			}
 
@@ -277,9 +293,19 @@ public class Status extends HttpServlet {
 			for ( final Entry<Object, Object> entry : properties.entrySet() ) {
 				writer.print( "\t\t" + entry.getKey() + " = " + entry.getValue() + "\r\n" ); 
 			}
-
-			writer.print( "\tLoaded JARs (discovered):\r\n" );
+			
 			final ClassLoader cl = Status.class.getClassLoader();
+
+			writer.print("\r\n");
+			writer.print( "\tAvailable Classes:\r\n" );
+			final List<String> listClasses = getAllClasses( cl );
+//			Collections.sort( listClasses );
+			for ( final String strClass : listClasses ) {
+				writer.print( "\t\t" + strClass + "\r\n" );
+			}
+			
+			writer.print("\r\n");
+			writer.print( "\tLoaded JARs (discovered):\r\n" );
 			if ( cl instanceof URLClassLoader ) {
 				final URL[] urls = ((URLClassLoader) cl).getURLs();
 				for ( final URL url : urls ) {
@@ -378,6 +404,29 @@ public class Status extends HttpServlet {
 		}
 
 
+	}
+	
+	
+	public static List<String> getAllClasses( final ClassLoader cl ) {
+
+		final List<String> list = new LinkedList<>();
+		try {
+			Class classCL = cl.getClass();
+			while ( classCL != java.lang.ClassLoader.class ) {
+				classCL = classCL.getSuperclass();
+			}
+			final Field fieldClasses = classCL.getDeclaredField( "classes" );
+			fieldClasses.setAccessible( true );
+			final Vector vClasses = (Vector) fieldClasses.get( cl );
+			for ( final Object item : vClasses ) {
+				list.add( item.toString() );
+			}
+		} catch ( final Throwable t ) {
+//			writer.print( "\tERROR: " + t.toString() + "\r\n" );
+			list.add( "*** ERROR: " + t.toString() );
+		}
+
+		return list;
 	}
 	
 	

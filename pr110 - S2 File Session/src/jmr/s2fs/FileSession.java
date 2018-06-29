@@ -45,6 +45,12 @@ public class FileSession {
 		SINCE_PAST_HOUR,
 		ONLY_FULL,
 		ONLY_THUMB,
+		/**
+		 * Files that existed previously in this instance.
+		 * This may happen if the image is in the process of being updated.
+		 * In this case a new File will be created based on the same name.
+		 */
+		INCLUDE_MISSING, 
 		;
 	}
 	
@@ -54,6 +60,9 @@ public class FileSession {
 	
 	private final EnumMap<SessionFile,String> 
 			mapFileContents = new EnumMap<>( SessionFile.class );
+
+	private final Set<String> setPastFiles = new HashSet<>();
+	
 	
 	private File fileImage;
 	private File fileThumb;
@@ -125,6 +134,13 @@ public class FileSession {
 	}
 
 	
+	public static boolean isThumbnail( final String strFilename ) {
+		if ( null==strFilename ) return false;
+		return ( strFilename.contains( "thumb." ) );
+	}
+	
+	
+	
 	public List<File> getCaptureStillImageFiles( 
 								final ImageLookupOptions... options ) {
 		final Set<ImageLookupOptions> setOptions = new HashSet<>();
@@ -191,6 +207,40 @@ public class FileSession {
 			}
 		}
 		
+//		if ( !setPastFiles.isEmpty() ) {
+//			System.out.println( "File list:" );
+//		}
+		
+		// add everything to setPastFiles
+		for ( final File file : list ) {
+			final String strFile = file.getName();
+//			System.out.println( "\t" + strFile );
+			setPastFiles.add( strFile );
+		}
+
+//		System.out.println( "Added (missing):" );
+
+		// if INCLUDE_MISSING then create the missing files (from setPastFiles)
+		if ( setOptions.contains( ImageLookupOptions.INCLUDE_MISSING ) ) {
+			for ( final String strSetFile : setPastFiles ) {
+				boolean bFound = false;
+				for ( final File file : list ) {
+					final String strListFile = file.getName();
+					if ( strSetFile.equals( strListFile ) ) {
+						bFound = true;
+					}
+				}
+				if ( !bFound ) {
+					if ( testAddFile( strSetFile, setOptions ) ) {
+//						System.out.println( "\tadding: " + strSetFile );
+						final File fileMissing = new File( strSetFile );
+						list.add( fileMissing );
+					}
+				}
+			}
+		}
+
+		
 //		final Comparator<File> comparator = new Comparator<File>() {
 //			@Override
 //			public int compare(	final File lhs, 
@@ -205,6 +255,30 @@ public class FileSession {
 		return list;
 	}
 
+	
+	private boolean testAddFile(	
+						final String strFilename,
+						final Set<ImageLookupOptions> setOptions  ) {
+		if ( null==strFilename ) return false;
+		if ( strFilename.isEmpty() ) return false;
+
+		final boolean bThumb = isThumbnail( strFilename );
+		
+		if ( setOptions.contains( ImageLookupOptions.ONLY_THUMB ) ) {
+			if ( bThumb ) {
+				return true;
+			}
+		} else if ( setOptions.contains( ImageLookupOptions.ONLY_FULL ) ) {
+			if ( !bThumb ) {
+				return true;
+			}
+		} else {
+			return true;
+		}
+
+		return false;
+	}
+	
 	
 	/**
 	 * Given a capture image file, collect and return information about

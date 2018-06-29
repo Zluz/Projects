@@ -54,6 +54,8 @@ public class TeslaUIServlet extends HttpServlet implements IPage {
 							? null : Frame.valueOf( strName );
 		
 		final String strFullImage = map.get( ParameterName.FULL_IMAGE );
+		final String strFastImage = map.get( ParameterName.FAST_IMAGE );
+		final String strImageTime = map.get( ParameterName.IMAGE_TIME );
 		final DisplayMode mode = StringUtils.isEmpty( strFullImage )
 							? DisplayMode.NORMAL : DisplayMode.FULL_IMAGE;
 
@@ -71,7 +73,10 @@ public class TeslaUIServlet extends HttpServlet implements IPage {
 		final String strURLBody   = strURLRequest + "?name=BODY";
 		final String strURLRight  = strURLRequest + "?name=RIGHT";
 		final String strURLBodyImage = strURLRequest 
-						+ "?name=BODY&full_image=" + strFullImage;
+					+ "?name=BODY"
+					+ "&" + ParameterName.IMAGE_TIME.name() + "=" + strImageTime 
+					+ "&" + ParameterName.FULL_IMAGE.name() + "=" + strFullImage 
+					+ "&" + ParameterName.FAST_IMAGE.name() + "=" + strFastImage; 
 	    
 //	    if ( StringUtils.isEmpty( strName ) ) {
 	    if ( null==frame ) {
@@ -159,9 +164,9 @@ public class TeslaUIServlet extends HttpServlet implements IPage {
 			
 			if ( DisplayMode.NORMAL.equals( mode ) ) {
 				final String strColor = frame.strColor;
-				writer.print( "<body style='background-color:" + strColor + ";'>\n" );
+				writer.print( "<body style='background-color:" + strColor + ";' onload='doInitPage();'>\n" );
 			} else {
-				writer.print( "<body height='100%'>\n" );
+				writer.print( "<body height='100%' onload='doInitPage();'>\n" );
 			}
 			
 		    
@@ -307,7 +312,8 @@ public class TeslaUIServlet extends HttpServlet implements IPage {
 			    	if ( StringUtils.isNotEmpty( strFullImage ) ) {
 			    		
 			    		final String strFull = 
-			    				strURLBase + "/ui/gcs?name=" + strFullImage;
+//			    				strURLBase + "/ui/gcs?name=" + strFullImage;
+	    						strURLBase + "/ui/gcs?name=" + strFastImage;
 			    		
 				    	writer.println( "<table width='100%' height='100%'>" );
 				    	writer.println( "<tr width='100%' height='100%'><td align='center'>" );
@@ -352,7 +358,7 @@ public class TeslaUIServlet extends HttpServlet implements IPage {
 				    		boolean bResult = false;
 				    		try {
 				    			bResult = TeslaPage.generatePageOutput( 
-				    							nav, writer, strURLBase );
+			    							nav, writer, client, strURLBase );
 				    		} catch ( final Exception e ) {
 				    			// ignore for now
 				    		}
