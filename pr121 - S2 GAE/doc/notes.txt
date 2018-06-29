@@ -5,14 +5,19 @@ design
     (1) user interface
     (2) s2/home comm
 
+bugs
+
+  body dimensions are client space. adjust to read window space (not device space)
+
 
 to do
 
-  add activity/idle detection. 
-      see: 
-          https://www.kirupa.com/html5/detecting_if_the_user_is_idle_or_inactive.htm
-          https://www.brcline.com/blog/detecting-inactivity-in-javascript
-          https://www.bedroomlan.org/coding/idle-timeouts-in-javascript
+  add file metadata:
+      time when the file is expected to be replaced
+
+  add ClientData.isTesla() .. maybe also add bIsTesla to the JavaScript
+      adjust image displays (do not squeeze images in if not on the Tesla browser)
+      JS activity monitoring can skip mouse move events if Tesla
 
   add full, current image display
       (refreshed on demand, somehow..)
