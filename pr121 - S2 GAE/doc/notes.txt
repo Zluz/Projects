@@ -16,7 +16,37 @@ to do
 
   add full, current image display
       (refreshed on demand, somehow..)
+      
+      
+  add links to resources
+      quotas
+      versions
+      this notes.txt page, to edit
+      cloud storage
+      app engine dashboard
+      internal: Status page
+      
+      maybe on the App Engine page, have a tabbed display, showing [ Statistics, Links ]
+      statistics:
+          app engine instance, version
+          instance age
+          quotas?
+          size?
+          (check Status page)
 
+  add configuration page
+      thumbnail/capture captions: [source/age/ip]
+      thumbnail/device captions: [mac/age/ip]
+      show advanced controls: [on/off]
+      color scheme: [day/night/auto]
+      
+      
+  add email support
+
+
+  add a new top-level page, listing all machines and status
+      for each:
+          MAC, IP, uptime, date of screenshot, OS version, hardware, location label
 
 
 
