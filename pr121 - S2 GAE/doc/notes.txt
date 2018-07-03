@@ -12,6 +12,9 @@ bugs
 
 to do
 
+  persist options
+      essentially, save userdata (per browser)
+
   add file metadata:
       time when the file is expected to be replaced
 
@@ -30,6 +33,7 @@ to do
       cloud storage
       app engine dashboard
       internal: Status page
+      internal: Log page
       
       maybe on the App Engine page, have a tabbed display, showing [ Statistics, Links ]
       statistics:
