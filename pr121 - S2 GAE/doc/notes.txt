@@ -14,6 +14,10 @@ to do
 
   persist options
       essentially, save userdata (per browser)
+      
+  add admin/control page:
+      * request warm-reboot of device
+      * hard power-cycle of remote device
 
   add file metadata:
       time when the file is expected to be replaced
