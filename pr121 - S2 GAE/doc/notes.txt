@@ -4,6 +4,8 @@ design
   2 servlets
     (1) user interface
     (2) s2/home comm
+    
+  google services
 
 bugs
 
