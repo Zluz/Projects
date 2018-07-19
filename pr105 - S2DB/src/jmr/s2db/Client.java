@@ -43,14 +43,15 @@ public class Client {
 							final String strClass ) {
 		final Date now = new Date();
 	    final String strMAC = NetUtil.getMAC();
+	    final Map<String, String> mapNICs = NetUtil.getIPAddresses( false );
 	    final String strIP = NetUtil.getIPAddress();
 	    
 	    String strRegex = strMAC.replaceAll( "-", "." );
 	    strRegex = "/Sessions/.+" + strRegex + ".+";
 	    
 	    final long seqSession = 
-	    		this.register( strMAC, strIP, strName, strClass, strRegex, 
-	    					now );
+	    		this.register( strMAC, strIP, mapNICs, 
+	    				strName, strClass, strRegex, now );
 	    
 	    return seqSession;
 	}
@@ -58,6 +59,7 @@ public class Client {
 	
 	public long register(	final String strMAC,
 							final String strIP,
+							final Map<String,String> mapNICs,
 							final String strName,
 							final String strClass,
 							final String strExpireRegex,
@@ -70,7 +72,7 @@ public class Client {
 
 		final Device tDevice = ( (Device)Tables.DEVICE.get() );
 //		seqDevice = tDevice.get( strMAC, strName );
-		seqDevice = tDevice.register( strMAC, strName, strIP );
+		seqDevice = tDevice.register( strMAC, strName, strIP, mapNICs );
 		
 		final Page tPage = ( (Page)Tables.PAGE.get() );
 		tPage.expireAll( strExpireRegex );

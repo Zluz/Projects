@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,13 +40,21 @@ public class Device extends TableBase {
 	
 	public Long register(	final String strMAC,
 							final String strName,
-							final String strIP ) {
+							final String strIP,
+							final Map<String,String> mapNICs ) {
 		final Long seq = this.get( strMAC, strName );
 		
 	    final String strPath = "/var/Device/" + strMAC;
 	    final Map<String,String> map = new HashMap<>();
 	    map.put( "ip", strIP );
 	    map.put( "name", strName );
+	    
+	    if ( null!=mapNICs ) {
+	    	for ( final Entry<String, String> entry : mapNICs.entrySet() ) {
+	    	    map.put( "ip." + entry.getKey(), entry.getValue() );
+	    	}
+	    }
+	    
 //	    Client.get().savePage( strPath, map );
 	    
 		final Path tPath = ( (Path)Tables.PATH.get() );

@@ -5,8 +5,13 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 public abstract class NetUtil {
 
@@ -63,7 +68,7 @@ public abstract class NetUtil {
 //							System.out.println( "IP Address candidate: " + strAddrText );							
 							final int iConfidence;
 //							if ( strAddrText.contains( "eth0" ) ) {
-							if ( strAddrText.contains( "192.168.1." ) ) {
+							if ( strAddrText.contains( "192.168." ) ) {
 								final String strLastOct = strAddrText.split("\\.")[3];
 //								System.out.println( "\tlast oct = " + strLastOct );							
 								iConfidence = 100 
@@ -158,8 +163,18 @@ public abstract class NetUtil {
 		return sb.toString();
 	}
 	
-	
+
 	public static String getIPAddress() {
+		final Map<String, String> map = getIPAddresses( true );
+		if ( null!=map && ! map.isEmpty() ) {
+			return map.values().iterator().next();
+		} else {
+			return "127.0.0.1";
+		}
+	}
+
+	
+	public static String getIPAddress_() {
 		if ( null==strIP ) {
 			getMAC();
 			if ( null==strIP ) {
@@ -174,6 +189,105 @@ public abstract class NetUtil {
 			}
 		}
 		return strIP;
+	}
+	
+	
+	
+	
+	
+	// from: https://stackoverflow.com/questions/494465/how-to-enumerate-ip-addresses-of-all-enabled-nic-cards-from-java
+	public static Map<String,String> getIPAddresses( final boolean bIncludeLocal ) {
+		
+		final Map<String,String> map = new HashMap<>();
+		
+//		try {
+//			final InetAddress localhost = InetAddress.getLocalHost();
+//			// LOG.info(" IP Addr: " + localhost.getHostAddress());
+//			// Just in case this host has multiple IP addresses....
+//			final InetAddress[] arrAddresses = InetAddress.getAllByName(
+//							localhost.getCanonicalHostName() );
+//			
+//			if ( arrAddresses != null && arrAddresses.length > 0 ) {
+//				// LOG.info(" Full list of IP addresses:");
+//				for ( final InetAddress address : arrAddresses ) {
+////				for (int i = 0; i < allMyIps.length; i++) {
+//					// LOG.info(" " + allMyIps[i]);
+////					list.add( address.getHostAddress() );
+////					address.get
+//					String strNIC = null;
+//					try {
+//						final NetworkInterface nic = 
+//								NetworkInterface.getByInetAddress( address );
+//						if ( null!=nic ) {
+//							strNIC = nic.getName();
+//						} else {
+//							strNIC = "<Null NIC>";
+//						}
+//					} catch ( final Exception e ) {
+//						strNIC = "<Unknown NIC," + e.toString() + ">";
+//					}
+//					map.put( strNIC, address.getHostAddress() );
+//				}
+//			}
+//		} catch ( final UnknownHostException e ) {
+//			// LOG.info(" (error retrieving server host name)");
+//		}
+		
+//		return map;
+
+		try {
+			// LOG.info("Full list of Network Interfaces:");
+			for (	final Enumeration<NetworkInterface> 
+							enNIC = NetworkInterface.getNetworkInterfaces(); 
+					enNIC.hasMoreElements(); ) {
+				final NetworkInterface nic = enNIC.nextElement();
+				// LOG.info(" " + intf.getName() + " " + intf.getDisplayName());
+				for (	final Enumeration<InetAddress> 
+								enAddr = nic.getInetAddresses(); 
+						enAddr.hasMoreElements(); ) {
+					// LOG.info(" " + enumIpAddr.nextElement().toString());
+					final InetAddress addr = enAddr.nextElement();
+					final String strName = nic.getName();
+					if ( bIncludeLocal || !strName.startsWith( "lo" ) ) {
+						map.put( nic.getName(), addr.getHostAddress() );
+					}
+				}
+			}
+		} catch (SocketException e) {
+			// LOG.info(" (error retrieving network interface list)");
+		}
+
+		final Map<String,String> mapSorted = new TreeMap<>( 
+//				( Comparator<String> ) ( lhs, rhs ) -> rhs.compareTo( lhs ) );
+				( Comparator<String> ) ( lhs, rhs ) -> {  
+
+//					lhs = lhs.replace( "eth", "0" ).replace( "wlan", "1" ).replace( "lo", "9" );
+//					rhs = rhs.replace( "eth", "0" ).replace( "wlan", "1" ).replace( "lo", "9" );
+					
+					lhs = sortableNICName( lhs );
+					rhs = sortableNICName( rhs );
+//					
+//					return rhs.compareTo( lhs );
+					return lhs.compareTo( rhs );
+					
+//					rhs.replace( "eth", "0" ).replace( "wlan", "1" ).compareTo(
+//							lhs.replace( "eth", "0" ).replace( "wlan", "1" ) )
+					
+//					return strR.compareTo( strL );
+				} );
+		
+		mapSorted.putAll( map );
+		
+		return mapSorted;
+	}
+	
+	
+	private static String sortableNICName( final String strNICName ) {
+		final String strSortable = strNICName
+										.replace( "eth", "0" )
+										.replace( "wlan", "1" )
+										.replace( "lo", "9" );
+		return strSortable;
 	}
 	
 	
@@ -193,6 +307,11 @@ public abstract class NetUtil {
 		
 		System.out.println( "IP Address: " + getIPAddress() );
 		
+		final Map<String, String> map = getIPAddresses( true );
+		System.out.println( "All addresses:" );
+		for ( final Entry<String, String> entry : map.entrySet() ) {
+			System.out.println( "\t" + entry.getKey() + " : " + entry.getValue() );
+		}
 		
 //		final Date now = new Date();
 //		final long lNow = now.getTime();

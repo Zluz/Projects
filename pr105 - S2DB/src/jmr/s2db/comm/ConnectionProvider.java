@@ -21,7 +21,7 @@ public class ConnectionProvider {
 
 
 //	public final static String 
-//			MYSQL_CONNECTION = "jdbc:mysql://192.168.1.200:3306/s2db"
+//			MYSQL_CONNECTION = "jdbc:mysql://192.168.6.200:3306/s2db"
 //							+ "?autoReconnect=true&useSSL=false";
 	
 	public final static String
@@ -130,7 +130,10 @@ public class ConnectionProvider {
 			try {
 				instance = new ConnectionProvider();
 			} catch ( final SQLException | ClassNotFoundException e ) {
-				// TODO Auto-generated catch block
+				
+				System.err.println( "Exception encountered while trying to "
+						+ "instantiate a ConnectionProvider: " + e.toString() );
+				
 				e.printStackTrace();
 			}
 		}
@@ -160,10 +163,11 @@ public class ConnectionProvider {
 			return conn;
 			
 		} catch ( final SQLException e ) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 			LOGGER.log( Level.WARNING, 
 					"Exception while getting a connection", e );
+			LOGGER.log( Level.WARNING, "BasicDataSource: " + bds.toString() ); 
+			LOGGER.log( Level.WARNING, "Database URL: " + bds.getUrl() ); 
+			e.printStackTrace();
 		}
 
 		return null;

@@ -1,3 +1,4 @@
+import java.util.Map;
 import java.util.Map.Entry;
 
 import com.google.gson.JsonElement;
@@ -29,6 +30,7 @@ public class PostSystemEvent {
 		
 		final Client client = Client.get();
 		try {
+		    final Map<String, String> mapNICs = NetUtil.getIPAddresses( false );
 		    final String strIP = NetUtil.getIPAddress();
 		    final String strClass = PostSystemEvent.class.getName();
 		    final String strMAC = NetUtil.getMAC();
@@ -46,6 +48,12 @@ public class PostSystemEvent {
 			jo.addProperty( "MAC", strMAC );
 			jo.addProperty( "device.name", strDeviceName );
 			jo.addProperty( "time", lStart );
+		    if ( null!=mapNICs ) {
+		    	for ( final Entry<String, String> entry : mapNICs.entrySet() ) {
+		    		jo.addProperty( "IP." + entry.getKey(), entry.getValue() );
+		    	}
+		    }
+			
 			final String strData = jo.toString();
 			
 			final Event event = Event.add( EventType.SYSTEM, se.name(),

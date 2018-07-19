@@ -19,7 +19,7 @@ public class Configuration {
 	final public static String PATH_PROPERTIES =
 			OSUtil.isWin() 
 					? "S:\\settings.ini" 
-//						"\\\\192.168.1.200\\Share\\settings.ini";
+//						"\\\\192.168.6.200\\Share\\settings.ini";
 //						"H:\\Share\\settings.ini";
 					: "/Share/settings.ini";
 								

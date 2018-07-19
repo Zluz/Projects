@@ -26,7 +26,7 @@ public class S2Resource {
 				if ( fileDev.exists() ) {
 					this.strFilePath = strDev;
 				} else {
-					this.strFilePath = "//192.168.1.200/Share/" + strFilePath;
+					this.strFilePath = "//192.168.6.200/Share/" + strFilePath;
 				}
 			}
 		} else {
