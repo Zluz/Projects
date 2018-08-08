@@ -60,6 +60,11 @@ then
 	echo "    Event `cat /tmp/PostEvent.out | grep seq`" >> /tmp/reboot.log
 	# echo "    device `cat /tmp/PostEvent.out | grep \"device.name\"`" >> /tmp/reboot.log
 
+	export POST_OUT=`cat /tmp/reboot.log | grep Register | tail -1`
+	export TIMESTAMP=`date`
+	export CONKY_DESC=`cat /tmp/session/conky-device_info.txt | head -1`	
+	echo "$TIMESTAMP $POST_OUT  $CONKY_DESC" >> /Share/Sessions/device_events.log
+
 
 	# while we're here, run the beacon
 
