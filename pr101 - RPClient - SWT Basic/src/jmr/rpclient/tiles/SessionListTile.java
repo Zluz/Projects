@@ -361,14 +361,18 @@ public class SessionListTile extends TileBase {
 				rect.y = rect.y + 18;
 				
 //				final String strName = SessionMap.getDescription( map );
-				final String strName = map.get( Field.DESCRIPTION.name() ).getAsString();
+				final Element jeDesc = map.get( Field.DESCRIPTION.name() );
+				final String strName = ( null!=jeDesc ) 
+								? jeDesc.getAsString() : "<null>";
 				gc.setFont( Theme.get().getFont( 10 ) );
 				util.drawTextJustified( strName, rect );
 				rect.y = rect.y + 18;
 				
 				if ( !this.bAlternating ) {
 //					final String[] strs = SessionMap.getMAC( map );
-					final String strMAC = map.get( Field.MAC.name() ).getAsString();
+					final Element jeMAC = map.get( Field.MAC.name() );
+					final String strMAC = ( null!=jeMAC ) 
+							? jeMAC.getAsString() : "<null>";
 //					final String strMAC = strs[ 0 ];
 //					final String strNIC = strs[ 1 ];
 					gc.setFont( Theme.get().getFont( 11 ) );

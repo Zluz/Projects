@@ -4,6 +4,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 
 import jmr.rpclient.swt.GCTextUtils;
 import jmr.rpclient.swt.S2Button;
@@ -106,7 +107,10 @@ public class PerspectiveSwitcherTile extends TileBase {
 										+ "switching perspective, aborting." );
 								button.setState( ButtonState.DISABLED );
 								// request shutdown
-								display.getActiveShell().close();
+								final Shell shellActive = display.getActiveShell();
+								if ( null!=shellActive ) {
+									shellActive.close();
+								}
 							}
 						});
 					}

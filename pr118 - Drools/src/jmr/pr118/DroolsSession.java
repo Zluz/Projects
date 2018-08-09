@@ -73,11 +73,22 @@ public class DroolsSession {
 		
 		final FactHandle handle = session.insert( item );
 		
-		final int iFired = session.fireAllRules();
+		try {
+			
+			final int iFired = session.fireAllRules();
+			return iFired;
+			
+		} catch ( final Exception e ) {
+			System.err.println( e.toString() + " encountered while "
+					+ "processing Rules." );
+			e.printStackTrace();
+			return 0;
+			
+		} finally {
+			session.delete( handle );
+		}
 		
-		session.delete( handle );
 		
-		return iFired;
 	}
 	
 	

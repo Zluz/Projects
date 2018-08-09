@@ -105,10 +105,11 @@ public class CameraModule {
 				if ( null!=file ) {
 					LOGGER.info( "RPi Camera Module available" );
 					bCameraPresent = true;
-					file.delete();
+//					file.delete();
 				} else {
 					LOGGER.info( "RPi Camera Module is not present" );
-					bCameraPresent = false;
+//					bCameraPresent = false;
+					return false;
 //					return false;
 				}
 			}

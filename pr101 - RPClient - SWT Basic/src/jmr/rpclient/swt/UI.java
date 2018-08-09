@@ -24,8 +24,11 @@ public abstract class UI {
 
 	public static final int REFRESH_SLEEP = 100;
 	
+	/** Warn if the UI has not responded in this time */ 
 	public static final long UI_LOOP_DELAY_WARN = 500;
-	public static final long UI_LOOP_DELAY_ABORT = TimeUnit.SECONDS.toMillis( 20 );
+	
+	/** Abort if the UI has not responded in this time. Normally 20. */ 
+	public static final long UI_LOOP_DELAY_ABORT = TimeUnit.SECONDS.toMillis( 2000 );
 	
 	
 	final public static Color COLOR_WHITE = 

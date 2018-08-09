@@ -37,9 +37,12 @@ public class CloudUtilities {
 				writer.put( strKey, entry.getValue() );
 			}
 //			writer.getMap().putAll( mapMetadata );
-			writer.upload( file );
+			if ( file.exists() ) {
+				writer.upload( file );
+			}
 		} catch ( final IOException e ) {
-			// TODO Auto-generated catch block
+			System.err.println( e.toString() + " encountered while uploading "
+					+ "an image to Google Cloud Storage." );
 			e.printStackTrace();
 		}
 	}

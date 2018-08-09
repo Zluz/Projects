@@ -134,7 +134,9 @@ public class Job extends TableBase {
 				 		 + " LIMIT " + iLimit + ";";
 		 
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
-				final Statement stmt = conn.createStatement() ) {
+				final Statement stmt = null!=conn ? conn.createStatement() : null ) {
+			
+			if ( null==stmt ) return null;
 
 			final List<Job> listJob = new LinkedList<>();
 			
