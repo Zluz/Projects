@@ -283,7 +283,7 @@ public class Simple implements RulesConstants {
 							final boolean bSendEmail,
 							final FileSession.ImageLookupOptions... options ) {
 		final FileSessionManager fsm = FileSessionManager.getInstance();
-		final Map<String, FileSession> map = fsm.getSessionMap();
+		final Map<String, FileSession> mapSessions = fsm.getSessionMap();
 
 		final StringBuilder strbuf = new StringBuilder();
 //		final File[] attachments = new File[ map.size() ];
@@ -296,7 +296,7 @@ public class Simple implements RulesConstants {
 		
 		final CommGAE comm = new CommGAE();
 
-		for ( final Entry<String, FileSession> entry : map.entrySet() ) {
+		for ( final Entry<String, FileSession> entry : mapSessions.entrySet() ) {
 			final String strKey = entry.getKey();
 			final FileSession session = entry.getValue();
 
@@ -314,21 +314,25 @@ public class Simple implements RulesConstants {
 				final File[] arrScreenshots = session.getScreenshotImageFiles();
 				for ( final File file : arrScreenshots ) {
 					if ( null!=file && file.isFile() 
-							&& file.getName().contains( "thumb" ) ) {
+							&& FileSession.isThumbnail( file.getName() ) ) {
 						if ( file.lastModified() > lCutoff ) {
 							listFiles.add( file );
 							bCurrent = true;
 							
+							final EnumMap<DocMetadataKey, String> 
+									mapSS = DocMetadataKey.createMetadataMap( 
+											mapMetadata, file );
+
 							if ( STORE_TO_LOCAL_APP_ENGINE) {
 								comm.store( DocKey.DEVICE_SCREENSHOT, 
 												strKey + "/" + file.getName(), 
-												file, mapMetadata );
+												file, mapSS );
 							}
 							
 							final String strGCSName = 
 									"SCREENSHOT_" + strKey + "_" + file.getName();
 							CloudUtilities.saveImage( strGCSName, file, 
-									ContentType.IMAGE_PNG, mapMetadata );
+									ContentType.IMAGE_PNG, mapSS );
 						}
 					}
 				}
@@ -344,23 +348,26 @@ public class Simple implements RulesConstants {
 							listFiles.add( file );
 							bCurrent = true;
 							
+							final EnumMap<DocMetadataKey, String> 
+									mapCap = DocMetadataKey.createMetadataMap( 
+													mapMetadata, file );
+
 							final String strDescription = 
 									session.getDescriptionForImageSource( file );
-							
-							mapMetadata.put( DocMetadataKey.SENSOR_DESC, 
+							mapCap.put( DocMetadataKey.SENSOR_DESC, 
 									null!=strDescription ? strDescription : "" );
 							
 							if ( STORE_TO_LOCAL_APP_ENGINE) {
 								final String strCommName = 
 											strKey + "/" + file.getName();
 								comm.store( DocKey.DEVICE_STILL_CAPTURE, 
-											strCommName, file, mapMetadata );
+											strCommName, file, mapCap );
 							}
 							
 							final String strGCSName = 
 									"CAPTURE_" + strKey + "_" + file.getName();
 							CloudUtilities.saveImage( strGCSName, file, 
-									ContentType.IMAGE_JPEG, mapMetadata );
+									ContentType.IMAGE_JPEG, mapCap );
 						}
 					}
 				}

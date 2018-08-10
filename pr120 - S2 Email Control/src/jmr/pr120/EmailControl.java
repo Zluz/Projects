@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import javax.mail.BodyPart;
 import javax.mail.Folder;
@@ -284,6 +285,9 @@ public class EmailControl {
 			@Override
 			public void run() {
 				try {
+					
+					int iConsecutiveErrors = 0;
+					
 					while ( bActive ) {
 
 						try {
@@ -294,7 +298,11 @@ public class EmailControl {
 							}
 							
 							final Store storeTest = imapInbox.getStore();
-							if ( null!=storeTest && storeTest.isConnected() ) {
+							
+							if ( null==storeTest ) {
+								System.err.println( "In EmailControl, Store is null." );
+								
+							} else if ( storeTest.isConnected() ) {
 							
 								imapInbox.idle();
 								
@@ -304,10 +312,13 @@ public class EmailControl {
 								storeTest.connect( 	"imap.gmail.com", 
 										new String( cEmailAddress ), 
 										new String( cEmailPassword )  );
-								
 							}
 							
+							iConsecutiveErrors = 0;
+							
 						} catch ( final Exception e ) {
+							iConsecutiveErrors++;
+							
 							if ( e.toString().contains( " * BYE" ) ) {
 								System.out.println( "IMAP connection dropped." );
 								// normal for the server to drop the 
@@ -318,6 +329,17 @@ public class EmailControl {
 										"Exception while maintaining IMAPFolder: " 
 														+ e.toString() );
 								e.printStackTrace();
+								
+								if ( 1==iConsecutiveErrors ) {
+									System.err.println( "Pausing for 1 minute.." );
+									Thread.sleep( TimeUnit.MINUTES.toMillis( 1 ) );
+								} else {
+									System.err.println( "Consecutive errors: " 
+													+ iConsecutiveErrors );
+									final int iDelay = 
+											Math.max( iConsecutiveErrors * 10, 30 );
+									Thread.sleep( TimeUnit.MINUTES.toMillis( iDelay ) );
+								}
 							}
 						}
 

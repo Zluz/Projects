@@ -44,6 +44,12 @@ public abstract class TimeUtil {
 	}
 	
 
+	/**
+	 * Tests if the current local time hour is in the given list.
+	 * isHourOfDay( 10 ) will return TRUE at 10:55am local time. 
+	 * @param hours
+	 * @return
+	 */
 	public static boolean isHourOfDay( final Integer... hours ) {
 		if ( null==hours ) return false;
 		if ( 0==hours.length ) return false;

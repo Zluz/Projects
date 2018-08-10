@@ -1,15 +1,19 @@
 package jmr.rpclient.tiles;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -69,7 +73,8 @@ public class CameraTile extends TileBase {
 	
 	Boolean bHasCameraModule = null;
 	
-	private final Map<Rectangle,String> mapClickRegions = new HashMap<>();
+//	private final Map<Rectangle,String> mapClickRegions = new HashMap<>();
+	private final Map<String,Rectangle> mapClickRegions = new HashMap<>();
 	
 	Long lImageAge = null;
 	
@@ -152,8 +157,11 @@ public class CameraTile extends TileBase {
 	
 	
 	private Image prerenderAllCaptures() {
+		if ( UI.display.isDisposed() ) return null;
 		
-		this.mapClickRegions.clear();
+//		this.mapClickRegions.clear();
+		clearMapRegions();
+
 		this.lImageAge = null;
 
 		
@@ -186,20 +194,65 @@ public class CameraTile extends TileBase {
 		int iY = 60;
 		int iCount = 0;
 		
-		final List<String> listKeys = new LinkedList<>( map.keySet() );
+		final Set<String> setKeys = new HashSet<>( map.keySet() );
+		for ( final String strRegionKey : mapClickRegions.keySet() ) {
+			final int iPos = strRegionKey.indexOf( '/' );
+			final String strSession = strRegionKey.substring( 0, iPos );
+			setKeys.add( strSession );
+		}
+		final List<String> listKeys = new LinkedList<>( setKeys );
+//		listKeys.addAll( mapClickRegions.keySet() );
 		Collections.sort( listKeys );
+		
 		for ( final String strKey : listKeys ) {
 			final FileSession session = map.get( strKey );
 			
-			final List<File> files = session.getCaptureStillImageFiles();
+			final List<File> files;
+			if ( null!=session ) {
+				files = session.getCaptureStillImageFiles( 
+						FileSession.ImageLookupOptions.INCLUDE_MISSING, 
+						FileSession.ImageLookupOptions.ONLY_THUMB, 
+						FileSession.ImageLookupOptions.SINCE_PAST_HOUR );
+			} else {
+				files = Collections.emptyList();
+			}
+			
+			final Map<String,File> mapFiles = new HashMap<>();
 			for ( final File file : files ) {
+				mapFiles.put( file.getName(), file );
+			}
+			
+//			for ( final String strRegionKey : mapClickRegions.keySet() ) {
+//				final int iPos = strRegionKey.indexOf( '/' );
+//				final String strRegionSession = strRegionKey.substring( 0, iPos );
+//				if ( strKey.equals( strRegionKey ) ) {
+//					final String strFile = strRegionKey.substring( iPos + 1 );
+//				}
+//			}
+			
+
+			
+			for ( final File file : files ) {
+				
+//				String strFull = "<missing file>";
+				final String strFull;
+				
 				final String strFilename = file.getName();
+				
+				final int iPos = strFilename.indexOf( "-thumb." );
+				final String strBase;
+				if ( iPos>0 ) {
+					strBase = strFilename.substring( 0, iPos );
+				} else {
+					final int iPosDot = strFilename.lastIndexOf( '.' );
+					strBase = strFilename.substring( 0, iPosDot); 
+				}
+				
 				if ( file.isFile() && 
 						strFilename.contains( "-thumb." ) ) {
 					if ( file.lastModified() > lCutoff ) {
 
-						final int iPos = strFilename.indexOf( "-thumb." );
-						final String strFull = strFilename.substring( 0, iPos );
+						strFull = strBase;
 
 						try {
 							final Image imgRaw = new Image( 
@@ -214,35 +267,56 @@ public class CameraTile extends TileBase {
 							gc.drawImage( imgRaw, 0, 0, iRX, iRY, 
 									r.x, r.y, r.width, r.height );
 							
+							imgRaw.dispose();
 							
-							mapClickRegions.put( r, strKey + "/" + strFull );
+//							mapClickRegions.put( r, strKey + "/" + strFull );
+							mapClickRegions.put( strKey + "/" + strFull, r );
 							
+						} catch ( final SWTException e ) {
+							final Throwable throwCause = e.getCause();
+							if ( null!=throwCause 
+									&& FileNotFoundException.class.equals( 
+												throwCause.getClass() ) ) {
+								gc.drawText( "FileNotFound..", iX, iY );
+							} else {
+								gc.drawText( "SWT/" + throwCause, iX, iY );
+								e.printStackTrace();
+							}
 						} catch ( final Exception e ) {
 							gc.drawText( e.toString(), iX, iY );
 							e.printStackTrace();
 						}
-						iCount++;
-
-						final String strDisplayKey = "x-" + strKey.substring( 9 );
-						
-						gc.drawText( strDisplayKey, iX, iY - 52 );
-						gc.drawText( strFull, iX, iY - 30 );
-
-						iX = iX + 185;
-						if ( iX + 100 > gc.getClipping().width ) {
-							iX = 20;
-							iY = iY + 200;
-						}
-						
-//						iY = iY + 220;
-//						if ( iY+100 > ptDesiredImageSize.y ) {
-//							iY = 60;
-//							iX = iX + 240;
-//						}
+					} else {
+						strFull = "(outdated)";
 					}
+				} else {
+					strFull = "(" + strBase + ")";
 				}
+				
+
+				iCount++;
+
+				final String strDisplayKey = "x-" + strKey.substring( 9 );
+				
+				gc.drawText( strDisplayKey, iX, iY - 52 );
+				gc.drawText( strFull, iX, iY - 30 );
+
+				iX = iX + 185;
+				if ( iX + 100 > gc.getClipping().width ) {
+					iX = 20;
+					iY = iY + 200;
+				}
+				
+//				iY = iY + 220;
+//				if ( iY+100 > ptDesiredImageSize.y ) {
+//					iY = 60;
+//					iX = iX + 240;
+//				}
+
+				
 			}
 		}
+		gc.dispose();
 		
 		strMessage = "\n\n\n" + iCount + " captures";
 		
@@ -250,9 +324,18 @@ public class CameraTile extends TileBase {
 	}
 	
 	
+	private void clearMapRegions() {
+//		this.mapClickRegions.clear();
+		for ( final Entry<String, Rectangle> entry : mapClickRegions.entrySet() ) {
+			mapClickRegions.put( entry.getKey(), new Rectangle( 0, 0, 0, 0 ) );
+		}
+	}
+	
+	
 	private Image prerenderSingleImage( final boolean bFast ) {
 
-		mapClickRegions.clear();
+//		mapClickRegions.clear();
+		clearMapRegions();
 		
 		final File file = getImageFile( bFast );
 		if ( null!=fileLastImage ) {
@@ -607,12 +690,13 @@ public class CameraTile extends TileBase {
 		
 		if ( DisplayMode.SHOW_ALL.equals( this.mode ) ) {
 			
-			for ( final Entry<Rectangle, String> entry : 
+//			for ( final Entry<Rectangle, String> entry : 
+			for ( final Entry<String, Rectangle> entry : 
 									mapClickRegions.entrySet() ) {
-				final Rectangle r = entry.getKey();
+				final Rectangle r = entry.getValue();
 				if ( r.contains( point ) ) {
 					this.ptTouch = null;
-					this.strLocationMatch = entry.getValue();
+					this.strLocationMatch = entry.getKey();
 					this.setMode( DisplayMode.SINGLE_FULL );
 					return true;
 				}
