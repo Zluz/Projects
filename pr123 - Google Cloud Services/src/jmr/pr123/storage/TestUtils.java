@@ -17,7 +17,9 @@ public class TestUtils {
 
 	public static File getFile() {
 		final File file = new File( 
-				"H:\\Sessions\\B8-27-EB-4E-46-E2\\test-1_0MP.jpg" );
+//				"H:\\Sessions\\B8-27-EB-4E-46-E2\\test-1_0MP.jpg" 
+				"S:\\Sessions\\test_resources\\capture_vid1-thumb.jpg" 
+				);
 		return file;
 	}
 	

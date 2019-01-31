@@ -264,6 +264,8 @@ public class Configuration {
 		
 		final JsonObject joConfig = comm.getConfig();
 		
+		System.out.println( joConfig.toString() );
+		
 		final GCSFactory factory = GCSHelper.GCS_FACTORY;
 		
 		final GCSFileWriter file = 

@@ -29,7 +29,10 @@ public class TeslaPage {
 	// window reports 1200px wide
 	public static final int NAV_WIDTH = 220;
 	public static final int BODY_WIDTH = 930;
-	
+
+	/** HTML IMG tooltip (title attribute) line feed */
+	public static final String TTCR = "&#10";
+
 	enum NavItem {
 		INFORMATION( "Information" ),
 		STILL_CAP( "Still Captures" ),
@@ -269,6 +272,34 @@ public class TeslaPage {
 							+ "&" + ParameterName.FULL_IMAGE.name() + "=" + strFullImage 
 							+ "&" + ParameterName.FAST_IMAGE.name() + "=" + key; 
 
+
+				// strAge does not need to be evaluated if on the 
+				// Tesla browser and age is not the display option.
+				String strAge;
+				
+				final String strModified = 
+						file.get( DocMetadataKey.LAST_MODIFIED_MS );
+				try {
+					final long lModified = Long.parseLong( strModified );
+					final long lAgeMS = lNow - lModified;
+					
+					String strFormat = DurationFormatUtils.formatDuration( 
+							lAgeMS, " HH:mm:ss" );
+					strFormat = strFormat.replace( " 00:", " " );
+					strFormat = strFormat.replace( " 0", " " );
+					strAge = strFormat;
+					
+				} catch ( NumberFormatException e ) {
+					final String strDate = file.get( DocMetadataKey.FILE_DATE );
+					if ( StringUtils.isNotEmpty( strDate ) ) {
+						strAge = strDate;
+					} else {
+						strAge = "(no time data)";
+					}
+				}
+				
+				
+				
 //				final String strOption = Option.STILL_CAPTIONS.getValue( client );
 				final String strOption = option.getValue( client );
 
@@ -284,29 +315,6 @@ public class TeslaPage {
 
 				} else if ( "AGE".equals( strOption ) ) {
 					
-					String strAge;
-					
-					final String strModified = 
-							file.get( DocMetadataKey.LAST_MODIFIED_MS );
-					try {
-						final long lModified = Long.parseLong( strModified );
-						final long lAgeMS = lNow - lModified;
-						
-						String strFormat = DurationFormatUtils.formatDuration( 
-								lAgeMS, " HH:mm:ss" );
-						strFormat = strFormat.replace( " 00:", " " );
-						strFormat = strFormat.replace( " 0", " " );
-						strAge = strFormat;
-						
-					} catch ( NumberFormatException e ) {
-						final String strDate = file.get( DocMetadataKey.FILE_DATE );
-						if ( StringUtils.isNotEmpty( strDate ) ) {
-							strAge = strDate;
-						} else {
-							strAge = "(no time data)";
-						}
-					}
-					
 					strCaption = strAge;
 					
 				} else {
@@ -319,14 +327,24 @@ public class TeslaPage {
 					strCaption = strSource;
 				}
 
+				final String strTooltip = 
+						"Filename: " + strFullImage + TTCR
+						+ "Image age: " + strAge + TTCR
+						+ "Device IP: " + file.get( DocMetadataKey.DEVICE_IP ) + TTCR
+						+ "Device MAC: " + file.get( DocMetadataKey.DEVICE_MAC );
+				
 //				writer.println( "<div class='div-thumbnail' style='max-width:320px;'>" );
 				writer.print( "<div class='div-thumbnail-" + iColsPerRow + "'>" );
 //				writer.println( "<a href='" + strFullURL + "'>" );
 				writer.print( "<img class='image-thumbnail' "
 							+ "src='" + strThumbURL + "' "
+							+ "title='" + strTooltip + "' "
 							+ "onclick='doGoTo(\"" + strFullURL + "\");'>" );
 //				writer.println( "</a>" );
 				writer.print( "<div class='text-image-caption'>" + strCaption + "</div>" );
+//				writer.print( "<div class='text-image-caption'>" 
+//									+ strCaption + TTCR 
+//									+ strTooltip + "</div>" );
 				writer.print( "</div>" );
 				writer.println( "</td>" );
 			}
@@ -471,7 +489,7 @@ public class TeslaPage {
 									final String strColor ) {
 		writer.println( 
 //				"<a class='text-title'>TEST: " + strColor + " </a></p>\r\n" + 
-				"<table class='tableRadio' style='border-collapse: collapse;'><tr>\r\n" + 
+				"<table class='tableRadio tableRadio-110' style='border-collapse: collapse;'><tr>\r\n" + 
 				"<td >" + strColor +  "</td>\r\n" + 
 				"<td style='background-color: " + strColor +  "; color: #FFFFFF; -webkit-border-radius: 6px;'>AGE</td>\r\n" + 
 				"<td >IP</td>\r\n" + 

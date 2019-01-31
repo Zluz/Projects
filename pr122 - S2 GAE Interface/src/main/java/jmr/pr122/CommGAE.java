@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -34,8 +35,11 @@ public class CommGAE {
 
 	final String strGAEUrl;
 
-	
 	final JsonObject joConfig = new JsonObject();
+
+	// build json only or send to gae?
+	boolean bJsonOnly = false; 
+
 	
 	
 	public CommGAE( final String strURL ) {
@@ -45,6 +49,7 @@ public class CommGAE {
 	public CommGAE() {
 		this( SystemUtil.getProperty( SUProperty.GAE_URL ) ); 
 	}
+	
 	
 
 //	public void store(	final DocKey key,
@@ -214,8 +219,10 @@ http://localhost:8080/map?name=SCREENSHOT_B8-27-EB-13-8B-C0
 //		final CommGAE comm = new CommGAE();
 		final CommGAE comm = this;
 		
-		
-		comm.store( DocKey.TEST, "test_value: this is the large stored data" );
+		final String strDate = new Date().toString();
+		final String strMessage = 
+				"test_value: this is the large stored data\n" + strDate;
+		comm.store( DocKey.TEST, strMessage );
 		
 		
 		final File file = new File( "S:\\Sessions\\B8-27-EB-13-8B-C0\\screenshot.png" );
@@ -263,27 +270,38 @@ http://localhost:8080/map?name=SCREENSHOT_B8-27-EB-13-8B-C0
 				SystemUtil.getProperties( SUProperty.GAE_USER_PRE );
 		final String strUsers = String.join( "\n", listUser );
 		comm.configure( SUProperty.GAE_USER_PRE.getName(), strUsers );
+		
+		comm.configure( SUProperty.UPDATE_TIME.getName(), strDate );
 	}
 	
 	
+
 	public JsonObject getConfig() {
-		try {
-			this.generateConfig();
+		if ( this.joConfig.size() > 0 ) {
 			return this.joConfig;
-		} catch ( final IOException e ) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
+		} else {
+			try {
+				this.generateConfig();
+				return this.joConfig;
+			} catch ( final IOException e ) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}
 		}
 	}
+	
 	
 
 	// NOTE: to update the GCS JSON config, run 
 	// 			jmr.pr121.config.Configuration.main(String[])
 	public static void main( final String[] args ) throws IOException {
-		final CommGAE comm = new CommGAE( "http://localhost:8080/" );
+//		final CommGAE comm = new CommGAE( "http://localhost:8080/" );
 //		final CommGAE comm = new CommGAE();
+		final CommGAE comm = new CommGAE( null );
 		comm.generateConfig();
+		System.out.println( CommGAE.class.getSimpleName() + " JSON:" );
+		System.out.println( comm.getConfig().toString() );
 	}
 
 

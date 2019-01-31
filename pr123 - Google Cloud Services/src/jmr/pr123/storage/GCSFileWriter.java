@@ -13,6 +13,7 @@ import com.google.cloud.storage.Acl;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.BlobInfo.Builder;
 import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageException;
 
 import jmr.util.http.ContentType;
 
@@ -85,11 +86,40 @@ public class GCSFileWriter {
 			builder = builder.setMetadata( map );
 		}
 		
-		@SuppressWarnings("deprecation")
-		final BlobInfo info = storage.create( builder.build(), stream );
+		try {
+			@SuppressWarnings("deprecation")
+			final BlobInfo info = storage.create( builder.build(), stream );
+			// return the public download link
+			return info.getMediaLink();
+//		} catch ( final StorageException e ) {
+		} catch ( final Exception e ) {
+			System.err.println( e.toString() + " encountered while "
+					+ "attempting to upload to Google Cloud Storage.\n"
+					+ "File: " + this.strFilename + "\n" 
+					+ "Aborting." );
+			e.printStackTrace();
+			return null;
+		}
+			
+		// TODO catch exception from above, on storage.create():
+		/*
+Caused by: com.google.cloud.storage.StorageException: www.googleapis.com
+	at com.google.cloud.storage.spi.v1.HttpStorageRpc.translate(HttpStorageRpc.java:220)
+	at com.google.cloud.storage.spi.v1.HttpStorageRpc.create(HttpStorageRpc.java:291)
+	at com.google.cloud.storage.StorageImpl.create(StorageImpl.java:148)
+	at jmr.pr123.storage.GCSFileWriter.upload(GCSFileWriter.java:89)
+	at jmr.pr123.storage.GCSFileWriter.upload(GCSFileWriter.java:58)
+	at jmr.pr115.rules.drl.CloudUtilities.saveImage(CloudUtilities.java:40)
+	
+Caused by: com.google.cloud.storage.StorageException: Unexpected end of file from server
+	at com.google.cloud.storage.spi.v1.HttpStorageRpc.translate(HttpStorageRpc.java:220)
+	at com.google.cloud.storage.spi.v1.HttpStorageRpc.create(HttpStorageRpc.java:291)
+	at com.google.cloud.storage.StorageImpl.create(StorageImpl.java:148)
+	at jmr.pr123.storage.GCSFileWriter.upload(GCSFileWriter.java:89)
+	at jmr.pr123.storage.GCSFileWriter.upload(GCSFileWriter.java:58)
+	at jmr.pr115.rules.drl.CloudUtilities.saveImage(CloudUtilities.java:41)	
+		 */
 		
-		// return the public download link
-		return info.getMediaLink();
 	}
 
 	

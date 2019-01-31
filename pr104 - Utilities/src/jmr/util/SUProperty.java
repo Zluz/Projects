@@ -26,7 +26,10 @@ public enum SUProperty {
 	
 	BROWSER_ACCEPT_001( "browser_accept.001" ),
 	BROWSER_ACCEPT_PRE( "browser_accept" ),
-	
+
+	UPDATE_TIME( "update.time" ),
+	UPDATE_SOURCE( "update.source" ),
+
 	;
 	
 	private String strName;

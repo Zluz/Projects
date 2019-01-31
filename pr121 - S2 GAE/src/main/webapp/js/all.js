@@ -287,6 +287,8 @@ function doTakeScreenshot() {
  */
 
 var timeoutID;
+
+/** Has the user interacted with the client recently? */
 var bIsActive = true;
 
 function setupActivityMonitor() {

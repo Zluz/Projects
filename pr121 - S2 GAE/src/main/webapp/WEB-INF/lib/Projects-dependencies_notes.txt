@@ -1,5 +1,7 @@
 
 To build Projects-dependencies.jar,
+	note: appears to be similar to when selecting a project and exporting that to a JAR
+	note: select pr123, Export Project, then add pr104 and pr122
 
 Export from Eclipse
 	JAR file
@@ -8,6 +10,7 @@ Projects to include:
 	pr104 - Utilities
 	pr122 - S2 GAE Interface
 	pr123 - Google Cloud Service
+    note: be sure not to select px122, px123
 
 
 checkboxes to be checked:
