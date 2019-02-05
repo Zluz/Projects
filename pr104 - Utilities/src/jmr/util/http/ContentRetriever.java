@@ -2,16 +2,20 @@ package jmr.util.http;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.xml.ws.http.HTTPException;
 
 public class ContentRetriever {
 
@@ -65,7 +69,7 @@ public class ContentRetriever {
 	 * https://stackoverflow.com/questions/14594840/http-client-408-status-code
 	 */
 	
-	public String getContent() throws Exception {
+	public String getContent() throws IOException { // throws Exception {
 		
 		final URL url = new URL( strURL );
 		
@@ -86,8 +90,8 @@ public class ContentRetriever {
 		
 		final int iCode = conn.getResponseCode();
 		if ( iCode<200 || iCode>=300 ) {
-			throw new Exception( "HTTP code " + iCode + " received "
-									+ "for URL " + strURL );
+			throw new HTTPException( iCode ); 
+			//( "HTTP code " + iCode + " received " + "for URL " + strURL );
 		}
 		
 		final StringBuffer strbuf = new StringBuffer();
@@ -101,9 +105,9 @@ public class ContentRetriever {
 	            strbuf.append( (char)c );
 	        }
 //	        System.out.println();
+		} finally {
+			conn.disconnect();
 		}
-        
-        conn.disconnect();
         
         return strbuf.toString();
 	}

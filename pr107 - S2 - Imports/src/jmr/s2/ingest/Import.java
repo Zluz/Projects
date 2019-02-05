@@ -1,5 +1,6 @@
 package jmr.s2.ingest;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -76,7 +77,8 @@ public enum Import {
 	
 	
 	public static void main( final String[] args ) 
-										throws InterruptedException {
+										throws InterruptedException, 
+												IOException {
 
 		ConnectionProvider.get();
 		

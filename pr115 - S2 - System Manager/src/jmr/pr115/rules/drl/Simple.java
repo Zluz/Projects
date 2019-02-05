@@ -1,6 +1,7 @@
 package jmr.pr115.rules.drl;
 
 import java.io.File;
+import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
@@ -10,6 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+
+import static jmr.pr102.Command.HVAC_START;
+import static jmr.pr102.Command.HVAC_STOP;
+import static jmr.pr102.DataRequest.CLIMATE_STATE;
 
 //import org.apache.http.entity.ContentType;
 
@@ -26,6 +32,7 @@ import jmr.pr122.CommGAE;
 import jmr.pr122.DocKey;
 import jmr.pr122.DocMetadataKey;
 import jmr.s2.ingest.Import;
+import jmr.s2db.Client;
 import jmr.s2db.imprt.WebImport;
 import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
@@ -40,6 +47,8 @@ import jmr.util.transform.JsonUtils;
 public class Simple implements RulesConstants {
 	
 	
+	private final static Logger 
+					LOGGER = Logger.getLogger(Simple.class.getName());
 	
 	static {
 		TimeUtil.isHourOfDay(); // just to get the import
@@ -51,7 +60,7 @@ public class Simple implements RulesConstants {
 	
 
 	public static void doRefreshNest() {
-		System.out.println( "--- doRefreshNest(), "
+		LOGGER.info( "--- doRefreshNest(), "
 					+ "time is " + LocalDateTime.now().toString() );
 		try {
 			
@@ -70,14 +79,14 @@ public class Simple implements RulesConstants {
 			
 			
 		} catch ( final Throwable t ) {
-			System.err.println( 
+			LOGGER.severe(
 						"Error during doRefreshNest(): " + t.toString() );
 			t.printStackTrace();
 		}
 	}
 
 	public static void doRefreshWeather() {
-		System.out.println( "--- doRefreshWeather(), "
+		LOGGER.info( ()-> "--- doRefreshWeather(), "
 					+ "time is " + LocalDateTime.now().toString() );
 		try {
 			final Import source = Import.WEATHER_FORECAST__YAHOO;
@@ -87,11 +96,15 @@ public class Simple implements RulesConstants {
 	
 			final WebImport wi = new WebImport( strTitle, strURL );
 			final Long seq = wi.save();
-			
+
 			System.out.println( "Weather refreshed. Result: seq = " + seq );
+				
 			
+		} catch ( final Exception e ) {
+			LOGGER.warning( () -> "Failed to update weather, encountered " 
+						+ e.toString() );
 		} catch ( final Throwable t ) {
-			System.err.println( 
+			LOGGER.severe( () ->  
 						"Error during doRefreshWeather(): " + t.toString() );
 			t.printStackTrace();
 		}
@@ -155,10 +168,10 @@ public class Simple implements RulesConstants {
 			final JsonObject jo = tj.request();
 
 			if ( null!=jo ) {
-				System.out.println( "Combined JsonObject "
+				LOGGER.info( "Combined JsonObject "
 									+ "from Tesla (size): " + jo.size() );
 			} else {
-				System.err.println( "Combined JsonObject from Tesla is null" );
+				LOGGER.warning( "Combined JsonObject from Tesla is null" );
 			}
 			
 			if ( jobs.size() >= 3 ) {
@@ -206,7 +219,7 @@ public class Simple implements RulesConstants {
 	
 
 	public static JsonObject doCheckTeslaState( final Object obj ) {
-		System.out.println( "--- doCheckTeslaState(), "
+		LOGGER.info( "--- doCheckTeslaState(), "
 				+ "time is " + LocalDateTime.now().toString() );
 		
 //		if ( 1==1 ) return null;
@@ -220,15 +233,15 @@ public class Simple implements RulesConstants {
 				final JsonObject jo = job.request();
 				
 				if ( null!=jo ) {
-					System.out.println( "Combined JsonObject "
+					LOGGER.info( "Combined JsonObject "
 										+ "from Tesla (size): " + jo.size() );
 				} else {
-					System.err.println( "Combined JsonObject from Tesla is null" );
+					LOGGER.warning( "Combined JsonObject from Tesla is null" );
 				}
 				return jo;
 	
 			} catch ( final Throwable t ) {
-				System.err.println( 
+				LOGGER.warning( 
 							"Error during doCheckTeslaState(): " + t.toString() );
 				t.printStackTrace();
 				return null;
@@ -398,7 +411,7 @@ public class Simple implements RulesConstants {
 			Job.add( JobType.TESLA_READ, set, DataRequest.VEHICLE_STATE.name() );
 			Job.add( JobType.TESLA_READ, set, DataRequest.CLIMATE_STATE.name() );
 		} catch ( final Throwable t ) {
-			System.err.println( "ERROR in Simple.submitJob_TeslaRefresh3()" );
+			LOGGER.severe( "ERROR in Simple.submitJob_TeslaRefresh3()" );
 			t.printStackTrace();
 		}
 	}
@@ -413,7 +426,7 @@ public class Simple implements RulesConstants {
 	
 	public static void doHomeArrival() {
 		try {
-			System.out.println( "Garage pedestrian door opened (home arrival trigger)." );
+			LOGGER.info( "Garage pedestrian door opened (home arrival trigger)." );
 
 			if ( bCheckedHomeArrival ) return; // already home
 
@@ -434,7 +447,7 @@ public class Simple implements RulesConstants {
 		final Command command = event.getCommand();
 		if ( null==command ) return;
 		
-		System.out.println( "--- Simple.doHandleEmailEvent() - "
+		LOGGER.info( "--- Simple.doHandleEmailEvent() - "
 							+ "Command: " + command.name() );
 		
 		switch ( command ) {
@@ -456,10 +469,115 @@ public class Simple implements RulesConstants {
 				break;
 			}
 			default: {
-				System.out.println( "Command not matched, no action performed." );
+				LOGGER.info( "Command not matched, no action performed." );
 			}
 		}
 	}
+	
+	
+	/**
+	 * Wait for a Job to complete (monitor the complete time).
+	 * @param job
+	 * @param iTimeout time in seconds
+	 * @throws InterruptedException
+	 */
+	public static boolean waitForJob( final Job job,
+								   	  final int iTimeout ) 
+										   throws InterruptedException {
+		LOGGER.info( "Waiting for job: " + job.getRequest() );
+		try {
+			int i = iTimeout;
+			while ( i>0 ) {
+				Thread.sleep( 1000 );
+				System.out.print( "." );
+				job.refresh();
+				final Long lCompleted = job.getCompleteTime();
+				if ( null!=lCompleted ) {
+					System.out.println( "Done." );
+					return true;
+				}
+				i = i - 1;
+			}
+			System.out.println( "Timeout." );
+		} catch ( final InterruptedException e ) {
+			LOGGER.info( "Simple.waitForJob() interrupted." );
+			e.printStackTrace();
+			throw e;
+		}
+		return false;
+		
+	}
+	
+	
+	/**
+	 * Prepare the Tesla for driving.
+	 * <br><br>
+	 * For now this just means turning on the HVAC.
+	 * @param bPrepare
+	 */
+	public static void doPrepareTesla( final boolean bPrepare ) {
+		
+		LOGGER.info( ()-> "--> doPrepareTesla(), bPrepare = " + bPrepare );
+		
+		int i=0;
+		if ( bPrepare ) {
+			try {
+				boolean bHVACStarted = false;
+				do {
+					final int iFinal = i;
+					LOGGER.info( ()-> "do..while loop, i = " + iFinal );
+					if ( i>6 ) {
+						System.err.println( "Failed to start Tesla HVAC." );
+						return;
+					} else {
+						i++;
+					}
+					
+					System.out.println( "POSTing HVAC_START.." );
+					final Job jobActivate = Job.add( 
+							JobType.TESLA_WRITE, null, HVAC_START.name() );
+
+					if ( ! waitForJob( jobActivate, 20 ) ) {
+						System.out.println( 
+								"Request to start Tesla HVAC timed-out.");
+						return;
+					}
+//					System.out.println( "Done." );
+					
+					Thread.sleep( TimeUnit.SECONDS.toMillis( 30 ) );
+
+					System.out.println( "Requesting CLIMATE_STATE.." );
+					final Job jobCheck = Job.add( 
+							JobType.TESLA_READ, null, CLIMATE_STATE.name() );
+					if ( ! waitForJob( jobCheck, 10 ) ) {
+						System.out.println( 
+								"Request to check Tesla HVAC timed-out.");
+						return;
+					}
+//					System.out.println( "Done." );
+					Thread.sleep( TimeUnit.SECONDS.toMillis( 4 ) );
+
+					final String strPath = CLIMATE_STATE.getResponsePath();
+					final Map<String,String> 
+									map = Client.get().loadPage( strPath );
+					System.out.println( "Looking up page " + strPath + ", " 
+									+ map.keySet().size() + " elements." );
+					final String strHVAC = map.get( "is_climate_on" );
+					System.out.println( "is_climate_on = " + strHVAC ); 
+					bHVACStarted = "true".equalsIgnoreCase( strHVAC );
+
+				} while ( ! bHVACStarted );
+				
+				LOGGER.info( "Tesla climate is on." );
+				
+			} catch ( final InterruptedException e ) {
+				LOGGER.info( "PrepareTesla interrupted." );
+			}
+		} else {
+			Job.add( JobType.TESLA_WRITE, null, HVAC_STOP.name() );
+		}
+	}
+	
 	
 	
 	

@@ -1,0 +1,11 @@
+
+setting up google app engine / cloud projects
+
+	install google cloud runtime
+
+	install google eclipse plugins
+		activate, set path to runtime
+
+	add env var
+		GOOGLE_APPLICATION_CREDENTIALS=S:\Resources\auth\pr121-s2gae-fd072fd78952.json
+

@@ -16,9 +16,9 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/pr109 - Audio"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr102 - Tesla Vehicle Interface"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/SWT_Win32"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr110 - S2 File Session"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Pi4J"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr116 - Email, SMS"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/SWT_Win64"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

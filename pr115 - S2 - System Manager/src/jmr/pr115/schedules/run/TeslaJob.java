@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 import java.util.Set;
 
 import com.google.gson.JsonElement;
@@ -17,6 +18,7 @@ import jmr.pr102.DataRequest;
 import jmr.pr102.TeslaVehicleInterface;
 import jmr.pr102.comm.TeslaLogin;
 import jmr.pr115.actions.ReportTeslaNotCharging;
+import jmr.pr115.rules.drl.Simple;
 import jmr.s2.ingest.S2TeslaLogin;
 import jmr.s2db.event.EventType;
 import jmr.s2db.event.TimeEvent;
@@ -25,6 +27,10 @@ import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
 
 public class TeslaJob extends JobWorker {
+
+	
+	private final static Logger 
+					LOGGER = Logger.getLogger(TeslaJob.class.getName());
 	
 	private int iLowBatteryWarning = 70;
 
@@ -262,6 +268,7 @@ public class TeslaJob extends JobWorker {
 			return null;
 		}
 	}
+	
 	
 	
 	@Override

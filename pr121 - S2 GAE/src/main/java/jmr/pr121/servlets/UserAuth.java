@@ -55,7 +55,7 @@ public class UserAuth {
 		
 		final Configuration config = Configuration.get();
 		
-		if ( ! config.isBrowserTestInitialized() ) {
+		if ( ! config.isBrowserTestInitialized() && ! OVERRIDE_OPEN ) {
 			iLevel = 0;
 		} else {
 			

@@ -62,6 +62,8 @@ public class UIServlet extends HttpServlet {
 	
 	static {
 		ldtStart = LocalDateTime.now();
+		
+		ContentType.APP_JSON.name();
 	}
 	
 	

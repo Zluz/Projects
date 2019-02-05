@@ -246,10 +246,22 @@ public abstract class NetUtil {
 								enAddr = nic.getInetAddresses(); 
 						enAddr.hasMoreElements(); ) {
 					// LOG.info(" " + enumIpAddr.nextElement().toString());
-					final InetAddress addr = enAddr.nextElement();
+					
+					boolean bGood = true;
+
 					final String strName = nic.getName();
-					if ( bIncludeLocal || !strName.startsWith( "lo" ) ) {
-						map.put( nic.getName(), addr.getHostAddress() );
+					if ( ! bIncludeLocal && strName.startsWith( "lo" ) ) {
+						bGood = false;
+					}
+
+					final InetAddress addr = enAddr.nextElement();
+					final String strHostAddr = addr.getHostAddress();
+					if ( ! strHostAddr.contains( "." ) ) { // only ipv4
+						bGood = false;
+					}
+					
+					if ( bGood ) {
+						map.put( nic.getName(), strHostAddr );
 					}
 				}
 			}

@@ -33,6 +33,6 @@ rule "Send command to Tesla"
 	when
 		job : Job( getJobType() == JobType.TESLA_WRITE )
 	then
-		System.out.println( "Sending command to Tesla .." );
+		System.out.println( "[Send command to Tesla] Sending command to Tesla.." );
 		Simple.doCheckTeslaState( job );
 end

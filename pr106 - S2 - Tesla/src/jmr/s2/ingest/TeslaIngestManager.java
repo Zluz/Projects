@@ -1,11 +1,13 @@
 package jmr.s2.ingest;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import jmr.pr102.Command;
 import jmr.pr102.DataRequest;
@@ -126,7 +128,6 @@ public class TeslaIngestManager {
 					if ( null!=command ) {
 						mapCommands.put( command, lSeq );
 					}
-
 				}
 			}
 
@@ -208,6 +209,10 @@ public class TeslaIngestManager {
 
 
 	
+	private final static Logger LOGGER = 
+					Logger.getLogger(TeslaIngestManager.class.getName());
+	
+	
 	/**
 	 * arrFlags:
 	 *  	0 - is charging
@@ -242,7 +247,14 @@ public class TeslaIngestManager {
 						"Tesla - " + request.name(),
 						tvi.getURL( request ),
 						strResponse );
-		final Long seq = ingest.save();
+		Long seq;
+		try {
+			seq = ingest.save();
+		} catch ( final IOException e ) {
+			LOGGER.severe( "Failed to save data to " + ingest.getURL() );
+			e.printStackTrace();
+			return null;
+		}
 		final String strResult = ingest.getResponse();
 		
 		System.out.println( "Page saved: seq " + seq );

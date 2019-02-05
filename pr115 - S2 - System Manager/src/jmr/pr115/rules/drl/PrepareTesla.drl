@@ -1,0 +1,52 @@
+package pr115.rules.drl;
+
+import jmr.s2db.tables.Event;
+import jmr.s2db.event.*;
+import jmr.pr115.schedules.run.*;
+import jmr.util.hardware.*;
+import jmr.util.*;
+import com.google.gson.JsonObject;
+
+import jmr.pr115.rules.drl.Simple;
+
+dialect "mvel"
+
+// global Boolean bPrepareTeslaTriggered;
+
+// static {
+// 	bPrepareTeslaTriggered = false;
+// }
+
+rule "PrepareTesla-Reset"
+	when
+		h : Heartbeat( getTimeUnit() == TimeUnit.HOURS )
+		eval( TimeUtil.isHourOfDay( 10 ) )
+	then
+		System.out.println( "Resetting PrepareTesla." );
+		
+		// bPrepareTeslaTriggered = false;
+		Simple.doPrepareTesla( false );
+end
+
+
+rule "PrepareTesla-ShowerTrigger"
+	when
+	
+		e : Event( // water running (shower)
+				getEventType() == EventType.INPUT, 
+				getSubject().equals( HardwareInput.L_POWER_WELL_PUMP.name() ),
+				getValue().equals( "true" ) 
+			)
+		eval( TimeUtil.isHourOfDay( 7,8,9 ) )
+		// eval( ! bPrepareTeslaTriggered )
+
+//		h : Heartbeat( getTimeUnit() == TimeUnit.MINUTES )
+//		eval( TimeUtil.isMinuteInHour( 8 ) )
+		
+	then
+		System.out.println( "PrepareTesla-ShowerTrigger fired." );
+		
+		// bPrepareTeslaTriggered = true;
+		
+		Simple.doPrepareTesla( true );
+end

@@ -1,5 +1,6 @@
 package jmr.s2db.imprt;
 
+import java.io.IOException;
 import java.util.Date;
 
 import jmr.s2db.Client;
@@ -42,10 +43,12 @@ public class WebImport {
 	}
 	
 	
+	public String getURL() {
+		return this.strURL;
+	}
 	
 	
-	
-	public Long save() {
+	public Long save() throws IOException {
 //		if ( null==strJSON ) return null;
 //		if ( strJSON.isEmpty() ) return null;
 		
@@ -53,13 +56,13 @@ public class WebImport {
 		
 		if ( null==strJSON ) {
 			final ContentRetriever retriever = new ContentRetriever( strURL );
-			try {
+//			try {
 				this.strJSON = retriever.getContent();
-			} catch ( final Exception e ) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return null;
-			}
+//			} catch ( final Exception e ) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//				return null;
+//			}
 		}
 		
 		PageSaver saver = new PageSaver( strPath );

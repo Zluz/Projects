@@ -28,16 +28,35 @@ public enum HardwareInput {
 	GARAGE_VEH_DOOR_3_CLOSED_STOP,
 	GARAGE_VEH_DOOR_3_CLOSED_AWAY,
 	
-	
-	
-	
 	SUMP_WATER_LEVEL( true ),
+	
+	HOME_WATER_PRESSURE( true ),
 	
 	POWER_HPWC( true ),
 	POWER_AUX2C_OUTLET( true ),
 	
-	HOME_WATER_PRESSURE( true ),
+	L_POWER_WELL_PUMP,
+	L_POWER_HOT_WATER,
+	L_POWER_HVAC_BASEMENT,
+	L_POWER_HVAC_UPSTAIRS,
+	L_POWER_SUMP_PUMP,
 	
+	/*
+	 * format:
+	 *  <[<L|A>_]<type>>_<input>[_<state>]
+	 * 
+	 *  prefix:
+	 * 	    L/A - logical or analog input
+	 *  type:
+	 *      POWER
+	 *      VEH_DOOR
+	 *      PED_DOOR
+	 *		..  
+	 *  state:
+	 *  	STOP
+	 *  	AWAY
+	 *  	..
+	 */
 	;
 
 	private final boolean bAnalog;
