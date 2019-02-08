@@ -6,10 +6,15 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.gson.JsonObject;
+
 import jmr.s2db.comm.ConnectionProvider;
+import jmr.s2db.event.EventType;
+import jmr.s2db.event.SystemEvent;
 import jmr.s2db.imprt.SummaryRegistry;
 import jmr.s2db.job.JobManager;
 import jmr.s2db.tables.Device;
+import jmr.s2db.tables.Event;
 import jmr.s2db.tables.Page;
 import jmr.s2db.tables.Path;
 import jmr.s2db.tables.Session;
@@ -42,6 +47,7 @@ public class Client {
 	public long register(	final String strName,
 							final String strClass ) {
 		final Date now = new Date();
+		final long lNow = System.currentTimeMillis();
 	    final String strMAC = NetUtil.getMAC();
 	    final Map<String, String> mapNICs = NetUtil.getIPAddresses( false );
 	    final String strIP = NetUtil.getIPAddress();
@@ -53,6 +59,22 @@ public class Client {
 	    		this.register( strMAC, strIP, mapNICs, 
 	    				strName, strClass, strRegex, now );
 	    
+	    final JsonObject jo = new JsonObject();
+	    jo.addProperty( "IP", strIP );
+	    jo.addProperty( "name", strName );
+	    jo.addProperty( "class", strClass );
+	    jo.addProperty( "MAC", strMAC );
+	    final String strData = jo.toString();
+	    
+		final Event event = Event.add(
+				EventType.SYSTEM, SystemEvent.CLIENT_REGISTERED.name(), 
+				strIP, null, 
+				strData, lNow, null, null, null );
+		
+		System.out.println( "Client registered. "
+						+ "Session " + seqSession + ", "
+						+ "Event " + event.getEventSeq() + "." );
+		
 	    return seqSession;
 	}
 	

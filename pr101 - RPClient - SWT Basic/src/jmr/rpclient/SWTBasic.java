@@ -40,6 +40,8 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import com.google.gson.Gson;
+
 import jmr.rpclient.swt.UI;
 import jmr.rpclient.tab.TabBase;
 import jmr.rpclient.tab.TabControls;
@@ -54,7 +56,10 @@ import jmr.rpclient.tiles.Perspective;
 import jmr.rpclient.tiles.TileBase;
 import jmr.rpclient.tiles.TileCanvas;
 import jmr.s2db.Client;
+import jmr.s2db.event.EventType;
+import jmr.s2db.event.SystemEvent;
 import jmr.s2db.job.JobManager;
+import jmr.s2db.tables.Event;
 import jmr.util.Logging;
 import jmr.util.NetUtil;
 import jmr.util.OSUtil;
@@ -213,10 +218,9 @@ public class SWTBasic {
     
 	public Shell buildUI() {
 		
-		
-
 	    /* S2DB stuff */
-	    final Date now = new Date();
+	    final long lNow = System.currentTimeMillis();
+	    final Date now = new Date( lNow );
 	    s2db = Client.get();
 	    final String strIP = NetUtil.getIPAddress();
 	    final String strClass = SWTBasic.class.getName();
@@ -237,9 +241,16 @@ public class SWTBasic {
 	
 	    JobManager.getInstance().setOptions( mapOptions );
 	    
-		LOGGER.log( Level.INFO, "Session started. "
-				+ "IP:" + strIP + ", Session:" + strSessionID );
+	    final String strData = new Gson().toJson( mapOptions );
 	    
+		final Event event = Event.add(
+				EventType.SYSTEM, SystemEvent.DEVICE_INFO.name(), 
+				strDeviceName, null, 
+				strData, lNow, null, null, null );
+
+		LOGGER.log( Level.INFO, "Session started. "
+				+ "IP:" + strIP + ", Session:" + strSessionID + ", "
+				+ "DEVICE_INFO Event:" + event.getEventSeq() );
 		
 	    final TabTiles tTiles = new TabTiles( strDeviceName, mapOptions, false );
 

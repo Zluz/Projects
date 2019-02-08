@@ -15,7 +15,9 @@ public enum DocKey {
 	
 	DEVICE_SCREENSHOT( ContentType.IMAGE_PNG ),
 	DEVICE_STILL_CAPTURE( ContentType.IMAGE_PNG ),
-
+	
+	TABLE_REPORT( ContentType.TEXT_HTML ),
+	PAGE_REPORT( ContentType.TEXT_HTML ),
 	;
 	
 	public final ContentType type;

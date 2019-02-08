@@ -17,11 +17,16 @@ import jmr.util.http.ContentType;
 public class CloudUtilities {
 
 	
-	final static GCSFactory factory;
+	final private static GCSFactory factory;
 	
 	static {
 		final String strBucket = SystemUtil.getProperty( SUProperty.GCS_BUCKET );
 		factory = new GCSFactory( strBucket );
+	}
+	
+	
+	public static GCSFactory getFactory() {
+		return factory;
 	}
 	
 	public static void saveImage(	

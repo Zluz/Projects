@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Logger;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -18,7 +18,6 @@ import jmr.pr102.DataRequest;
 import jmr.pr102.TeslaVehicleInterface;
 import jmr.pr102.comm.TeslaLogin;
 import jmr.pr115.actions.ReportTeslaNotCharging;
-import jmr.pr115.rules.drl.Simple;
 import jmr.s2.ingest.S2TeslaLogin;
 import jmr.s2db.event.EventType;
 import jmr.s2db.event.TimeEvent;
@@ -66,7 +65,7 @@ public class TeslaJob extends JobWorker {
 		final boolean bRead = JobType.TESLA_READ.equals( type );
 		final boolean bWrite = JobType.TESLA_WRITE.equals( type );
 
-		System.out.println( "Adding job to TeslaJob: " + strRequest );
+		LOGGER.info( ()-> "Adding job to TeslaJob: " + strRequest );
 		
 		if ( bRead || bWrite ) {
 			final int iPos = strRequest.indexOf(":");

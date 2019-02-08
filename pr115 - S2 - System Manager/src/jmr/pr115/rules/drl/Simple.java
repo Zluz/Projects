@@ -1,21 +1,21 @@
 package jmr.pr115.rules.drl;
 
+import static jmr.pr102.Command.HVAC_START;
+import static jmr.pr102.Command.HVAC_STOP;
+import static jmr.pr102.DataRequest.CLIMATE_STATE;
+
 import java.io.File;
-import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-
-import static jmr.pr102.Command.HVAC_START;
-import static jmr.pr102.Command.HVAC_STOP;
-import static jmr.pr102.DataRequest.CLIMATE_STATE;
 
 //import org.apache.http.entity.ContentType;
 
@@ -24,6 +24,8 @@ import com.google.gson.JsonObject;
 import jmr.pr102.DataRequest;
 import jmr.pr115.actions.SendMessage;
 import jmr.pr115.actions.SendMessage.MessageType;
+import jmr.pr115.data.ReportTable;
+import jmr.pr115.data.ReportTable.Format;
 import jmr.pr115.schedules.run.NestJob;
 import jmr.pr115.schedules.run.TeslaJob;
 import jmr.pr120.Command;
@@ -31,6 +33,8 @@ import jmr.pr120.EmailEvent;
 import jmr.pr122.CommGAE;
 import jmr.pr122.DocKey;
 import jmr.pr122.DocMetadataKey;
+import jmr.pr123.storage.GCSFactory;
+import jmr.pr123.storage.GCSFileWriter;
 import jmr.s2.ingest.Import;
 import jmr.s2db.Client;
 import jmr.s2db.imprt.WebImport;
@@ -43,6 +47,7 @@ import jmr.s2fs.FileSessionManager;
 import jmr.util.TimeUtil;
 import jmr.util.http.ContentType;
 import jmr.util.transform.JsonUtils;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Simple implements RulesConstants {
 	
@@ -509,6 +514,80 @@ public class Simple implements RulesConstants {
 	}
 	
 	
+	public static Map<String,Long> COOLDOWN = new HashMap<>();
+	
+	public static boolean checkCooldown( final String strName,
+										 final long lTime ) {
+		final long lNow = System.currentTimeMillis();
+		final boolean bTake; // reset cooldown?
+		
+		if ( COOLDOWN.containsKey( strName ) ) {
+			final long lTimeDown = COOLDOWN.get( strName );
+			bTake = ( lNow > lTimeDown );
+		} else {
+			bTake = true;
+		}
+		if ( bTake ) {
+			COOLDOWN.put( strName, lNow + lTime );
+			return true;
+		} else {
+			LOGGER.info( ()-> "Activity '" + strName + "' still in cooldown." );
+			return false;
+		}
+	}
+	
+	
+	private static void managePrepareTesla() throws InterruptedException {
+		
+		int i=0;
+
+		boolean bHVACStarted = false;
+		do {
+			final int iFinal = i;
+			LOGGER.info( ()-> "do..while loop, i = " + iFinal );
+			if ( i>6 ) {
+				LOGGER.warning( "Failed to start Tesla HVAC." );
+				return;
+			} else {
+				i++;
+			}
+			
+			LOGGER.info( "POSTing HVAC_START.." );
+			final Job jobActivate = Job.add( 
+					JobType.TESLA_WRITE, null, HVAC_START.name() );
+
+			if ( ! waitForJob( jobActivate, 20 ) ) {
+				LOGGER.info( "Request to start Tesla HVAC timed-out.");
+				return;
+			}
+			
+			Thread.sleep( TimeUnit.SECONDS.toMillis( 30 ) );
+
+			LOGGER.info( "Requesting CLIMATE_STATE.." );
+			final Job jobCheck = Job.add( 
+					JobType.TESLA_READ, null, CLIMATE_STATE.name() );
+			if ( ! waitForJob( jobCheck, 10 ) ) {
+				LOGGER.info( "Request to check Tesla HVAC timed-out.");
+				return;
+			}
+			
+			Thread.sleep( TimeUnit.SECONDS.toMillis( 4 ) );
+
+			final String strPath = CLIMATE_STATE.getResponsePath();
+			final Map<String,String> 
+							map = Client.get().loadPage( strPath );
+			LOGGER.info( ()-> "Looking up page " + strPath + ", " 
+							+ map.keySet().size() + " elements." );
+			final String strHVAC = map.get( "is_climate_on" );
+			LOGGER.info( ()-> "is_climate_on = " + strHVAC ); 
+			bHVACStarted = "true".equalsIgnoreCase( strHVAC );
+
+		} while ( ! bHVACStarted );
+		
+		LOGGER.info( "Tesla climate is on." );
+	}
+	
+	
 	/**
 	 * Prepare the Tesla for driving.
 	 * <br><br>
@@ -519,63 +598,73 @@ public class Simple implements RulesConstants {
 		
 		LOGGER.info( ()-> "--> doPrepareTesla(), bPrepare = " + bPrepare );
 		
-		int i=0;
 		if ( bPrepare ) {
-			try {
-				boolean bHVACStarted = false;
-				do {
-					final int iFinal = i;
-					LOGGER.info( ()-> "do..while loop, i = " + iFinal );
-					if ( i>6 ) {
-						System.err.println( "Failed to start Tesla HVAC." );
-						return;
-					} else {
-						i++;
-					}
-					
-					System.out.println( "POSTing HVAC_START.." );
-					final Job jobActivate = Job.add( 
-							JobType.TESLA_WRITE, null, HVAC_START.name() );
-
-					if ( ! waitForJob( jobActivate, 20 ) ) {
-						System.out.println( 
-								"Request to start Tesla HVAC timed-out.");
-						return;
-					}
-//					System.out.println( "Done." );
-					
-					Thread.sleep( TimeUnit.SECONDS.toMillis( 30 ) );
-
-					System.out.println( "Requesting CLIMATE_STATE.." );
-					final Job jobCheck = Job.add( 
-							JobType.TESLA_READ, null, CLIMATE_STATE.name() );
-					if ( ! waitForJob( jobCheck, 10 ) ) {
-						System.out.println( 
-								"Request to check Tesla HVAC timed-out.");
-						return;
-					}
-//					System.out.println( "Done." );
-					Thread.sleep( TimeUnit.SECONDS.toMillis( 4 ) );
-
-					final String strPath = CLIMATE_STATE.getResponsePath();
-					final Map<String,String> 
-									map = Client.get().loadPage( strPath );
-					System.out.println( "Looking up page " + strPath + ", " 
-									+ map.keySet().size() + " elements." );
-					final String strHVAC = map.get( "is_climate_on" );
-					System.out.println( "is_climate_on = " + strHVAC ); 
-					bHVACStarted = "true".equalsIgnoreCase( strHVAC );
-
-				} while ( ! bHVACStarted );
-				
-				LOGGER.info( "Tesla climate is on." );
-				
-			} catch ( final InterruptedException e ) {
-				LOGGER.info( "PrepareTesla interrupted." );
+			final boolean bAcquiredCooldown = 
+							checkCooldown( "PrepareTesla", 
+									TimeUnit.HOURS.toMillis( 4 ) );
+			if ( !bAcquiredCooldown ) {
+				LOGGER.info( ()-> 
+							"Aborting PrepareTesla (still in cooldown)." );
+				return;
 			}
+
+			final Thread threadPrepareTesla = new Thread() {
+				@Override
+				public void run() {
+					try {
+						managePrepareTesla();
+					} catch ( final InterruptedException e ) {
+						LOGGER.warning( "PrepareTesla interrupted." );
+						e.printStackTrace();
+					}
+				}
+			};
+			threadPrepareTesla.start();
+			
 		} else {
 			Job.add( JobType.TESLA_WRITE, null, HVAC_STOP.name() );
 		}
+	}
+	
+	
+	public static void doUpdateDevices() {
+		
+//		final String strSQL = "SELECT max_start, d.name, ip_address, d.mac, "
+//				+ "class, options, comment FROM device d, "
+//				+ "( SELECT MAX( start ) max_start FROM session "
+//				+ "GROUP BY seq_device ) recent_session, session s "
+//				+ "WHERE TRUE AND ( recent_session.max_start = s.start ) "
+//				+ "AND ( s.seq_device = d.seq ) ORDER BY "
+//				+ "( recent_session.max_start ) DESC;";
+
+		final String strSQL = "SELECT max_start, ip_address, class, d.name "
+				+ "FROM device d, "
+				+ "( SELECT MAX( start ) max_start FROM session "
+				+ "GROUP BY seq_device ) recent_session, session s "
+				+ "WHERE TRUE AND ( recent_session.max_start = s.start ) "
+				+ "AND ( s.seq_device = d.seq ) ORDER BY "
+				+ "( recent_session.max_start ) DESC;";
+		
+		final String strName = "Device_Report";
+		
+		final ReportTable report = new ReportTable( strName, strSQL );
+		final StringBuilder sb = report.generateReport( Format.HTML );
+		final byte[] bytes = sb.toString().getBytes( UTF_8 );
+		
+//		final CommGAE comm = new CommGAE();
+//		comm.store( DocKey.TABLE_REPORT, "Devices", null, bytes );
+//		comm.store( DocKey.TEST, "Devices", null, bytes );
+		try {
+			final GCSFactory factory = CloudUtilities.getFactory();
+			final GCSFileWriter writer = 
+						factory.create( strName, ContentType.TEXT_HTML );
+			writer.upload( bytes );
+		} catch ( final Exception e ) {
+			e.printStackTrace();
+		}
+		
+		System.out.println( DocKey.TABLE_REPORT.name() + ": " 
+							+ bytes.length + " bytes sent to GCS." );
 	}
 	
 	
