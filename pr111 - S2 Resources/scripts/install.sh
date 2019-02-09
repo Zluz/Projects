@@ -110,13 +110,19 @@ fi
 # now setup wifi
 
 FILE=/etc/wpa_supplicant/wpa_supplicant.conf
-if  grep -q -F "PNYZ6" "$FILE";  then
+# if  grep -q -F "PNYZ6" "$FILE";  then
+#     echo "$FILE already modified."
+# else
+#     echo "network={" >> $FILE
+#     echo "  ssid=\"PNYZ6\"" >> $FILE
+#     echo "  psk=30400704366a929ca5e973da58738185859fe3293135025e19b79809a57b0b51" >> $FILE
+#     echo "}" >> $FILE
+# fi
+
+if  grep -q -F "Hazysky" "$FILE";  then
     echo "$FILE already modified."
 else
-    echo "network={" >> $FILE
-    echo "  ssid=\"PNYZ6\"" >> $FILE
-    echo "  psk=30400704366a929ca5e973da58738185859fe3293135025e19b79809a57b0b51" >> $FILE
-    echo "}" >> $FILE
+    cp /Local/config/wpa_supplicant.conf /etc/wpa_supplicant
 fi
 
 wpa_cli -i wlan0 reconfigure
