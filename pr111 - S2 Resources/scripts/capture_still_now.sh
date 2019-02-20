@@ -1,8 +1,8 @@
 #!/bin/bash
 # see: https://www.raspberrypi.org/documentation/usage/camera/raspicam/raspistill.md
 
-vid_detected=$( /bin/ls -l /dev/video* 2> /dev/null | wc -l )
-cam_detected=$( vcgencmd get_camera | grep "detected=1" | wc -l )
+vid_detected=$(/bin/ls -l /dev/video* 2> /dev/null | wc -l)
+cam_detected=$(vcgencmd get_camera | grep "detected=1" | wc -l)
 
 if [[ "$vid_detected" == "0" && "$cam_detected" == "0" ]]
 then
@@ -32,12 +32,17 @@ fi
 
 echo "Time now: $(date)"
 DATE=$(date +"%Y%m%d_%H%M")
-NOW=$(date +"%M")
+# NOW=$(date +"%M")
+NOW=$DATE
 LAST=$NOW
+
 NOW_VLMSG=$( stat -c %Y /var/log/messages )
 LAST_VLMSG=$NOW_VLMSG
+
 code=0
 MAC=$( file -b /tmp/session | cut -d '/' -f 4 )
+
+echo "Looping during working minute: $NOW"
 
 while [[ "$NOW" == "$LAST" ]]
 do
@@ -49,14 +54,18 @@ do
 		# /usr/bin/raspistill -n -o /tmp/capture_still_now.jpg --timeout 1 -ex sports 
 		/usr/bin/raspistill -q 6 -n -o /tmp/capture_still_now._jpg
 		code=$?
-		echo "Done. Exit code: $code"
+		# echo "Done. Exit code: $code"
 		if [[ "$code" == "0" ]]
 		then
+			echo -n "Renaming..."
+
 			rm -rf /tmp/capture_still_now.jpg
 			mv /tmp/capture_still_now._jpg /tmp/capture_still_now.jpg
 
 			if [[ -e "/tmp/session" ]]
 			then
+				echo -n "Copying to share..."
+
 				cp /tmp/capture_still_now.jpg /tmp/session/capture_cam._jpg
 				cp /tmp/capture_still_now.jpg /tmp/session/capture_cam-thumb._jpg
 
@@ -66,10 +75,16 @@ do
 				mogrify -scale 300x -quality 50 /tmp/session/capture_cam-thumb._jpg
 				rm -rf /tmp/session/capture_cam-thumb.jpg
 				mv /tmp/session/capture_cam-thumb._jpg /tmp/session/capture_cam-thumb.jpg
+				
+				echo "Done."
+			else
+				echo "WARNING: Share unavailable."
 			fi
 
-			sleep 1
+			# sleep 1
 		else
+			echo "WARNING. Exit code: $code"
+	
 			sleep 2
 		fi
 	fi
@@ -86,8 +101,11 @@ do
 			NOW_VLMSG=$( stat -c %Y /var/log/messages )
 			if [[ "$LAST_VLMSG" != "$NOW_VLMSG" ]]
 			then
-				echo -n "WARNING: /var/log/messages updated. Pausing for 120s..."
-				sleep 120
+				echo "WARNING: /var/log/messages updated. Last lines:"
+				tail -2 /var/log/messages | sed 's/^/    /'
+
+				echo -n "Pausing for 5s..."
+				sleep 5
 				echo "Done."
 			fi
 			LAST_VLMSG=$NOW_VLMSG
@@ -105,46 +123,73 @@ do
 			# CAP_CMD=$(fswebcam -r 1280x1024 -d /dev/video$vid_count --no-banner /tmp/capture_vid$vid_count._jpg --log /tmp/cap.log 2>&1 > /tmp/cap.out)
 			# CAP_CMD=$(fswebcam -r 1280x1024 -d /dev/video$vid_count --no-banner /tmp/capture_vid$vid_count._jpg --log /dev/null 2>&1 > /tmp/cap.out )
 			CAP_CMD=$( $CMD 2>&1 > /tmp/cap.out )
-			# echo "CAP_CMD: $CAP_CMD"
-			# CAP_ERR=$(cat /tmp/cap.log /tmp/cap.out | grep rror | wc -l)
-			CAP_ERR=$(echo $CAP_CMD | grep rror | wc -l)
-			if [[ "$CAP_ERR" == "0" && -e "/tmp/capture_vid$vid_count._jpg" ]]
+
+
+			# check for errors in the log
+
+			CAP_ERR=$(cat /tmp/cap.log | grep rror | wc -l)
+			if [[ "$CAP_ERR" != "0" ]]
 			then
-				echo -n "Done. Examining..."
+				echo "WARNING: Possible USB error."
 
-				BLANK_TEST=$( convert /tmp/capture_vid$vid_count._jpg -format '%[mean]' info:- )
-				# echo -n "($BLANK_TEST)"
-				# if (( $BLANK_TEST < 100 ))
-				if (( $(echo "$BLANK_TEST < 100" | bc -l ) ))
-				then
-					echo "Image is blank. Skipping."
-				else
-					echo "Done."
+				/bin/rm /tmp/cap.out
+				echo "Attempting to reset the USB bus.."
+				sleep 10
+				/Share/Resources/bin/usbreset /dev/bus/usb/001/003
+				# /Share/Resources/bin/usbreset /dev/bus/usb/001/002
+				sleep 1
+				echo "USB bus should have been reset."
 
-					rm -rf /tmp/capture_vid$vid_count.jpg
-					mv /tmp/capture_vid$vid_count._jpg /tmp/capture_vid$vid_count.jpg
-
-					if [[ -e "/tmp/session" ]]
-					then
-						cp /tmp/capture_vid$vid_count.jpg /tmp/session/capture_vid$vid_count._jpg
-						cp /tmp/capture_vid$vid_count.jpg /tmp/session/capture_vid$vid_count-thumb._jpg
-
-						rm -rf /tmp/session/capture_vid$vid_count.jpg
-						mv /tmp/session/capture_vid$vid_count._jpg /tmp/session/capture_vid$vid_count.jpg
-
-						mogrify -scale 300x -quality 50 /tmp/session/capture_vid$vid_count-thumb._jpg
-						rm -rf /tmp/session/capture_vid$vid_count-thumb.jpg
-						mv /tmp/session/capture_vid$vid_count-thumb._jpg /tmp/session/capture_vid$vid_count-thumb.jpg
-					fi
-				fi
-
-			else
-				echo -n "Error detected, pausing for 8s..."
-				sleep 8
-				echo "Done."
+				rm /tmp/capture_vid$vid_count._jpg
 			fi
 
-			sleep 6   # 10 is last good
+
+			# check the image (may be blank)
+
+			if [[ -e "/tmp/capture_vid$vid_count._jpg" ]]
+			then
+				BLANK_GREP=$( convert /tmp/capture_vid$vid_count._jpg -virtual-pixel edge -fuzz 1% -trim -identify info: | grep "=>" )
+				# BLANK_GREP=$( convert /tmp/capture_vid$vid_count._jpg -identify -verbose info: | grep "Type: Grayscale" )
+				# BLANK_CHECK=$( convert /tmp/capture_vid$vid_count._jpg -identify -verbose info: )
+				# BLANK_GREP=$( echo $BLANK_CHECK | grep "Type: Grayscale" )
+				if [[ "$BLANK_GREP" != "" ]]
+				then
+					echo "WARNING: image may be blank."
+					# echo $BLANK_CHECK
+					echo "Image analysis output:"
+					echo "    $BLANK_GREP"
+					echo "Deleting."
+
+					rm /tmp/capture_vid$vid_count._jpg
+				fi
+			fi
+
+
+			if [[ -e "/tmp/capture_vid$vid_count._jpg" ]]
+			then
+				echo -n "Copying to share..."
+
+				rm -rf /tmp/capture_vid$vid_count.jpg
+				mv /tmp/capture_vid$vid_count._jpg /tmp/capture_vid$vid_count.jpg
+
+				if [[ -e "/tmp/session" ]]
+				then
+					cp /tmp/capture_vid$vid_count.jpg /tmp/session/capture_vid$vid_count._jpg
+					cp /tmp/capture_vid$vid_count.jpg /tmp/session/capture_vid$vid_count-thumb._jpg
+
+					rm -rf /tmp/session/capture_vid$vid_count.jpg
+					mv /tmp/session/capture_vid$vid_count._jpg /tmp/session/capture_vid$vid_count.jpg
+
+					mogrify -scale 300x -quality 50 /tmp/session/capture_vid$vid_count-thumb._jpg
+					rm -rf /tmp/session/capture_vid$vid_count-thumb.jpg
+					mv /tmp/session/capture_vid$vid_count-thumb._jpg /tmp/session/capture_vid$vid_count-thumb.jpg
+
+					echo "Done."
+				else
+					echo "WARNING: Share unavailable."
+				fi
+			fi
+
 			vid_count=$((vid_count+1))
 		done
 
@@ -152,11 +197,12 @@ do
 
 	sleep 1
 	LAST=$NOW
-#	NOW=$(date +"%M")
+	# NOW=$(date +"%M")
+	NOW=$(date +"%Y%m%d_%H%M")
 
 done
 
 # ( ls /tmp/session && ls /tmp/capture_still_now.jpg && cp /tmp/capture_still_now.jpg /tmp/session )
 
-echo "Done."
+echo "Working minute changed. End of script."
 
