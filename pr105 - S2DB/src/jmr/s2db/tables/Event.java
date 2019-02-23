@@ -214,7 +214,7 @@ public class Event extends TableBase {
 								final Long seqTrigger,
 								final Long seqLog
 								) {
-		System.out.println( "--> Event.add()" );
+//		System.out.println( "--> Event.add()" );
 		
 		try {
 			
@@ -222,18 +222,19 @@ public class Event extends TableBase {
 					strSubject, strValue, strThreshold, strData,
 					lTime, seqPage, seqTrigger, seqLog );
 
-			if ( null!=event ) {
-				System.out.println( "<-- Event.add(), seq=" + event.getEventSeq() );
-			} else {
-				System.out.println( "<-- Event.add(), event is null" );
-			}
+//			if ( null!=event ) {
+//				System.out.println( "<-- Event.add(), seq=" + event.getEventSeq() );
+//			} else {
+//				System.out.println( "<-- Event.add(), event is null" );
+//			}
 
 			return event;
 			
 		} catch ( final Throwable t ) {
 
-			System.err.println( "<-- Event.add() - "
-						+ "ERROR when creating event: " + t.toString() );
+//			System.err.println( "<-- Event.add() - " +
+			System.err.println( 
+						"ERROR when creating event: " + t.toString() );
 			t.printStackTrace();
 			return null;
 //		} finally {

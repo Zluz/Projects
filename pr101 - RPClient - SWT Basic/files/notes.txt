@@ -1,0 +1,5 @@
+
+When exporting runnable JAR:
+
+	"Library handling" must be
+		"package required libraries into generated jar"

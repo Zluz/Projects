@@ -284,19 +284,27 @@ public class SWTBasic {
 	    final Shell shell = new Shell( UI.display, iOptions );
 	    
 		if ( bTouchscreen ) {
-	    	log( "Display is RPi touchscreen" );
+	    	LOGGER.info( "Display is RPi touchscreen" );
 		    shell.setSize( 800, 495 );
 	    	shell.setLocation( 0, 0 );
 	    
 	    } else {
-	    	log( "Display is probably normal full-size screen" );
+	    	
+	    	final Rectangle rectArea = shell.getDisplay().getClientArea();
+	    	LOGGER.info( "Display size: " 
+	    				+ rectArea.width + " x " + rectArea.height );
 	    	
 //		    shell.setSize( 810, 520 );
 	    	final int iX = perspective.getColCount() * 150 + 60;
 	    	final int iY = perspective.getRowCount() * 150 + 66;
 	    	shell.setSize( iX, iY );
 	    	
-	    	if ( shell.getLocation().x < 20 ) {
+	    	if ( 1920 == rectArea.width && 1080 == rectArea.height ) { 
+		    	LOGGER.info( "FHD screen, probably headless display. "
+		    					+ "Adjusting for Conky." );
+	    		shell.setLocation( 510, 12 );
+	    	} else if ( shell.getLocation().x < 20 ) {
+		    	LOGGER.info( "Display is probably normal full-size screen" );
 	    		shell.setLocation( 50, 50 );
 	    	}
 	    }

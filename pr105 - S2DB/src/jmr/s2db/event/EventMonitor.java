@@ -1,10 +1,13 @@
 package jmr.s2db.event;
 
+import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import jmr.s2db.tables.Event;
 
@@ -19,10 +22,16 @@ public class EventMonitor {
 	
 	public final static long MONITOR_INTERVAL = TimeUnit.SECONDS.toMillis( 1 );
 
+
 	
+	private static final Logger 
+			LOGGER = Logger.getLogger( EventMonitor.class.getName() );
+
+		
 	private final static Set<Long> setPostedEventSeqs = new HashSet<>();
 
-	private static final List<EventListener> listeners = new LinkedList<>();
+	private static final SynchronousQueue<WeakReference<EventListener>> 
+						listeners = new SynchronousQueue<>();
 
 	private static Thread threadUpdater;
 	
@@ -68,6 +77,8 @@ public class EventMonitor {
 						}
 		
 						Thread.sleep( MONITOR_INTERVAL );
+						
+						clearOldListeners();
 					}
 				} catch ( final InterruptedException e ) {
 					// just quit
@@ -108,24 +119,54 @@ public class EventMonitor {
 			}
 		}
 	}
+
+	
+	private static void clearOldListeners() {
+		List<WeakReference<EventListener>> listDelete = null;
+//		synchronized ( listeners ) {
+			for ( final WeakReference<EventListener> ref : listeners ) {
+				final EventListener listener = ref.get();
+				if ( null==listener ) {
+					if ( null==listDelete ) {
+						listDelete = new LinkedList<>();
+					}
+					listDelete.add( ref );
+				}
+			}
+//		}
+		if ( null!=listDelete ) {
+			for ( final WeakReference<EventListener> ref : listDelete ) {
+				listeners.remove( ref );
+			}
+		}
+	}
 	
 	
 	public static void postNewEvent( final Event event ) {
 		if ( null==event ) return;
 		
 //		System.out.println( "--- postNewEvent(), event " + event.getEventSeq() );
-		
+
 		final long seq = event.getEventSeq();
+		final boolean bPost;
 		synchronized ( setPostedEventSeqs ) {
-			if ( !setPostedEventSeqs.contains( seq ) ) {
-				
-				for ( final EventListener listener : listeners ) {
+			if ( ! setPostedEventSeqs.contains( seq ) ) {
+				setPostedEventSeqs.add( seq );
+				bPost = true;
+			} else {
+				bPost = false;
+			}
+		}
+
+		if ( bPost ) {
+//			synchronized ( listeners ) {
+				for ( final WeakReference<EventListener> ref : listeners ) {
+					final EventListener listener = ref.get();
 					if ( null!=listener ) {
 						listener.process( event );
 					}
 				}
-			}
-			setPostedEventSeqs.add( seq );
+//			}
 		}
 	}
 	
@@ -133,8 +174,16 @@ public class EventMonitor {
 	public void addListener( final EventListener listener ) {
 		if ( null==listener ) return;
 		
+//		EventMonitor.clearOldListeners();
+		
 		synchronized ( setPostedEventSeqs ) {
-			EventMonitor.listeners.add( listener );
+			final WeakReference<EventListener> 
+						ref = new WeakReference<EventListener>( listener );
+//			EventMonitor.listeners.add( ref );
+			if ( ! EventMonitor.listeners.offer( ref ) ) {
+				LOGGER.severe( "Failed to add EventListener " 
+									+ listener.toString() );
+			}
 		}
 		
 		this.initializeEventMonitorThread();

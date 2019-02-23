@@ -8,6 +8,7 @@ public class Heartbeat extends JobWorker {
 	
 	public Heartbeat( final TimeUnit unit ) {
 		this.unit = unit;
+		System.out.print( unit.name().charAt( 0 ) );
 	}
 	
 	@Override

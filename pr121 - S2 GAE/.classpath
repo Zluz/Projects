@@ -8,6 +8,7 @@
 	</classpathentry>
 	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
 		<attributes>
+			<attribute name="test" value="true"/>
 			<attribute name="optional" value="true"/>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
@@ -29,5 +30,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/Projects-dependencies.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr104 - Utilities"/>
 	<classpathentry kind="output" path="target/pr121-0.1.0-SNAPSHOT/WEB-INF/classes"/>
 </classpath>

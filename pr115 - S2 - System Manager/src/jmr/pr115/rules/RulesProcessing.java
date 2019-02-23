@@ -57,8 +57,15 @@ public class RulesProcessing {
 		if ( null==session ) return false;
 
 //		System.out.println( "--> RulesProcessing.process()" );
+		final long lTimeStart = System.currentTimeMillis();
 		
 		final int result = session.processItem( item );
+		
+		final long lTimeEnd = System.currentTimeMillis();
+		final long lElapsed = lTimeEnd - lTimeStart;
+		
+		System.out.println( "Event processed, result: " + result + ", "
+						+ "elapsed: " + lElapsed + "ms, event: " + item );
 		
 //		System.out.println( "<-- RulesProcessing.process(), result = " + result );
 		return result > 0;

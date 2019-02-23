@@ -46,6 +46,14 @@ public class Client {
 
 	public long register(	final String strName,
 							final String strClass ) {
+		final long lResult = this.register( strName, strClass, false );
+		return lResult;
+	}
+	
+	
+	public long register(	final String strName,
+							final String strClass,
+							final boolean bQuiet ) {
 		final Date now = new Date();
 		final long lNow = System.currentTimeMillis();
 	    final String strMAC = NetUtil.getMAC();
@@ -66,14 +74,18 @@ public class Client {
 	    jo.addProperty( "MAC", strMAC );
 	    final String strData = jo.toString();
 	    
-		final Event event = Event.add(
-				EventType.SYSTEM, SystemEvent.CLIENT_REGISTERED.name(), 
-				strIP, null, 
-				strData, lNow, null, null, null );
-		
-		System.out.println( "Client registered. "
-						+ "Session " + seqSession + ", "
-						+ "Event " + event.getEventSeq() + "." );
+	    if ( ! bQuiet ) {
+			final Event event = Event.add(
+					EventType.SYSTEM, SystemEvent.CLIENT_REGISTERED.name(), 
+					strIP, null, 
+					strData, lNow, null, null, null );
+			System.out.println( "Client registered. "
+					+ "Session " + seqSession + ", "
+					+ "Event " + event.getEventSeq() + "." );
+	    } else {
+			System.out.println( "Client registered. "
+					+ "Session " + seqSession );
+	    }
 		
 	    return seqSession;
 	}

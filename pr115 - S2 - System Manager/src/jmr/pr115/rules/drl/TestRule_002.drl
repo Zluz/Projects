@@ -1,0 +1,19 @@
+package pr115.rules.drl;
+
+import jmr.util.TimeUtil;
+import jmr.pr115.rules.drl.Simple;
+import jmr.pr115.schedules.run.Heartbeat;
+
+
+dialect "mvel"
+
+
+rule "TestRule_002"
+	when
+		h : Heartbeat( getTimeUnit() == TimeUnit.MINUTES )
+		// eval( TimeUtil.isHourOfDay( 3,4,5 ) )
+		// eval( TimeUtil.isMinuteInHour( 0,10,20,30,40,50 ) )
+	then
+		System.out.print( "." );
+end
+

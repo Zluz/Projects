@@ -41,3 +41,13 @@ rule "Refresh Cloud Capture Thumbnails (every 10 minutes)"
 		Simple.updateDeviceThumbnails();
 end
 
+
+rule "Minute Check"
+	when
+		h : Heartbeat( getTimeUnit() == TimeUnit.MINUTES )
+		eval( TimeUtil.isHourOfDay( 3,4,5 ) )
+		// eval( TimeUtil.isMinuteInHour( 0,10,20,30,40,50 ) )
+	then
+		System.out.print( "." );
+end
+

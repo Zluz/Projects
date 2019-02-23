@@ -8,7 +8,7 @@ import jmr.util.hardware.*;
 import jmr.util.*;
 
 // Cannot seem to actually use java.util.Map 
-// (Map may already be declared and explicity referencing may not be working)
+// (Map may already be declared and explicitly referencing may not be working)
 
 rule "TestEvent"
 	//dialect "mvel" //NOTE: do not specify dialect here

@@ -55,40 +55,47 @@ public class DroolsSession {
 	}
 	
 	
-	public synchronized int processItems( final List<Object> items ) {
+	@Deprecated // do not use right now, but migrate to in the future
+	public int processItems( final List<Object> items ) {
 		if ( null==items ) return -1;
 		if ( items.isEmpty() ) return 0;
 		
-		for ( final Object item : items ) {
-			session.insert( item );
+		final int iFired;
+		synchronized ( session ) {
+			for ( final Object item : items ) {
+				session.insert( item );
+			}
+			
+			iFired = session.fireAllRules();
 		}
-		
-		final int iFired = session.fireAllRules();
 		return iFired;
 	}
 	
 
-	public synchronized int processItem( final Object item ) {
+	public int processItem( final Object item ) {
 		if ( null==item ) return -1;
 		
-		final FactHandle handle = session.insert( item );
-		
-		try {
+		synchronized ( session ) {
 			
-			final int iFired = session.fireAllRules();
-			return iFired;
-			
-		} catch ( final Exception e ) {
-			System.err.println( e.toString() + " encountered while "
-					+ "processing Rules." );
-			e.printStackTrace();
-			return 0;
-			
-		} finally {
-			session.delete( handle );
+			FactHandle handle = null;
+			try {
+				handle = session.insert( item );
+
+				final int iFired = session.fireAllRules();
+				return iFired;
+				
+			} catch ( final Exception e ) {
+				System.err.println( e.toString() + " encountered while "
+						+ "processing Rules." );
+				e.printStackTrace();
+				return 0;
+				
+			} finally {
+				if ( null!=handle ) {
+					session.delete( handle );
+				}
+			}
 		}
-		
-		
 	}
 	
 	

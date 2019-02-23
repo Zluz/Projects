@@ -49,7 +49,9 @@ public class Clip {
 				true,
 				Boolean.parseBoolean( arrFormat[4] ) );
 		
+		@SuppressWarnings("unused")
 		final String strOriginalFormat = arrFormat[5];
+		@SuppressWarnings("unused")
 		final String strResolvedFormat = this.format.toString();
 		
 		final int iLength = Integer.parseInt( strLength );
@@ -86,6 +88,7 @@ public class Clip {
 		
 		final Decoder decoder = Base64.getDecoder();
 //		final byte[] decoded = decoder.decode( strData.getBytes() );
+		@SuppressWarnings("unused")
 		final byte[] decoded = decoder.decode( strEncoded );
 		
 		

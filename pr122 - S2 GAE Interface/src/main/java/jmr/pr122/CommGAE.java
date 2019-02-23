@@ -16,8 +16,11 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.google.gson.JsonObject;
+
 
 //import org.apache.http.entity.ContentType;
 
@@ -32,6 +35,9 @@ import jmr.util.http.ContentRetriever;
  * This is not using advanced messaging or persistent storage.
  */
 public class CommGAE {
+	
+	private final static Logger 
+					LOGGER = Logger.getLogger( CommGAE.class.getName() );
 
 	final String strGAEUrl;
 
@@ -186,10 +192,12 @@ public class CommGAE {
 				// service may not be accepting (because its not config'd) (?)
 				// just ignore for now ..
 				//TODO investigate, confirm, disable?
+				LOGGER.log( Level.WARNING, "Exception encountered", e );
 			}
 			
 		} catch ( final IOException e ) {
-			e.printStackTrace();
+			LOGGER.log( Level.WARNING, "Exception encountered", e );
+//			e.printStackTrace();
 		}
 	}
 	

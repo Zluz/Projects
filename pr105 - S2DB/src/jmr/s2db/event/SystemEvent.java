@@ -10,9 +10,24 @@ public enum SystemEvent {
 	DEVICE_PROBLEM,
 	DEVICE_SHUTDOWN,
 	
+	HEARTBEAT_HOUR,
+	HEARTBEAT_DAY,
+	
 	GENERAL_MESSAGE,
 	GENERAL_ERROR,
 	GENERAL_WARNING,
 	
 	TEST_SYSTEM_EVENT,
+	;
+	
+	public static SystemEvent getSystemEvent( final String str ) {
+		if ( null==str ) return null;
+		final String strNorm = str.trim().toUpperCase();
+		for ( final SystemEvent event : SystemEvent.values() ) {
+			if ( event.name().equals( strNorm ) ) {
+				return event;
+			}
+		}
+		return null;
+	}
 }
