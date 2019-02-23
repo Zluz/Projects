@@ -38,7 +38,8 @@ if [[ "$LATEST" == "" ]]; then
 	echo "    Share mounted successfully." >> /tmp/reboot.log
 fi
 
-/usr/bin/java -jar $LATEST $EVENT
+echo "Running  $LATEST $EVENT"
+/Local/scripts/timeout3.sh -t 60  /usr/bin/java -jar $LATEST $EVENT
 
 echo "Posted $EVENT event.."
 
