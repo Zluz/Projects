@@ -19,14 +19,12 @@
 # 
 # For more information see the manual pages of crontab(5) and cron(8)
 # 
-# m h  dom mon dow   command
+# min  hr dom mon dow command
 
-* * * * *  /Local/scripts/run_CheckOS.sh
-00,20,40 * * * * /Local/scripts/beacon.sh > /tmp/beacon.log
-#00,20,40 * * * * /root/Scripts/beacon.sh > /tmp/beacon.log
-#14 * * * * /root/Scripts/beacon.sh > /tmp/beacon.log
-#16 * * * * /usr/bin/beacon.sh > /tmp/beacon.log
-#18 * * * * /root/Scripts/beacon.sh > /tmp/beacon.log
-# * * * * *  /Local/scripts/capture_still_cron.sh
-* * * * *  /Local/scripts/capture_still_now.sh
+   *    *   *  *  *  /Local/scripts/run_CheckOS.sh
+00,20,40 *  *  *  *  /Local/scripts/beacon.sh > /tmp/beacon.log
+#  *    *   *  *  *  /Local/scripts/capture_still_cron.sh
+   *    *   *  *  *  /Local/scripts/capture_still_now.sh
+   0    *   *  *  *  /Local/scripts/post_heartbeat.sh > /tmp/heartbeat_hour.out
+05,25,45 *  *  *  *  /root/reboot_test.sh
 
