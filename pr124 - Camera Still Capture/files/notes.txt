@@ -1,0 +1,228 @@
+C:\Development\Runtimes\Java JRE 1.8.0.202 64bit\bin\javaw.exe 
+	-Dfile.encoding=Cp1252 
+	-classpath 
+		"C:\Development\CM\Git_20190124.002\Projects__20190125\pr124 - Camera Still Capture\build\classes;
+		C:\Development\CM\Git_20190124.002\External - webcam-capture\webcam-capture\target\classes;
+		C:\Users\usr111\.m2\repository\com\nativelibs4java\bridj\0.7.0\bridj-0.7.0.jar;
+		C:\Users\usr111\.m2\repository\org\slf4j\slf4j-api\1.7.2\slf4j-api-1.7.2.jar;
+		C:\Users\usr111\.m2\repository\ch\qos\logback\logback-classic\1.0.9\logback-classic-1.0.9.jar;
+		C:\Users\usr111\.m2\repository\ch\qos\logback\logback-core\1.0.9\logback-core-1.0.9.jar;
+		C:\Users\usr111\.m2\repository\com\jayway\awaitility\awaitility\1.6.2\awaitility-1.6.2.jar;
+		C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-library\1.3\hamcrest-library-1.3.jar;
+		C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;
+		C:\Users\usr111\.m2\repository\cglib\cglib-nodep\3.1\cglib-nodep-3.1.jar;
+		C:\Users\usr111\.m2\repository\org\objenesis\objenesis\2.1\objenesis-2.1.jar;
+		C:\Users\usr111\.m2\repository\junit\junit\4.11\junit-4.11.jar;
+		C:\Users\usr111\.m2\repository\org\assertj\assertj-core\1.6.1\assertj-core-1.6.1.jar;
+		C:\Users\usr111\.m2\repository\org\easymock\easymock\3.2\easymock-3.2.jar" 
+	jmr.pr124.ImageCapture
+
+
+C:\Development\Runtimes\Java JRE 1.8.0.202 64bit\bin\javaw.exe 
+	-Dfile.encoding=Cp1252 
+	-classpath "C:\Development\CM\Git_20190124.002\Projects__20190125\pr124 - Camera Still Capture\build\classes;C:\Development\CM\Git_20190124.002\External - webcam-capture\webcam-capture\target\classes;C:\Users\usr111\.m2\repository\com\nativelibs4java\bridj\0.7.0\bridj-0.7.0.jar;C:\Users\usr111\.m2\repository\org\slf4j\slf4j-api\1.7.2\slf4j-api-1.7.2.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-classic\1.0.9\logback-classic-1.0.9.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-core\1.0.9\logback-core-1.0.9.jar;C:\Users\usr111\.m2\repository\com\jayway\awaitility\awaitility\1.6.2\awaitility-1.6.2.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-library\1.3\hamcrest-library-1.3.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\usr111\.m2\repository\cglib\cglib-nodep\3.1\cglib-nodep-3.1.jar;C:\Users\usr111\.m2\repository\org\objenesis\objenesis\2.1\objenesis-2.1.jar;C:\Users\usr111\.m2\repository\junit\junit\4.11\junit-4.11.jar;C:\Users\usr111\.m2\repository\org\assertj\assertj-core\1.6.1\assertj-core-1.6.1.jar;C:\Users\usr111\.m2\repository\org\easymock\easymock\3.2\easymock-3.2.jar" 
+	jmr.pr124.ImageCapture
+
+
+java.exe 
+	-classpath "C:\Development\CM\Git_20190124.002\Projects__20190125\pr124 - Camera Still Capture\build\classes;C:\Development\CM\Git_20190124.002\External - webcam-capture\webcam-capture\target\classes;C:\Users\usr111\.m2\repository\com\nativelibs4java\bridj\0.7.0\bridj-0.7.0.jar;C:\Users\usr111\.m2\repository\org\slf4j\slf4j-api\1.7.2\slf4j-api-1.7.2.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-classic\1.0.9\logback-classic-1.0.9.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-core\1.0.9\logback-core-1.0.9.jar;C:\Users\usr111\.m2\repository\com\jayway\awaitility\awaitility\1.6.2\awaitility-1.6.2.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-library\1.3\hamcrest-library-1.3.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\usr111\.m2\repository\cglib\cglib-nodep\3.1\cglib-nodep-3.1.jar;C:\Users\usr111\.m2\repository\org\objenesis\objenesis\2.1\objenesis-2.1.jar;C:\Users\usr111\.m2\repository\junit\junit\4.11\junit-4.11.jar;C:\Users\usr111\.m2\repository\org\assertj\assertj-core\1.6.1\assertj-core-1.6.1.jar;C:\Users\usr111\.m2\repository\org\easymock\easymock\3.2\easymock-3.2.jar" 
+	jmr.pr124.ImageCapture
+
+
+java.exe -Dfile.encoding=Cp1252 -classpath "C:\Development\CM\Git_20190124.002\Projects__20190125\pr124 - Camera Still Capture\build\classes;C:\Development\CM\Git_20190124.002\External - webcam-capture\webcam-capture\target\classes;C:\Users\usr111\.m2\repository\com\nativelibs4java\bridj\0.7.0\bridj-0.7.0.jar;C:\Users\usr111\.m2\repository\org\slf4j\slf4j-api\1.7.2\slf4j-api-1.7.2.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-classic\1.0.9\logback-classic-1.0.9.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-core\1.0.9\logback-core-1.0.9.jar;C:\Users\usr111\.m2\repository\com\jayway\awaitility\awaitility\1.6.2\awaitility-1.6.2.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-library\1.3\hamcrest-library-1.3.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\usr111\.m2\repository\cglib\cglib-nodep\3.1\cglib-nodep-3.1.jar;C:\Users\usr111\.m2\repository\org\objenesis\objenesis\2.1\objenesis-2.1.jar;C:\Users\usr111\.m2\repository\junit\junit\4.11\junit-4.11.jar;C:\Users\usr111\.m2\repository\org\assertj\assertj-core\1.6.1\assertj-core-1.6.1.jar;C:\Users\usr111\.m2\repository\org\easymock\easymock\3.2\easymock-3.2.jar" jmr.pr124.ImageCapture
+[works]
+
+java.exe -classpath "C:\Development\CM\Git_20190124.002\Projects__20190125\pr124 - Camera Still Capture\build\classes;C:\Development\CM\Git_20190124.002\External - webcam-capture\webcam-capture\target\classes;C:\Users\usr111\.m2\repository\com\nativelibs4java\bridj\0.7.0\bridj-0.7.0.jar;C:\Users\usr111\.m2\repository\org\slf4j\slf4j-api\1.7.2\slf4j-api-1.7.2.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-classic\1.0.9\logback-classic-1.0.9.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-core\1.0.9\logback-core-1.0.9.jar;C:\Users\usr111\.m2\repository\com\jayway\awaitility\awaitility\1.6.2\awaitility-1.6.2.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-library\1.3\hamcrest-library-1.3.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\usr111\.m2\repository\cglib\cglib-nodep\3.1\cglib-nodep-3.1.jar;C:\Users\usr111\.m2\repository\org\objenesis\objenesis\2.1\objenesis-2.1.jar;C:\Users\usr111\.m2\repository\junit\junit\4.11\junit-4.11.jar;C:\Users\usr111\.m2\repository\org\assertj\assertj-core\1.6.1\assertj-core-1.6.1.jar;C:\Users\usr111\.m2\repository\org\easymock\easymock\3.2\easymock-3.2.jar" jmr.pr124.ImageCapture
+[works]
+
+java.exe   jmr.pr124.ImageCapture  -classpath "C:\Development\CM\Git_20190124.002\External - webcam-capture\webcam-capture\target\classes;C:\Users\usr111\.m2\repository\com\nativelibs4java\bridj\0.7.0\bridj-0.7.0.jar;C:\Users\usr111\.m2\repository\org\slf4j\slf4j-api\1.7.2\slf4j-api-1.7.2.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-classic\1.0.9\logback-classic-1.0.9.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-core\1.0.9\logback-core-1.0.9.jar;C:\Users\usr111\.m2\repository\com\jayway\awaitility\awaitility\1.6.2\awaitility-1.6.2.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-library\1.3\hamcrest-library-1.3.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\usr111\.m2\repository\cglib\cglib-nodep\3.1\cglib-nodep-3.1.jar;C:\Users\usr111\.m2\repository\org\objenesis\objenesis\2.1\objenesis-2.1.jar;C:\Users\usr111\.m2\repository\junit\junit\4.11\junit-4.11.jar;C:\Users\usr111\.m2\repository\org\assertj\assertj-core\1.6.1\assertj-core-1.6.1.jar;C:\Users\usr111\.m2\repository\org\easymock\easymock\3.2\easymock-3.2.jar" -jar S:\Development\Export\pr124_20190223_012.jar
+
+java.exe -classpath "C:\Development\CM\Git_20190124.002\External - webcam-capture\webcam-capture\target\classes;C:\Users\usr111\.m2\repository\com\nativelibs4java\bridj\0.7.0\bridj-0.7.0.jar;C:\Users\usr111\.m2\repository\org\slf4j\slf4j-api\1.7.2\slf4j-api-1.7.2.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-classic\1.0.9\logback-classic-1.0.9.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-core\1.0.9\logback-core-1.0.9.jar;C:\Users\usr111\.m2\repository\com\jayway\awaitility\awaitility\1.6.2\awaitility-1.6.2.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-library\1.3\hamcrest-library-1.3.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\usr111\.m2\repository\cglib\cglib-nodep\3.1\cglib-nodep-3.1.jar;C:\Users\usr111\.m2\repository\org\objenesis\objenesis\2.1\objenesis-2.1.jar;C:\Users\usr111\.m2\repository\junit\junit\4.11\junit-4.11.jar;C:\Users\usr111\.m2\repository\org\assertj\assertj-core\1.6.1\assertj-core-1.6.1.jar;C:\Users\usr111\.m2\repository\org\easymock\easymock\3.2\easymock-3.2.jar" -jar S:\Development\Export\pr124_20190223_013.jar jmr.pr124.ImageCapture  
+[failed, but good error]
+
+java.exe -classpath "C:\Development\CM\Git_20190124.002\External - webcam-capture\webcam-capture\target\classes;C:\Users\usr111\.m2\repository\com\nativelibs4java\bridj\0.7.0\bridj-0.7.0.jar;C:\Users\usr111\.m2\repository\org\slf4j\slf4j-api\1.7.2\slf4j-api-1.7.2.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-classic\1.0.9\logback-classic-1.0.9.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-core\1.0.9\logback-core-1.0.9.jar;C:\Users\usr111\.m2\repository\com\jayway\awaitility\awaitility\1.6.2\awaitility-1.6.2.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-library\1.3\hamcrest-library-1.3.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\usr111\.m2\repository\cglib\cglib-nodep\3.1\cglib-nodep-3.1.jar;C:\Users\usr111\.m2\repository\org\objenesis\objenesis\2.1\objenesis-2.1.jar;C:\Users\usr111\.m2\repository\junit\junit\4.11\junit-4.11.jar;C:\Users\usr111\.m2\repository\org\assertj\assertj-core\1.6.1\assertj-core-1.6.1.jar;C:\Users\usr111\.m2\repository\org\easymock\easymock\3.2\easymock-3.2.jar;S:\Development\Export\pr124_20190223_013.jar" jmr.pr124.ImageCapture
+[works!]
+
+java.exe -classpath "C:\Development\CM\Git_20190124.002\External - webcam-capture\webcam-capture\target\classes;C:\Users\usr111\.m2\repository\com\nativelibs4java\bridj\0.7.0\bridj-0.7.0.jar;C:\Users\usr111\.m2\repository\org\slf4j\slf4j-api\1.7.2\slf4j-api-1.7.2.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-classic\1.0.9\logback-classic-1.0.9.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-core\1.0.9\logback-core-1.0.9.jar;C:\Users\usr111\.m2\repository\com\jayway\awaitility\awaitility\1.6.2\awaitility-1.6.2.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-library\1.3\hamcrest-library-1.3.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\usr111\.m2\repository\cglib\cglib-nodep\3.1\cglib-nodep-3.1.jar;C:\Users\usr111\.m2\repository\org\objenesis\objenesis\2.1\objenesis-2.1.jar;C:\Users\usr111\.m2\repository\junit\junit\4.11\junit-4.11.jar;C:\Users\usr111\.m2\repository\org\assertj\assertj-core\1.6.1\assertj-core-1.6.1.jar;C:\Users\usr111\.m2\repository\org\easymock\easymock\3.2\easymock-3.2.jar;S:\Development\Export\pr124_20190223_006.jar" jmr.pr124.ImageCapture
+
+
+------------------------------------------------------------
+
+[using ide run build command]
+C:\Development\Runtimes\Java JRE 1.8.0.202 64bit\bin\java.exe 
+	-classpath "C:\Development\CM\Git_20190124.002\Projects__20190125\pr124 - Camera Still Capture\build\classes;C:\Development\CM\Git_20190124.002\External - webcam-capture\webcam-capture\target\classes;C:\Users\usr111\.m2\repository\com\nativelibs4java\bridj\0.7.0\bridj-0.7.0.jar;C:\Users\usr111\.m2\repository\org\slf4j\slf4j-api\1.7.2\slf4j-api-1.7.2.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-classic\1.0.9\logback-classic-1.0.9.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-core\1.0.9\logback-core-1.0.9.jar;C:\Users\usr111\.m2\repository\com\jayway\awaitility\awaitility\1.6.2\awaitility-1.6.2.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-library\1.3\hamcrest-library-1.3.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\usr111\.m2\repository\cglib\cglib-nodep\3.1\cglib-nodep-3.1.jar;C:\Users\usr111\.m2\repository\org\objenesis\objenesis\2.1\objenesis-2.1.jar;C:\Users\usr111\.m2\repository\junit\junit\4.11\junit-4.11.jar;C:\Users\usr111\.m2\repository\org\assertj\assertj-core\1.6.1\assertj-core-1.6.1.jar;C:\Users\usr111\.m2\repository\org\easymock\easymock\3.2\easymock-3.2.jar" 
+	-jar S:\Development\Export\pr124_20190223_004.jar
+
+
+java.exe -classpath "C:\Development\CM\Git_20190124.002\External - webcam-capture\webcam-capture\target\classes;C:\Users\usr111\.m2\repository\com\nativelibs4java\bridj\0.7.0\bridj-0.7.0.jar;C:\Users\usr111\.m2\repository\org\slf4j\slf4j-api\1.7.2\slf4j-api-1.7.2.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-classic\1.0.9\logback-classic-1.0.9.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-core\1.0.9\logback-core-1.0.9.jar;C:\Users\usr111\.m2\repository\com\jayway\awaitility\awaitility\1.6.2\awaitility-1.6.2.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-library\1.3\hamcrest-library-1.3.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\usr111\.m2\repository\cglib\cglib-nodep\3.1\cglib-nodep-3.1.jar;C:\Users\usr111\.m2\repository\org\objenesis\objenesis\2.1\objenesis-2.1.jar;C:\Users\usr111\.m2\repository\junit\junit\4.11\junit-4.11.jar;C:\Users\usr111\.m2\repository\org\assertj\assertj-core\1.6.1\assertj-core-1.6.1.jar;C:\Users\usr111\.m2\repository\org\easymock\easymock\3.2\easymock-3.2.jar;S:\Development\Export\pr124_20190223_014.jar" jmr.pr124.ImageCapture
+
+java.exe -classpath "C:\Development\CM\Git_20190124.002\External - webcam-capture\webcam-capture\target\classes;C:\Users\usr111\.m2\repository\com\nativelibs4java\bridj\0.7.0\bridj-0.7.0.jar;C:\Users\usr111\.m2\repository\org\slf4j\slf4j-api\1.7.2\slf4j-api-1.7.2.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-classic\1.0.9\logback-classic-1.0.9.jar;C:\Users\usr111\.m2\repository\ch\qos\logback\logback-core\1.0.9\logback-core-1.0.9.jar;C:\Users\usr111\.m2\repository\com\jayway\awaitility\awaitility\1.6.2\awaitility-1.6.2.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-library\1.3\hamcrest-library-1.3.jar;C:\Users\usr111\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\usr111\.m2\repository\cglib\cglib-nodep\3.1\cglib-nodep-3.1.jar;C:\Users\usr111\.m2\repository\org\objenesis\objenesis\2.1\objenesis-2.1.jar;C:\Users\usr111\.m2\repository\junit\junit\4.11\junit-4.11.jar;C:\Users\usr111\.m2\repository\org\assertj\assertj-core\1.6.1\assertj-core-1.6.1.jar;C:\Users\usr111\.m2\repository\org\easymock\easymock\3.2\easymock-3.2.jar;S:\Development\Export\pr124_20190223_014.jar" jmr.pr124.ImageCapture
+
+
+C:\Development\Runtimes\Java JRE 1.8.0.202 64bit\bin\javaw.exe 
+	-Dfile.encoding=Cp1252 
+	-classpath 
+		"C:\Development\CM\Git_20190124.002\Projects__20190125\pr124 - Camera Still Capture\build\classes;
+		S:\Resources\lib\webcam-capture\target\classes;
+		S:\Resources\lib\bridj-0.7.0.jar;
+		S:\Resources\lib\slf4j-api-1.7.2.jar;
+		S:\Resources\lib\logback-classic-1.0.9.jar;
+		S:\Resources\lib\logback-core-1.0.9.jar;
+		S:\Resources\lib\awaitility-1.6.2.jar;
+		S:\Resources\lib\hamcrest-library-1.3.jar;
+		S:\Resources\lib\hamcrest-core-1.3.jar;
+		S:\Resources\lib\cglib-nodep-3.1.jar;
+		S:\Resources\lib\objenesis-2.1.jar;
+		S:\Resources\lib\junit-4.11.jar;
+		S:\Resources\lib\assertj-core-1.6.1.jar;
+		S:\Resources\lib\easymock-3.2.jar" 
+	jmr.pr124.ImageCapture
+
+
+
+java.exe -classpath "S:\Development\Export\pr124_20190223_014.jar;S:\Resources\lib\webcam-capture\target\classes;S:\Resources\lib\bridj-0.7.0.jar;S:\Resources\lib\slf4j-api-1.7.2.jar;S:\Resources\lib\logback-classic-1.0.9.jar;S:\Resources\lib\logback-core-1.0.9.jar;S:\Resources\lib\awaitility-1.6.2.jar;S:\Resources\lib\hamcrest-library-1.3.jar;S:\Resources\lib\hamcrest-core-1.3.jar;S:\Resources\lib\cglib-nodep-3.1.jar;S:\Resources\lib\objenesis-2.1.jar;S:\Resources\lib\junit-4.11.jar;S:\Resources\lib\assertj-core-1.6.1.jar;S:\Resources\lib\easymock-3.2.jar" jmr.pr124.ImageCapture
+
+
+
+java.exe -classpath "S:\Development\Export\pr124_20190223_014.jar;S:\Resources\lib\webcam-capture\target\classes;S:\Resources\lib\bridj-0.7.0.jar;S:\Resources\lib\slf4j-api-1.7.2.jar;S:\Resources\lib\logback-classic-1.0.9.jar;S:\Resources\lib\logback-core-1.0.9.jar;S:\Resources\lib\awaitility-1.6.2.jar;S:\Resources\lib\hamcrest-library-1.3.jar;S:\Resources\lib\hamcrest-core-1.3.jar;S:\Resources\lib\cglib-nodep-3.1.jar;S:\Resources\lib\objenesis-2.1.jar;S:\Resources\lib\junit-4.11.jar;S:\Resources\lib\assertj-core-1.6.1.jar;S:\Resources\lib\easymock-3.2.jar" jmr.pr124.ImageCapture
+
+[reduced libraries]
+java.exe -classpath "S:\Development\Export\pr124_20190223_014.jar;S:\Resources\lib\webcam-capture\target\classes;S:\Resources\lib\bridj-0.7.0.jar;S:\Resources\lib\slf4j-api-1.7.2.jar;S:\Resources\lib\logback-classic-1.0.9.jar;S:\Resources\lib\logback-core-1.0.9.jar;S:\Resources\lib\hamcrest-library-1.3.jar;S:\Resources\lib\hamcrest-core-1.3.jar;S:\Resources\lib\cglib-nodep-3.1.jar;S:\Resources\lib\objenesis-2.1.jar" jmr.pr124.ImageCapture
+[works]
+
+
+
+
+
+[run example]
+
+C:\Users\usr112>java.exe -classpath "S:\Development\Export\pr124_20190224_007.jar;C:\Development\CM\Git_20190124.002\Projects__20190125\pr124 - Camera
+ Still Capture\build\classes;S:\Resources\lib\webcam-capture\target\classes;S:\Resources\lib\bridj-0.7.0.jar;S:\Resources\lib\slf4j-api-1.7.2.jar;S:\R
+esources\lib\logback-classic-1.0.9.jar;S:\Resources\lib\logback-core-1.0.9.jar;S:\Resources\lib\hamcrest-library-1.3.jar;S:\Resources\lib\hamcrest-cor
+e-1.3.jar;S:\Resources\lib\cglib-nodep-3.1.jar;S:\Resources\lib\objenesis-2.1.jar" jmr.pr124.ImageCapture
+02:08:04.739 [main] INFO  com.github.sarxos.webcam.Webcam - WebcamDefaultDriver capture driver will be used
+02:08:04.770 [webcam-discovery-service] DEBUG c.g.s.w.d.b.WebcamDefaultDriver - Searching devices
+02:08:06.473 [webcam-discovery-service] DEBUG c.g.s.w.d.b.WebcamDefaultDriver - Found device HD USB Camera 0
+02:08:06.473 [webcam-discovery-service] DEBUG c.g.s.w.d.b.WebcamDefaultDriver - Found device USB2.0 PC CAMERA 1
+02:08:06.473 [webcam-discovery-service] DEBUG c.g.s.w.d.b.WebcamDefaultDriver - Found device USB2.0 PC CAMERA 2
+Camera system:
+        getDriver(): com.github.sarxos.webcam.ds.buildin.WebcamDefaultDriver@1fe3ee3
+Detected cameras:
+---     getName(): HD USB Camera 0
+        getDevice(): HD USB Camera 0
+        getViewSize(): java.awt.Dimension[width=176,height=144]
+        getFPS(): 0.0
+        toString(): Webcam HD USB Camera 0
+        getViewSizes():
+---     getName(): USB2.0 PC CAMERA 1
+        getDevice(): USB2.0 PC CAMERA 1
+        getViewSize(): java.awt.Dimension[width=176,height=144]
+        getFPS(): 0.0
+        toString(): Webcam USB2.0 PC CAMERA 1
+        getViewSizes():
+---     getName(): USB2.0 PC CAMERA 2
+        getDevice(): USB2.0 PC CAMERA 2
+        getViewSize(): java.awt.Dimension[width=176,height=144]
+        getFPS(): 0.0
+        toString(): Webcam USB2.0 PC CAMERA 2
+        getViewSizes():
+Capturing stills:
+---     getName(): HD USB Camera 0
+                java.awt.Dimension[width=176,height=144]
+                java.awt.Dimension[width=320,height=240]
+                java.awt.Dimension[width=640,height=480]
+02:08:06.567 [main] DEBUG com.github.sarxos.webcam.Webcam - Setting new resolution 640x480
+02:08:06.582 [main] DEBUG com.github.sarxos.webcam.WebcamLock - Lock Webcam HD USB Camera 0
+02:08:06.582 [atomic-processor-1] INFO  c.g.s.webcam.ds.cgt.WebcamOpenTask - Opening webcam HD USB Camera 0
+02:08:06.582 [atomic-processor-1] DEBUG c.g.s.w.d.b.WebcamDefaultDevice - Opening webcam device HD USB Camera 0
+02:08:06.598 [atomic-processor-1] DEBUG c.g.s.w.d.b.WebcamDefaultDevice - Webcam device 0 starting session, size java.awt.Dimension[width=640,height=4
+80]
+02:08:06.942 [atomic-processor-1] DEBUG c.g.s.w.d.b.WebcamDefaultDevice - Webcam device session started
+02:08:06.960 [atomic-processor-1] DEBUG c.g.s.w.d.b.WebcamDefaultDevice - Clear memory buffer
+02:08:08.529 [atomic-processor-1] DEBUG c.g.s.w.d.b.WebcamDefaultDevice - Webcam device com.github.sarxos.webcam.ds.buildin.WebcamDefaultDevice@15d8d9
+2 is now open
+02:08:08.534 [main] DEBUG com.github.sarxos.webcam.Webcam - Webcam is now open HD USB Camera 0
+--- Saving to "C:\Users\usr112\HD USB Camera 0.jpg"
+---     getName(): USB2.0 PC CAMERA 1
+                java.awt.Dimension[width=176,height=144]
+                java.awt.Dimension[width=320,height=240]
+                java.awt.Dimension[width=640,height=480]
+02:08:08.746 [main] DEBUG com.github.sarxos.webcam.Webcam - Setting new resolution 640x480
+02:08:08.750 [main] DEBUG com.github.sarxos.webcam.WebcamLock - Lock Webcam USB2.0 PC CAMERA 1
+02:08:08.792 [atomic-processor-1] INFO  c.g.s.webcam.ds.cgt.WebcamOpenTask - Opening webcam USB2.0 PC CAMERA 1
+02:08:08.794 [atomic-processor-1] DEBUG c.g.s.w.d.b.WebcamDefaultDevice - Opening webcam device USB2.0 PC CAMERA 1
+02:08:08.798 [atomic-processor-1] DEBUG c.g.s.w.d.b.WebcamDefaultDevice - Webcam device 1 starting session, size java.awt.Dimension[width=640,height=4
+80]
+02:08:09.489 [webcam-discovery-service] DEBUG c.g.s.w.d.b.WebcamDefaultDriver - Searching devices
+02:08:10.036 [main] DEBUG com.github.sarxos.webcam.WebcamLock - Unlock Webcam USB2.0 PC CAMERA 1
+02:08:10.048 [webcam-lock-[USB2.0 PC CAMERA 1]] DEBUG com.github.sarxos.webcam.WebcamLock - Lock updater has been interrupted
+02:08:10.088 [main] DEBUG com.github.sarxos.webcam.Webcam - Webcam exception when opening
+com.github.sarxos.webcam.WebcamException: Cannot execute task
+        at com.github.sarxos.webcam.WebcamProcessor$AtomicProcessor.process(WebcamProcessor.java:72) ~[pr124_20190224_007.jar:na]
+        at com.github.sarxos.webcam.WebcamProcessor.process(WebcamProcessor.java:140) ~[pr124_20190224_007.jar:na]
+        at com.github.sarxos.webcam.WebcamTask.process(WebcamTask.java:46) ~[pr124_20190224_007.jar:na]
+        at com.github.sarxos.webcam.ds.cgt.WebcamOpenTask.open(WebcamOpenTask.java:20) ~[pr124_20190224_007.jar:na]
+        at com.github.sarxos.webcam.Webcam.open(Webcam.java:295) [pr124_20190224_007.jar:na]
+        at com.github.sarxos.webcam.Webcam.open(Webcam.java:250) [pr124_20190224_007.jar:na]
+        at com.github.sarxos.webcam.Webcam.open(Webcam.java:236) [pr124_20190224_007.jar:na]
+        at jmr.pr124.ImageCapture.main(ImageCapture.java:71) [pr124_20190224_007.jar:na]
+com.github.sarxos.webcam.WebcamException: Cannot start native grabber!
+        at com.github.sarxos.webcam.ds.buildin.WebcamDefaultDevice.open(WebcamDefaultDevice.java:334) ~[pr124_20190224_007.jar:na]
+        at com.github.sarxos.webcam.ds.cgt.WebcamOpenTask.handle(WebcamOpenTask.java:38) ~[pr124_20190224_007.jar:na]
+        at com.github.sarxos.webcam.WebcamProcessor$AtomicProcessor.run(WebcamProcessor.java:81) ~[pr124_20190224_007.jar:na]
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source) ~[na:1.8.0_201]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source) ~[na:1.8.0_201]
+        at java.lang.Thread.run(Unknown Source) ~[na:1.8.0_201]
+WARNING: Failed to access camera "USB2.0 PC CAMERA 1", encountered com.github.sarxos.webcam.WebcamException: Cannot execute task
+02:08:10.126 [webcam-discovery-service] DEBUG c.g.s.w.d.b.WebcamDefaultDriver - Found device HD USB Camera 0
+02:08:10.130 [webcam-discovery-service] DEBUG c.g.s.w.d.b.WebcamDefaultDriver - Found device USB2.0 PC CAMERA 1
+02:08:10.133 [webcam-discovery-service] DEBUG c.g.s.w.d.b.WebcamDefaultDriver - Found device USB2.0 PC CAMERA 2
+02:08:10.136 [webcam-discovery-service] DEBUG c.g.s.webcam.WebcamDiscoveryService - Webcam discovery service loop has been stopped
+02:08:10.140 [main] DEBUG c.g.s.webcam.WebcamDiscoveryService - Discovery service has been stopped
+02:08:10.143 [main] INFO  com.github.sarxos.webcam.Webcam - Disposing webcam HD USB Camera 0
+02:08:10.186 [atomic-processor-1] DEBUG c.g.s.w.d.b.WebcamDefaultDevice - Disposing webcam device HD USB Camera 0
+02:08:10.189 [atomic-processor-1] DEBUG c.g.s.w.d.b.WebcamDefaultDevice - Closing webcam device
+02:08:10.849 [main] DEBUG com.github.sarxos.webcam.Webcam - Webcam disposed HD USB Camera 0
+02:08:10.849 [main] INFO  com.github.sarxos.webcam.Webcam - Disposing webcam USB2.0 PC CAMERA 1
+02:08:10.865 [atomic-processor-1] DEBUG c.g.s.w.d.b.WebcamDefaultDevice - Disposing webcam device USB2.0 PC CAMERA 1
+02:08:10.865 [main] DEBUG com.github.sarxos.webcam.Webcam - Webcam disposed USB2.0 PC CAMERA 1
+02:08:10.865 [main] INFO  com.github.sarxos.webcam.Webcam - Disposing webcam USB2.0 PC CAMERA 2
+02:08:10.880 [atomic-processor-1] DEBUG c.g.s.w.d.b.WebcamDefaultDevice - Disposing webcam device USB2.0 PC CAMERA 2
+02:08:10.880 [main] DEBUG com.github.sarxos.webcam.Webcam - Webcam disposed USB2.0 PC CAMERA 2
+02:08:10.880 [main] INFO  com.github.sarxos.webcam.Webcam - WebcamDefaultDriver capture driver will be used
+02:08:10.896 [webcam-discovery-service] DEBUG c.g.s.w.d.b.WebcamDefaultDriver - Searching devices
+02:08:10.927 [webcam-discovery-service] DEBUG c.g.s.w.d.b.WebcamDefaultDriver - Found device HD USB Camera 0
+02:08:10.927 [webcam-discovery-service] DEBUG c.g.s.w.d.b.WebcamDefaultDriver - Found device USB2.0 PC CAMERA 1
+02:08:10.943 [webcam-discovery-service] DEBUG c.g.s.w.d.b.WebcamDefaultDriver - Found device USB2.0 PC CAMERA 2
+---     getName(): USB2.0 PC CAMERA 2
+                java.awt.Dimension[width=176,height=144]
+                java.awt.Dimension[width=320,height=240]
+                java.awt.Dimension[width=640,height=480]
+02:08:10.958 [main] DEBUG com.github.sarxos.webcam.Webcam - Setting new resolution 640x480
+02:08:10.958 [main] DEBUG com.github.sarxos.webcam.WebcamLock - Lock Webcam USB2.0 PC CAMERA 2
+02:08:10.958 [atomic-processor-1] INFO  c.g.s.webcam.ds.cgt.WebcamOpenTask - Opening webcam USB2.0 PC CAMERA 2
+02:08:10.974 [atomic-processor-1] DEBUG c.g.s.w.d.b.WebcamDefaultDevice - Opening webcam device USB2.0 PC CAMERA 2
+02:08:10.974 [atomic-processor-1] DEBUG c.g.s.w.d.b.WebcamDefaultDevice - Webcam device 2 starting session, size java.awt.Dimension[width=640,height=4
+80]
+02:08:12.193 [atomic-processor-1] DEBUG c.g.s.w.d.b.WebcamDefaultDevice - Webcam device session started
+02:08:12.211 [atomic-processor-1] DEBUG c.g.s.w.d.b.WebcamDefaultDevice - Clear memory buffer
+02:08:13.130 [atomic-processor-1] DEBUG c.g.s.w.d.b.WebcamDefaultDevice - Webcam device com.github.sarxos.webcam.ds.buildin.WebcamDefaultDevice@1b60f0
+5 is now open
+02:08:13.136 [main] DEBUG com.github.sarxos.webcam.Webcam - Webcam is now open USB2.0 PC CAMERA 2
+--- Saving to "C:\Users\usr112\USB2.0 PC CAMERA 2.jpg"
+02:08:13.353 [shutdown-hook-2] INFO  c.g.sarxos.webcam.WebcamShutdownHook - Automatic USB2.0 PC CAMERA 2 deallocation
+02:08:13.358 [shutdown-hook-2] INFO  com.github.sarxos.webcam.Webcam - Disposing webcam USB2.0 PC CAMERA 2
+02:08:13.471 [atomic-processor-1] DEBUG c.g.s.w.d.b.WebcamDefaultDevice - Disposing webcam device USB2.0 PC CAMERA 2
+02:08:13.475 [atomic-processor-1] DEBUG c.g.s.w.d.b.WebcamDefaultDevice - Closing webcam device
+02:08:13.953 [webcam-discovery-service] DEBUG c.g.s.w.d.b.WebcamDefaultDriver - Searching devices
+02:08:14.126 [shutdown-hook-2] DEBUG com.github.sarxos.webcam.Webcam - Webcam disposed USB2.0 PC CAMERA 2
+
+C:\Users\usr112>java.exe -classpath "S:\Development\Export\pr124_20190224_007.jar;C:\Development\CM\Git_20190124.002\Projects__20190125\pr124 - Camera
+ Still Capture\build\classes;S:\Resources\lib\webcam-capture\target\classes;S:\Resources\lib\bridj-0.7.0.jar;S:\Resources\lib\slf4j-api-1.7.2.jar;S:\R
+esources\lib\logback-classic-1.0.9.jar;S:\Resources\lib\logback-core-1.0.9.jar;S:\Resources\lib\hamcrest-library-1.3.jar;S:\Resources\lib\hamcrest-cor
+e-1.3.jar;S:\Resources\lib\cglib-nodep-3.1.jar;S:\Resources\lib\objenesis-2.1.jar" jmr.pr124.ImageCapture
+
+
+
+
+
