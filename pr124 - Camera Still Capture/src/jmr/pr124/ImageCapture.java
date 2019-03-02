@@ -13,8 +13,12 @@ import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamException;
 import com.github.sarxos.webcam.ds.buildin.natives.OpenIMAJGrabber;
 
+import jmr.util.SelfDestruct;
+
 public class ImageCapture {
 	
+	public final static long TIME_TIMEOUT = 10L;
+
 	public static void main(String[] args) throws IOException {
 		
 //		com.github.sarxos.webcam.ds.buildin.natives.OpenIMAJGrabber.class.getName();
@@ -40,6 +44,9 @@ public class ImageCapture {
 
 		System.out.println( "Capturing stills:" );
 		for ( final String strName : listNames ) {
+			
+			SelfDestruct.setTime( TIME_TIMEOUT );
+			
 			final Webcam webcam = Webcam.getWebcamByName( strName );
 			System.out.println( "---\tgetName(): " + webcam.getName() );
 			final Dimension[] arrSizes = webcam.getViewSizes();
