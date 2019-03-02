@@ -17,7 +17,8 @@ public abstract class SystemUtil {
 											? SYSTEM_PROPERTIES_FILE_WIN 
 											: SYSTEM_PROPERTIES_FILE_UNIX;
 
-	final public static String PROCESS_KILL_SELF = "/bin/kill -9 `pgrep -f pr101_ -U 1000`";
+	final public static String PROCESS_KILL_SELF = 
+								"/bin/kill -9 `pgrep -f pr101_ -U 1000`";
 
 	private static Properties properties = null;
 	
