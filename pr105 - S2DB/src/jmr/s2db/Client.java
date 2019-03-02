@@ -57,7 +57,7 @@ public class Client {
 		final Date now = new Date();
 		final long lNow = System.currentTimeMillis();
 	    final String strMAC = NetUtil.getMAC();
-	    final Map<String, String> mapNICs = NetUtil.getIPAddresses( false );
+	    final Map<String, String> mapNICs = NetUtil.getIPAddresses();
 	    final String strIP = NetUtil.getIPAddress();
 	    
 	    String strRegex = strMAC.replaceAll( "-", "." );

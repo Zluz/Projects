@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -30,8 +30,10 @@ public class EventMonitor {
 		
 	private final static Set<Long> setPostedEventSeqs = new HashSet<>();
 
-	private static final SynchronousQueue<WeakReference<EventListener>> 
-						listeners = new SynchronousQueue<>();
+//	private static final SynchronousQueue<WeakReference<EventListener>> 
+//						listeners = new SynchronousQueue<>();
+	private static final ConcurrentLinkedQueue<WeakReference<EventListener>>
+						listeners = new ConcurrentLinkedQueue<>();
 
 	private static Thread threadUpdater;
 	
@@ -122,6 +124,9 @@ public class EventMonitor {
 
 	
 	private static void clearOldListeners() {
+		
+//		if ( 1==1 ) return; // disable for now..
+		
 		List<WeakReference<EventListener>> listDelete = null;
 //		synchronized ( listeners ) {
 			for ( final WeakReference<EventListener> ref : listeners ) {
@@ -145,7 +150,7 @@ public class EventMonitor {
 	public static void postNewEvent( final Event event ) {
 		if ( null==event ) return;
 		
-//		System.out.println( "--- postNewEvent(), event " + event.getEventSeq() );
+		System.out.println( "--- postNewEvent(), event " + event.toString() );
 
 		final long seq = event.getEventSeq();
 		final boolean bPost;
@@ -160,12 +165,18 @@ public class EventMonitor {
 
 		if ( bPost ) {
 //			synchronized ( listeners ) {
+			if ( listeners.isEmpty() ) {
+				LOGGER.warning( "No listeners registered with EventMonitor." );
+			} else {
 				for ( final WeakReference<EventListener> ref : listeners ) {
 					final EventListener listener = ref.get();
 					if ( null!=listener ) {
+						System.out.println( "--- postNewEvent(), "
+											+ "listener " + listener );
 						listener.process( event );
 					}
 				}
+			}
 //			}
 		}
 	}
@@ -179,11 +190,11 @@ public class EventMonitor {
 		synchronized ( setPostedEventSeqs ) {
 			final WeakReference<EventListener> 
 						ref = new WeakReference<EventListener>( listener );
-//			EventMonitor.listeners.add( ref );
-			if ( ! EventMonitor.listeners.offer( ref ) ) {
-				LOGGER.severe( "Failed to add EventListener " 
-									+ listener.toString() );
-			}
+			EventMonitor.listeners.add( ref );
+//			if ( ! EventMonitor.listeners.offer( ref ) ) {
+//				LOGGER.severe( "Failed to add EventListener " 
+//									+ listener.toString() );
+//			}
 		}
 		
 		this.initializeEventMonitorThread();

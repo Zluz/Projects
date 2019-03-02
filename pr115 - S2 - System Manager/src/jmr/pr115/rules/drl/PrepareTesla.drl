@@ -34,8 +34,8 @@ rule "PrepareTesla-ShowerTrigger"
 	
 		e : Event( // water running (shower)
 				getEventType() == EventType.INPUT, 
-				getSubject().equals( HardwareInput.L_POWER_WELL_PUMP.name() ),
-				getValue().equals( "true" ) 
+				getSubject().equals( HardwareInput.L_POWER_WELL_PUMP.name() )
+				// getValue().equals( "true" ) 
 			)
 		eval( TimeUtil.isHourOfDay( 7,8,9 ) )
 		// eval( ! bPrepareTeslaTriggered )

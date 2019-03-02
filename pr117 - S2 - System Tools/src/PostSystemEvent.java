@@ -76,7 +76,7 @@ public class PostSystemEvent {
 		
 		final Client client = Client.get();
 		try {
-		    final Map<String, String> mapNICs = NetUtil.getIPAddresses( false );
+		    final Map<String, String> mapNICs = NetUtil.getIPAddresses();
 		    final String strIP = NetUtil.getIPAddress();
 		    final String strMAC = NetUtil.getMAC();
 		    final String strClass = PostSystemEvent.class.getName();

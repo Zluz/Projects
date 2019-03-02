@@ -383,5 +383,15 @@ public class Event extends TableBase {
 			return false;
 		}
 	}
+	
+	
+	@Override
+	public String toString() {
+		final String strResult = super.toString() 
+						+ " (type:" + this.getEventType().name() + ", "
+						+ "subject:" + this.getSubject() + ", "
+						+ "seq=" + this.getEventSeq() + ")";
+		return strResult;
+	}
 
 }
