@@ -2,13 +2,18 @@ package jmr.util;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 
 public abstract class SystemUtil {
 
+
+	private static final Logger 
+					LOGGER = Logger.getLogger( SystemUtil.class.getName() );
 
 	//	final String strPropertiesFile = "H:\\Share\\settings.ini";
 	final public static String SYSTEM_PROPERTIES_FILE_WIN = "S:\\settings.ini";
@@ -110,6 +115,24 @@ public abstract class SystemUtil {
 				System.exit( iExitCode );
 			}
 		}.start();
+	}
+
+
+	public static long getPid() {
+		final String strName = ManagementFactory.getRuntimeMXBean().getName();
+		if ( ( null==strName ) || ( ! strName.contains( "@" ) ) ) {
+			LOGGER.warning( "Failed to get the process name." );
+			return 0; 
+		}
+		final String strPid = strName.split( "@" )[0];
+		try {
+			final long lPid = Long.parseLong( strPid );
+			return lPid;
+		} catch ( final NumberFormatException e ) {
+			LOGGER.warning( ()-> "Failed to get the pid, "
+										+ "encountered " + e.toString() );
+			return 0;
+		}
 	}
 	
 	

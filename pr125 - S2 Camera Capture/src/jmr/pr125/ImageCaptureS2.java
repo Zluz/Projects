@@ -121,9 +121,15 @@ public class ImageCaptureS2 {
 		killErrorProcess();
 		
 		try {
+			
+			// see 
+			// https://stackoverflow.com/questions/6223765/start-a-java-process-at-low-priority-using-runtime-exec-processbuilder-start
+//			final String strLowPriorityCommand = 
+//						"cmd.exe /C start /B /belownormal " + strCommand;
 		
 			final Process process = Runtime.getRuntime().exec( 
-												strCommand, null, fileDir );
+							strCommand, null, fileDir );
+//							strLowPriorityCommand, null, fileDir );
 
 			if ( bShowOutput ) {
 				final Thread threadStdOut = new Thread() {
