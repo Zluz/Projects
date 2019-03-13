@@ -9,6 +9,7 @@ public enum JobType {
 	TESLA_WRITE,
 	
 	REMOTE_EXECUTE( true ),
+	REMOTE_OUTPUT( true ),
 	REMOTE_SHUTDOWN( true ),
 	REMOTE_GET_CALL_STACK( true ),
 	

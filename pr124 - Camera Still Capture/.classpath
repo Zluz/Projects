@@ -17,5 +17,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/webcam-capture"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr104 - Utilities"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

@@ -1,8 +1,11 @@
 package jmr.pr115.rules;
 
+
 import jmr.pr118.DroolsSession;
 import jmr.pr118.RuleSet;
+import jmr.s2db.event.EventType;
 //import org.kie.api.io.Resource;
+import jmr.s2db.tables.Event;
 
 public class RulesProcessing {
 
@@ -59,13 +62,35 @@ public class RulesProcessing {
 //		System.out.println( "--> RulesProcessing.process()" );
 		final long lTimeStart = System.currentTimeMillis();
 		
+		final boolean bOfInterest;
+		if ( item instanceof Event ) {
+			final Event event = (Event)item;
+			if ( EventType.TIME.equals( event.getEventType() ) ) {
+				bOfInterest = false;
+			} else {
+				bOfInterest = true;
+			}
+		} else {
+			bOfInterest = true;
+		}
+		
+		if ( bOfInterest ) {
+			System.out.print( "About to process item [" 
+							+ item.getClass().getSimpleName() + "] ..." );
+		}
+		
 		final int result = session.processItem( item );
 		
 		final long lTimeEnd = System.currentTimeMillis();
 		final long lElapsed = lTimeEnd - lTimeStart;
 		
-		System.out.println( "Event processed, result: " + result + ", "
-						+ "elapsed: " + lElapsed + "ms, event: " + item );
+		
+		if ( bOfInterest ) {
+			System.out.println( "Done. "
+							+ "Result: " + result + ", " 
+							+ "Elapsed: " + lElapsed + "ms, "
+							+ "Item: " + item );
+		}
 		
 //		System.out.println( "<-- RulesProcessing.process(), result = " + result );
 		return result > 0;

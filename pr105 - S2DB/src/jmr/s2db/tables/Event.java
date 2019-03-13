@@ -13,6 +13,7 @@ import jmr.s2db.DataFormatter;
 import jmr.s2db.comm.ConnectionProvider;
 import jmr.s2db.event.EventMonitor;
 import jmr.s2db.event.EventType;
+import org.apache.commons.lang3.StringUtils;
 
 
 /*
@@ -388,9 +389,11 @@ public class Event extends TableBase {
 	@Override
 	public String toString() {
 		final String strResult = super.toString() 
-						+ " (type:" + this.getEventType().name() + ", "
-						+ "subject:" + this.getSubject() + ", "
-						+ "seq=" + this.getEventSeq() + ")";
+				+ " (type:" + this.getEventType().name() + ", "
+				+ "subject:" + this.getSubject() + ", "
+				+ "seq=" + this.getEventSeq() + ", "
+				+ "data:\"" + StringUtils.substring( this.getData(), 0, 20 ) 
+				+ "\")";
 		return strResult;
 	}
 

@@ -3,6 +3,7 @@ package jmr.rpclient.tiles;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -16,8 +17,14 @@ import jmr.rpclient.swt.S2Button.ButtonState;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.s2db.event.EventType;
+import jmr.s2db.job.JobMonitor;
+import jmr.s2db.job.RemoteJobMonitor;
+import jmr.s2db.job.RemoteJobMonitor.Listener;
 import jmr.s2db.tables.Event;
 import jmr.s2db.tables.Job;
+import jmr.s2db.tables.Job.JobState;
+import jmr.s2db.tables.Session;
+import jmr.util.NetUtil;
 import jmr.util.hardware.HardwareInput;
 import jmr.util.hardware.HardwareOutput;
 import jmr.util.hardware.rpi.Pimoroni_AutomationHAT;
@@ -25,6 +32,9 @@ import jmr.util.hardware.rpi.Pimoroni_AutomationHAT.Port;
 
 public class IO_AutomationHatTile extends TileBase {
 
+	private final static Logger 
+				LOGGER = Logger.getLogger(IO_AutomationHatTile.class.getName());
+	
 	public static enum TileType {
 		DISPLAY, // full display
 		GRAPH,
@@ -33,17 +43,24 @@ public class IO_AutomationHatTile extends TileBase {
 	}
 
 	public static enum HardwareTest {
-		RELAY_1_ON( "Relay 1 ON", "/Local/scripts/test_email.sh" ),
-		RELAY_1_OFF( "Relay 1 OFF", "/Local/scripts/test_sms.sh" ),
+		RELAY_1_ON( "Relay 1 ON", Port.OUT_R_1, true ),
+		RELAY_1_OFF( "Relay 1 OFF", Port.OUT_R_1, false ),
+		DOUT_1_ON( "D-1 Out ON", Port.OUT_D_1, true ),
+		DOUT_1_OFF( "D-1 Out OFF", Port.OUT_D_1, false ),
+		DOUT_2_ON( "D-2 Out ON", Port.OUT_D_2, true ),
+		DOUT_2_OFF( "D-2 Out OFF", Port.OUT_D_2, false ),
 		;
 		
 		public final String strTitle;
-		public final String strAction;
+		public final Port port;
+		public final boolean bValue;
 		
 		HardwareTest(	final String strTitle,
-						final String strScript ) {
+						final Port port,
+						final boolean bValue ) {
 			this.strTitle = strTitle;
-			this.strAction = strScript;
+			this.port = port;
+			this.bValue = bValue;
 		}
 	}
 	
@@ -57,6 +74,9 @@ public class IO_AutomationHatTile extends TileBase {
 
 	private final Pimoroni_AutomationHAT hat;
 	
+	
+	public static RemoteJobMonitor monitor = null;
+	
 
 
 	public IO_AutomationHatTile(	final TileType type,
@@ -66,6 +86,8 @@ public class IO_AutomationHatTile extends TileBase {
 		hat = Pimoroni_AutomationHAT.get();
 		hat.initialize( mapOptions );
 		
+		registerJobListener( mapOptions );
+
 		hat.registerChangeExec( HardwareInput.TEST_DIGITAL_INPUT_2, 
 				new Runnable() {
 			@Override
@@ -85,6 +107,60 @@ public class IO_AutomationHatTile extends TileBase {
 				} );
 			}
 		}
+	}
+	
+	
+	public void registerJobListener( final Map<String, String> mapOptions ) {
+		
+		//TODO re-add this if possible..
+//		if ( ! hat.isActive() ) return;
+
+		if ( null != monitor ) return;
+		
+		LOGGER.info( "Registering Job Listener" );
+		System.out.println( "**** Job Listener registered from IO_AutomationHatTile" );
+
+		JobMonitor.get().initialize( mapOptions );
+		monitor = RemoteJobMonitor.get();
+		
+		monitor.addListener( new Listener() {
+			@Override
+			public void job( final Job job ) {
+				
+				final long lTime = System.currentTimeMillis();
+
+				final JsonObject joResult = new JsonObject();
+				joResult.addProperty( "time", lTime );
+				joResult.addProperty( "IP", NetUtil.getIPAddress() );
+				joResult.addProperty( "session_seq", Session.getSessionSeq() );
+
+				LOGGER.info( "Processing Job: " + job.toString() );
+
+				final Map<String,String> map = job.getJobDetails();
+				
+				final String strPort = map.get( "port" );
+				final Port port = Port.getPortFor( strPort );
+
+				joResult.addProperty( "port", "strPort" );
+
+				if ( null!=port && ! port.isInput() ) {
+					
+					job.setState( JobState.WORKING );
+					
+					final String strValue = map.get( "value" );
+					final Boolean bValue = Boolean.valueOf( strValue );
+					
+					setPortValue( port, bValue, lTime );
+					
+					job.setState( JobState.COMPLETE, joResult.toString() );
+				} else {
+
+					joResult.addProperty( "result", "Unknown output port" );
+					
+					job.setState( JobState.FAILURE, joResult.toString() );
+				}
+			}
+		} );
 	}
 	
 	
@@ -174,10 +250,12 @@ public class IO_AutomationHatTile extends TileBase {
 			int iX = 14;
 			for ( final HardwareTest alert : HardwareTest.values() ) {
 				super.addButton( gc, alert.ordinal(), 
-						iX, iY,  132, 52, alert.strTitle );
+					 // iX, iY,  132, 52, alert.strTitle );
+						iX, iY,   90, 52, alert.strTitle );
 				if ( iY > 50 ) {
 					iY = 16;
-					iX += 148;
+				 // iX += 148;
+					iX += 100;
 				} else {
 					iY += 70;
 				}
@@ -292,24 +370,13 @@ public class IO_AutomationHatTile extends TileBase {
 
 		final long lTime = System.currentTimeMillis();
 
-
 		final Thread thread = new Thread( "Hardware test (IO_AutomationHatTile)" ) {
 			public void run() {
 				button.setState( ButtonState.WORKING );
 
 				final Job job = null;
 				
-				if ( HardwareTest.RELAY_1_ON.equals( test ) ) {
-
-					setPortValue( Port.OUT_R_1, true, lTime );
-
-				} else if ( HardwareTest.RELAY_1_OFF.equals( test ) ) {
-
-					setPortValue( Port.OUT_R_1, false, lTime );
-
-				} else {
-//					job = null;
-				}
+				setPortValue( test.port, test.bValue, lTime );
 				
 				button.setJob( job );
 				button.setState( ButtonState.READY );

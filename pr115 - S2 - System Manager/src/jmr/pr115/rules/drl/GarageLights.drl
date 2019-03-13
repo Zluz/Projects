@@ -1,0 +1,38 @@
+package pr115.rules.drl;
+
+import jmr.s2db.tables.Event;
+import jmr.s2db.event.*;
+import jmr.pr115.schedules.run.*;
+import jmr.util.hardware.*;
+import jmr.util.*;
+import com.google.gson.JsonObject;
+
+import jmr.pr115.rules.drl.Simple;
+
+dialect "mvel"
+
+
+
+rule "ControlGarageLightByPedDoor"
+	when
+		e : Event(
+				getSubject().equals( HardwareInput.GARAGE_PED_DOOR_CLOSED_STOP.name() )
+			)
+	then
+		System.out.println( "ControlGarageLightByPedDoor fired." );
+		
+		Simple.doControlGarageLight( e );
+end
+
+
+rule "ControlGarageLightByVehDoor"
+	when
+		e : Event(
+				getSubject().equals( HardwareInput.GARAGE_VEH_DOOR_1_CLOSED_STOP.name() )
+			)
+	then
+		System.out.println( "ControlGarageLightByPedDoor fired." );
+		
+		Simple.doControlGarageLight( e );
+end
+

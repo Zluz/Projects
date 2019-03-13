@@ -59,6 +59,7 @@ public class JobManager {
 		final JobListing listing;
 		final boolean bRefresh;
 		
+		
 		if ( !JOB_LISTINGS.containsKey( strKey ) ) {
 			final JobListing listingEmpty = new JobListing();
 			listingEmpty.lLastRequest = lNow;
@@ -72,6 +73,15 @@ public class JobManager {
 		
 		if ( bRefresh ) {
 			final List<Job> listingNew = Job.get( strCondition, iLimit );
+
+//System.out.println( "" //"listingNew: " + listingNew + ", "
+//				+ "strCondition = " + strCondition + ", "
+//				+ "size() = " + listingNew.size() );
+//if ( ! listingNew.isEmpty() ) {
+//	final Job job = listingNew.get( 0 );
+//	System.out.println( "JobManager - First Job: " + job.getJobSeq() + ", " + job.getJobType() );
+//}
+			
 			listing.listJob.addAll( listingNew );
 		}
 		

@@ -1,5 +1,6 @@
 package jmr.util;
 
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -17,6 +18,9 @@ public class SelfDestruct {
 	
 	private long lTimeExpire = 0;
 	
+	private String strExpireReason = null;
+	
+	
 	private SelfDestruct() {
 		lTimeExpire = Math.max( lTimeExpire, DEFAULT_TIMEOUT );
 		threadCountDown = new Thread( "Self-Destruct countdown." ) {
@@ -31,7 +35,8 @@ public class SelfDestruct {
 					}
 					final long lNow = System.currentTimeMillis();
 					if ( lNow > lTimeExpire ) {
-						SelfDestruct.shutdown( "Process timeout elapsed." );
+						SelfDestruct.shutdown( "Process timeout elapsed. "
+									+ "Reason: " + strExpireReason );
 					}
 				}
 			}
@@ -41,12 +46,34 @@ public class SelfDestruct {
 	
 	private static void shutdown( final String strMessage ) {
 		LOGGER.warning( ()-> "Ending process. " + strMessage );
+		
+		final StringBuilder sb = new StringBuilder();
+		sb.append( "Active threads:\n" );
+		for ( final Entry<Thread, StackTraceElement[]> 
+						entry : Thread.getAllStackTraces().entrySet() ) {
+			final Thread thread = entry.getKey();
+			final StackTraceElement[] stack = entry.getValue();
+//			sb.append( "\tThread: \"" + thread.getName() + "\"\n" );
+			sb.append( "\t\"" + thread.getName() + "\"\n" );
+			for ( final StackTraceElement frame : stack ) {
+				sb.append( "\t\t" + frame.getClassName() + "." 
+							+ frame.getMethodName() + "(): line " 
+							+ frame.getLineNumber() + "\n" );
+			}
+		}
+//		LOGGER.info( ()-> sb.toString() );
+		System.out.print( sb.toString() );
+		
 		Runtime.getRuntime().halt( 200 );
 	}
 	
-	public void addTime( final long lTime ) {
-		this.lTimeExpire = Math.max( lTimeExpire, 
-							System.currentTimeMillis() + 1000 * lTime );
+	public void addTime( final long lTime,
+						 final String strReason ) {
+		final long lNewTime = System.currentTimeMillis() + 1000 * lTime;
+		if ( lNewTime > lTimeExpire ) {
+			this.strExpireReason = strReason;
+			this.lTimeExpire = lNewTime;
+		}
 	}
 	
 	public synchronized static SelfDestruct getInstance() {
@@ -56,8 +83,9 @@ public class SelfDestruct {
 		return instance;
 	}
 
-	public static void setTime( final long lTime ) {
-		SelfDestruct.getInstance().addTime( lTime );
+	public static void setTime( final long lTime,
+								final String strReason ) {
+		SelfDestruct.getInstance().addTime( lTime, strReason );
 	}
 	
 	

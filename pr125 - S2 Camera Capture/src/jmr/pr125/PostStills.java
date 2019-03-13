@@ -23,7 +23,7 @@ public class PostStills {
 	
 	public final static long TIME_TIMEOUT = 120L;
 	
-	public final static long TIME_DELAY = 10L;
+	public final static long TIME_DELAY = 30L;
 	
 	
 	
@@ -36,7 +36,7 @@ public class PostStills {
 		
 		this.lStartTime = System.currentTimeMillis();
 		
-		SelfDestruct.setTime( TIME_TIMEOUT );
+		SelfDestruct.setTime( TIME_TIMEOUT, "PostStills overall class" );
 
 		this.capture = new ImageCaptureS2();
 		this.fileSession = SessionPath.getSessionDir();
@@ -108,7 +108,9 @@ public class PostStills {
 		recordPIDFile();
 		
 		for (;;) {
-			
+
+			Thread.sleep( 500 );
+
 			final File fileLaterPID = checkForLaterPIDFile();
 			if ( null!=fileLaterPID ) {
 				this.exit( 0, "Exiting. Later PID file found: " 
@@ -164,7 +166,12 @@ public class PostStills {
 			Thread.sleep( TimeUnit.SECONDS.toMillis( TIME_DELAY ) );
 			System.out.println( "Done." );
 			
-			SelfDestruct.setTime( TIME_TIMEOUT );
+			System.out.print( "Cleaning temp files..." );
+			final ProcessCleanup cleanup = new ProcessCleanup();
+			final long lCount = cleanup.markForDeletion();
+			System.out.println( "Done: " + lCount + " file(s) deleted." );
+
+			SelfDestruct.setTime( TIME_TIMEOUT, "PostStills main loop" );
 		}
 		
 	}

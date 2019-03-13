@@ -16,6 +16,11 @@ import jmr.s2db.tables.Job.JobState;
 import jmr.util.NetUtil;
 import jmr.util.OSUtil;
 
+/**
+ * This handles remote jobs. These jobs would have been initiated somewhere
+ * in the system and executed elsewhere. This code is running on the target
+ * remote system.
+ */
 public class RunRemoteJob {
 
 	private final String strName;
@@ -32,17 +37,33 @@ public class RunRemoteJob {
 		final Map<String,String> map = job.getJobDetails();
 		if ( null==map ) return false;
 
-		final boolean bMatchIP = this.strIP.equals( map.get( "remote" ) );
+		final String strRemoteDest = map.get( "remote" );
+		
+		System.out.println( "isIntendedHere() - strRemoteDest = " + strRemoteDest );
+		
+		final boolean bMatchIP = this.strIP.equals( strRemoteDest );
 		if ( bMatchIP ) return true;
 
+		System.out.println( "isIntendedHere() - this.strName = " + this.strName );
+
 		final boolean bMatchName = null!=this.strName 
-				&& this.strName.equals( map.get( "remote" ) );
+				&& this.strName.equals( strRemoteDest );
 		if ( bMatchName ) return true;
 		
 		
 		return false;
 	}
 	
+	
+	public void postRemoteOutput( final Job job ) {
+//		job.setState( JobState.WORKING );
+		
+		System.out.println( "--- RunRemoteJob.postRemoteOutput(), Job: " + job );
+		
+		RemoteJobMonitor.get().post( job );
+		
+//		job.setState( JobState.COMPLETE, null );
+	}
 
 	
 	public void runRemoteExecute( final Job job ) {

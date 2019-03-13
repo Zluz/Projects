@@ -11,7 +11,6 @@ import javax.imageio.ImageIO;
 
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamException;
-import com.github.sarxos.webcam.ds.buildin.natives.OpenIMAJGrabber;
 
 import jmr.util.SelfDestruct;
 
@@ -19,7 +18,55 @@ public class ImageCapture {
 	
 	public final static long TIME_TIMEOUT = 10L;
 
-	public static void main(String[] args) throws IOException {
+	
+	private static void capture( final String strName ) {
+
+		Webcam webcam = null;
+		
+		try {
+			webcam = Webcam.getWebcamByName( strName );
+			System.out.println( "---\tgetName(): " + webcam.getName() );
+			final Dimension[] arrSizes = webcam.getViewSizes();
+			
+			Dimension dimBest = null;
+			for ( final Dimension dim : arrSizes ) {
+				if ( null==dimBest ) {
+					dimBest = dim; 
+				} else if ( dim.getWidth() > dimBest.getWidth() ) {
+					dimBest = dim;
+				}
+				System.out.println( "\t\t" + dim.toString() );
+			}
+			
+			webcam.setViewSize( dimBest );
+			
+			try {
+				webcam.open();
+				
+				final BufferedImage image = webcam.getImage();
+				
+	//			final File file = new File("Capture_" + i + ".jpg");
+				final File file = new File( strName + ".jpg" );
+				System.out.println( "--- Saving to \"" 
+									+ file.getAbsolutePath() + "\"" );
+				ImageIO.write(image, "JPG", file);
+			} catch ( final WebcamException e ) {
+				System.err.println( "WARNING: Failed to access camera \"" 
+										+ webcam.getName() + "\", "
+										+ "encountered " + e.toString() );
+//				Webcam.resetDriver();
+			}
+			
+		} catch ( final Exception e ) {
+			
+		} finally {
+			webcam.close();
+		}
+	}
+	
+	
+	public static void main( final String[] args ) 
+							throws IOException, InterruptedException {
 		
 //		com.github.sarxos.webcam.ds.buildin.natives.OpenIMAJGrabber.class.getName();
 //		new OpenIMAJGrabber();
@@ -45,54 +92,15 @@ public class ImageCapture {
 		System.out.println( "Capturing stills:" );
 		for ( final String strName : listNames ) {
 			
-			SelfDestruct.setTime( TIME_TIMEOUT );
+			SelfDestruct.setTime( TIME_TIMEOUT, 
+							"Timeout on still capture of \"" + strName + "\"" );
 			
-			final Webcam webcam = Webcam.getWebcamByName( strName );
-			System.out.println( "---\tgetName(): " + webcam.getName() );
-			final Dimension[] arrSizes = webcam.getViewSizes();
-//			final Dimension[] arrSizes = webcam.getCustomViewSizes();
+			capture( strName );
 			
-			Dimension dimBest = null;
-//			Dimension dimBest = new Dimension( 1920, 1080 );
-			for ( final Dimension dim : arrSizes ) {
-				if ( null==dimBest ) {
-					dimBest = dim; 
-				} else if ( dim.getWidth() > dimBest.getWidth() ) {
-					dimBest = dim;
-				}
-				System.out.println( "\t\t" + dim.toString() );
-			}
-			
-			webcam.setViewSize( dimBest );
-			
-//			WebcamImageTransformer transformer = new WebcamImageTransformer() {
-//				@Override
-//				public BufferedImage transform( final BufferedImage image ) {
-//					return image;
-//				}
-//			};
-//			webcam.setImageTransformer( transformer );
-			
-			try {
-				webcam.open();
-				
-				final BufferedImage image = webcam.getImage();
-				
-//				final File file = new File("Capture_" + i + ".jpg");
-				final File file = new File( strName + ".jpg" );
-				System.out.println( "--- Saving to \"" 
-									+ file.getAbsolutePath() + "\"" );
-				ImageIO.write(image, "JPG", file);
-			} catch ( final WebcamException e ) {
-				System.err.println( "WARNING: Failed to access camera \"" 
-										+ webcam.getName() + "\", "
-										+ "encountered " + e.toString() );
-				Webcam.resetDriver();
-			}
-			
+			Thread.sleep( 1000L );
 		}
 		
-		new OpenIMAJGrabber();
+//		new OpenIMAJGrabber();
 	}
 	
 }

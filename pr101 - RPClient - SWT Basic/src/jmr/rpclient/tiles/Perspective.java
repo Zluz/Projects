@@ -319,14 +319,14 @@ public enum Perspective {
 
 		list.add( new TileGeometry( new IO_AutomationHatTile(  
 					IO_AutomationHatTile.TileType.CONTROL, mapOptions ), 
-						new Rectangle( 3, 1, 1, 1 ) ) ); 
+						new Rectangle( 3, 1, 2, 2 ) ) ); 
 
 		list.add( new TileGeometry( new SystemInfoTile(), 
 						new Rectangle( 3, 0, 1, 1 ) ) );
 		list.add( new TileGeometry( new PerformanceMonitorTile(), 
 						new Rectangle( 4, 0, 1, 1 ) ) );
-		list.add( new TileGeometry( new CalibrationTile(), 
-						new Rectangle( 4, 2, 1, 1 ) ) ); 
+//		list.add( new TileGeometry( new CalibrationTile(), 
+//						new Rectangle( 4, 2, 1, 1 ) ) ); 
 	}
 
 	private void build_Tesla( final Map<String, String> mapOptions ) {

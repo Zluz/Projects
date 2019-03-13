@@ -6,3 +6,12 @@ adjust the thumbnail upload interval. cannot be more than every 5 min.
     maybe make configurable (and consider time of day).
     [at this time, updating every 10 minutes will consume 30~40% of quota]
 
+[NOTES]
+
+Rules seem to break easily (PrepareTesla.drl would often not work)
+
+Limitations?
+	* no blank lines in conditionals ?
+
+Acceptable:
+	* tab char in rule

@@ -1,5 +1,6 @@
 package jmr.pr115.rules.drl;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static jmr.pr102.Command.HVAC_START;
 import static jmr.pr102.Command.HVAC_STOP;
 import static jmr.pr102.DataRequest.CLIMATE_STATE;
@@ -40,15 +41,16 @@ import jmr.s2.ingest.Import;
 import jmr.s2db.Client;
 import jmr.s2db.imprt.WebImport;
 import jmr.s2db.job.JobType;
+import jmr.s2db.tables.Event;
 import jmr.s2db.tables.Job;
 import jmr.s2db.tables.Job.JobState;
 import jmr.s2fs.FileSession;
 import jmr.s2fs.FileSession.ImageLookupOptions;
 import jmr.s2fs.FileSessionManager;
 import jmr.util.TimeUtil;
+import jmr.util.hardware.rpi.Pimoroni_AutomationHAT.Port;
 import jmr.util.http.ContentType;
 import jmr.util.transform.JsonUtils;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Simple implements RulesConstants {
 	
@@ -698,6 +700,44 @@ public class Simple implements RulesConstants {
 		System.out.println( DocKey.TABLE_REPORT.name() + ": " 
 							+ bytes.length + " bytes sent to GCS." );
 	}
+	
+	
+	public static void doControlGarageLight( final Event e ) {
+		
+//		final String strValue = e.getValue();
+//		final Boolean bClosed = Boolean.valueOf( strValue );
+
+		final Thread thread = new Thread( "Momentary Garage Light" ) {
+			public void run() {
+				try {
+
+//					if ( Boolean.FALSE.equals( bClosed ) ) {
+						jmr.s2db.tables.Job.add( JobType.REMOTE_OUTPUT, null,
+								new String[] {
+								"remote", "GARAGE_LIGHTS",
+								"port", Port.OUT_D_2.name(),
+								"value", "true",
+									} );
+									
+						Thread.sleep( TimeUnit.MINUTES.toMillis( 1 ) );
+//						Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
+//					}
+
+					jmr.s2db.tables.Job.add( JobType.REMOTE_OUTPUT, null,
+							new String[] {
+							"remote", "GARAGE_LIGHTS",
+							"port", Port.OUT_D_2.name(),
+							"value", "false",
+						} );
+					
+				} catch ( final InterruptedException e ) {
+					// just quit
+				}
+			};
+		};
+		thread.start();
+	}
+	
 	
 	
 	

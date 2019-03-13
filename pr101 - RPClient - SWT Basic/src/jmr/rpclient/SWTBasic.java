@@ -231,17 +231,25 @@ public class SWTBasic {
 		s2db.register( 	strSessionID, strClass );
 		
 		final String strDeviceName = s2db.getThisDevice().getName();
-		final Map<String,String> mapOptions = s2db.getThisDevice().getOptions();
+		final Map<String,String> 
+						mapOptionsRaw = s2db.getThisDevice().getOptions();
+
+		final Map<String,String> mapOptionsNorm = new HashMap<>();
 		
 	    LOGGER.info( "Device: \"" + strDeviceName + "\"" );
-	    for ( final Entry<String, String> entry : mapOptions.entrySet() ) {
-		    LOGGER.info( "Options entry: \"" + entry.getKey() + "\""
-		    		+ " = \"" + entry.getValue() + "\"" );
+	    for ( final Entry<String, String> entry : mapOptionsRaw.entrySet() ) {
+	    	final String strKey = entry.getKey().trim();
+	    	final String strValue = entry.getValue().trim();
+	    	if ( ! strValue.isEmpty() ) {
+			    LOGGER.info( "Options entry: \"" + strKey + "\""
+			    		+ " = \"" + strValue + "\"" );
+			    mapOptionsNorm.put( strKey, strValue );
+	    	}
 	    }
-	
-	    JobManager.getInstance().setOptions( mapOptions );
 	    
-	    final String strData = new Gson().toJson( mapOptions );
+	    JobManager.getInstance().setOptions( mapOptionsNorm );
+	    
+	    final String strData = new Gson().toJson( mapOptionsNorm );
 	    
 		final Event event = Event.add(
 				EventType.SYSTEM, SystemEvent.DEVICE_INFO.name(), 
@@ -252,7 +260,8 @@ public class SWTBasic {
 				+ "IP:" + strIP + ", Session:" + strSessionID + ", "
 				+ "DEVICE_INFO Event:" + event.getEventSeq() );
 		
-	    final TabTiles tTiles = new TabTiles( strDeviceName, mapOptions, false );
+	    final TabTiles tTiles = 
+	    			new TabTiles( strDeviceName, mapOptionsNorm, false );
 
 		final Perspective perspective = tTiles.getPerspective();
 		

@@ -21,7 +21,7 @@ public class ReportNestLowTemperature extends EventMonitorAction {
 		if ( null==instance ) {
 			instance = this;
 			
-			EventMonitor.get().addListener( this );
+			EventMonitor.get().addListener( this, this.getClass().getName() );
 		}
 	}
 	

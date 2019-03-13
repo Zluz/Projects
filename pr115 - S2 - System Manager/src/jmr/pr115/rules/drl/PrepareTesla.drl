@@ -31,20 +31,24 @@ end
 
 rule "PrepareTesla-ShowerTrigger"
 	when
-	
 		e : Event( // water running (shower)
 				getEventType() == EventType.INPUT, 
 				getSubject().equals( HardwareInput.L_POWER_WELL_PUMP.name() )
 				// getValue().equals( "true" ) 
 			)
-		eval( TimeUtil.isHourOfDay( 7,8,9 ) )
+		// eval( TimeUtil.isHourOfDay( 7,8,9 ) )
 		// eval( ! bPrepareTeslaTriggered )
-
-//		h : Heartbeat( getTimeUnit() == TimeUnit.MINUTES )
-//		eval( TimeUtil.isMinuteInHour( 8 ) )
-		
+		// h : Heartbeat( getTimeUnit() == TimeUnit.MINUTES )
+		// eval( TimeUtil.isMinuteInHour( 8 ) )
 	then
 		System.out.println( "PrepareTesla-ShowerTrigger fired." );
+		
+		
+		if ( ! TimeUtil.isHourOfDay( 7,8,9 ) ) {
+		    System.out.println( "PrepareTesla-ShowerTrigger aborting: " 
+		    				+ "Hour not in 7,8,9." );
+		    return;
+		}
 		
 		// bPrepareTeslaTriggered = true;
 		

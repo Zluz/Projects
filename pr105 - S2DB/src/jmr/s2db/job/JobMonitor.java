@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import jmr.s2db.Client;
 import jmr.s2db.tables.Job;
@@ -13,6 +14,8 @@ import jmr.s2db.tables.Job.JobState;
 
 public class JobMonitor {
 
+	private final static Logger 
+					LOGGER = Logger.getLogger( JobMonitor.class.getName() );
 	
 	final public static List<Job> listing = new LinkedList<>();
 
@@ -41,6 +44,12 @@ public class JobMonitor {
 	}
 	
 	public void check() {
+		
+		if ( null==this.runner ) {
+			LOGGER.warning( "JobMonitor not correctly initialized." );
+			this.runner = new RunRemoteJob( "<JobMonitor_not_initialized>" );
+		}
+		
 		if ( null==threadUpdater ) {
 			this.initializeJobMonitorThread();
 		}
@@ -223,12 +232,16 @@ public class JobMonitor {
 		if ( null==jobs ) return;
 		if ( jobs.isEmpty() ) return;
 
+		System.out.println( "JobMonitor.doWorkJobs(), jobs.size: " + jobs.size() );
+		
 		final Thread threadWorkJobs = new Thread( "Work Jobs" ) {
 			@Override
 			public void run() {
 				
 				for ( final Job job : jobs ) {
 					final JobType type = job.getJobType();
+					
+					System.out.println( "JobMonitor Thread, jobs.size: " + jobs.size() );
 
 					if ( type.isRemoteType() 
 							&& runner.isIntendedHere( job ) ) {
@@ -241,6 +254,8 @@ public class JobMonitor {
 						// execute job?
 						if ( JobType.REMOTE_EXECUTE.equals( type ) ) {
 							runner.runRemoteExecute( job );
+						} else if ( JobType.REMOTE_OUTPUT.equals( type ) ) {
+							runner.postRemoteOutput( job );
 						} else if ( JobType.REMOTE_SHUTDOWN.equals( type ) ) {
 							runner.runShutdown( job );
 						} else if ( JobType.REMOTE_GET_CALL_STACK.equals( type ) ) {

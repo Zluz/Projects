@@ -8,7 +8,7 @@ public class ProcessEvent extends EventMonitorAction {
 
 	public ProcessEvent() {
 		System.out.println( "--- ProcessEvent instantiated" );
-		EventMonitor.get().addListener( this );
+		EventMonitor.get().addListener( this, this.getClass().getName() );
 	}
 
 	@Override

@@ -142,7 +142,7 @@ public class ImageCaptureS2 {
 							while ( ( strLine = br.readLine() ) != null ) {
 								System.out.println( "\tout> " + strLine );
 							}
-						} catch (IOException e) {
+						} catch ( final IOException e ) {
 							LOGGER.warning( e.toString() + " encountered "
 									+ "while handling STDOUT." );
 						}
@@ -173,7 +173,7 @@ public class ImageCaptureS2 {
 
 			if ( process.isAlive() ) {
 				LOGGER.warning( "Capture execution (pr124) is taking too long." );
-				return false;
+//				return false;
 			}
 			
 
@@ -183,7 +183,7 @@ public class ImageCaptureS2 {
 		} catch ( final IOException e ) {
 			LOGGER.severe( "Failed to run capture process, "
 									+ "encountered " + e.toString() );
-			return false;
+//			return false;
 		}
 		
 //		for ( final File file : fileDir.listFiles() ) {

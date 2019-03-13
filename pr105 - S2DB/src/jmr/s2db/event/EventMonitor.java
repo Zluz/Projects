@@ -2,10 +2,9 @@ package jmr.s2db.event;
 
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -32,8 +31,11 @@ public class EventMonitor {
 
 //	private static final SynchronousQueue<WeakReference<EventListener>> 
 //						listeners = new SynchronousQueue<>();
-	private static final ConcurrentLinkedQueue<WeakReference<EventListener>>
-						listeners = new ConcurrentLinkedQueue<>();
+//	private static final ConcurrentLinkedQueue<WeakReference<EventListener>>
+//						LISTENERS = new ConcurrentLinkedQueue<>();
+	
+	private static final ConcurrentHashMap<EventListener, String>
+						LISTENERS = new ConcurrentHashMap<>();
 
 	private static Thread threadUpdater;
 	
@@ -125,23 +127,23 @@ public class EventMonitor {
 	
 	private static void clearOldListeners() {
 		
-//		if ( 1==1 ) return; // disable for now..
+		if ( 1==1 ) return; // disable for now..
 		
 		List<WeakReference<EventListener>> listDelete = null;
 //		synchronized ( listeners ) {
-			for ( final WeakReference<EventListener> ref : listeners ) {
-				final EventListener listener = ref.get();
-				if ( null==listener ) {
-					if ( null==listDelete ) {
-						listDelete = new LinkedList<>();
-					}
-					listDelete.add( ref );
-				}
-			}
+//			for ( final WeakReference<EventListener> ref : LISTENERS ) {
+//				final EventListener listener = ref.get();
+//				if ( null==listener ) {
+//					if ( null==listDelete ) {
+//						listDelete = new LinkedList<>();
+//					}
+//					listDelete.add( ref );
+//				}
+//			}
 //		}
 		if ( null!=listDelete ) {
 			for ( final WeakReference<EventListener> ref : listDelete ) {
-				listeners.remove( ref );
+				LISTENERS.remove( ref );
 			}
 		}
 	}
@@ -165,11 +167,12 @@ public class EventMonitor {
 
 		if ( bPost ) {
 //			synchronized ( listeners ) {
-			if ( listeners.isEmpty() ) {
+			if ( LISTENERS.isEmpty() ) {
 				LOGGER.warning( "No listeners registered with EventMonitor." );
 			} else {
-				for ( final WeakReference<EventListener> ref : listeners ) {
-					final EventListener listener = ref.get();
+//				for ( final WeakReference<EventListener> ref : LISTENERS ) {
+				for ( final EventListener listener : LISTENERS.keySet() ) {
+//					final EventListener listener = ref.get();
 					if ( null!=listener ) {
 						System.out.println( "--- postNewEvent(), "
 											+ "listener " + listener );
@@ -182,15 +185,20 @@ public class EventMonitor {
 	}
 	
 	
-	public void addListener( final EventListener listener ) {
+	public void addListener( final EventListener listener,
+							 final String strName ) {
 		if ( null==listener ) return;
 		
 //		EventMonitor.clearOldListeners();
 		
 		synchronized ( setPostedEventSeqs ) {
-			final WeakReference<EventListener> 
-						ref = new WeakReference<EventListener>( listener );
-			EventMonitor.listeners.add( ref );
+//			final WeakReference<EventListener> 
+//						ref = new WeakReference<EventListener>( listener );
+			
+			LOGGER.info( "EventListener added." );
+			
+//			EventMonitor.LISTENERS.add( ref );
+			EventMonitor.LISTENERS.put( listener, strName );
 //			if ( ! EventMonitor.listeners.offer( ref ) ) {
 //				LOGGER.severe( "Failed to add EventListener " 
 //									+ listener.toString() );

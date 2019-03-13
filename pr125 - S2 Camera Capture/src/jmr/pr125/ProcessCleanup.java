@@ -2,10 +2,16 @@ package jmr.pr125;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class ProcessCleanup {
+
+
+	private static final Logger 
+					LOGGER = Logger.getLogger( ProcessCleanup.class.getName() );
 
 	final File fileTEMP;
 	
@@ -17,10 +23,12 @@ public class ProcessCleanup {
 		fileTEMP = new File( strTempDir );
 	}
 	
+	
 	public long markForDeletion() {
 		
 		final long lNow = System.currentTimeMillis();
-		final long lCutoff = lNow - TimeUnit.DAYS.toMillis( 2 );
+		final long lCutoffFar = lNow - TimeUnit.DAYS.toMillis( 1 );
+		final long lCutoffClose = lNow - TimeUnit.MINUTES.toMillis( 2 );
 		
 		long lCount = 0;
 		
@@ -28,20 +36,38 @@ public class ProcessCleanup {
 		
 		final File[] arrFiles = fileTEMP.listFiles();
 		for ( final File file : arrFiles ) {
-			
-			boolean bDelete = file.isFile();
-			bDelete = bDelete && file.lastModified() < lCutoff;
-			
-			if ( bDelete ) {
+
+			if ( file.lastModified() > lCutoffClose ) continue;
+
+			try {
+				
 				final String strName = file.getName();
 				
 				if ( strName.contains( "webcam-lock-" ) ) {
-					file.deleteOnExit();
-					lCount++;
-				} else if ( strName.contains( "jar_cache" ) ) {
-					file.deleteOnExit();
+					FileUtils.deleteQuietly( file );
 					lCount++;
 				}
+
+				if ( strName.startsWith( "pr125_" ) ) {
+					FileUtils.deleteQuietly( file );
+					lCount++;
+				}
+
+				if ( file.lastModified() > lCutoffFar ) continue;
+				
+				if ( strName.contains( "jar_cache" ) ) {
+					FileUtils.deleteQuietly( file );
+					lCount++;
+				}
+				
+				if ( strName.startsWith( "BridJExtractedLibraries" ) ) {
+					FileUtils.deleteQuietly( file );
+					lCount++;
+				}
+				
+			} catch ( final Exception e ) {
+				LOGGER.warning( 
+						()-> "Exception during cleanup: " + e.toString() );
 			}
 		}
 		return lCount;
