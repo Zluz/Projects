@@ -27,8 +27,6 @@ public class ProcessCleanup {
 	public long markForDeletion() {
 		
 		final long lNow = System.currentTimeMillis();
-		final long lCutoffFar = lNow - TimeUnit.DAYS.toMillis( 1 );
-		final long lCutoffClose = lNow - TimeUnit.MINUTES.toMillis( 2 );
 		
 		long lCount = 0;
 		
@@ -36,11 +34,13 @@ public class ProcessCleanup {
 		
 		final File[] arrFiles = fileTEMP.listFiles();
 		for ( final File file : arrFiles ) {
+			
+			final long lModTime = file.lastModified();
 
-			if ( file.lastModified() > lCutoffClose ) continue;
+			// continue if newer than 2 minutes
+			if ( lNow - TimeUnit.MINUTES.toMillis( 2 ) < lModTime ) continue;
 
 			try {
-				
 				final String strName = file.getName();
 				
 				if ( strName.contains( "webcam-lock-" ) ) {
@@ -48,22 +48,40 @@ public class ProcessCleanup {
 					lCount++;
 				}
 
+				// continue if newer than 2 hours
+				if ( lNow - TimeUnit.HOURS.toMillis( 2 ) < lModTime ) continue;
+
 				if ( strName.startsWith( "pr125_" ) ) {
 					FileUtils.deleteQuietly( file );
 					lCount++;
-				}
-
-				if ( file.lastModified() > lCutoffFar ) continue;
-				
-				if ( strName.contains( "jar_cache" ) ) {
+				} else if ( strName.startsWith( "pr124_" ) ) {
 					FileUtils.deleteQuietly( file );
 					lCount++;
 				}
 				
+				// continue if newer than a day
+				if ( lNow - TimeUnit.DAYS.toMillis( 1 ) < lModTime ) continue;
+
 				if ( strName.startsWith( "BridJExtractedLibraries" ) ) {
 					FileUtils.deleteQuietly( file );
 					lCount++;
-				}
+				} else if ( strName.contains( "jar_cache" ) ) {
+					FileUtils.deleteQuietly( file );
+					lCount++;
+				} else if ( strName.startsWith( "WER" ) 
+						&& strName.contains( ".tmp." ) ) {
+					FileUtils.deleteQuietly( file );
+					lCount++;
+				} 
+				
+				// continue if newer than 7 days
+				if ( lNow - TimeUnit.DAYS.toMillis( 7 ) < lModTime ) continue;
+
+				if ( strName.startsWith( "~" ) 
+						&& strName.endsWith( ".TMP" ) ) {
+					FileUtils.deleteQuietly( file );
+					lCount++;
+				} 
 				
 			} catch ( final Exception e ) {
 				LOGGER.warning( 

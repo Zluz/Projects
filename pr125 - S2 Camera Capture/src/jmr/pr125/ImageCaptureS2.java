@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
@@ -34,16 +35,26 @@ public class ImageCaptureS2 {
 	final File fileDir;
 	final List<File> listFiles = new LinkedList<>();
 
+	
 	public ImageCaptureS2() {
 		File file;
 		try {
 			file = Files.createTempDirectory( "pr125_" ).toFile();
+			
+			if ( null!=file && file.isDirectory() ) {
+				LOGGER.info( "Using temporary directory: " 
+												+ file.getAbsolutePath() );
+			} else {
+				LOGGER.severe( "Failed to allocate a temporary directory." );
+			}
 		} catch ( final IOException e ) {
 			file = null;
 			LOGGER.severe( ()-> "Failed to set up a temporary directory." );
+			LOGGER.log( Level.WARNING, "Call stack", e );
 		}
 		this.fileDir = file;
 	}
+	
 	
 	public static File getLatest_pr124() {
 		
@@ -127,6 +138,9 @@ public class ImageCaptureS2 {
 //			final String strLowPriorityCommand = 
 //						"cmd.exe /C start /B /belownormal " + strCommand;
 		
+			LOGGER.info( ()-> "Launching process: \n" + strCommand + "\n" );  
+//						+ "\nin dir: " + this.fileDir.getAbsolutePath() );
+			
 			final Process process = Runtime.getRuntime().exec( 
 							strCommand, null, fileDir );
 //							strLowPriorityCommand, null, fileDir );
@@ -236,6 +250,15 @@ public class ImageCaptureS2 {
 		}
 		return strCommand;
 	}
+	
+	
+	public boolean isValid() {
+		if ( null==this.fileDir ) return false;
+		if ( ! this.fileDir.isDirectory() ) return false;
+		
+		return true;
+	}
+	
 	
 //	public static void main(String[] args) 
 //							throws IOException, InterruptedException {

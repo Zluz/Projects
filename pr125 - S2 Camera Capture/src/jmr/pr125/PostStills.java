@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
@@ -92,7 +93,11 @@ public class PostStills {
 	
 	private void exit( final int iExitCode,
 					   final String strMessage ) {
-		LOGGER.info( strMessage );
+		if ( 0==iExitCode ) {
+			LOGGER.info( strMessage );
+		} else {
+			LOGGER.severe( strMessage );
+		}
 		
 		final ProcessCleanup cleanup = new ProcessCleanup();
 		final long lCount = cleanup.markForDeletion();
@@ -104,6 +109,14 @@ public class PostStills {
 	
 	
 	public void start() throws InterruptedException {
+		
+		if ( null==capture || ! capture.isValid() ) {
+			this.exit( 100, "Failed to initialize ImageCaptureS2." );
+		}
+
+		System.out.print( "Cleaning temp files..." );
+		final ProcessCleanup cleanup = new ProcessCleanup();
+		final long lCount = cleanup.markForDeletion();
 
 		recordPIDFile();
 		
@@ -160,25 +173,21 @@ public class PostStills {
 			} catch ( final Exception e ) {
 				LOGGER.warning( ()-> "Problem encountered during capture: " 
 							+ e.toString() );
+				LOGGER.log( Level.WARNING, "Call stack", e );
 			}
 			
 			System.out.print( "Pausing..." );
 			Thread.sleep( TimeUnit.SECONDS.toMillis( TIME_DELAY ) );
 			System.out.println( "Done." );
 			
-			System.out.print( "Cleaning temp files..." );
-			final ProcessCleanup cleanup = new ProcessCleanup();
-			final long lCount = cleanup.markForDeletion();
+//			System.out.print( "Cleaning temp files..." );
+//			final ProcessCleanup cleanup = new ProcessCleanup();
+//			final long lCount = cleanup.markForDeletion();
 			System.out.println( "Done: " + lCount + " file(s) deleted." );
 
 			SelfDestruct.setTime( TIME_TIMEOUT, "PostStills main loop" );
 		}
-		
 	}
-	
-	
-	
-	
 	
 	
 	
