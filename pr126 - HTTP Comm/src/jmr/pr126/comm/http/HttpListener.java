@@ -7,6 +7,7 @@ import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.json.JsonException;
@@ -35,10 +36,11 @@ public class HttpListener {
 	public final static int PORT = 8090;
 	
 	public final static String ENDPOINT = "/event";
+	public final static String PARAMETER = "data";
 	
 	
 	public interface Listener {
-		public void received( final Map map );
+		public void received( final Map<String,Object> map );
 	}
 	
 	private final static List<Listener> LISTENERS = new LinkedList<>();
@@ -76,11 +78,20 @@ public class HttpListener {
 	
 	public static void process( final String strData ) {
 
-		final Map<?,?> map;
+		final Map<String,Object> map;
 		
 		try {
+			
+			final String strParsable;
+			if ( strData.contains( PARAMETER + "=" ) ) {
+				strParsable = StringUtils.substring( 
+									strData, strData.indexOf( "=" ) + 1 );
+			} else {
+				strParsable = strData;
+			}
+			
 			final JsonParser parser = new JsonParser();
-			final JsonElement je = parser.parse( strData );
+			final JsonElement je = parser.parse( strParsable );
 			if ( null!=je && je.isJsonObject() ) {
 				final JsonObject jo = je.getAsJsonObject();
 				final Gson gson = new Gson();
@@ -147,6 +158,18 @@ public class HttpListener {
 //		final HttpListener server = new HttpListener(8090, "/test");
 		final HttpListener server = new HttpListener();
 		server.toString();
+		
+		server.registerListener( new Listener() {
+			@Override
+			public void received( final Map<String,Object> map ) {
+				System.out.println( "Data recieved" );
+				for ( final Entry<String, Object> entry : map.entrySet() ) {
+					System.out.println( "\t" 
+								+ entry.getKey() + " = " + entry.getValue() );
+				}
+			}
+		} );
+		
 		for (;;);
 	}
 }
