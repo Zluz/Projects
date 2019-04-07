@@ -6,6 +6,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ConcurrentModificationException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -34,6 +35,8 @@ public class ConnectionProvider {
 	private final BasicDataSource bds;
 
 	private static ConnectionProvider instance;
+	
+	private static boolean bShutdown = false;
 
 	
 
@@ -84,6 +87,7 @@ public class ConnectionProvider {
 							"Shutdown Hook - ConnectionProvider.close()" ) {
 			@Override
 			public void run() {
+				bShutdown = true;
 				close();
 			}
 		});
@@ -92,7 +96,7 @@ public class ConnectionProvider {
 			@Override
 			public void run() {
 				try {
-					for (;;) {
+					while ( ! bShutdown ) {
 						Thread.sleep( 1000 );
 						final List<ConnectionReference> 
 									listDelete = new LinkedList<>();
@@ -106,14 +110,15 @@ public class ConnectionProvider {
 										listDelete.add( ref );
 									}
 								}
-	//						} catch ( final ConcurrentModificationException e ) {
-							} catch ( final Exception e ) {
+							} catch ( final ConcurrentModificationException e ) {
+//							}} catch ( final Exception e ) {
 								// ignore, quit
 							}
 							for ( final ConnectionReference ref : listDelete ) {
 								listConnections.remove( ref );
 							}
 						}
+						
 					}
 				} catch ( final InterruptedException e ) {
 					// TODO Auto-generated catch block
@@ -175,6 +180,8 @@ public class ConnectionProvider {
 	
 	
 	public void close() {
+		
+		bShutdown = true;
 
 		final StackTraceElement ste = Thread.currentThread().getStackTrace()[2];
 		final String strCaller = 
