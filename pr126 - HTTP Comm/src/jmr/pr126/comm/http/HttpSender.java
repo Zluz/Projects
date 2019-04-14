@@ -14,39 +14,11 @@ import com.google.gson.Gson;
 
 // from
 // StarHost:jmr/home/comm/http/URLReader.java
-public class HttpSender {
+public class HttpSender implements HttpCommConstants {
 	
 
 	private final static Logger 
 				LOGGER = Logger.getLogger( HttpSender.class.getName() );
-	
-	
-	
-	
-	public enum Type { 
-		CLICK, TEXTEDIT, 
-		SHUTDOWN, 
-	};
-
-	private static HttpSender instance;
-
-	private String strHost;
-
-	
-	
-	public static HttpSender get() {
-		if ( null==instance ) {
-			instance = new HttpSender();
-		}
-		return instance;
-	}
-	
-	
-	public void setHost( final String strHost ) {
-		if ( null==strHost ) return;
-		if ( strHost.isEmpty() ) return;
-		this.strHost = strHost;
-	}
 	
 	
 	public boolean send( final String strDestination,
@@ -63,8 +35,7 @@ public class HttpSender {
 		}
 		
 		final String strURL = url.toString() 
-					+ HttpListener.ENDPOINT 
-					+ "?" + HttpListener.PARAMETER + "=" 
+					+ ENDPOINT + "?" + PARAMETER + "=" 
 							+ URLEncoder.encode( strJson ); 
 		
 		final URLReader reader = new URLReader( strURL );
@@ -72,22 +43,6 @@ public class HttpSender {
 		return ( null!=strResult );
 	}
 	
-	
-	public boolean send(	final Type type,
-							final String strID,
-							final String strData ) {
-		if ( null==strHost ) return false;
-		
-		@SuppressWarnings("deprecation")
-		final String strURL = 
-				"http://" + strHost + "/atom?Type=" + type.name() 
-						+ "&id=" + URLEncoder.encode( strID )
-						+ "&data=" + URLEncoder.encode( strData );
-		
-		final URLReader reader = new URLReader( strURL );
-		final String strResult = reader.getContent();
-		return ( null!=strResult );
-	}
 	
 	
 	public static void main( final String[] args ) 
@@ -102,7 +57,5 @@ public class HttpSender {
 		final HttpSender sender = new HttpSender();
 		sender.send( "local", map );
 	}
-	
-	
 	
 }

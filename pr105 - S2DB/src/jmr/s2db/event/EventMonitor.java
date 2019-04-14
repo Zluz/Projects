@@ -3,12 +3,17 @@ package jmr.s2db.event;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import jmr.pr126.comm.http.HttpListener;
+import jmr.s2db.comm.Notifier;
 import jmr.s2db.tables.Event;
+
+import static jmr.pr126.comm.http.HttpListener.Listener;
 
 
 /**
@@ -19,7 +24,7 @@ import jmr.s2db.tables.Event;
  */
 public class EventMonitor {
 	
-	public final static long MONITOR_INTERVAL = TimeUnit.SECONDS.toMillis( 1 );
+	public final static long MONITOR_INTERVAL = TimeUnit.SECONDS.toMillis( 2 );
 
 
 	
@@ -39,6 +44,25 @@ public class EventMonitor {
 
 	private static Thread threadUpdater;
 	
+	private static HttpListener httplistener = new HttpListener();
+	
+	private static Listener listener = new Listener() {
+		@Override
+		public void received( final Map<String, Object> map ) {
+			System.out.println( "--- EventMonitor HttpListener.received()" );
+			if ( Notifier.EVENT_TABLE_UPDATE.equals( map.get( "event" ) ) ) {
+				if ( "event".equals( map.get( "table" ) ) ) {
+					System.out.print( "\tScanning for new events..." );
+					scanNewEvents();
+					System.out.println( "Done." );
+				}
+			}
+		}
+	};
+	
+	static {
+		httplistener.registerListener( listener );
+	}
 	
 	private static long seqLastEventScanned = 0;
 

@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import jmr.s2db.DataFormatter;
 import jmr.s2db.comm.ConnectionProvider;
+import jmr.s2db.comm.Notifier;
 import jmr.s2db.event.EventMonitor;
 import jmr.s2db.event.EventType;
 import org.apache.commons.lang3.StringUtils;
@@ -286,6 +287,9 @@ public class Event extends TableBase {
 				final Statement stmt = conn.createStatement() ) {
 
 			stmt.executeUpdate( strInsert, Statement.RETURN_GENERATED_KEYS );
+			
+			Notifier.getInstance().pushTableUpdate( "event" );
+			
 			try ( final ResultSet rs = stmt.getGeneratedKeys() ) {
 				
 				if ( rs.next() ) {

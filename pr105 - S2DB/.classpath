@@ -18,5 +18,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr104 - Utilities"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr126 - HTTP Comm"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

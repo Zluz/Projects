@@ -25,18 +25,13 @@ import com.sun.net.httpserver.HttpServer;
 
 //from
 //StarHost:jmr/home/comm/http/HttpAtomConsumer.java
-public class HttpListener {
+public class HttpListener implements HttpCommConstants {
 	
 	
 
 	private final static Logger 
 				LOGGER = Logger.getLogger( HttpListener.class.getName() );
 	
-	
-	public final static int PORT = 8090;
-	
-	public final static String ENDPOINT = "/event";
-	public final static String PARAMETER = "data";
 	
 	
 	public interface Listener {
@@ -124,10 +119,6 @@ public class HttpListener {
 			final URI uri = exchange.getRequestURI();
 			final String strURI = exchange.getRequestURI().toString();
 
-			final String strHost = exchange.getRemoteAddress().getAddress()
-					.getHostAddress();
-			HttpSender.get().setHost(strHost);
-
 			final String strMessage = uri.getQuery();
 			
 			HttpListener.process( strMessage );
@@ -141,7 +132,7 @@ public class HttpListener {
 			try (final OutputStream os = exchange.getResponseBody()) {
 
 				final byte[] bytes = strResponse.getBytes();
-				exchange.sendResponseHeaders(200, bytes.length);
+				exchange.sendResponseHeaders( 200, bytes.length );
 
 				os.write(bytes);
 				os.close();
