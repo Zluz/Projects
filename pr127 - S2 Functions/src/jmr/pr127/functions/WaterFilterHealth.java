@@ -21,10 +21,10 @@ public class WaterFilterHealth extends FunctionBase {
 
 	private static final long INTERVAL_MAX = 180000L;
 
-	private static final int DATA_POINTS_MIN = 6;
+	private static final int DATA_POINTS_MIN = 4;
 
 //	final public static int DATA_SPACE = 50;
-	final public static int DATA_SPACE = DATA_POINTS_MIN + 10;
+	final public static int DATA_SPACE = DATA_POINTS_MIN + 20;
 
 	final public static String SQL_QUERY = 
 						"SELECT \n" + 
@@ -34,11 +34,25 @@ public class WaterFilterHealth extends FunctionBase {
 								"s2db.event e \n" + 
 						"WHERE \n" + 
 								"subject like 'L_POWER_WELL_PUMP' \n" + 
+//								"AND ( time < 1554242052085 ) \n" + 
 						"ORDER BY \n" + 
 								"seq DESC \n" + 
 						"LIMIT \n" + 
 								( 2 * DATA_SPACE ) + ";";
 
+	/*
+	 * historical:
+	 * 		date		time field		evaluated value
+	 * 		20190402 - 1554208629457	2.7262333333333335
+	 * 		20190403 - (filter reset)
+	 * 		20190405 - 1554468341692	2.176816666666667
+	 * 		20190408 - 1554468288499	2.2506444444444442
+	 * 		20190410 - 1554898575529	2.270033333333333
+	 */
+	 
+	
+	
+	
 	
 //	private long[] arrData = new long[ DATA_SPACE ];
 //	private float[] arrData = new float[ DATA_SPACE ];
@@ -61,6 +75,10 @@ public class WaterFilterHealth extends FunctionBase {
 				
 				final long lTime = rs.getLong( "time" );
 				final String strValue = rs.getString( "value" );
+				
+				if ( listData.isEmpty() ) {
+					System.out.println( "time field: " + lTime );
+				}
 				
 				final boolean bPumpOn;
 				if ( "true".equals( strValue ) ) {
@@ -107,9 +125,13 @@ public class WaterFilterHealth extends FunctionBase {
 				}
 			}
 			
+			final int iCount = listData.size();
+			
+			System.out.println( "Collected " + iCount + " data points." );
+			
 			if ( iIndex < DATA_POINTS_MIN ) {
-				super.listMessages.add( "Too few data points "
-								+ "(only collected " + iIndex + ", "
+				super.listMessages.add( "Too few consecutive data points "
+								+ "(only collected " + iCount + ", "
 								+ "need " + DATA_POINTS_MIN + ")." );
 				return false;
 			}
@@ -118,9 +140,10 @@ public class WaterFilterHealth extends FunctionBase {
 			
 			Collections.sort( listData );
 			
-			// drop the first 2 and last 2 (outliers)
+			// drop the first 2 (water warm-up)
 			listData.remove( 0 );
-			listData.remove( listData.size() - 1 );
+			listData.remove( 0 );
+			// drop the first and last (outliers)
 			listData.remove( 0 );
 			listData.remove( listData.size() - 1 );
 			
