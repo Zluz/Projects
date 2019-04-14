@@ -25,7 +25,7 @@ rule "ControlGarageLightByPedDoor"
 end
 
 
-rule "ControlGarageLightByVehDoor"
+rule "ControlGarageLightByVehDoorClosed"
 	when
 		e : Event(
 				getSubject().equals( HardwareInput.GARAGE_VEH_DOOR_1_CLOSED_STOP.name() )
@@ -34,5 +34,40 @@ rule "ControlGarageLightByVehDoor"
 		System.out.println( "ControlGarageLightByPedDoor fired." );
 		
 		Simple.doControlGarageLight( e );
+end
+
+
+rule "ControlGarageLightByVehDoorOpen"
+	when
+		e : Event(
+				getSubject().equals( HardwareInput.GARAGE_VEH_DOOR_1_OPEN_STOP.name() )
+			)
+	then
+		System.out.println( "ControlGarageLightByPedDoor fired." );
+		
+		Simple.doControlGarageLight( e );
+end
+
+
+rule "ParkingAssist_VehDoorOpening"
+	when
+		e : Event(
+				getSubject().equals( HardwareInput.GARAGE_VEH_DOOR_1_CLOSED_STOP.name() )
+			)
+	then
+		System.out.println( "ParkingAssist_VehDoorOpening fired." );
+		
+		Simple.doControlParkingAssist( e );
+end
+
+rule "ParkingAssist_VehDoorOpened"
+	when
+		e : Event(
+				getSubject().equals( HardwareInput.GARAGE_VEH_DOOR_1_OPEN_STOP.name() )
+			)
+	then
+		System.out.println( "ParkingAssist_VehDoorOpened fired." );
+		
+		Simple.doControlParkingAssist( e );
 end
 

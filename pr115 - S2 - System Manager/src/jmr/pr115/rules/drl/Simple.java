@@ -702,6 +702,40 @@ public class Simple implements RulesConstants {
 	}
 	
 	
+	public static void doControlParkingAssist( final Event e ) {
+
+		final Thread thread = new Thread( "Momentary Parking Assist" ) {
+			public void run() {
+				try {
+
+//					if ( Boolean.FALSE.equals( bClosed ) ) {
+						jmr.s2db.tables.Job.add( JobType.REMOTE_OUTPUT, null,
+								new String[] {
+								"remote", "GARAGE_LIGHTS",
+								"port", Port.OUT_D_1.name(),
+								"value", "true",
+									} );
+									
+						Thread.sleep( TimeUnit.MINUTES.toMillis( 2 ) );
+//						Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
+//					}
+
+					jmr.s2db.tables.Job.add( JobType.REMOTE_OUTPUT, null,
+							new String[] {
+							"remote", "GARAGE_LIGHTS",
+							"port", Port.OUT_D_1.name(),
+							"value", "false",
+						} );
+					
+				} catch ( final InterruptedException e ) {
+					// just quit
+				}
+			};
+		};
+		thread.start();
+	}
+	
+	
 	public static void doControlGarageLight( final Event e ) {
 		
 //		final String strValue = e.getValue();
@@ -719,7 +753,7 @@ public class Simple implements RulesConstants {
 								"value", "true",
 									} );
 									
-						Thread.sleep( TimeUnit.MINUTES.toMillis( 1 ) );
+						Thread.sleep( TimeUnit.MINUTES.toMillis( 2 ) );
 //						Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
 //					}
 
