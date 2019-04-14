@@ -19,6 +19,9 @@ public enum HardwareOutput {
 	GARAGE_FAST_LIGHTS,
 	
 	ATTIC_AUDIO_PULSE,
+	
+	AUDIO_BROADCAST_POWER_ENCODER,
+	
 	;
 
 	public static HardwareOutput getValueFor( final String value ) {

@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -23,6 +24,11 @@ import jmr.util.hardware.HardwareOutput;
 
 public class Pimoroni_AutomationHAT {
 
+
+	private final static Logger 
+			LOGGER = Logger.getLogger( Pimoroni_AutomationHAT.class.getName() );
+	
+	
 	public static enum Port {
 
 		// digital inputs
@@ -72,6 +78,14 @@ public class Pimoroni_AutomationHAT {
 		
 		public boolean isInput() {
 			return this.name().startsWith( "IN_" );
+		}
+		
+		public boolean isAnalog() {
+			return this.name().contains( "_A_" );
+		}
+
+		public boolean isRelay() {
+			return this.name().contains( "_R_" );
 		}
 	};
 	
@@ -150,13 +164,26 @@ public class Pimoroni_AutomationHAT {
 			final Port port = Port.getPortFor( strKey );
 			if ( null!=port ) {
 				final String strValue = entry.getValue();
-				final HardwareInput input = HardwareInput.getValueFor( strValue );
-				if ( null!=input ) {
+				final HardwareInput 
+							input = HardwareInput.getValueFor( strValue );
+				final HardwareOutput 
+							output = HardwareOutput.getValueFor( strValue );
+				if ( null==input && null==output ) {
+					LOGGER.severe( ()-> 
+							"Name not recognized as input or output: "
+							+ "\"" + strValue + "\", port will not be mapped." );
+				} else if ( null!=input && null!=output ) {
+					// this should never happen. 
+					// maybe typo in HardwareInput or HardwareOutput
+					LOGGER.severe( ()-> 
+							"Name found as both input AND output: "
+							+ "\"" + strValue + "\". "
+							+ "Please check HardwareInput and HardwareOutput." );
+				} else if ( null!=input ) {
 					mapInputs.put( port, input );
 					System.out.println( "Registering input " 
 								+ port.name() + " as " + input.name() );
 				} else {
-					final HardwareOutput output = HardwareOutput.getValueFor( strValue );
 					mapOutputs.put( port, output );
 					System.out.println( "Registering output " 
 							+ port.name() + " as " + output.name() );
@@ -192,16 +219,17 @@ public class Pimoroni_AutomationHAT {
 	}
 	
 	
-	private void updateAnalogInput( 	final Port port,
-										final float fNewValue ) {
+	private void updateAnalogInput( final Port port,
+									final float fNewValue ) {
 		if ( null==port ) return;
+
+		final HardwareInput input = this.getHardwareInputForPort( port );
+		if ( null==input ) return;
 
 		final Float fOrigValue = mapAnalogInput.get( port );
 		mapAnalogInput.put( port, fNewValue );
 
-		final HardwareInput input = this.getHardwareInputForPort( port );
-
-		if ( null!=fOrigValue && null!=input ) {
+		if ( null!=fOrigValue ) {
 			
 			
 //System.out.println( "--- updateAnalogInput() " );			
@@ -221,13 +249,33 @@ public class Pimoroni_AutomationHAT {
 					&& ( fPctDiff > ANALOG_TRIGGER_THRESHOLD ) ) {
 				
 System.out.println( "--- updateAnalogInput()"
-//			+ "\n\tport = " + port.name() 
+			+ "\n\tport = " + port.name() 
+			+ "\n\tinput = " + input 
+			+ "\n\tfOrigValue = " + fOrigValue 
+			+ "\n\tfNewValue  = " + fNewValue 
 			+ "\n\tfOld = " + fOld 
 			+ "\n\tfNew = " + fNew 
-			+ "\n\tfDiff = " + fDiff			
+			+ "\n\tfDiff    = " + fDiff			
 			+ "\n\tfPctDiff = " + fPctDiff			
 				);			
 				
+
+
+if (1==1) return; //FIXME disable posting this for now
+/*
+ * need to find out why fNew is always about 2x fOld, always triggering
+ * 
+ * --- updateAnalogInput()
+	port = IN_A_1
+	input = VEH_SPACE_1_RANGE_DOWN
+	fOrigValue = 2.18
+	fNewValue  = 4.22
+	fOld = 2.18
+	fNew = 4.22
+	fDiff    = 2.0399997
+	fPctDiff = 93.577965
+ */
+
 				checkRunTrigger( port );
 			}
 		}

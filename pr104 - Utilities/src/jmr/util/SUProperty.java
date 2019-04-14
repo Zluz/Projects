@@ -16,7 +16,9 @@ public enum SUProperty {
 	S2DB_USERNAME( "s2db.username" ),
 	S2DB_PASSWORD( "s2db.password" ),
 	S2DB_SCHEMA( "s2db.schema" ),
-	
+
+	HOME_SERVER_IP( "home.server.ip" ),
+
 	GAE_URL( "gae.url" ),
 	GAE_USERNAME( "gae.username" ),
 	GAE_PASSWORD( "gae.password" ),

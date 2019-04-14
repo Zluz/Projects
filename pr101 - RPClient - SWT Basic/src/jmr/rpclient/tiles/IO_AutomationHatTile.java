@@ -282,43 +282,94 @@ public class IO_AutomationHatTile extends TileBase {
 	
 			text.println( "Digital Inputs:" );
 			for ( final Port port : Port.values() ) {
-				if ( port.isInput() ) {
+				if ( port.isInput() && ! port.isAnalog() ) {
 					final Boolean value = hat.getDigitalPortValue( port );
 					if ( null!=value ) {
 						final String strValue = value.toString();
-						final HardwareInput hardware = hat.getHardwareInputForPort( port );
-						final String strHardware = null!=hardware ? hardware.name() : "<no hw name>";
+						final HardwareInput hardware = 
+										hat.getHardwareInputForPort( port );
+						final String strHardware = ( null!=hardware ) 
+														? hardware.name() 
+														: "<no hw name>";
 						text.println( strIndent + strValue 
 										+ strSpacer + port.name()
 										+ strSpacer + strHardware );
+					} else {
+						text.println( strIndent + strIndent + "-" + strIndent  
+								+ strSpacer + port.name()
+								+ strSpacer + "<unmapped>" );
 					}
 				}
 			}
 			
 			text.println( "Analog Inputs:" );
 			for ( final Port port : Port.values() ) {
-				final Float value = hat.getAnalogPortValue( port );
-				if ( null!=value ) {
-					final String strValue = value.toString();
-					final HardwareInput hardware = hat.getHardwareInputForPort( port );
-					final String strHardware = null!=hardware ? hardware.name() : "<no hw name>";
-					text.println( strIndent + strValue 
-									+ strSpacer + port.name()
-									+ strSpacer + strHardware );
-				}
-			}
-			
-			text.println( "Digital Outputs:" );
-			for ( final Port port : Port.values() ) {
-				if ( !port.isInput() ) {
-					final Boolean value = hat.getDigitalPortValue( port );
+				if ( port.isInput() && port.isAnalog() ) {
+					final Float value = hat.getAnalogPortValue( port );
 					if ( null!=value ) {
-						final String strValue = value.toString();
-						final HardwareOutput hardware = hat.getHardwareOutputForPort( port );
-						final String strHardware = null!=hardware ? hardware.name() : "<no hw name>";
+	//					final String strValue = value.toString();
+						final String strValue = String.format( "%8.3f", value );
+						final HardwareInput 
+								hardware = hat.getHardwareInputForPort( port );
+						final String strHardware = null!=hardware 
+													? hardware.name() 
+													: "<no hw name>";
 						text.println( strIndent + strValue 
 										+ strSpacer + port.name()
 										+ strSpacer + strHardware );
+					} else {
+						text.println( strIndent + strIndent + "-" + strIndent  
+								+ strSpacer + port.name()
+								+ strSpacer + "<unmapped>" );
+					}
+				}
+			}
+			
+			text.println( "Digital Line Outputs:" );
+			for ( final Port port : Port.values() ) {
+				if ( ! port.isInput() && ! port.isRelay() ) {
+					final Boolean value = hat.getDigitalPortValue( port );
+//					if ( null!=value ) {
+					{
+						final String strValue = ( null!=value )
+											? value.toString()
+											: strIndent + "-" + strIndent;
+						final HardwareOutput 
+								hardware = hat.getHardwareOutputForPort( port );
+						final String strHardware = null!=hardware 
+												? hardware.name() 
+												: "<no hw name>";
+						text.println( strIndent + strValue 
+										+ strSpacer + port.name()
+										+ strSpacer + strHardware );
+//					} else {
+//						text.println( strIndent + strIndent + "-" + strIndent  
+//								+ strSpacer + port.name()
+//								+ strSpacer + "<unmapped>" );
+					}
+				}
+			}
+
+			text.println( "Automation Relays:" );
+			for ( final Port port : Port.values() ) {
+				if ( ! port.isInput() && port.isRelay() ) {
+					final Boolean value = hat.getDigitalPortValue( port );
+					{
+						final String strValue = ( null!=value )
+												? value.toString()
+												: strIndent + "-" + strIndent;
+						final HardwareOutput 
+								hardware = hat.getHardwareOutputForPort( port );
+						final String strHardware = null!=hardware 
+												? hardware.name() 
+												: "<no hw name>";
+						text.println( strIndent + strValue 
+										+ strSpacer + port.name()
+										+ strSpacer + strHardware );
+//					} else {
+//						text.println( strIndent + strIndent + "-" + strIndent  
+//								+ strSpacer + port.name()
+//								+ strSpacer + "<unmapped>" );
 					}
 				}
 			}

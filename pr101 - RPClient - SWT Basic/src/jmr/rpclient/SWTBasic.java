@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -571,7 +572,17 @@ public class SWTBasic {
 
 	    log( "Session ID: " + NetUtil.getSessionID() );
 	    
-	    shell.setText( NetUtil.getSessionID() );
+	    final String strTitle;
+	    if ( StringUtils.isBlank( strDeviceName ) ) {
+	    	strTitle = NetUtil.getSessionID();
+	    } else {
+	    	strTitle = NetUtil.getSessionID() 
+	    					+ "  -  \"" + strDeviceName + "\"";
+	    }
+	    
+	    //TODO add "remote" name to the title
+	    
+	    shell.setText( strTitle );
 	    
 	    
 		//    for ( final Display display : Display.)
