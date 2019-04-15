@@ -8,7 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import jmr.pr126.comm.http.HttpListener;
+import jmr.pr126.comm.http.HttpListener.Listener;
 import jmr.s2db.Client;
+import jmr.s2db.comm.Notifier;
 import jmr.s2db.tables.Job;
 import jmr.s2db.tables.Job.JobState;
 
@@ -77,7 +80,28 @@ public class JobMonitor {
 	private List<Job> listingLastCompleted = new LinkedList<>();
 
 	
+
+	/* similar to EventMonistor.listener */ 
+	private Listener listener = new Listener() {
+		@Override
+		public void received( final Map<String, Object> map ) {
+			System.out.println( "--- JobMonitor HttpListener.received()" );
+			if ( Notifier.EVENT_TABLE_UPDATE.equals( map.get( "job" ) ) ) {
+				if ( "event".equals( map.get( "table" ) ) ) {
+					System.out.print( "\tScanning for new jobs..." );
+					updateListing();
+					System.out.println( "Done." );
+				}
+			}
+		}
+	};
+	
+	
+	
 	public void initializeJobMonitorThread() {
+		
+		HttpListener.getInstance().registerListener( listener );
+		
 		if ( null!=threadUpdater ) return;
 		
 		threadUpdater = new Thread( "Job Monitor Updater" ) {

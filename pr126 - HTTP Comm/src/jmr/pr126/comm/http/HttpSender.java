@@ -42,9 +42,23 @@ public class HttpSender implements HttpCommConstants {
 		final String strResult = reader.getContent();
 		return ( null!=strResult );
 	}
+
 	
+	public void postHostActivated( final String strDestination,
+								   final String strHostAlias,
+								   final String strURL ) {
+		final Map<String,Object> map = new HashMap<>();
+		map.put( KEY_EVENT_SUBJECT, VALUE_LISTENER_ACTIVATED );
+		map.put( KEY_HOST_ALIAS, strHostAlias );
+		map.put( KEY_HOST_URL, strURL );
+		
+		LOGGER.info( ()-> "HttpSender.postHostActivated(), "
+									+ "strAlias = " + strHostAlias );
+		
+		this.send( strDestination, map );
+	}
 	
-	
+
 	public static void main( final String[] args ) 
 											throws MalformedURLException {
 		final URL url = new URL( "http://localhost:" + HttpListener.PORT );

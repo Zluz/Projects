@@ -1,6 +1,9 @@
 package jmr.pr126.comm.http;
 
 import java.net.*;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.*;
 
 /*
@@ -22,7 +25,7 @@ public class URLReader {
 	 * @return
 	 */
 	public String getContent() {
-		System.out.println( "Opening URL: " + strURL );
+		System.out.println( "Opening URL: " + strURL + " ..." );
 		final URL url;
 		try {
 			url = new URL( strURL );
@@ -51,8 +54,17 @@ public class URLReader {
 	            strbuf.append( strLine );
 	        in.close();
 	        
-	        return strbuf.toString();
+	        final String strContent = strbuf.toString();
+	        
+			int length = strContent.length();
+			System.out.println( "... content received, " + length + " chars: "
+					+ "\"" + StringUtils.abbreviate( strContent, 40 ) + "\"" );
+	        
+	        return strContent;
 		} catch ( final Exception e ) {
+
+			System.out.println( "... Encountered " + e.toString() ); 
+
 			return null;
 		}
 	}

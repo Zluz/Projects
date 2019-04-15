@@ -44,8 +44,9 @@ public class EventMonitor {
 
 	private static Thread threadUpdater;
 	
-	private static HttpListener httplistener = new HttpListener();
+//	private static HttpListener httplistener = new HttpListener();
 	
+	/* similar to JobMonistor.listener */ 
 	private static Listener listener = new Listener() {
 		@Override
 		public void received( final Map<String, Object> map ) {
@@ -60,8 +61,10 @@ public class EventMonitor {
 		}
 	};
 	
+	
 	static {
-		httplistener.registerListener( listener );
+//		httplistener.registerListener( listener );
+		HttpListener.getInstance().registerListener( listener );
 	}
 	
 	private static long seqLastEventScanned = 0;
@@ -234,7 +237,5 @@ public class EventMonitor {
 		System.out.println( "EventListener registered: " + listener.toString() );
 	}
 
-	
-	
 	
 }

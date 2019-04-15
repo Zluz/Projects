@@ -13,11 +13,14 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import jmr.s2db.DataFormatter;
 import jmr.s2db.comm.ConnectionProvider;
+import jmr.s2db.comm.Notifier;
 import jmr.s2db.job.JobType;
 import jmr.util.transform.JsonUtils;
 
@@ -114,6 +117,7 @@ public class Job extends TableBase {
 		}
 	}
 	
+	
 	public static List<Job> getNewJobsContaining( 
 										final String strRequestContains ) {
 		final String strWhere = 
@@ -122,6 +126,7 @@ public class Job extends TableBase {
 		final List<Job> listJob = Job.get( strWhere, 100 );
 		return listJob;
 	}
+	
 	
 	public static List<Job> get( 	final String strWhere,
 									final int iLimit ) {
@@ -263,6 +268,20 @@ public class Job extends TableBase {
 	}
 	
 	
+	public static String getRemoteDestination( final String strData ) {
+		if ( StringUtils.isBlank( strData ) ) return null;
+		
+		for ( final String strLine : strData.split( "\\\\" ) ) {
+			final String[] strParts = strLine.split( "=" );
+			if ( strParts[0].equalsIgnoreCase( "remote" ) 
+							&& 2 == strParts.length ) {
+				return strParts[1];
+			}
+		}
+		return null;
+	}
+	
+	
 	public static Job add(	final Long seqDeviceTarget,
 							final JobType type,
 							final JobSet jobset,
@@ -280,6 +299,10 @@ public class Job extends TableBase {
 		job.strRequest = type.name() + ":" + strOptions;
 		job.state = JobState.REQUEST;
 		job.seqDeviceTarget = seqDeviceTarget;
+		
+		final String strDestination = getRemoteDestination( strOptions );
+		
+		LOGGER.info( "Adding job, dest alias: " + strDestination );
 		
 		if ( null!=jobset ) {
 //			job.iPartCount = jobset.getNextIndex();
@@ -336,6 +359,16 @@ public class Job extends TableBase {
 					if ( null!=jobset ) {
 						jobset.setRelatedSeq( lSeq );
 					}
+					
+					LOGGER.info( "Job added, seq " + lSeq );
+					
+					if ( StringUtils.isNotBlank( strDestination ) ) {
+						Notifier.getInstance().pushTableUpdateTo( 
+													strDestination, "job" );
+					} else {
+						Notifier.getInstance().pushTableUpdate( "job" );
+					}
+					
 					return job;
 				}
 			}

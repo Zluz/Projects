@@ -2,13 +2,18 @@ package jmr.s2db;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.gson.JsonObject;
 
+import jmr.pr126.comm.http.HttpListener;
 import jmr.s2db.comm.ConnectionProvider;
+import jmr.s2db.comm.Notifier;
 import jmr.s2db.event.EventType;
 import jmr.s2db.event.SystemEvent;
 import jmr.s2db.imprt.SummaryRegistry;
@@ -219,9 +224,42 @@ public class Client {
 		return tDevice;
 	}
 	
+	
 	public JobManager getJobManager() {
 		final JobManager manager = JobManager.getInstance();
 		return manager;
+	}
+
+
+	public boolean registerAsRemote( final String strRemoteName, 
+								  	 final String strIP ) {
+		if ( StringUtils.isBlank( strRemoteName ) ) return false;
+		if ( StringUtils.isBlank( strIP ) ) return false;
+		
+		LOGGER.info( ()-> "Client.registerAsRemote(), "
+									+ "strRemoteName = " + strRemoteName );
+		
+//		Notifier.getInstance().setLocalIP( strIP );
+		HttpListener.getInstance().setIP( strIP );
+
+		final long lTime = System.currentTimeMillis();
+		final String strURL = HttpListener.getInstance().getHostedURL();
+		final Map<String,String> map = new HashMap<>();
+		map.put( "URL", strURL );
+		map.put( "REMOTE_NAME", strRemoteName );
+		
+		final Event event = Event.add(	EventType.SYSTEM, 
+										SystemEvent.LISTENER_ACTIVATED.name(), 
+										strIP, null, map, lTime, 
+										null, null, null );
+		LOGGER.fine( ()-> "Registered as Remote, "
+						+ "event seq " + event.getEventSeq() );
+		
+
+		
+		Notifier.getInstance().postRemoteAlias( strRemoteName, strURL );
+		
+		return true;
 	}
 	
 }

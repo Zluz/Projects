@@ -239,13 +239,21 @@ public class SWTBasic {
 		
 	    LOGGER.info( "Device: \"" + strDeviceName + "\"" );
 	    for ( final Entry<String, String> entry : mapOptionsRaw.entrySet() ) {
+//	    	final String strKey = entry.getKey().trim().toUpperCase();
 	    	final String strKey = entry.getKey().trim();
-	    	final String strValue = entry.getValue().trim();
+	    	final String strValue = entry.getValue();
 	    	if ( ! strValue.isEmpty() ) {
 			    LOGGER.info( "Options entry: \"" + strKey + "\""
 			    		+ " = \"" + strValue + "\"" );
 			    mapOptionsNorm.put( strKey, strValue );
 	    	}
+	    }
+	    
+	    final String strRemoteName = mapOptionsNorm.get( "remote" );
+	    if ( StringUtils.isNotBlank( strRemoteName ) ) {
+	    	LOGGER.info( ()-> "Registering as remote "
+	    								+ "\"" + strRemoteName + "\"" );
+		    s2db.registerAsRemote( strRemoteName, strIP );
 	    }
 	    
 	    JobManager.getInstance().setOptions( mapOptionsNorm );

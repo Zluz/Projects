@@ -6,15 +6,19 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.google.gson.Gson;
 
 import jmr.s2db.DataFormatter;
 import jmr.s2db.comm.ConnectionProvider;
 import jmr.s2db.comm.Notifier;
 import jmr.s2db.event.EventMonitor;
 import jmr.s2db.event.EventType;
-import org.apache.commons.lang3.StringUtils;
 
 
 /*
@@ -210,6 +214,38 @@ public class Event extends TableBase {
 								final String strSubject,
 								final String strValue,
 								final String strThreshold,
+								final Map<String,String> map,
+								final long lTime,
+								final Long seqPage,
+								final Long seqTrigger,
+								final Long seqLog
+								) {
+		final Gson gson = new Gson();
+		final String strJson = gson.toJson( map );
+
+		final Event event = add( type, strSubject, strValue, strThreshold, 
+						strJson, lTime, seqPage, seqTrigger, seqLog );
+		return event;
+	}
+
+	
+	/**
+	 * Create and submit an event into the system.
+	 * @param type
+	 * @param strSubject
+	 * @param strValue
+	 * @param strThreshold
+	 * @param strData
+	 * @param lTime
+	 * @param seqPage
+	 * @param seqTrigger
+	 * @param seqLog
+	 * @return
+	 */
+	public static Event add(	final EventType type,
+								final String strSubject,
+								final String strValue,
+								final String strThreshold,
 								final String strData,
 								final long lTime,
 								final Long seqPage,
@@ -396,7 +432,8 @@ public class Event extends TableBase {
 				+ " (type:" + this.getEventType().name() + ", "
 				+ "subject:" + this.getSubject() + ", "
 				+ "seq=" + this.getEventSeq() + ", "
-				+ "data:\"" + StringUtils.substring( this.getData(), 0, 20 ) 
+//				+ "data:\"" + StringUtils.substring( this.getData(), 0, 20 ) 
+				+ "data:\"" + StringUtils.abbreviate( this.getData(), 20 ) 
 				+ "\")";
 		return strResult;
 	}
