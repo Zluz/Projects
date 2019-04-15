@@ -33,8 +33,16 @@ public class NormalizedFloat extends FunctionBase {
 
 	@Override
 	public Double evaluate() {
-		final List<Float> listEval = new LinkedList<>( this.list );
+		final List<Float> listEval;
+		
+		synchronized ( this.list ) {
+			if ( this.list.isEmpty() ) return null;
+			if ( this.list.size() < ( iCutBottom + iCutTop ) ) return null;
+		
+			listEval = new LinkedList<>( this.list );
+		}
 		Collections.sort( listEval );
+		
 		try {
 			for ( int i=0; i<iCutBottom; i++ ) {
 				listEval.remove( 0 );
