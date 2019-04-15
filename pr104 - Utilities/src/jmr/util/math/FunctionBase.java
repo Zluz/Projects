@@ -1,4 +1,4 @@
-package jmr.pr127.functions;
+package jmr.util.math;
 
 import java.util.LinkedList;
 import java.util.List;

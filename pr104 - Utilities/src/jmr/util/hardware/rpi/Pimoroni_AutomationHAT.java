@@ -21,6 +21,8 @@ import jmr.util.MonitorProcess;
 import jmr.util.OSUtil;
 import jmr.util.hardware.HardwareInput;
 import jmr.util.hardware.HardwareOutput;
+import jmr.util.math.NormalizedFloat;
+import jmr.util.transform.JsonUtils;
 
 public class Pimoroni_AutomationHAT {
 
@@ -115,7 +117,8 @@ public class Pimoroni_AutomationHAT {
 	
 	private final EnumMap<Port,Boolean> 
 				mapDigitalInput = new EnumMap<>( Port.class );
-	private final EnumMap<Port,Float> 
+	//TODO create a project for math functions/util, split from pr127
+	private final EnumMap<Port,jmr.util.math.NormalizedFloat> 
 				mapAnalogInput = new EnumMap<>( Port.class );
 	
 	private final EnumMap<Port,Boolean> 
@@ -218,6 +221,20 @@ public class Pimoroni_AutomationHAT {
 		}
 	}
 	
+
+	private NormalizedFloat getAnalogInputData( final Port port ) {
+		if ( null==port ) return null;
+		
+		if ( ! mapAnalogInput.containsKey( port ) ) {
+			final NormalizedFloat nf = new NormalizedFloat( 4, 1, 1 );
+			mapAnalogInput.put( port, nf );
+			return nf;
+		} else {
+			final NormalizedFloat nf = mapAnalogInput.get( port );
+			return nf;
+		}
+	}
+	
 	
 	private void updateAnalogInput( final Port port,
 									final float fNewValue ) {
@@ -226,16 +243,38 @@ public class Pimoroni_AutomationHAT {
 		final HardwareInput input = this.getHardwareInputForPort( port );
 		if ( null==input ) return;
 
-		final Float fOrigValue = mapAnalogInput.get( port );
-		mapAnalogInput.put( port, fNewValue );
+//		final Float fOrigValue = mapAnalogInput.get( port );
+//		mapAnalogInput.put( port, fNewValue );
+		
+		final NormalizedFloat nf = getAnalogInputData( port );
+		final Double dOrigNorm = nf.evaluate();
+		
+		nf.add( fNewValue );
 
-		if ( null!=fOrigValue ) {
+		if ( null!=dOrigNorm ) {
+
+			final Float fOrigValue = new Float( dOrigNorm );
+			final Double dNewNorm = nf.evaluate();
 			
+//			System.out.println( "--- updateAnalogInput() " 
+//					+ this.hashCode() + ", "
+//					+ "port: " + port.name() + ", "
+//					+ "value/raw: " + fNewValue + ", "
+//					+ "value/norm: " + dNewNorm //+ ", "
+////					+ "map: " + JsonUtils.report( mapAnalogInput )
+//					);
+			
+
+			if ( null==dNewNorm ) {
+				System.out.println( "\tIncomplete data, no normalized value." );
+				return;
+			}
 			
 //System.out.println( "--- updateAnalogInput() " );			
 			
 			final float fOld = fOrigValue.floatValue();
-			final float fNew = fNewValue; // fNewValue.floatValue();
+//			final float fNew = fNewValue; // fNewValue.floatValue();
+			final float fNew = dNewNorm.floatValue();
 			final float fDiff = fNew - fOld;
 
 //System.out.println( "--- updateAnalogInput()"
@@ -252,16 +291,19 @@ System.out.println( "--- updateAnalogInput()"
 			+ "\n\tport = " + port.name() 
 			+ "\n\tinput = " + input 
 			+ "\n\tfOrigValue = " + fOrigValue 
-			+ "\n\tfNewValue  = " + fNewValue 
+			+ "\n\tfNewValue/raw  = " + fNewValue 
+			+ "\n\tfNewValue/norm = " + dNewNorm 
 			+ "\n\tfOld = " + fOld 
 			+ "\n\tfNew = " + fNew 
 			+ "\n\tfDiff    = " + fDiff			
 			+ "\n\tfPctDiff = " + fPctDiff			
 				);			
 				
+System.out.println( "--- updateAnalogInput(), "
+		+ "map: " + JsonUtils.report( mapAnalogInput ) );
 
 
-if (1==1) return; //FIXME disable posting this for now
+//if (1==1) return; //FIXME disable posting this for now
 /*
  * need to find out why fNew is always about 2x fOld, always triggering
  * 
@@ -282,7 +324,7 @@ if (1==1) return; //FIXME disable posting this for now
 	}
 	
 	
-	final static double ANALOG_TRIGGER_THRESHOLD = 50.0;
+	final static double ANALOG_TRIGGER_THRESHOLD = 20.0;
 	final static double ANALOG_MIN_VALUE = 1.0;
 	
 	
@@ -362,7 +404,10 @@ if (1==1) return; //FIXME disable posting this for now
 					updateDigitalInput( Port.IN_D_3, 1==joD.get( "three" ).getAsInt() );
 				}
 				
-				synchronized ( mapDigitalInput ) {
+				synchronized ( mapAnalogInput ) {
+					
+//					System.out.println( "Updating to data: " + joA.toString() );
+					
 					updateAnalogInput( Port.IN_A_1, joA.get( "one" ).getAsFloat() );
 					updateAnalogInput( Port.IN_A_2, joA.get( "two" ).getAsFloat() );
 					updateAnalogInput( Port.IN_A_3, joA.get( "three" ).getAsFloat() );
@@ -415,16 +460,28 @@ if (1==1) return; //FIXME disable posting this for now
 
 	
 	public Float getAnalogPortValue( final Port port ) {
-		synchronized ( mapAnalogInput ) {
-			if ( mapAnalogInput.containsKey( port ) ) {
-				final Float value = mapAnalogInput.get( port );
-				return value;
+//		synchronized ( mapAnalogInput ) {
+//			if ( mapAnalogInput.containsKey( port ) ) {
+//				final Float value = mapAnalogInput.get( port );
+//				return value;
+//			}
+//		}
+		
+		if ( port.isInput() ) {
+			final NormalizedFloat nf = this.getAnalogInputData( port );
+			final Double dInValue = nf.evaluate();
+			if ( null!=dInValue ) {
+				return new Float( dInValue );
+			} else {
+				return null;
 			}
-		}
-		synchronized ( mapAnalogOutput ) {
-			if ( mapAnalogOutput.containsKey( port ) ) {
-				final Float value = mapAnalogOutput.get( port );
-				return value;
+			
+		} else { // output
+			synchronized ( mapAnalogOutput ) {
+				if ( mapAnalogOutput.containsKey( port ) ) {
+					final Float value = mapAnalogOutput.get( port );
+					return value;
+				}
 			}
 		}
 		return null;

@@ -86,12 +86,16 @@ public class JsonUtils {
 		if ( null==obj ) return "null";
 		
 		if ( obj instanceof Map ) {
-			@SuppressWarnings( "unchecked" )
-			final Map<String,Object> map = (Map<String,Object>)obj;
-			return reportMap( map );
-		} else {
-			return obj.toString();
+			try {
+				@SuppressWarnings( "unchecked" )
+				final Map<String,Object> map = (Map<String,Object>)obj;
+				return reportMap( map );
+			} catch ( final ClassCastException e ) {
+				// just fall back to object
+			}
 		}
+		final Gson gson = new Gson();
+		return gson.toJson( obj );
 	}
 	
 	

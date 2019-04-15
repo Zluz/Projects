@@ -61,7 +61,7 @@ public class WaterFilterHealth extends FunctionBase {
 	
 	
 	@Override
-	public boolean evaluate() {
+	public Double evaluate() {
 					
 		try ( final Connection conn = ConnectionProvider.get().getConnection();
 			  final PreparedStatement stmt = conn.prepareStatement( SQL_QUERY );
@@ -133,7 +133,7 @@ public class WaterFilterHealth extends FunctionBase {
 				super.listMessages.add( "Too few consecutive data points "
 								+ "(only collected " + iCount + ", "
 								+ "need " + DATA_POINTS_MIN + ")." );
-				return false;
+				return null;
 			}
 			
 			// data collected. normalize. 
@@ -169,11 +169,11 @@ public class WaterFilterHealth extends FunctionBase {
 			System.out.println( "Mean: " + dMean );
 			
 			
-			return true;
+			return dMean;
 		} catch ( final SQLException e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return false;
+			return null;
 		}
 	}
 	
