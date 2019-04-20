@@ -34,7 +34,7 @@ public class WaterFilterHealth extends FunctionBase {
 								"s2db.event e \n" + 
 						"WHERE \n" + 
 								"subject like 'L_POWER_WELL_PUMP' \n" + 
-//								"AND ( time < 1554242052085 ) \n" + 
+//								"AND ( time < 1554898575529 ) \n" + 
 						"ORDER BY \n" + 
 								"seq DESC \n" + 
 						"LIMIT \n" + 
@@ -44,10 +44,13 @@ public class WaterFilterHealth extends FunctionBase {
 	 * historical:
 	 * 		date		time field		evaluated value
 	 * 		20190402 - 1554208629457	2.7262333333333335
-	 * 		20190403 - (filter reset)
+	 * 		20190403 - (house water filter replaced)
 	 * 		20190405 - 1554468341692	2.176816666666667
 	 * 		20190408 - 1554468288499	2.2506444444444442
 	 * 		20190410 - 1554898575529	2.270033333333333
+	 * 		20190417 - 1555502553977	2.367716666666667
+	 * 		20190418 - (hot water heater filter replaced)
+	 * 		20190419 - 1555676258460	2.2972
 	 */
 	 
 	
@@ -166,7 +169,7 @@ public class WaterFilterHealth extends FunctionBase {
 			
 			final double dMean = ds.getMean();
 			
-			System.out.println( "Mean: " + dMean );
+			System.out.println( "Mean ===> " + dMean );
 			
 			
 			return dMean;

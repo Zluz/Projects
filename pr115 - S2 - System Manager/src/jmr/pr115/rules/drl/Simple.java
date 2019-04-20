@@ -37,8 +37,10 @@ import jmr.pr122.DocKey;
 import jmr.pr122.DocMetadataKey;
 import jmr.pr123.storage.GCSFactory;
 import jmr.pr123.storage.GCSFileWriter;
+import jmr.pr128.reports.Report;
 import jmr.s2.ingest.Import;
 import jmr.s2db.Client;
+import jmr.s2db.event.SystemEvent;
 import jmr.s2db.imprt.WebImport;
 import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Event;
@@ -632,56 +634,15 @@ public class Simple implements RulesConstants {
 	}
 	
 	
-	public static void doUpdateDevices() {
+	public static void doGenerateReport( Report report ) {
 		
 		final Instant time = Instant.ofEpochMilli( System.currentTimeMillis() );
 
-//		final String strSQL = "SELECT max_start, d.name, ip_address, d.mac, "
-//				+ "class, options, comment FROM device d, "
-//				+ "( SELECT MAX( start ) max_start FROM session "
-//				+ "GROUP BY seq_device ) recent_session, session s "
-//				+ "WHERE TRUE AND ( recent_session.max_start = s.start ) "
-//				+ "AND ( s.seq_device = d.seq ) ORDER BY "
-//				+ "( recent_session.max_start ) DESC;";
-
-//		final String strSQL = "SELECT max_start, ip_address, class, d.name "
-//				+ "FROM device d, "
-//				+ "( SELECT MAX( start ) max_start FROM session "
-//				+ "GROUP BY seq_device ) recent_session, session s "
-//				+ "WHERE TRUE AND ( recent_session.max_start = s.start ) "
-//				+ "AND ( s.seq_device = d.seq ) ORDER BY "
-//				+ "( recent_session.max_start ) DESC;";
+		final String strSQL = report.getSQL();
+		final String strName = report.getOutputFilename() + ".html";
 		
-		final String strSQL = "\r\n" + 
-				"SELECT \r\n" + 
-				"    concat( timediff( current_timestamp(), max_start ), \"\" ) "
-							+ "as 'age',\r\n" + 
-				"    ip_address, class, d.name \r\n" + 
-				"FROM \r\n" + 
-				"	device d,\r\n" + 
-				"    `session` s,\r\n" + 
-				"    \r\n" + 
-				"	( 	SELECT \r\n" + 
-				"			MAX( start ) max_start,\r\n" + 
-				"            seq_Device\r\n" + 
-				"		FROM \r\n" + 
-				"			session \r\n" + 
-				"		GROUP BY \r\n" + 
-				"            seq_Device \r\n" + 
-				"	) recent_session\r\n" + 
-				"    \r\n" + 
-				"WHERE \r\n" + 
-				"	TRUE \r\n" + 
-				"    AND ( recent_session.max_start = s.start ) \r\n" + 
-				"	AND ( s.seq_device = d.seq ) \r\n" + 
-				"\r\n" + 
-				"ORDER BY \r\n" + 
-				"	( recent_session.max_start ) DESC;";
-		
-		final String strName = "Device_Report.html";
-		
-		final ReportTable report = new ReportTable( strName, strSQL );
-		final StringBuilder sb = report.generateReport( Format.HTML );
+		final ReportTable table = new ReportTable( strName, strSQL );
+		final StringBuilder sb = table.generateReport( Format.HTML );
 		final byte[] bytes = sb.toString().getBytes( UTF_8 );
 		
 //		final CommGAE comm = new CommGAE();
@@ -700,7 +661,18 @@ public class Simple implements RulesConstants {
 		System.out.println( DocKey.TABLE_REPORT.name() + ": " 
 							+ bytes.length + " bytes sent to GCS." );
 	}
+
 	
+	//TODO remove this, should be unnecessary..
+	public static void doUpdateDevices() {
+//		Event event;
+//		if ( EventType.event.getEventType()
+//		if ( SystemEvent.HEARTBEAT_HOUR.name() != event.getSubject() ) {
+//			doGenerateReport( Report.RECENT_EVENTS );
+//		}
+		doGenerateReport( Report.DEVICES );
+	}
+
 	
 	public static void doControlParkingAssist( final Event e ) {
 

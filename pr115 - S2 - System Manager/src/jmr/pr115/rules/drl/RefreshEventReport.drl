@@ -6,6 +6,7 @@ import jmr.pr115.schedules.run.*;
 import jmr.util.hardware.*;
 import jmr.util.*;
 import com.google.gson.JsonObject;
+import org.apache.commons.io.IOUtils;
 
 import jmr.pr128.reports.Report;
 import jmr.pr115.rules.drl.Simple;
@@ -13,13 +14,11 @@ import jmr.pr115.rules.drl.Simple;
 dialect "mvel"
 
 
-rule "Refresh_DeviceList"
+rule "Refresh_RecentEvents"
 	when
-		e : Event( // monitor client_registered
-				getEventType() == EventType.SYSTEM, 
-				getSubject().equals( SystemEvent.CLIENT_REGISTERED.name() )
-			)
+		e : Event()
 	then
-		// Simple.doUpdateDevices();
-		Simple.doGenerateReport( Report.DEVICES );
+		if ( ! SystemEvent.HEARTBEAT_HOUR.name().equals( e.getSubject() ) ) {
+			Simple.doGenerateReport( Report.RECENT_EVENTS );
+		}
 end

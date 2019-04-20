@@ -16,6 +16,8 @@ import java.util.Map.Entry;
 
 import javax.xml.ws.http.HTTPException;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class ContentRetriever {
 
 	
@@ -168,6 +170,17 @@ public class ContentRetriever {
 
 	
 	
-	
+	public static void main( final String[] args ) throws IOException {
+		
+//		final String strURL = "http://wiki/wiki/extensions/BlueSpiceFoundation/resources/bluespice/images/bs-logo.png";
+//		final String strURL = "http://192.168.6.1/image/logo.png";
+		final String strURL = "http://192.168.6.1/DEV_show_device.htm";
+		
+		final ContentRetriever retriever = new ContentRetriever( strURL );
+		final String strContent = retriever.getContent();
+		System.out.println( 
+				"Recieved " + strContent.getBytes().length + " bytes." );
+		System.out.println( StringUtils.abbreviate( strContent, 800 ) );
+	}
 	
 }

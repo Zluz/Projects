@@ -1,6 +1,10 @@
 package jmr.pr115.schedules;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.io.IOUtils;
 
 import jmr.pr115.rules.RulesProcessing;
 import jmr.pr115.rules.ingest.SubmitJobs;
@@ -26,6 +30,14 @@ public class ScheduleManager {
 		new SubmitJobs();
 		
 		registerEmailListener();
+		
+		try {
+			final String strLoadClass = IOUtils.resourceToString(
+					"/jmr/pr115/schedules/ScheduleManager.java", 
+					Charset.defaultCharset() );
+		} catch ( final IOException e ) {
+			System.err.println( "Problem loading resources." );
+		}
 	}
 	
 	
