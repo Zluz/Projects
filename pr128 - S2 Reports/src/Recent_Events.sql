@@ -1,6 +1,6 @@
 
 SELECT 
-    FROM_UNIXTIME( e.time / 1000 ) as 'datetime',
+    TIME( FROM_UNIXTIME( e.time / 1000 ) ) as 'time',
     CONCAT( "", TIMEDIFF( CURRENT_TIMESTAMP(), FROM_UNIXTIME( e.time / 1000 ) ) ) as 'age',
     seq_session,
     type,

@@ -40,7 +40,6 @@ import jmr.pr123.storage.GCSFileWriter;
 import jmr.pr128.reports.Report;
 import jmr.s2.ingest.Import;
 import jmr.s2db.Client;
-import jmr.s2db.event.SystemEvent;
 import jmr.s2db.imprt.WebImport;
 import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Event;
@@ -636,6 +635,8 @@ public class Simple implements RulesConstants {
 	
 	public static void doGenerateReport( Report report ) {
 		
+		LOGGER.info( ()-> "Generating report: " + report.name() );
+		
 		final Instant time = Instant.ofEpochMilli( System.currentTimeMillis() );
 
 		final String strSQL = report.getSQL();
@@ -658,7 +659,7 @@ public class Simple implements RulesConstants {
 			e.printStackTrace();
 		}
 		
-		System.out.println( DocKey.TABLE_REPORT.name() + ": " 
+		System.out.println( report.getOutputFilename() + ": " 
 							+ bytes.length + " bytes sent to GCS." );
 	}
 

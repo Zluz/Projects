@@ -92,7 +92,14 @@ public class ScheduleManager {
 		client.register( "test", ScheduleManager.class.getName() );
 		
 		final ScheduleManager sm = new ScheduleManager();
-		for (;;);
+		
+		try {
+			for (;;) {
+				Thread.sleep( 100 );
+			}
+		} catch ( final InterruptedException e ) {
+			System.out.println( "Main thread interrupted." );
+		}
 	}
 	
 }
