@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import jmr.SessionPath;
 import jmr.util.NetUtil;
@@ -37,9 +38,17 @@ public class ImageCaptureS2 {
 
 	
 	public ImageCaptureS2() {
-		File file;
+		File file = null;
 		try {
-			file = Files.createTempDirectory( "pr125_" ).toFile();
+			final String strTemp = System.getenv( "TEMP" );
+			if ( ! StringUtils.isBlank( strTemp ) ) {
+				final String strDir = "pr125_" + System.currentTimeMillis();
+				file = new File( strTemp, strDir );
+				FileUtils.forceMkdir( file );
+			} 
+			if ( null==file ) {
+				file = Files.createTempDirectory( "pr125_" ).toFile();
+			}
 			
 			if ( null!=file && file.isDirectory() ) {
 				LOGGER.info( "Using temporary directory: " 
