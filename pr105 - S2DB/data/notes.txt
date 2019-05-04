@@ -1,2 +1,3 @@
 
-Run from ORIPHIEL H:\Share\xfer\Development_xfer
+Run from ORIPHIEL 
+	H:\Share\Development\CM\Git_Projects\pr105 - S2DB\data
