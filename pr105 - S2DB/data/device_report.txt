@@ -1,0 +1,266 @@
+*************************** 1. row ***************************
+    seq: 1
+    mac: 08-00-27-D8-73-57
+   name: VM101 - Development on Windows VM
+options: tiles.perspective=desktop
+comment: NULL
+*************************** 2. row ***************************
+    seq: 2
+    mac: B8-27-EB-94-1E-94
+   name: RPi - Prototype device
+options: tiles.perspective=test
+comment: NULL
+*************************** 3. row ***************************
+    seq: 3
+    mac: B8-27-EB-6A-F7-87
+   name: RPi - Master Bathroom
+options: tiles.perspective=daily_rotate
+comment: NULL
+*************************** 4. row ***************************
+    seq: 4
+    mac: B8-27-EB-4D-14-E2
+   name: RPi - Kitchen Window Sill
+options: tiles.perspective=camera
+comment: NULL
+*************************** 5. row ***************************
+    seq: 5
+    mac: B8-27-EB-90-07-BD
+   name: RPi - Camera: Front (portable, wired)
+options: tiles.perspective=camera
+comment: Bad video? (RPi S2 Client crashes after hours)
+*************************** 6. row ***************************
+    seq: 6
+    mac: B8-27-EB-A4-EA-4C
+   name: RPi - [do not use]
+options: 
+tiles.perspective=REMOTE
+remote=REMOTE_TEST
+
+comment: Bad eth0 (using eth1).
+*************************** 7. row ***************************
+    seq: 7
+    mac: B8-27-EB-1F-F3-56
+   name: RPi - Home MediaWiki
+options: NULL
+comment: NULL
+*************************** 8. row ***************************
+    seq: 8
+    mac: B8-27-EB-E6-6A-EC
+   name: L32--B8-27-EB-E6-6A-EC--0098E--160C492C844
+options: NULL
+comment: NULL
+*************************** 9. row ***************************
+    seq: 9
+    mac: B8-27-EB-5E-91-EB
+   name: RPi - Media Server
+options: tiles.perspective=remote
+remote=media
+comment: NULL
+*************************** 10. row ***************************
+    seq: 10
+    mac: 08-00-27-D7-DE-79
+   name: VM106 - Development on Windows VM
+options: tiles.perspective=top_page
+comment: NULL
+*************************** 11. row ***************************
+    seq: 11
+    mac: B8-27-EB-5B-1E-3B
+   name: RPi - Experimental GPIO/Relay
+options: tiles.perspective=gpio
+gpio=development
+comment: No wlan0, eth0 sometimes drops out. Graphics problems.
+*************************** 12. row ***************************
+    seq: 12
+    mac: B8-27-EB-A4-53-04
+   name: L32--B8-27-EB-A4-53-04--003C0--161BB7658CE
+options: NULL
+comment: NULL
+*************************** 13. row ***************************
+    seq: 13
+    mac: B8-27-EB-65-2D-01
+   name: RPi - Media Closet Sensors
+options: 
+    tiles.perspective=auto_hat
+        IN_A_1=SUMP_WATER_LEVEL:9,3,3,0.06
+        IN_D_1=L_POWER_THEATER_RECEIVER
+        IN_D_2=L_POWER_THEATER_PROJECTOR
+        IN_D_3=L_POWER_HOT_WATER
+        OUT_D_1=
+        OUT_R_1=AUDIO_BROADCAST_POWER_ENCODER
+        remote=MEDIA_CLOSET
+  
+comment: Layered lexan enclosure (red)
+*************************** 14. row ***************************
+    seq: 14
+    mac: 08-00-27-50-AA-7A
+   name: VM105 - Linux (Ubuntu) workstation
+options: NULL
+comment: NULL
+*************************** 15. row ***************************
+    seq: 15
+    mac: B8-27-EB-13-8B-C0
+   name: RPi - Garage Entrance
+options: tiles.perspective=tesla
+comment: NULL
+*************************** 16. row ***************************
+    seq: 16
+    mac: B8-27-EB-33-89-A6
+   name: RPi - IO-001 - Garage IO
+options: tiles.perspective=auto_hat
+IN_D_1=GARAGE_PED_DOOR_CLOSED_STOP
+IN_D_2=L_POWER_LAUNDY_DRYER
+IN_D_3=L_POWER_LAUNDY_WASHER
+OUT_R_1=GARAGE_PARK_ASSIST_1
+IN_A_2=POWER_HPWC
+IN_A_2.input=POWER_HPWC
+IN_A_2.threshold=10.0
+
+
+comment: NULL
+*************************** 17. row ***************************
+    seq: 17
+    mac: B8-27-EB-09-D3-9E
+   name: RPi - Camera (portable, wireless)
+options: tiles.perspective=camera
+comment: NULL
+*************************** 18. row ***************************
+    seq: 18
+    mac: 00-E0-4C-36-08-FD
+   name: L32--00-E0-4C-36-08-FD--002A7--1625F85CA56
+options: NULL
+comment: NULL
+*************************** 19. row ***************************
+    seq: 19
+    mac: B8-27-EB-4E-46-E2
+   name: RPi - IO-002 - Garage IO
+options: 
+tiles.perspective=auto_hat
+ IN_D_1=GARAGE_PED_DOOR_CLOSED_STOP
+ IN_D_2=L_POWER_WELL_PUMP
+ IN_D_3=L_POWER_LAUNDY_DRYER
+ OUT_R_1=GARAGE_PARK_ASSIST_1
+ IN_A_2=POWER_HPWC
+ IN_A_2.input=POWER_HPWC
+ IN_A_2.threshold=10.0
+ 
+comment: NULL
+*************************** 20. row ***************************
+    seq: 20
+    mac: E0-B9-4D-B0-80-65
+   name: L32--E0-B9-4D-B0-80-65--00546--1634D558B09
+options: NULL
+comment: NULL
+*************************** 21. row ***************************
+    seq: 21
+    mac: E0-B9-4D-B0-80-65
+   name: L32--E0-B9-4D-B0-80-65--006F6--1634D558F04
+options: NULL
+comment: NULL
+*************************** 22. row ***************************
+    seq: 22
+    mac: B8-27-EB-18-41-B7
+   name: L32--B8-27-EB-18-41-B7--0027C--1635377C532
+options: NULL
+comment: NULL
+*************************** 23. row ***************************
+    seq: 23
+    mac: B8-27-EB-C5-52-E8
+   name: L32--B8-27-EB-C5-52-E8--00399--163561FFB9A
+options: NULL
+comment: NULL
+*************************** 24. row ***************************
+    seq: 24
+    mac: B8-27-EB-5C-86-CB
+   name: L32--B8-27-EB-5C-86-CB--00976--1635764FCE6
+options: NULL
+comment: NULL
+*************************** 25. row ***************************
+    seq: 25
+    mac: B8-27-EB-2F-71-02
+   name: RPi - Cameras: Deck, Shop
+options: NULL
+comment: NULL
+*************************** 26. row ***************************
+    seq: 26
+    mac: B8-27-EB-7A-24-57
+   name: L32--B8-27-EB-7A-24-57--0042D--164256ED8EE
+options: NULL
+comment: NULL
+*************************** 27. row ***************************
+    seq: 27
+    mac: B8-27-EB-42-40-8B
+   name: RPi - Cameras: Garage Door
+options: NULL
+comment: NULL
+*************************** 28. row ***************************
+    seq: 28
+    mac: B8-27-EB-17-15-DE
+   name: L32--B8-27-EB-17-15-DE--0033A--164263E2A11
+options: NULL
+comment: NULL
+*************************** 29. row ***************************
+    seq: 29
+    mac: B8-27-EB-E7-71-43
+   name: L32--B8-27-EB-E7-71-43--005AC--164C08E39FE
+options: NULL
+comment: NULL
+*************************** 30. row ***************************
+    seq: 30
+    mac: B8-27-EB-B2-24-16
+   name: L32--B8-27-EB-B2-24-16--003D3--164C4D96BA0
+options: NULL
+comment: NULL
+*************************** 31. row ***************************
+    seq: 31
+    mac: B8-27-EB-46-DE-95
+   name: L32--B8-27-EB-46-DE-95--0029A--165227302B7
+options: NULL
+comment: NULL
+*************************** 32. row ***************************
+    seq: 32
+    mac: ZZ-KD-TJ-FV-WT-LI
+   name: L32--ZZ-IM-IW-WS-WG-QO--003B9--16523D286A2
+options: NULL
+comment: NULL
+*************************** 33. row ***************************
+    seq: 33
+    mac: 00-00-00-00-00-00-00-E0
+   name: NUC - S111 - (wrong NIC)
+options: NULL
+comment: NULL
+*************************** 34. row ***************************
+    seq: 34
+    mac: B8-27-EB-4E-93-AF
+   name: L32--B8-27-EB-4E-93-AF--010E9--16910016C4A
+options: NULL
+comment: NULL
+*************************** 35. row ***************************
+    seq: 35
+    mac: 94-C6-91-18-C8-33
+   name: NUC - S112 - Windows Remote
+options: NULL
+comment: NULL
+*************************** 36. row ***************************
+    seq: 36
+    mac: 94-C6-91-19-C5-CC
+   name: NUC - S111 - Windows Development
+options: NULL
+comment: NULL
+*************************** 37. row ***************************
+    seq: 37
+    mac: B8-27-EB-EC-58-92
+   name: RPi - Garage Sensors
+options: 
+  tiles.perspective=auto_hat
+      IN_A_1=VEH_SPACE_1_RANGE_DOWN:9,3,3,0.01
+      IN_D_1=GARAGE_VEH_DOOR_1_CLOSED_STOP
+      IN_D_2=GARAGE_VEH_DOOR_1_CLOSED_AWAY
+      IN_D_3=GARAGE_VEH_DOOR_1_OPEN_STOP
+      OUT_D_1=GARAGE_PARK_ASSIST_1
+      OUT_D_2=GARAGE_FAST_LIGHTS
+      OUT_D_3=
+      OUT_R_1=
+      remote=GARAGE_LIGHTS
+    
+    
+comment: NULL
