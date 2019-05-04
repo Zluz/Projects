@@ -29,7 +29,13 @@ public class MonitorProcess {
 	private long lStartTime = 0L;
 
 
-	private final List<Runnable> listRunnables = new LinkedList<>();
+//	private final List<Runnable> listRunnables = new LinkedList<>();
+	private final List<Listener> listListeners = new LinkedList<>();
+	
+	public static interface Listener {
+		public void process( final long lTime,
+							 final String strLine );
+	}
 
 	
 	public MonitorProcess(	final String strName,
@@ -45,8 +51,12 @@ public class MonitorProcess {
 		});
 	}
 	
-	public void addRunnable( final Runnable runnable ) {
-		this.listRunnables.add( runnable );
+//	public void addRunnable( final Runnable runnable ) {
+//		this.listRunnables.add( runnable );
+//	}
+
+	public void addListener( final Listener listener ) {
+		this.listListeners.add( listener );
 	}
 
 	private Thread buildThread() {
@@ -77,6 +87,8 @@ public class MonitorProcess {
 				    String line;
 				    while ((line = br.readLine()) != null) {
 				    	
+//				    	System.out.println( "> " + line );
+				    	
 				    	final long lNow = System.currentTimeMillis();
 				    	
 				    	if ( lNow - lStartTime < ECHO_OUTPUT_DURATION ) {
@@ -86,10 +98,10 @@ public class MonitorProcess {
 				    	if ( bRunning ) {
 							synchronized (arrLastLine) {
 								arrLastLine[0] = line;
-
-								for ( final Runnable runnable : listRunnables ) {
-									runnable.run();
-								}
+							}
+							
+							for ( final Listener listener : listListeners ) {
+								listener.process( lNow, line );
 							}
 				    	}
 				    }

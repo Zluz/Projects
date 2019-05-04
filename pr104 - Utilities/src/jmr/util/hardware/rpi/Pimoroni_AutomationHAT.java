@@ -5,12 +5,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.logging.Logger;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -21,6 +24,7 @@ import jmr.util.MonitorProcess;
 import jmr.util.OSUtil;
 import jmr.util.hardware.HardwareInput;
 import jmr.util.hardware.HardwareOutput;
+import jmr.util.math.FunctionParameter;
 import jmr.util.math.NormalizedFloat;
 import jmr.util.transform.JsonUtils;
 
@@ -29,6 +33,24 @@ public class Pimoroni_AutomationHAT {
 
 	private final static Logger 
 			LOGGER = Logger.getLogger( Pimoroni_AutomationHAT.class.getName() );
+
+
+	/**
+	 * trigger on difference to last event
+	 */
+	final private static double ANALOG_THRESHOLD_DRIFT = 0.05;
+	
+	/**
+	 * trigger on immediate percent change
+	 */
+	@SuppressWarnings("unused")
+	final private static double ANALOG_THRESHOLD_PCT_DIFF = 10.0;
+	
+	/**
+	 * minimum analog low (sanity check)
+	 */
+	final private static double ANALOG_MIN_VALUE = 0.1;
+	
 	
 	
 	public static enum Port {
@@ -107,23 +129,29 @@ public class Pimoroni_AutomationHAT {
 								mapInputs = new EnumMap<>( Port.class );
 	private final EnumMap<Port,HardwareOutput> 
 								mapOutputs = new EnumMap<>( Port.class );
+	private final EnumMap<Port,String> 
+								mapParameters = new EnumMap<>( Port.class );
 	
-	private final Map<Port,Runnable> listTriggers = new HashMap<>();
+	private final Map<Port,Listener> listListeners = new HashMap<>();
 
+	public static interface Listener {
+		public void inputTrigger( final Map<String,Object> map, 
+								  final long lTime );
+	}
 	
 	private JsonElement jeLast = null;
 	
 	private final MonitorProcess mp;
 	
-	private final EnumMap<Port,Boolean> 
+	private final static EnumMap<Port,Boolean> 
 				mapDigitalInput = new EnumMap<>( Port.class );
 	//TODO create a project for math functions/util, split from pr127
-	private final EnumMap<Port,jmr.util.math.NormalizedFloat> 
+	private final static EnumMap<Port,jmr.util.math.NormalizedFloat> 
 				mapAnalogInput = new EnumMap<>( Port.class );
 	
-	private final EnumMap<Port,Boolean> 
+	private final static EnumMap<Port,Boolean> 
 				mapDigitalOutput = new EnumMap<>( Port.class );
-	private final EnumMap<Port,Float> 
+	private final static EnumMap<Port,Float> 
 				mapAnalogOutput = new EnumMap<>( Port.class );
 	
 	
@@ -147,12 +175,13 @@ public class Pimoroni_AutomationHAT {
 			mp = new MonitorProcess( 
 						"Monitor Automation HAT", command );
 			mp.start();
-			mp.addRunnable( new Runnable() {
+			mp.addListener( new MonitorProcess.Listener() {
 				@Override
-				public void run() {
-					updateData();
+				public void process( final long lTime, 
+									 final String strLine ) {
+					updateData( lTime, strLine );
 				}
-			} );
+			});
 		} else {
 			mp = null;
 			strCommFile = null;
@@ -163,37 +192,57 @@ public class Pimoroni_AutomationHAT {
 	public void initialize( final Map<String,String> map ) {
 		if ( null==map ) return;
 		for ( final Entry<String, String> entry : map.entrySet() ) {
+			
 			final String strKey = entry.getKey().trim().toUpperCase();
 			final Port port = Port.getPortFor( strKey );
+			
 			if ( null!=port ) {
-				final String strValue = entry.getValue();
+				final String[] strValues = entry.getValue().split( ":" );
+				
+				final String strHwName = strValues[0];
+
 				final HardwareInput 
-							input = HardwareInput.getValueFor( strValue );
+							input = HardwareInput.getValueFor( strHwName );
 				final HardwareOutput 
-							output = HardwareOutput.getValueFor( strValue );
+							output = HardwareOutput.getValueFor( strHwName );
+				
+				final boolean bValid;
+				
 				if ( null==input && null==output ) {
+					bValid = false;
 					LOGGER.severe( ()-> 
 							"Name not recognized as input or output: "
-							+ "\"" + strValue + "\", port will not be mapped." );
+							+ "\"" + strHwName + "\", "
+							+ "port will not be mapped." );
 				} else if ( null!=input && null!=output ) {
+					bValid = false;
 					// this should never happen. 
 					// maybe typo in HardwareInput or HardwareOutput
 					LOGGER.severe( ()-> 
 							"Name found as both input AND output: "
-							+ "\"" + strValue + "\". "
+							+ "\"" + strHwName + "\". "
 							+ "Please check HardwareInput and HardwareOutput." );
 				} else if ( null!=input ) {
+					bValid = true;
 					mapInputs.put( port, input );
 					System.out.println( "Registering input " 
 								+ port.name() + " as " + input.name() );
 				} else {
+					bValid = true;
 					mapOutputs.put( port, output );
 					System.out.println( "Registering output " 
-							+ port.name() + " as " + output.name() );
+								+ port.name() + " as " + output.name() );
+				}
+				
+				if ( bValid ) {
+					if ( strValues.length > 1 ) {
+						mapParameters.put( port, strValues[1] );
+					}
 				}
 			}
 		}
 	}
+	
 	
 	public static synchronized Pimoroni_AutomationHAT get() {
 		if ( null==instance ) {
@@ -210,12 +259,13 @@ public class Pimoroni_AutomationHAT {
 	}
 
 	private void updateDigitalInput( 	final Port port,
-										final boolean bNewValue ) {
+										final boolean bNewValue,
+										final long lTime ) {
 		final Boolean bOrigValue = mapDigitalInput.get( port );
 		if ( null!=bOrigValue && bOrigValue.booleanValue() != bNewValue ) {
 			
 			mapDigitalInput.put( port, bNewValue );
-			checkRunTrigger( port );
+			checkRunTrigger( port, Collections.emptyMap(), lTime );
 		} else {
 			mapDigitalInput.put( port, bNewValue );
 		}
@@ -226,7 +276,36 @@ public class Pimoroni_AutomationHAT {
 		if ( null==port ) return null;
 		
 		if ( ! mapAnalogInput.containsKey( port ) ) {
-			final NormalizedFloat nf = new NormalizedFloat( 4, 1, 1 );
+
+			int iSampleSize = 9;
+			int iDropTop = 3;
+			int iDropBottom = 3;
+			
+			double fDriftThreshold = ANALOG_THRESHOLD_DRIFT;
+			
+			if ( mapParameters.containsKey( port ) ) {
+				final String strParameters = mapParameters.get( port );
+				final String[] strParams = strParameters.split( "," );
+				if ( strParams.length > 4 ) {
+					try {
+						iSampleSize = Integer.parseInt( strParams[0] );
+						iDropTop = Integer.parseInt( strParams[1] );
+						iDropBottom = Integer.parseInt( strParams[2] );
+						fDriftThreshold = Double.parseDouble( strParams[3] );
+System.out.print( "------>> ");						
+						LOGGER.info( "Applied input "
+								+ "parameters \"" + strParameters + "\"" );
+					} catch ( final NumberFormatException e ) {
+						LOGGER.severe( "Failed to process input "
+								+ "parameters \"" + strParameters + "\"" );
+					}
+				}
+			}
+			
+			final NormalizedFloat nf = new NormalizedFloat( 
+										iSampleSize, iDropTop, iDropBottom );
+			nf.setParamDouble( FunctionParameter.TRIGGER_NORM_DRIFT_THRESHOLD, 
+										fDriftThreshold );
 			mapAnalogInput.put( port, nf );
 			return nf;
 		} else {
@@ -237,7 +316,8 @@ public class Pimoroni_AutomationHAT {
 	
 	
 	private void updateAnalogInput( final Port port,
-									final float fNewValue ) {
+									final float fNewValue,
+									final long lTime ) {
 		if ( null==port ) return;
 
 		final HardwareInput input = this.getHardwareInputForPort( port );
@@ -256,13 +336,15 @@ public class Pimoroni_AutomationHAT {
 			final Float fOrigValue = new Float( dOrigNorm );
 			final Double dNewNorm = nf.evaluate();
 			
-//			System.out.println( "--- updateAnalogInput() " 
+			System.out.print( "" 
+					+ StringUtils.right( ""+System.currentTimeMillis(), 5 ) 
+					+ " --- updateAnalogInput() " 
 //					+ this.hashCode() + ", "
-//					+ "port: " + port.name() + ", "
-//					+ "value/raw: " + fNewValue + ", "
-//					+ "value/norm: " + dNewNorm //+ ", "
-////					+ "map: " + JsonUtils.report( mapAnalogInput )
-//					);
+					+ "port: " + port.name() + ", "
+					+ "val/raw: " + String.format( "%.3f", fNewValue ) + ", "
+					+ "val/norm: " + String.format( "%.5f", dNewNorm ) //+ ", "
+//					+ "map: " + JsonUtils.report( mapAnalogInput )
+					);
 			
 
 			if ( null==dNewNorm ) {
@@ -282,11 +364,68 @@ public class Pimoroni_AutomationHAT {
 //				+ "\n\tfNew = " + fNew 
 //				+ "\n\tfDiff = " + fDiff );			
 
-			final float fPctDiff = fDiff * 100 / fOld;
-
-			if ( ( fOld > ANALOG_MIN_VALUE ) 
-					&& ( fPctDiff > ANALOG_TRIGGER_THRESHOLD ) ) {
+			
+			boolean bPost = false;
+			String strTriggerName = null;
+			Double dTriggerValue = null;
+			Map<String,Object> map = null;
+			
+			final Double dLastPost = nf.getLastPosted();
+			if ( null!=dLastPost ) {
 				
+				final double dDiff = Math.abs( dLastPost - dNewNorm );
+				
+				System.out.print( ", drift: " + String.format( "%.5f", dDiff ) );
+
+				final double dParam = nf.getParamDouble( 
+							FunctionParameter.TRIGGER_NORM_DRIFT_THRESHOLD,
+							ANALOG_THRESHOLD_DRIFT );
+
+				if ( dDiff > dParam ) {
+
+					bPost = true;
+					map = new HashMap<>();
+
+					strTriggerName = "drift";
+					dTriggerValue = dDiff;
+				}
+			} else {
+				bPost = true;
+				map = new HashMap<>();
+				
+				strTriggerName = "initialize";
+			}
+			
+			final float fPctDiff = fDiff * 100 / fOld;
+//			if ( fPctDiff > ANALOG_THRESHOLD_PCT_DIFF ) {
+//				bPost = true;
+//			}
+//			System.out.print( ", pct-diff: " 
+//									+ String.format( "%.5f", fPctDiff ) );
+			
+			System.out.println();
+
+			if ( bPost && ( fOld > ANALOG_MIN_VALUE ) ) { 
+				
+				nf.setLastPosted( dNewNorm );
+
+				if ( null==map ) {
+					map = new HashMap<>();
+				}
+				
+				map.put( "value-latest", fNewValue );
+				map.put( "value-last-post", dLastPost );
+				map.put( "value-normalized", dNewNorm );
+				map.put( "percent-diff", fPctDiff );
+				map.put( "time-initiate", lTime );
+				
+				if ( StringUtils.isNotBlank( strTriggerName ) ) {
+					map.put( "trigger-name", strTriggerName );
+				}
+				if ( null != dTriggerValue ) {
+					map.put( "trigger-value", dTriggerValue );
+				}
+
 System.out.println( "--- updateAnalogInput()"
 			+ "\n\tport = " + port.name() 
 			+ "\n\tinput = " + input 
@@ -318,31 +457,42 @@ System.out.println( "--- updateAnalogInput(), "
 	fPctDiff = 93.577965
  */
 
-				checkRunTrigger( port );
+				checkRunTrigger( port, map, lTime );
 			}
 		}
 	}
 	
 	
-	final static double ANALOG_TRIGGER_THRESHOLD = 20.0;
-	final static double ANALOG_MIN_VALUE = 1.0;
-	
-	
-	
-	private void checkRunTrigger( final Port port ) {
+	private void checkRunTrigger( final Port port,
+								  final Map<String,Object> map, 
+								  final long lTime ) {
 		if ( null==port ) return;
 		
-		if ( this.listTriggers.containsKey( port ) ) {
-			final Runnable runnable = this.listTriggers.get( port );
-			final Thread thread = new Thread( 
-					"Input event: " + port.name() ) {
-				@Override
-				public void run() {
-					runnable.run();
-				}
-			};
-			thread.start();
+		if ( this.listListeners.containsKey( port ) ) {
+			final Listener listener = this.listListeners.get( port );
+//			listener.inputTrigger( null, null );
+			listener.inputTrigger( map, lTime );
+//			final Thread thread = new Thread( 
+//					"Input event: " + port.name() ) {
+//				@Override
+//				public void run() {
+//					runnable.run();
+//				}
+//			};
+//			thread.start();
 		}
+		
+//		if ( this.listTriggers.containsKey( port ) ) {
+//			final Runnable runnable = this.listTriggers.get( port );
+//			final Thread thread = new Thread( 
+//					"Input event: " + port.name() ) {
+//				@Override
+//				public void run() {
+//					runnable.run();
+//				}
+//			};
+//			thread.start();
+//		}
 	}
 	
 	public Port getPortForInput( final HardwareInput input ) {
@@ -364,25 +514,33 @@ System.out.println( "--- updateAnalogInput(), "
 		return output;
 	}
 	
-	public void registerChangeExec(	final HardwareInput input,
-									final Runnable runnable ) {
-		final Port port = getPortForInput( input );
-		this.listTriggers.put( port, runnable );
-	}
+
+//	public void registerChangeExec_(	final Port port,
+//									final Runnable runnable ) {
+//		this.listTriggers.put( port, runnable );
+//	}
 
 	public void registerChangeExec(	final Port port,
-									final Runnable runnable ) {
-		this.listTriggers.put( port, runnable );
+									final Listener listener ) {
+		this.listListeners.put( port, listener );
 	}
 
-	private JsonElement updateData() {
+	public void registerChangeExec(	final HardwareInput input,
+									final Listener listener ) {
+		final Port port = getPortForInput( input );
+		this.registerChangeExec( port, listener );
+	}
+
+
+	private JsonElement updateData( final long lTime,
+									final String strLine ) {
 		if ( null==mp ) return null;
 		
 		// [{"three": 0, "two": 0, "one": 0}, {"four": 0.53, "three": 0.03, "two": 0.03, "one": 0.03}]
 		
 		final JsonElement je;
 		
-		final String strLine = mp.getLatestLine();
+//		final String strLine = mp.getLatestLine();
 //		System.out.println( strLine );
 		if ( null==strLine || strLine.isEmpty() 
 								|| !strLine.contains( "\"two\":" ) ) {
@@ -399,19 +557,19 @@ System.out.println( "--- updateAnalogInput(), "
 				final JsonObject joA = ja.get( 1 ).getAsJsonObject();
 				
 				synchronized ( mapDigitalInput ) {
-					updateDigitalInput( Port.IN_D_1, 1==joD.get( "one" ).getAsInt() );
-					updateDigitalInput( Port.IN_D_2, 1==joD.get( "two" ).getAsInt() );
-					updateDigitalInput( Port.IN_D_3, 1==joD.get( "three" ).getAsInt() );
+					updateDigitalInput( Port.IN_D_1, 1==joD.get( "one" ).getAsInt(), lTime );
+					updateDigitalInput( Port.IN_D_2, 1==joD.get( "two" ).getAsInt(), lTime );
+					updateDigitalInput( Port.IN_D_3, 1==joD.get( "three" ).getAsInt(), lTime );
 				}
 				
 				synchronized ( mapAnalogInput ) {
 					
 //					System.out.println( "Updating to data: " + joA.toString() );
 					
-					updateAnalogInput( Port.IN_A_1, joA.get( "one" ).getAsFloat() );
-					updateAnalogInput( Port.IN_A_2, joA.get( "two" ).getAsFloat() );
-					updateAnalogInput( Port.IN_A_3, joA.get( "three" ).getAsFloat() );
-					updateAnalogInput( Port.IN_A_4, joA.get( "four" ).getAsFloat() );
+					updateAnalogInput( Port.IN_A_1, joA.get( "one" ).getAsFloat(), lTime );
+					updateAnalogInput( Port.IN_A_2, joA.get( "two" ).getAsFloat(), lTime );
+					updateAnalogInput( Port.IN_A_3, joA.get( "three" ).getAsFloat(), lTime );
+					updateAnalogInput( Port.IN_A_4, joA.get( "four" ).getAsFloat(), lTime );
 				}
 				
 //				for ( final Entry<String, JsonElement> entry : jo.entrySet() ) {
@@ -512,14 +670,14 @@ System.out.println( "--- updateAnalogInput(), "
 			Files.write( path, strCommand.getBytes(), StandardOpenOption.CREATE );
 
 			synchronized ( mapDigitalOutput ) {
-				this.mapDigitalOutput.put( port, bOn );
+				Pimoroni_AutomationHAT.mapDigitalOutput.put( port, bOn );
 			}
 			
 		} catch ( final IOException e ) {
 			e.printStackTrace();
 
 			synchronized ( mapDigitalOutput ) {
-				this.mapDigitalOutput.remove( port );
+				Pimoroni_AutomationHAT.mapDigitalOutput.remove( port );
 			}
 		}
 	}

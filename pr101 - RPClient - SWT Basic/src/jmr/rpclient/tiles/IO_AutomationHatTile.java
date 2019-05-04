@@ -8,6 +8,8 @@ import java.util.logging.Logger;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
@@ -88,23 +90,25 @@ public class IO_AutomationHatTile extends TileBase {
 		
 		registerJobListener( mapOptions );
 
-		hat.registerChangeExec( HardwareInput.TEST_DIGITAL_INPUT_2, 
-				new Runnable() {
-			@Override
-			public void run() {
-				System.out.println( "Runnable - test-input-2 fired." );
-			}
-		} );
+//		hat.registerChangeExec( HardwareInput.TEST_DIGITAL_INPUT_2, 
+//				new Runnable() {
+//			@Override
+//			public void run() {
+//				System.out.println( "Runnable - test-input-2 fired." );
+//			}
+//		} );
 		
 		for ( final Port port : Port.values() ) {
 			if ( port.isInput() ) {
-				hat.registerChangeExec( port, new Runnable() {
+				
+				hat.registerChangeExec( port, 
+									new Pimoroni_AutomationHAT.Listener() {
 					@Override
-					public void run() {
-						final long lTime = System.currentTimeMillis();
-						processInputEvent( port, lTime );
+					public void inputTrigger( final Map<String, Object> map,
+											  final long lTime ) {
+						processInputEvent( port, lTime, map );
 					}
-				} );
+				});
 			}
 		}
 	}
@@ -165,7 +169,8 @@ public class IO_AutomationHatTile extends TileBase {
 	
 	
 	public void processInputEvent(	final Port port,
-									final long lTime ) {
+									final long lTime,
+									final Map<String,Object> map ) {
 		System.out.println( "Input event for port: " + port.name() );
 
 		final HardwareInput input = hat.getHardwareInputForPort( port );
@@ -177,7 +182,11 @@ public class IO_AutomationHatTile extends TileBase {
 		}
 		
 		final JsonPrimitive jsonValue;
-		final JsonObject jsonMap = new JsonObject();
+		
+//		final JsonObject jsonMap = new JsonObject();
+		final JsonElement jeMap = new Gson().toJsonTree( map );
+		final JsonObject jsonMap = jeMap.getAsJsonObject();
+		
 		jsonMap.addProperty( "port", port.name() );
 		
 		final Boolean bValue = hat.getDigitalPortValue( port );

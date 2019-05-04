@@ -1,5 +1,6 @@
 package jmr.util.math;
 
+import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -11,9 +12,43 @@ public abstract class FunctionBase {
 //		this.connprov = connprov;
 //	}
 	
+
+	protected final EnumMap<FunctionParameter,Double> 
+					mapParamDouble = new EnumMap<>( FunctionParameter.class );
+	
+	
 	protected List<String> listMessages = new LinkedList<>();
+	
+	protected Double dLastPosted = null;
 	
 	
 	public abstract Double evaluate();
+	
+	public void setLastPosted( final Double dPosted ) {
+		this.dLastPosted = dPosted;
+	}
+	
+	public Double getLastPosted() {
+		return this.dLastPosted;
+	}
+	
+	public void setParamDouble( final FunctionParameter param,
+								final Double dValue ) {
+		if ( null!=dValue ) {
+			mapParamDouble.put( param, dValue );
+		} else {
+			mapParamDouble.remove( param );
+		}
+	}
+	
+	public double getParamDouble( final FunctionParameter param,
+								  final double dDefault ) {
+		if ( mapParamDouble.containsKey( param ) ) {
+			return mapParamDouble.get( param );
+		} else {
+			return dDefault;
+		}
+	}
+	
 	
 }
