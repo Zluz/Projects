@@ -22,8 +22,7 @@ public class NormalizedFloat extends FunctionBase {
 							final int iCutBottom ) {
 		this.listGood = new LinkedList<Float>();
 		this.listRaw = new LinkedList<Float>();
-		this.iSize = 2 * iSize;
-//		this.iSize = 1 * iSize;
+		this.iSize = iSize;
 		this.iCutTop = iCutTop;
 		this.iCutBottom = iCutBottom;
 	}
@@ -77,9 +76,14 @@ public class NormalizedFloat extends FunctionBase {
 //			final float fWeight = ( 2.0f * iSize ) - i;
 //			listEval.get( i ).fWeight = 1;
 			
-			float fWeight = (float) iSize / 2.0f;
+			// higher number means fewer samples considered for age  
+//			float fWeight = (float) iSize * 0.8f; // 0.000547320
+//			float fWeight = (float) iSize * 0.5f; // 0.000547885
+			float fWeight = (float) iSize * 0.3f; // 0.000555866
+			
 			fWeight = Math.min( fWeight, ( (float) iSize - i ) );
-			fWeight = fWeight + (float) iSize / 2.0f;
+//			fWeight = fWeight + (float) iSize / 2.0f; // 0.000541910
+//			fWeight = fWeight + 0;					  // 0.000547885
 			
 			list.get( i ).fWeight = list.get( i ).fWeight * fWeight;
 		}
@@ -91,7 +95,7 @@ public class NormalizedFloat extends FunctionBase {
 		final int iSize = list.size();
 
 		Collections.sort( list, 
-				( lhs, rhs )-> Float.compare( lhs.fWeight, rhs.fWeight ) );
+				( lhs, rhs )-> Float.compare( lhs.fValue, rhs.fValue ) );
 		
 		// assign weights for top and bottom of distribution
 		// 90%+ = 0%
@@ -99,16 +103,21 @@ public class NormalizedFloat extends FunctionBase {
 		// 40% = 100%
 		// 10%- = 0%
 		
-//		final float fBorderLow = 10f;  // 0.006794389867782593
-//		final float fBorderLow = 0f;   // 0.004535465335845947
-//		final float fBorderLow = -50f; // 0.002787771224975586
-		final float fBorderLow = 30f;
+//		final float fBorderLow = 30f; // 0.00058
+		final float fBorderLow = 40f; // 0.00054
 		
 		final float fBorderHigh = 100f - fBorderLow;
 		for ( int i=0; i<iSize; i++ ) {
 			final float fPos = (float) 100 * i / iSize;
-//			float fWeight = 5; // 0.014151349091529847 (precision)
-			float fWeight = 5;
+//			float fWeight = 8;    // 0.0005457
+//			float fWeight = 5;    // 0.000542529
+//			float fWeight = 4;    // 0.000542175
+//			float fWeight = 3.5f; // 0.000541951
+			float fWeight = 3.3f; // 0.000541910
+//			float fWeight = 3;    // 0.000542160
+//			float fWeight = 2.9f; // 0.000542301
+//			float fWeight = 2.7f; // 0.000542529
+//			float fWeight = 2;    // 0.000543566
 			fWeight = Math.min( fWeight, ( fPos - fBorderLow ) );
 			fWeight = Math.min( fWeight, ( fBorderHigh - fPos ) );
 			fWeight = Math.max( fWeight, 0 );

@@ -457,7 +457,7 @@ System.out.println( "--- updateAnalogInput(), "
 	fPctDiff = 93.577965
  */
 
-//				checkRunTrigger( port, map, lTime );
+				checkRunTrigger( port, map, lTime );
 			}
 		}
 	}

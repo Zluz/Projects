@@ -197,9 +197,9 @@ public class NormalizedFloat_Test {
 
 		System.out.println( "Scores (lower better)" );
 		System.out.println( "  Precision score:  " 
-								+ String.format( "%.5f", dPrecisionScore ) );
+								+ String.format( "%.9f", dPrecisionScore ) );
 		System.out.println( "  Accuracy score:   " 
-								+ String.format( "%.5f", dAccuracyScore ) );
+								+ String.format( "%.9f", dAccuracyScore ) );
 	}
 
 	
@@ -216,14 +216,14 @@ Scores (lower better)
   Accuracy score:   0.01539
 
 
-generalized function using weighted averages (with 2x samples)
+generalized function using weighted averages (same sample count)
 
 Number of samples:  10000
-Normalized calcs:   9941
-Total average:      3.67723
+Normalized calcs:   9971
+Total average:      3.74020
 Scores (lower better)
-  Precision score:  0.01407
-  Accuracy score:   0.07243
+  Precision score:  0.001059282
+  Accuracy score:   0.015399034
 
 
 	 */
