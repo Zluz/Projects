@@ -173,12 +173,13 @@ public class Pimoroni_AutomationHAT {
 			command[2] = strCommFile;
 			
 			mp = new MonitorProcess( 
-						"Monitor Automation HAT", command );
+						"Monitor Automation HAT", command, true );
 			mp.start();
 			mp.addListener( new MonitorProcess.Listener() {
 				@Override
 				public void process( final long lTime, 
 									 final String strLine ) {
+//					System.out.print( ">" );
 					updateData( lTime, strLine );
 				}
 			});
@@ -277,6 +278,10 @@ public class Pimoroni_AutomationHAT {
 		
 		if ( ! mapAnalogInput.containsKey( port ) ) {
 
+			System.out.println();
+			System.out.println( "Initializing analog port statistical monitor" );
+			
+			
 			int iSampleSize = 9;
 			int iDropTop = 3;
 			int iDropBottom = 3;
@@ -285,14 +290,15 @@ public class Pimoroni_AutomationHAT {
 			
 			if ( mapParameters.containsKey( port ) ) {
 				final String strParameters = mapParameters.get( port );
+System.out.println( "port parameters: " + strParameters );
 				final String[] strParams = strParameters.split( "," );
-				if ( strParams.length > 4 ) {
+				if ( strParams.length > 1 ) {
 					try {
 						iSampleSize = Integer.parseInt( strParams[0] );
 						iDropTop = Integer.parseInt( strParams[1] );
 						iDropBottom = Integer.parseInt( strParams[2] );
 						fDriftThreshold = Double.parseDouble( strParams[3] );
-System.out.print( "------>> ");						
+
 						LOGGER.info( "Applied input "
 								+ "parameters \"" + strParameters + "\"" );
 					} catch ( final NumberFormatException e ) {
@@ -307,6 +313,10 @@ System.out.print( "------>> ");
 			nf.setParamDouble( FunctionParameter.TRIGGER_NORM_DRIFT_THRESHOLD, 
 										fDriftThreshold );
 			mapAnalogInput.put( port, nf );
+			
+			System.out.println( 
+						"TRIGGER_NORM_DRIFT_THRESHOLD = " + fDriftThreshold );
+			
 			return nf;
 		} else {
 			final NormalizedFloat nf = mapAnalogInput.get( port );
@@ -370,18 +380,36 @@ System.out.print( "------>> ");
 			Double dTriggerValue = null;
 			Map<String,Object> map = null;
 			
-			final Double dLastPost = nf.getLastPosted();
-			if ( null!=dLastPost ) {
+			final Double dLastPostValue = nf.getParamDouble( 
+							FunctionParameter.VAR_VALUE_LAST_POSTED );
+			if ( null!=dLastPostValue ) {
 				
-				final double dDiff = Math.abs( dLastPost - dNewNorm );
+				final double dDiff = Math.abs( dLastPostValue - dNewNorm );
 				
 				System.out.print( ", drift: " + String.format( "%.5f", dDiff ) );
 
 				final double dParam = nf.getParamDouble( 
 							FunctionParameter.TRIGGER_NORM_DRIFT_THRESHOLD,
 							ANALOG_THRESHOLD_DRIFT );
+				final Double dLastPostTime = nf.getParamDouble( 
+							FunctionParameter.VAR_TIME_LAST_POSTED );
+				final double dThreshold;
+				if ( null!=dLastPostTime ) {
+					final double dAdjust = 
+							( (double) lTime - dLastPostTime ) / 1000000000;
+					dThreshold = dParam - dAdjust;
+				} else {
+					dThreshold = dParam;
+				}
 
-				if ( dDiff > dParam ) {
+				System.out.print( 
+						", adjusted(" + String.format( "%.5f", dParam ) + ")= " 
+						+ String.format( "%.5f", dThreshold ) );
+				if ( dDiff > dThreshold ) {
+					System.out.print( " - HIT " );
+//				}
+				
+//				if ( dDiff > dParam ) {
 
 					bPost = true;
 					map = new HashMap<>();
@@ -407,14 +435,17 @@ System.out.print( "------>> ");
 
 			if ( bPost && ( fOld > ANALOG_MIN_VALUE ) ) { 
 				
-				nf.setLastPosted( dNewNorm );
+				nf.setParamDouble( 
+						FunctionParameter.VAR_VALUE_LAST_POSTED, dNewNorm );
+				nf.setParamDouble( 
+						FunctionParameter.VAR_TIME_LAST_POSTED, (double) lTime );
 
 				if ( null==map ) {
 					map = new HashMap<>();
 				}
 				
 				map.put( "value-latest", fNewValue );
-				map.put( "value-last-post", dLastPost );
+				map.put( "value-last-post", dLastPostValue );
 				map.put( "value-normalized", dNewNorm );
 				map.put( "percent-diff", fPctDiff );
 				map.put( "time-initiate", lTime );
@@ -441,21 +472,6 @@ System.out.println( "--- updateAnalogInput()"
 System.out.println( "--- updateAnalogInput(), "
 		+ "map: " + JsonUtils.report( mapAnalogInput ) );
 
-
-//if (1==1) return; //FIXME disable posting this for now
-/*
- * need to find out why fNew is always about 2x fOld, always triggering
- * 
- * --- updateAnalogInput()
-	port = IN_A_1
-	input = VEH_SPACE_1_RANGE_DOWN
-	fOrigValue = 2.18
-	fNewValue  = 4.22
-	fOld = 2.18
-	fNew = 4.22
-	fDiff    = 2.0399997
-	fPctDiff = 93.577965
- */
 
 				checkRunTrigger( port, map, lTime );
 			}
@@ -514,11 +530,6 @@ System.out.println( "--- updateAnalogInput(), "
 		return output;
 	}
 	
-
-//	public void registerChangeExec_(	final Port port,
-//									final Runnable runnable ) {
-//		this.listTriggers.put( port, runnable );
-//	}
 
 	public void registerChangeExec(	final Port port,
 									final Listener listener ) {

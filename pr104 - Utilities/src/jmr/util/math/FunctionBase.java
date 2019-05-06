@@ -24,13 +24,6 @@ public abstract class FunctionBase {
 	
 	public abstract Double evaluate();
 	
-	public void setLastPosted( final Double dPosted ) {
-		this.dLastPosted = dPosted;
-	}
-	
-	public Double getLastPosted() {
-		return this.dLastPosted;
-	}
 	
 	public void setParamDouble( final FunctionParameter param,
 								final Double dValue ) {
@@ -40,11 +33,20 @@ public abstract class FunctionBase {
 			mapParamDouble.remove( param );
 		}
 	}
-	
-	public double getParamDouble( final FunctionParameter param,
-								  final double dDefault ) {
+
+	public Double getParamDouble( final FunctionParameter param ) {
 		if ( mapParamDouble.containsKey( param ) ) {
 			return mapParamDouble.get( param );
+		} else {
+			return null;
+		}
+	}
+
+	public double getParamDouble( final FunctionParameter param,
+								  final double dDefault ) {
+		final Double dValue = getParamDouble( param );
+		if ( null!=dValue ) {
+			return dValue.doubleValue();
 		} else {
 			return dDefault;
 		}
