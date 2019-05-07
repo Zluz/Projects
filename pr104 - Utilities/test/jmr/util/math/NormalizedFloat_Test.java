@@ -70,7 +70,7 @@ public class NormalizedFloat_Test {
 	
 	@Test
 	public void evaluate_test() {
-		final NormalizedFloat nf = new NormalizedFloat( 100, 10, 10 );
+		final NormalizedFloat nf = new NormalizedFloat( 100, 10, 10, "foos" );
 		
 		for ( int i=0; i<100; i++ ) {
 			final float fRand = (float)( Math.random() * 100.0f );
@@ -153,7 +153,7 @@ public class NormalizedFloat_Test {
 
 	@Test
 	public void evaluate_test_02() {
-		final NormalizedFloat nf = new NormalizedFloat( 30, 13, 13 );
+		final NormalizedFloat nf = new NormalizedFloat( 30, 13, 13, "bars" );
 		
 		final List<Float> list = TestData.getSamples();
 

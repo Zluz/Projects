@@ -6,7 +6,12 @@ SELECT
     seq_session as 'session',
     type,
     subject,
-    value,
+    # value,
+    IF( ISNULL( data->'$."value-irl"' ), 
+		value,
+		CONCAT( "= ", ROUND( data->'$."value-irl"', 1 ), " ", 
+				TRIM( BOTH '"' FROM data->'$."value-unit"' ) )
+	) as "value",
     data
 #    0, e.* 
 FROM 

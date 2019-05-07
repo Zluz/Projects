@@ -19,7 +19,9 @@ public class NormalizedFloat extends FunctionBase {
 	
 	public NormalizedFloat( final int iSize,
 							final int iCutTop,
-							final int iCutBottom ) {
+							final int iCutBottom,
+							final String strUnit ) {
+		super( strUnit );
 		this.listGood = new LinkedList<Float>();
 		this.listRaw = new LinkedList<Float>();
 		this.iSize = iSize;

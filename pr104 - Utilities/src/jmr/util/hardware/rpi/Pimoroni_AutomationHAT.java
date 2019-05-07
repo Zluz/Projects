@@ -24,6 +24,7 @@ import jmr.util.MonitorProcess;
 import jmr.util.OSUtil;
 import jmr.util.hardware.HardwareInput;
 import jmr.util.hardware.HardwareOutput;
+import jmr.util.math.FunctionBase;
 import jmr.util.math.FunctionParameter;
 import jmr.util.math.NormalizedFloat;
 import jmr.util.transform.JsonUtils;
@@ -273,10 +274,14 @@ public class Pimoroni_AutomationHAT {
 	}
 	
 
-	private NormalizedFloat getAnalogInputData( final Port port ) {
+	private NormalizedFloat getAnalogInputData( final Port port, 
+											    final boolean bCreate ) {
 		if ( null==port ) return null;
 		
-		if ( ! mapAnalogInput.containsKey( port ) ) {
+		if ( mapAnalogInput.containsKey( port ) ) {
+			final NormalizedFloat nf = mapAnalogInput.get( port );
+			return nf;
+		} else if ( bCreate ) {
 
 			System.out.println();
 			System.out.println( "Initializing analog port statistical monitor" );
@@ -285,19 +290,25 @@ public class Pimoroni_AutomationHAT {
 			int iSampleSize = 9;
 			int iDropTop = 3;
 			int iDropBottom = 3;
+			double dIntercept = 0;
+			double dMultiplier = 0;
 			
 			double fDriftThreshold = ANALOG_THRESHOLD_DRIFT;
+			String strUnit = "";
 			
 			if ( mapParameters.containsKey( port ) ) {
 				final String strParameters = mapParameters.get( port );
 System.out.println( "port parameters: " + strParameters );
 				final String[] strParams = strParameters.split( "," );
-				if ( strParams.length > 1 ) {
+				if ( strParams.length >= 4 ) {
 					try {
 						iSampleSize = Integer.parseInt( strParams[0] );
-						iDropTop = Integer.parseInt( strParams[1] );
-						iDropBottom = Integer.parseInt( strParams[2] );
+//						iDropTop = Integer.parseInt( strParams[1] );
+//						iDropBottom = Integer.parseInt( strParams[2] );
+						dIntercept = Double.parseDouble( strParams[1] );
+						dMultiplier = Double.parseDouble( strParams[2] );
 						fDriftThreshold = Double.parseDouble( strParams[3] );
+						strUnit = strParams[4];
 
 						LOGGER.info( "Applied input "
 								+ "parameters \"" + strParameters + "\"" );
@@ -305,13 +316,17 @@ System.out.println( "port parameters: " + strParameters );
 						LOGGER.severe( "Failed to process input "
 								+ "parameters \"" + strParameters + "\"" );
 					}
+				} else {
+					System.out.println( "Missing parameters, using defaults." );
 				}
 			}
 			
 			final NormalizedFloat nf = new NormalizedFloat( 
-										iSampleSize, iDropTop, iDropBottom );
+							iSampleSize, iDropTop, iDropBottom, strUnit );
 			nf.setParamDouble( FunctionParameter.TRIGGER_NORM_DRIFT_THRESHOLD, 
 										fDriftThreshold );
+			nf.setParamDouble( FunctionParameter.IRL_INTERCEPT, dIntercept );
+			nf.setParamDouble( FunctionParameter.IRL_MULTIPLIER, dMultiplier );
 			mapAnalogInput.put( port, nf );
 			
 			System.out.println( 
@@ -319,8 +334,7 @@ System.out.println( "port parameters: " + strParameters );
 			
 			return nf;
 		} else {
-			final NormalizedFloat nf = mapAnalogInput.get( port );
-			return nf;
+			return null;
 		}
 	}
 	
@@ -336,7 +350,7 @@ System.out.println( "port parameters: " + strParameters );
 //		final Float fOrigValue = mapAnalogInput.get( port );
 //		mapAnalogInput.put( port, fNewValue );
 		
-		final NormalizedFloat nf = getAnalogInputData( port );
+		final NormalizedFloat nf = getAnalogInputData( port, true );
 		final Double dOrigNorm = nf.evaluate();
 		
 		nf.add( fNewValue );
@@ -443,13 +457,28 @@ System.out.println( "port parameters: " + strParameters );
 				if ( null==map ) {
 					map = new HashMap<>();
 				}
-				
+
 				map.put( "value-latest", fNewValue );
 				map.put( "value-last-post", dLastPostValue );
 				map.put( "value-normalized", dNewNorm );
 				map.put( "percent-diff", fPctDiff );
 				map.put( "time-initiate", lTime );
-				
+
+				final Double dIntercept = 
+						nf.getParamDouble( FunctionParameter.IRL_INTERCEPT );
+				final Double dMultiplier = 
+						nf.getParamDouble( FunctionParameter.IRL_MULTIPLIER );
+				if ( null!=dIntercept && null!=dMultiplier ) {
+					final double dIRLValue = 
+									( dNewNorm + dIntercept ) * dMultiplier;
+					map.put( "value-irl", dIRLValue );
+					map.put( "value-unit", nf.getUnit() );
+					
+					nf.setParamDouble( 
+							FunctionParameter.VAR_VALUE_IRL_LAST_POSTED, 
+							dIRLValue );
+				}
+
 				if ( StringUtils.isNotBlank( strTriggerName ) ) {
 					map.put( "trigger-name", strTriggerName );
 				}
@@ -628,6 +657,11 @@ System.out.println( "--- updateAnalogInput(), "
 	}
 
 	
+	public FunctionBase getAnalogPortStatistics( final Port port ) {
+		return this.getAnalogInputData( port, false );
+	}
+	
+	
 	public Float getAnalogPortValue( final Port port ) {
 //		synchronized ( mapAnalogInput ) {
 //			if ( mapAnalogInput.containsKey( port ) ) {
@@ -637,7 +671,7 @@ System.out.println( "--- updateAnalogInput(), "
 //		}
 		
 		if ( port.isInput() ) {
-			final NormalizedFloat nf = this.getAnalogInputData( port );
+			final NormalizedFloat nf = this.getAnalogInputData( port, true );
 			final Double dInValue = nf.evaluate();
 			if ( null!=dInValue ) {
 				return new Float( dInValue );

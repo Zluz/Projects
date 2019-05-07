@@ -31,6 +31,8 @@ import jmr.util.hardware.HardwareInput;
 import jmr.util.hardware.HardwareOutput;
 import jmr.util.hardware.rpi.Pimoroni_AutomationHAT;
 import jmr.util.hardware.rpi.Pimoroni_AutomationHAT.Port;
+import jmr.util.math.FunctionBase;
+import jmr.util.math.FunctionParameter;
 
 public class IO_AutomationHatTile extends TileBase {
 
@@ -323,9 +325,28 @@ public class IO_AutomationHatTile extends TileBase {
 						final String strHardware = null!=hardware 
 													? hardware.name() 
 													: "<no hw name>";
+													
+						final String strIRLValue;
+						final FunctionBase fb = 
+										hat.getAnalogPortStatistics( port );
+						if ( null!=fb ) {
+							final Double dIRLValue = fb.getParamDouble( 
+									FunctionParameter.VAR_VALUE_IRL_LAST_POSTED );
+							if ( null!=dIRLValue ) {
+								strIRLValue = 
+										String.format( "%.2f", dIRLValue ) 
+										+ " " + fb.getUnit();
+							} else {
+								strIRLValue = "(..)";
+							}
+						} else {
+							strIRLValue = "(?)";
+						}
+													
 						text.println( strIndent + strValue 
 										+ strSpacer + port.name()
-										+ strSpacer + strHardware );
+										+ strSpacer + strHardware 
+										+ "   = " + strIRLValue );
 					} else {
 						text.println( strIndent + strIndent + "-" + strIndent  
 								+ strSpacer + port.name()

@@ -21,8 +21,19 @@ public abstract class FunctionBase {
 	
 	protected Double dLastPosted = null;
 	
+	private final String strUnit;
+	
+	
+	public FunctionBase( final String strUnit ) {
+		this.strUnit = strUnit;
+	}
 	
 	public abstract Double evaluate();
+	
+	
+	public String getUnit() {
+		return this.strUnit;
+	}
 	
 	
 	public void setParamDouble( final FunctionParameter param,
