@@ -19,6 +19,7 @@ import jmr.s2db.comm.ConnectionProvider;
 import jmr.s2db.comm.Notifier;
 import jmr.s2db.event.EventMonitor;
 import jmr.s2db.event.EventType;
+import jmr.util.transform.JsonUtils;
 
 
 /*
@@ -209,6 +210,9 @@ public class Event extends TableBase {
 		return null;
 	}
 	
+	
+	private final static Gson GSON = new Gson();
+	
 
 	public static Event add(	final EventType type,
 								final String strSubject,
@@ -220,8 +224,7 @@ public class Event extends TableBase {
 								final Long seqTrigger,
 								final Long seqLog
 								) {
-		final Gson gson = new Gson();
-		final String strJson = gson.toJson( map );
+		final String strJson = GSON.toJson( map );
 
 		final Event event = add( type, strSubject, strValue, strThreshold, 
 						strJson, lTime, seqPage, seqTrigger, seqLog );
@@ -364,6 +367,31 @@ public class Event extends TableBase {
 	
 	public String getData() {
 		return this.strData;
+	}
+	
+//	final private static JsonParser PARSER = new JsonParser(); 
+	
+	public Map<String,Object> getDataAsMap() {
+		final Map<String, Object> map = 
+						JsonUtils.transformJsonToMap( this.strData );
+		return map;
+//		final Map<String,Object> map = new HashMap<>();
+//		if ( StringUtils.isNotBlank( this.strData ) ) {
+//			try {
+//				final JsonElement je = PARSER.parse( this.strData );
+//				if ( je.isJsonObject() ) {
+//					final JsonObject jo = je.getAsJsonObject();
+//					
+//				} else {
+//					LOGGER.warning( ()-> "Data field is not a JSON Object"
+//							+ " '" + strData + "'" );
+//				}
+//			} catch ( final JsonException e ) {
+//				LOGGER.warning( ()-> "Failed to parse data field"
+//						+ " '" + strData + "'" );
+//			}
+//		}
+//		return map;
 	}
 
 	public String getValue() {

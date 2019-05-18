@@ -1,6 +1,7 @@
 package jmr.s2db.tables;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -15,6 +16,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -232,8 +234,9 @@ public class Job extends TableBase {
 	
 	public static Job add(	final JobType type,
 							final JobSet jobset,
-							final String strOptions ) {
-		return Job.add( null, type, jobset, strOptions );
+							final String strResult,
+							final Map<String,Object> mapData ) {
+		return Job.add( null, type, jobset, strResult, mapData );
 	}
 	
 //	public static Job add(	final JobType type,
@@ -243,28 +246,30 @@ public class Job extends TableBase {
 	
 	public static Job add(	final JobType type,
 							final JobSet jobset,
-							final Map<String,String> map ) {
-		final StringBuilder strOptions = new StringBuilder();
-		if ( null!=map ) {
-			for ( final Entry<String, String> entry : map.entrySet() ) {
+							final Map<String,String> mapResult,
+							final Map<String,Object> mapData ) {
+		final StringBuilder strResult = new StringBuilder();
+		if ( null!=mapResult ) {
+			for ( final Entry<String, String> entry : mapResult.entrySet() ) {
 				final String strKey = entry.getKey();
 				final String strValue = entry.getValue();
 				
-				strOptions.append( strKey + "=" + strValue + "\\" );
+				strResult.append( strKey + "=" + strValue + "\\" );
 			}
 		}
-		return Job.add( null, type, jobset, strOptions.toString() );
+		return Job.add( null, type, jobset, strResult.toString(), mapData );
 	}
 	
 	
 	public static Job add(	final JobType type,
 							final JobSet jobset,
-							final String[] options ) {
-		final Map<String,String> map = new HashMap<>();
-		for ( int i=1; i<options.length; i=i+2 ) {
-			map.put( options[i-1], options[i-0] );
+							final String[] arrResult,
+							final Map<String,Object> mapData ) {
+		final Map<String,String> mapResult = new HashMap<>();
+		for ( int i=1; i<arrResult.length; i=i+2 ) {
+			mapResult.put( arrResult[i-1], arrResult[i-0] );
 		}
-		return Job.add( type, jobset, map );
+		return Job.add( type, jobset, mapResult, mapData );
 	}
 	
 	
@@ -282,10 +287,15 @@ public class Job extends TableBase {
 	}
 	
 	
+	private final static Gson GSON = new Gson();
+
+	
+	
 	public static Job add(	final Long seqDeviceTarget,
 							final JobType type,
 							final JobSet jobset,
-							final String strOptions ) {
+							final String strResult,
+							final Map<String,Object> mapData ) {
 		final Long lSession = Session.getSessionSeq();
 		if ( null==lSession ) {
 			LOGGER.log( Level.SEVERE, 
@@ -296,11 +306,13 @@ public class Job extends TableBase {
 		final Job job = new Job();
 		job.seqSession = lSession;
 		job.lRequestTime = System.currentTimeMillis();
-		job.strRequest = type.name() + ":" + strOptions;
+		job.strRequest = type.name() + ":" + strResult;
 		job.state = JobState.REQUEST;
 		job.seqDeviceTarget = seqDeviceTarget;
 		
-		final String strDestination = getRemoteDestination( strOptions );
+		final String strJsonData = GSON.toJson( mapData );
+		
+		final String strDestination = getRemoteDestination( strResult );
 		
 		LOGGER.info( "Adding job, dest alias: " + strDestination );
 		
@@ -320,13 +332,14 @@ public class Job extends TableBase {
 		if ( null==seqDeviceTarget ) {
 			strInsert = 
 					"INSERT INTO job "
-					+ "( seq_session, state, request, "
+					+ "( seq_session, state, request, data, "
 										+ "part_count, seq_part, "
 										+ "request_time ) "
 					+ "VALUES ( " 
 							+ job.seqSession.longValue() + ", "
 							+ "\"" + job.state.getChar() + "\", "
 							+ strFormatted + ", "
+							+ "?, " // + strJsonData + ", "
 							+ DataFormatter.format( job.iPartCount ) + ", "
 							+ DataFormatter.format( job.lPartSeq ) + ", "
 							+ job.lRequestTime + " );";
@@ -341,17 +354,25 @@ public class Job extends TableBase {
 							+ job.seqSession.longValue() + ", "
 							+ "\"" + job.state.getChar() + "\", "
 							+ strFormatted + ", " 
+							+ "?, " // + strJsonData + ", "
 							+ DataFormatter.format( job.iPartCount ) + ", "
 							+ DataFormatter.format( job.lPartSeq ) + ", "
 							+ job.lRequestTime + ","
 							+ job.seqDeviceTarget + " );";
 		}
 
-		try (	final Connection conn = ConnectionProvider.get().getConnection();
-				final Statement stmt = conn.createStatement() ) {
-
-			stmt.executeUpdate( strInsert, Statement.RETURN_GENERATED_KEYS );
-			try ( final ResultSet rs = stmt.getGeneratedKeys() ) {
+		try ( final Connection conn = ConnectionProvider.get().getConnection();
+			  final PreparedStatement ps = conn.prepareStatement( 
+							  strInsert, Statement.RETURN_GENERATED_KEYS ) ) {
+			
+			ps.setString( 1, strJsonData );
+			ps.execute();
+			try ( final ResultSet rs = ps.getGeneratedKeys() ) {
+		
+//		try (	final Connection conn = ConnectionProvider.get().getConnection();
+//				final Statement stmt = conn.createStatement() ) {
+//			stmt.executeUpdate( strInsert, Statement.RETURN_GENERATED_KEYS );
+//			try ( final ResultSet rs = stmt.getGeneratedKeys() ) {
 				
 				if ( rs.next() ) {
 					final long lSeq = rs.getLong( 1 );

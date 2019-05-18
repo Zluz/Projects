@@ -5,9 +5,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -27,10 +29,11 @@ import jmr.util.hardware.HardwareOutput;
 import jmr.util.math.FunctionBase;
 import jmr.util.math.FunctionParameter;
 import jmr.util.math.NormalizedFloat;
-import jmr.util.transform.JsonUtils;
 
 public class Pimoroni_AutomationHAT {
 
+	private final static boolean DEBUG = false;
+	
 
 	private final static Logger 
 			LOGGER = Logger.getLogger( Pimoroni_AutomationHAT.class.getName() );
@@ -122,6 +125,8 @@ public class Pimoroni_AutomationHAT {
 //			"/bin/bash",
 //			"/Local/scripts/exec_automationhat_input.sh",
 			"/usr/bin/python",
+			"-u",
+			"-O",
 			"/Local/scripts/exec_automationhat_input.py",
 		};
 
@@ -168,13 +173,12 @@ public class Pimoroni_AutomationHAT {
 			
 			strCommFile = "/tmp/" + UUID.randomUUID().toString() + ".txt";
 			
-			final String[] command = new String[3];
-			command[0] = COMMAND_STREAM_INPUT[0]; // shell
-			command[1] = COMMAND_STREAM_INPUT[1]; // script
-			command[2] = strCommFile;
+			final List<String> listCommand = 
+					new LinkedList<>( Arrays.asList( COMMAND_STREAM_INPUT ) );
+			listCommand.add( strCommFile );
 			
 			mp = new MonitorProcess( 
-						"Monitor Automation HAT", command, true );
+							"Monitor Automation HAT", listCommand, false );
 			mp.start();
 			mp.addListener( new MonitorProcess.Listener() {
 				@Override
@@ -267,7 +271,10 @@ public class Pimoroni_AutomationHAT {
 		if ( null!=bOrigValue && bOrigValue.booleanValue() != bNewValue ) {
 			
 			mapDigitalInput.put( port, bNewValue );
-			checkRunTrigger( port, Collections.emptyMap(), lTime );
+			final Map<String,Object> map = new HashMap<>();
+			map.put( "time-initiate", new Long( lTime ) );
+			map.put( "source-initiate", "PAHAT.updateDigitalInput()" );
+			checkRunTrigger( port, map, lTime );
 		} else {
 			mapDigitalInput.put( port, bNewValue );
 		}
@@ -360,15 +367,17 @@ System.out.println( "port parameters: " + strParameters );
 			final Float fOrigValue = new Float( dOrigNorm );
 			final Double dNewNorm = nf.evaluate();
 			
-			System.out.print( "" 
-					+ StringUtils.right( ""+System.currentTimeMillis(), 5 ) 
-					+ " --- updateAnalogInput() " 
-//					+ this.hashCode() + ", "
-					+ "port: " + port.name() + ", "
-					+ "val/raw: " + String.format( "%.3f", fNewValue ) + ", "
-					+ "val/norm: " + String.format( "%.5f", dNewNorm ) //+ ", "
-//					+ "map: " + JsonUtils.report( mapAnalogInput )
-					);
+			if ( DEBUG ) {
+				System.out.print( "" 
+						+ StringUtils.right( ""+System.currentTimeMillis(), 5 ) 
+						+ " --- updateAnalogInput() " 
+	//					+ this.hashCode() + ", "
+						+ "port: " + port.name() + ", "
+						+ "val/raw: " + String.format( "%.3f", fNewValue ) + ", "
+						+ "val/norm: " + String.format( "%.5f", dNewNorm ) //+ ", "
+	//					+ "map: " + JsonUtils.report( mapAnalogInput )
+						);
+			}
 			
 
 			if ( null==dNewNorm ) {
@@ -400,7 +409,9 @@ System.out.println( "port parameters: " + strParameters );
 				
 				final double dDiff = Math.abs( dLastPostValue - dNewNorm );
 				
-				System.out.print( ", drift: " + String.format( "%.5f", dDiff ) );
+				if ( DEBUG ) {
+					System.out.print( ", drift: " + String.format( "%.5f", dDiff ) );
+				}
 
 				final double dParam = nf.getParamDouble( 
 							FunctionParameter.TRIGGER_NORM_DRIFT_THRESHOLD,
@@ -416,11 +427,15 @@ System.out.println( "port parameters: " + strParameters );
 					dThreshold = dParam;
 				}
 
-				System.out.print( 
+				if ( DEBUG ) {
+					System.out.print( 
 						", adjusted(" + String.format( "%.5f", dParam ) + ")= " 
 						+ String.format( "%.5f", dThreshold ) );
+				}
 				if ( dDiff > dThreshold ) {
-					System.out.print( " - HIT " );
+					if ( DEBUG ) {
+						System.out.print( " - HIT " );
+					}
 //				}
 				
 //				if ( dDiff > dParam ) {
@@ -445,7 +460,9 @@ System.out.println( "port parameters: " + strParameters );
 //			System.out.print( ", pct-diff: " 
 //									+ String.format( "%.5f", fPctDiff ) );
 			
-			System.out.println();
+			if ( DEBUG ) {
+				System.out.println();
+			}
 
 			if ( bPost && ( fOld > ANALOG_MIN_VALUE ) ) { 
 				
@@ -463,6 +480,7 @@ System.out.println( "port parameters: " + strParameters );
 				map.put( "value-normalized", dNewNorm );
 				map.put( "percent-diff", fPctDiff );
 				map.put( "time-initiate", lTime );
+				map.put( "source-initiate", "PAHAT.updateAnalogInput()" );
 
 				final Double dIntercept = 
 						nf.getParamDouble( FunctionParameter.IRL_INTERCEPT );
@@ -486,20 +504,22 @@ System.out.println( "port parameters: " + strParameters );
 					map.put( "trigger-value", dTriggerValue );
 				}
 
-System.out.println( "--- updateAnalogInput()"
-			+ "\n\tport = " + port.name() 
-			+ "\n\tinput = " + input 
-			+ "\n\tfOrigValue = " + fOrigValue 
-			+ "\n\tfNewValue/raw  = " + fNewValue 
-			+ "\n\tfNewValue/norm = " + dNewNorm 
-			+ "\n\tfOld = " + fOld 
-			+ "\n\tfNew = " + fNew 
-			+ "\n\tfDiff    = " + fDiff			
-			+ "\n\tfPctDiff = " + fPctDiff			
-				);			
+				if ( DEBUG ) {
+					System.out.println( "--- updateAnalogInput()"
+								+ "\n\tport = " + port.name() 
+								+ "\n\tinput = " + input 
+								+ "\n\tfOrigValue = " + fOrigValue 
+								+ "\n\tfNewValue/raw  = " + fNewValue 
+								+ "\n\tfNewValue/norm = " + dNewNorm 
+								+ "\n\tfOld = " + fOld 
+								+ "\n\tfNew = " + fNew 
+								+ "\n\tfDiff    = " + fDiff			
+								+ "\n\tfPctDiff = " + fPctDiff			
+									);
+				}
 				
-System.out.println( "--- updateAnalogInput(), "
-		+ "map: " + JsonUtils.report( mapAnalogInput ) );
+//System.out.println( "--- updateAnalogInput(), "
+//		+ "map: " + JsonUtils.report( mapAnalogInput ) );
 
 
 				checkRunTrigger( port, map, lTime );

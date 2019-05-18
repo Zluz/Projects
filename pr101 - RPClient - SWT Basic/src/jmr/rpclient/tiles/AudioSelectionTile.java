@@ -122,11 +122,15 @@ public class AudioSelectionTile extends TileBase {
 		final Thread thread = new Thread( "Button action (AudioSelectionTile)" ) {
 			public void run() {
 
-				final Map<String,String> map = new HashMap<String,String>();
+				final Map<String,String> map = new HashMap<>();
 				map.put( "remote", "media" );
 				map.put( "command", program.strScript );
+				final Map<String,Object> mapData = new HashMap<>();
+				mapData.put( "remote", "media" );
+				mapData.put( "command", program.strScript );
 					
-				final Job job = Job.add( JobType.REMOTE_EXECUTE, null, map );
+				final Job job = Job.add( 
+								JobType.REMOTE_EXECUTE, null, map, mapData );
 				button.setJob( job );
 			};
 		};

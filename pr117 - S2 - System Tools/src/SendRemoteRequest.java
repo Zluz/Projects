@@ -39,9 +39,11 @@ public class SendRemoteRequest {
 			
 			
 			final Map<String,String> map = new HashMap<>();
+			final Map<String,Object> mapData = new HashMap<>();
 			map.put( "remote", strRemoteIP );
+			mapData.put( "remote", strRemoteIP );
 			
-			final Job job = Job.add( jobRemoteCommand, null, map );
+			final Job job = Job.add( jobRemoteCommand, null, map, mapData );
 			
 			System.out.println( "Job created: " + job.getJobSeq() );
 			

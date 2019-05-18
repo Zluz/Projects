@@ -33,7 +33,7 @@ rule "Turn on WTOP"
 						new String[] {
 						"remote", "media",
 						"command", "/Local/scripts/play_wtop.sh",
-					} );
+					}, Collections.emptyMap() );
 					
 		System.out.println( "Job created." ); 
 end
@@ -51,7 +51,7 @@ rule "Turn on WTOP - TEST"
 		jmr.s2db.tables.Job.add( JobType.REMOTE_EXECUTE, new String[] {
 						"remote", "media",
 						"command", "/Local/scripts/play_wtop.sh",
-					} );
+					}, Collections.emptyMap() );
 		System.out.println( "Job created." ); 
 end
 */

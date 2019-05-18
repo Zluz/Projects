@@ -17,6 +17,10 @@ dialect "mvel"
 // 	bPrepareTeslaTriggered = false;
 // }
 
+
+// global List<Long> listRecentEvents = new LinkedList<>();
+
+
 rule "PrepareTesla-Reset"
 	when
 		h : Heartbeat( getTimeUnit() == TimeUnit.HOURS )
@@ -25,7 +29,7 @@ rule "PrepareTesla-Reset"
 		System.out.println( "Resetting PrepareTesla." );
 		
 		// bPrepareTeslaTriggered = false;
-		Simple.doPrepareTesla( false );
+		Simple.doPrepareTesla( false, "reset" );
 end
 
 
@@ -43,7 +47,6 @@ rule "PrepareTesla-ShowerTrigger"
 	then
 		System.out.println( "PrepareTesla-ShowerTrigger fired." );
 		
-		
 		if ( ! TimeUtil.isHourOfDay( 7,8,9 ) ) {
 		    System.out.println( "PrepareTesla-ShowerTrigger aborting: " 
 		    				+ "Hour not in 7,8,9." );
@@ -52,5 +55,5 @@ rule "PrepareTesla-ShowerTrigger"
 		
 		// bPrepareTeslaTriggered = true;
 		
-		Simple.doPrepareTesla( true );
+		Simple.doPrepareTesla( true, "water_trigger" );
 end

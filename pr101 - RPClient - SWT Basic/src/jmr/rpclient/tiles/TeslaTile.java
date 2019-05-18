@@ -399,9 +399,15 @@ public class TeslaTile extends TileBase {
 		if ( !this.bClimateControl ) {
 			bRefreshRequest = true;
 			final Job.JobSet set = new Job.JobSet( 3 );
-			Job.add( JobType.TESLA_READ, set, DataRequest.CHARGE_STATE.name() );
-			Job.add( JobType.TESLA_READ, set, DataRequest.VEHICLE_STATE.name() );
-			Job.add( JobType.TESLA_READ, set, DataRequest.CLIMATE_STATE.name() );
+
+			final Map<String,Object> map = new HashMap<>();
+			map.put( "reason", "user-click.canvas" );
+			map.put( "job-set.first", set.lFirstSeq );
+			map.put( "job-set.count", 3 );
+
+			Job.add( JobType.TESLA_READ, set, DataRequest.CHARGE_STATE.name(), map );
+			Job.add( JobType.TESLA_READ, set, DataRequest.VEHICLE_STATE.name(), map );
+			Job.add( JobType.TESLA_READ, set, DataRequest.CLIMATE_STATE.name(), map );
 			return true;
 		} else {
 			return false;
@@ -415,26 +421,32 @@ public class TeslaTile extends TileBase {
 			button.setState( ButtonState.WORKING );
 		}
 		Job job = null;
+		
+		final Map<String,Object> map = new HashMap<>();
+		map.put( "reason", "user-click.button" );
+		map.put( "button-name", button.getName() );
+		map.put( "button-index", button.getIndex() );
+
 		switch ( button.getIndex() ) {
 			case BUTTON_CLIMATE_ON: {
 				System.out.println( "Climate ON" );
-				job = Job.add( JobType.TESLA_WRITE, null, Command.HVAC_START.name() );
+				job = Job.add( JobType.TESLA_WRITE, null, Command.HVAC_START.name(), map );
 				Thread.sleep( 1000 );
-				Job.add( JobType.TESLA_READ, null, DataRequest.CLIMATE_STATE.name() );
+				Job.add( JobType.TESLA_READ, null, DataRequest.CLIMATE_STATE.name(), map );
 				
 				break;
 			}
 			
 			case BUTTON_CLIMATE_OFF: {
 				System.out.println( "Climate OFF" );
-				job = Job.add( JobType.TESLA_WRITE, null, Command.HVAC_STOP.name() );
+				job = Job.add( JobType.TESLA_WRITE, null, Command.HVAC_STOP.name(), map );
 				Thread.sleep( 1000 );
-				Job.add( JobType.TESLA_READ, null, DataRequest.CLIMATE_STATE.name() );
+				Job.add( JobType.TESLA_READ, null, DataRequest.CLIMATE_STATE.name(), map );
 				break;
 			}
 			case BUTTON_FLASH_LIGHTS: {
 				System.out.println( "Flash lights" );
-				job = Job.add( JobType.TESLA_WRITE, null, Command.FLASH_LIGHTS.name() );
+				job = Job.add( JobType.TESLA_WRITE, null, Command.FLASH_LIGHTS.name(), map );
 				break;
 			}
 		}

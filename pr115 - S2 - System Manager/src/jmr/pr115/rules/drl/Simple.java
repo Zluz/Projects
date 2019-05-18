@@ -40,6 +40,7 @@ import jmr.pr123.storage.GCSFileWriter;
 import jmr.pr128.reports.Report;
 import jmr.s2.ingest.Import;
 import jmr.s2db.Client;
+import jmr.s2db.event.EventType;
 import jmr.s2db.imprt.WebImport;
 import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Event;
@@ -417,10 +418,13 @@ public class Simple implements RulesConstants {
 	public static void submitJob_TeslaRefresh3() {
 		System.out.println( "--- Simple.submitJob_TeslaRefresh3()" );
 		try {
+			final Map<String,Object> map = new HashMap<>();
 			final Job.JobSet set = new Job.JobSet( 3 );
-			Job.add( JobType.TESLA_READ, set, DataRequest.CHARGE_STATE.name() );
-			Job.add( JobType.TESLA_READ, set, DataRequest.VEHICLE_STATE.name() );
-			Job.add( JobType.TESLA_READ, set, DataRequest.CLIMATE_STATE.name() );
+			map.put( "job-set.first", set.lFirstSeq );
+			map.put( "job-set.count", 3 );
+			Job.add( JobType.TESLA_READ, set, DataRequest.CHARGE_STATE.name(), map );
+			Job.add( JobType.TESLA_READ, set, DataRequest.VEHICLE_STATE.name(), map );
+			Job.add( JobType.TESLA_READ, set, DataRequest.CLIMATE_STATE.name(), map );
 		} catch ( final Throwable t ) {
 			LOGGER.severe( "ERROR in Simple.submitJob_TeslaRefresh3()" );
 			t.printStackTrace();
@@ -543,9 +547,18 @@ public class Simple implements RulesConstants {
 	}
 	
 	
-	private static void managePrepareTesla() throws InterruptedException {
+	private static void managePrepareTesla( final String strReason ) 
+											throws InterruptedException {
 		
 		int i=0;
+		final long lNow = System.currentTimeMillis();
+
+		final Map<String, String> map = new HashMap<>();
+		map.put( "reason", strReason );
+		map.put( "time-manage", "" + lNow );
+		final Map<String, Object> mapData = new HashMap<>();
+		mapData.put( "reason", strReason );
+		mapData.put( "time-initiate", lNow );
 
 		boolean bHVACStarted = false;
 		do {
@@ -560,7 +573,7 @@ public class Simple implements RulesConstants {
 			
 			LOGGER.info( "POSTing HVAC_START.." );
 			final Job jobActivate = Job.add( 
-					JobType.TESLA_WRITE, null, HVAC_START.name() );
+					JobType.TESLA_WRITE, null, HVAC_START.name(), mapData );
 
 			if ( ! waitForJob( jobActivate, 20 ) ) {
 				LOGGER.info( "Request to start Tesla HVAC timed-out.");
@@ -571,7 +584,7 @@ public class Simple implements RulesConstants {
 
 			LOGGER.info( "Requesting CLIMATE_STATE.." );
 			final Job jobCheck = Job.add( 
-					JobType.TESLA_READ, null, CLIMATE_STATE.name() );
+					JobType.TESLA_READ, null, CLIMATE_STATE.name(), mapData );
 			if ( ! waitForJob( jobCheck, 10 ) ) {
 				LOGGER.info( "Request to check Tesla HVAC timed-out.");
 				return;
@@ -581,18 +594,29 @@ public class Simple implements RulesConstants {
 
 			final String strPath = CLIMATE_STATE.getResponsePath();
 			final Map<String,String> 
-							map = Client.get().loadPage( strPath );
+							mapPage = Client.get().loadPage( strPath );
 			LOGGER.info( ()-> "Looking up page " + strPath + ", " 
-							+ map.keySet().size() + " elements." );
-			final String strHVAC = map.get( "is_climate_on" );
+							+ mapPage.keySet().size() + " elements." );
+			final String strHVAC = mapPage.get( "is_climate_on" );
 			LOGGER.info( ()-> "is_climate_on = " + strHVAC ); 
 			bHVACStarted = "true".equalsIgnoreCase( strHVAC );
 
+			map.put( "time-confirm", mapPage.get( "timestamp" ) );
+			map.put( "inside_temp", mapPage.get( "inside_temp" ) );
+			map.put( "driver_temp_setting", mapPage.get( "driver_temp_setting" ) );
+			map.put( "usable_battery_level", mapPage.get( "usable_battery_level" ) );
+			
 		} while ( ! bHVACStarted );
 		
-		LOGGER.info( "Tesla climate is on." );
+		final Event event = Event.add( EventType.SYSTEM, "Tesla_Prepare", 
+				strReason, null, map, lNow, null, null, null );
+		
+		LOGGER.info( "Tesla climate is on. "
+						+ "Posted Event " + event.getEventSeq() );
 	}
 	
+	
+	private static List<Long> listRecentTriggers = new LinkedList<>();
 	
 	/**
 	 * Prepare the Tesla for driving.
@@ -600,9 +624,32 @@ public class Simple implements RulesConstants {
 	 * For now this just means turning on the HVAC.
 	 * @param bPrepare
 	 */
-	public static void doPrepareTesla( final boolean bPrepare ) {
+	public static void doPrepareTesla( final boolean bPrepare,
+									   final String strReason ) {
 		
 		LOGGER.info( ()-> "--> doPrepareTesla(), bPrepare = " + bPrepare );
+
+
+		final long lNow = System.currentTimeMillis();
+		final long lOldest = lNow - TimeUnit.HOURS.toMillis( 1 );
+		
+		final Map<String, Object> mapData = new HashMap<>();
+		mapData.put( "reason", strReason );
+		mapData.put( "time-initiate", lNow );
+
+		while ( listRecentTriggers.size() > 0 
+				&& listRecentTriggers.get( 0 ) < lOldest ) {
+			listRecentTriggers.remove( 0 );
+		}
+		listRecentTriggers.add( listRecentTriggers.size(), lNow );
+		
+		if ( bPrepare ) {
+			if ( listRecentTriggers.size() < 10 ) {
+				LOGGER.info( ()-> 
+						"Aborting PrepareTesla (too few recent events)." );
+				return;
+			}
+		}
 		
 		if ( bPrepare ) {
 			final boolean bAcquiredCooldown = 
@@ -618,7 +665,7 @@ public class Simple implements RulesConstants {
 				@Override
 				public void run() {
 					try {
-						managePrepareTesla();
+						managePrepareTesla( strReason );
 					} catch ( final InterruptedException e ) {
 						LOGGER.warning( "PrepareTesla interrupted." );
 						e.printStackTrace();
@@ -628,7 +675,7 @@ public class Simple implements RulesConstants {
 			threadPrepareTesla.start();
 			
 		} else {
-			Job.add( JobType.TESLA_WRITE, null, HVAC_STOP.name() );
+			Job.add( JobType.TESLA_WRITE, null, HVAC_STOP.name(), mapData );
 		}
 	}
 	
@@ -677,9 +724,15 @@ public class Simple implements RulesConstants {
 	
 	public static void doControlParkingAssist( final Event e ) {
 
+		final Map<String, Object> mapData = new HashMap<>();
+		mapData.putAll( e.getDataAsMap() );
+
 		final Thread thread = new Thread( "Momentary Parking Assist" ) {
 			public void run() {
 				try {
+
+					final long lTimeOn = System.currentTimeMillis();
+					mapData.put( "time-on", lTimeOn );
 
 //					if ( Boolean.FALSE.equals( bClosed ) ) {
 						jmr.s2db.tables.Job.add( JobType.REMOTE_OUTPUT, null,
@@ -687,18 +740,21 @@ public class Simple implements RulesConstants {
 								"remote", "GARAGE_LIGHTS",
 								"port", Port.OUT_D_1.name(),
 								"value", "true",
-									} );
+									}, mapData );
 									
 						Thread.sleep( TimeUnit.MINUTES.toMillis( 2 ) );
 //						Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
 //					}
+
+					final long lTimeOff = System.currentTimeMillis();
+					mapData.put( "time-off", lTimeOff );
 
 					jmr.s2db.tables.Job.add( JobType.REMOTE_OUTPUT, null,
 							new String[] {
 							"remote", "GARAGE_LIGHTS",
 							"port", Port.OUT_D_1.name(),
 							"value", "false",
-						} );
+						}, mapData );
 					
 				} catch ( final InterruptedException e ) {
 					// just quit
@@ -714,9 +770,25 @@ public class Simple implements RulesConstants {
 //		final String strValue = e.getValue();
 //		final Boolean bClosed = Boolean.valueOf( strValue );
 
+		final long lLightDuration = TimeUnit.MINUTES.toMillis( 2 );
+		
+		final Map<String, Object> mapData = new HashMap<>();
+		mapData.putAll( e.getDataAsMap() );
+		
+//		final boolean bAcquireCooldown = checkCooldown( 
+//							"GarageFastLight", lLightDuration );
+//		if ( ! bAcquireCooldown ) {
+//			LOGGER.info( ()-> 
+//						"Aborting garage fast lights (still in cooldown)" );
+//			return;
+//		}
+		
 		final Thread thread = new Thread( "Momentary Garage Light" ) {
 			public void run() {
 				try {
+
+					final long lTimeOn = System.currentTimeMillis();
+					mapData.put( "time-on", lTimeOn );
 
 //					if ( Boolean.FALSE.equals( bClosed ) ) {
 						jmr.s2db.tables.Job.add( JobType.REMOTE_OUTPUT, null,
@@ -724,18 +796,21 @@ public class Simple implements RulesConstants {
 								"remote", "GARAGE_LIGHTS",
 								"port", Port.OUT_D_2.name(),
 								"value", "true",
-									} );
+									}, mapData );
 									
-						Thread.sleep( TimeUnit.MINUTES.toMillis( 2 ) );
+						Thread.sleep( lLightDuration );
 //						Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
 //					}
+
+					final long lTimeOff = System.currentTimeMillis();
+					mapData.put( "time-off", lTimeOff );
 
 					jmr.s2db.tables.Job.add( JobType.REMOTE_OUTPUT, null,
 							new String[] {
 							"remote", "GARAGE_LIGHTS",
 							"port", Port.OUT_D_2.name(),
 							"value", "false",
-						} );
+						}, mapData );
 					
 				} catch ( final InterruptedException e ) {
 					// just quit

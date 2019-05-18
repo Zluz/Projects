@@ -13,7 +13,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
+import java.lang.reflect.Type;
+import com.google.gson.reflect.TypeToken;
 public class JsonUtils {
 
 	public final static JsonParser PARSER = new JsonParser();
@@ -22,12 +23,23 @@ public class JsonUtils {
 						new GsonBuilder().setPrettyPrinting().create();
 	
 
-	public static Map<String,String> transformJsonToMap( 
+	public static Map<String,String> transformJsonToMap_( 
 										final String str ) {
 		final JsonElement element = PARSER.parse( str );
 		return transformJsonToMap( element.getAsJsonObject() );
 	}
 		
+	final static private Gson GSON = new Gson();
+	
+
+	public static Map<String,Object> transformJsonToMap( 
+										final String strJson ) {
+		final Type type = new TypeToken<Map<String, String>>(){}.getType();
+		final Map<String, Object> map = GSON.fromJson( strJson, type);
+		
+		return map;
+	}
+
 	
 	public static Map<String,String> transformJsonToMap( 
 										final JsonObject details ) {
@@ -39,6 +51,7 @@ public class JsonUtils {
         	final JsonElement value = entry.getValue();
         	
         	map.put(key, transformJsonToElement( value ) );
+//        	map.put(key, value. );
         }
         
         return map;

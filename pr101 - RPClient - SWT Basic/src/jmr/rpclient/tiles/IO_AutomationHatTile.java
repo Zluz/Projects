@@ -189,6 +189,8 @@ public class IO_AutomationHatTile extends TileBase {
 		final JsonElement jeMap = new Gson().toJsonTree( map );
 		final JsonObject jsonMap = jeMap.getAsJsonObject();
 		
+System.out.println( "Map: " + jeMap.toString() );		
+		
 		jsonMap.addProperty( "port", port.name() );
 		
 		final Boolean bValue = hat.getDigitalPortValue( port );
@@ -215,7 +217,6 @@ public class IO_AutomationHatTile extends TileBase {
 			jsonMap.add( "value", jsonValue );
 			
 			final String strSubject = input.name();
-//			final String strData = jsonValue.getAsString();
 			final String strData = jsonMap.toString();
 			
 			final Event event = Event.add(
@@ -289,7 +290,7 @@ public class IO_AutomationHatTile extends TileBase {
 			
 			
 			final String strIndent = "      ";
-			final String strSpacer = "   -   ";
+			final String strSpacer = "  -  ";
 	
 			text.println( "Digital Inputs:" );
 			for ( final Port port : Port.values() ) {
@@ -319,7 +320,7 @@ public class IO_AutomationHatTile extends TileBase {
 					final Float value = hat.getAnalogPortValue( port );
 					if ( null!=value ) {
 	//					final String strValue = value.toString();
-						final String strValue = String.format( "%8.3f", value );
+						final String strValue = String.format( "%8.4f", value );
 						final HardwareInput 
 								hardware = hat.getHardwareInputForPort( port );
 						final String strHardware = null!=hardware 
@@ -342,13 +343,13 @@ public class IO_AutomationHatTile extends TileBase {
 						} else {
 							strIRLValue = "(?)";
 						}
-													
+								
 						text.println( strIndent + strValue 
 										+ strSpacer + port.name()
 										+ strSpacer + strHardware 
 										+ "   = " + strIRLValue );
 					} else {
-						text.println( strIndent + strIndent + "-" + strIndent  
+						text.println( strIndent + strIndent + " -" + strIndent  
 								+ strSpacer + port.name()
 								+ strSpacer + "<unmapped>" );
 					}
@@ -386,14 +387,14 @@ public class IO_AutomationHatTile extends TileBase {
 					final Boolean value = hat.getDigitalPortValue( port );
 					{
 						final String strValue = ( null!=value )
-												? value.toString()
-												: strIndent + "-" + strIndent;
+												? value.toString() 
+												: ( strIndent + "-" );
 						final HardwareOutput 
 								hardware = hat.getHardwareOutputForPort( port );
 						final String strHardware = null!=hardware 
 												? hardware.name() 
 												: "<no hw name>";
-						text.println( strIndent + strValue 
+						text.println( strIndent + strValue + strIndent 
 										+ strSpacer + port.name()
 										+ strSpacer + strHardware );
 //					} else {
