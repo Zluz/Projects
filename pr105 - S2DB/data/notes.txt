@@ -1,3 +1,6 @@
 
 Run from ORIPHIEL 
-	H:\Share\Development\CM\Git_Projects\pr105 - S2DB\data
+	H:\Share\Development\CM\Git_Projects\pr105 - S2DB\data\backup_s2db.bat
+
+For initial setup:
+	s2db_login.bat must exist, defining DB_USR and DB_PWD
