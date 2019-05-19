@@ -279,14 +279,22 @@ System.out.println( "Map: " + jeMap.toString() );
 			
 		} else { // type = DISPLAY
 		
-			text.println( "Painting.." );
+//			text.println( "Painting.." );
 	
 			if ( !hat.isActive() ) {
 				text.println( "Automation HAT data not available" );
 				return;
 			}
 	
-			text.println( "Automation HAT detected" );
+			
+			final Double dInterval = hat.getAveragePollingInterval();
+			if ( null != dInterval ) {
+				text.println( "Polling Automation HAT   -   "
+						+ "Polling interval: " 
+						+ String.format( "%2.3f", dInterval ) + " seconds" );
+			} else {
+				text.println( "Automation HAT detected" );
+			}
 			
 			
 			final String strIndent = "      ";

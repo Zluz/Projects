@@ -3,18 +3,13 @@ package jmr.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.LogOutputStream;
-import org.apache.commons.exec.PumpStreamHandler;
 
 public class MonitorProcess {
 
@@ -63,15 +58,6 @@ public class MonitorProcess {
 		});
 	}
 
-	
-	public MonitorProcess(	final String strName,
-							final List<String> listCommand, 
-							final boolean bDebug ) {
-		this( 	strName, 
-				listCommand.toArray( new String[ listCommand.size() ] ), 
-				bDebug );
-	}
-
 
 	public MonitorProcess(	final String strName,
 							final String[] arrCommand ) {
@@ -101,102 +87,13 @@ public class MonitorProcess {
 				    }
 				    
 //				    process = Runtime.getRuntime().exec( arrCommand );
-//				    final ProcessBuilder pb = new ProcessBuilder( arrCommand );
-//				    process = pb.start();
-				    
-				    final DefaultExecutor executor = new DefaultExecutor();
-				    CommandLine cmd = null;
-				    for ( int i = 0; i < arrCommand.length; i++ ) {
-				    	final String strEntry = arrCommand[ i ];
-				    	if ( 0 == i ) {
-						    cmd = new CommandLine( strEntry );
-				    	} else {
-				    		cmd.addArgument( strEntry );
-				    	}
-				    }
-				    
-//				    final OutputStream os = new ByteArrayOutputStream();
-//				    
-//				    executor.getStreamHandler().setProcessInputStream(os);
-					
-				    final LogOutputStream streamStdOut 
-				    							= new LogOutputStream() {
-						@Override
-						protected void processLine( final String strLine,
-													final int logLevel ) {
-							
-							final long lNow = System.currentTimeMillis();
-		    				
-							if ( bDebug ) {
-								System.out.println( "line> " + strLine );
-							}
-		    				
-							synchronized ( arrLastLine ) {
-								arrLastLine[0] = strLine;
-							}
-		    				for ( final Listener listener : listListeners ) {
-		    					listener.process( lNow, strLine );
-		    				}
-							
-						}
-				    };
+				    final ProcessBuilder pb = new ProcessBuilder( arrCommand );
+				    process = pb.start();
 
-				    final LogOutputStream streamStdErr 
-				    							= new LogOutputStream() {
-						@Override
-						protected void processLine( final String strLine,
-													final int logLevel ) {
-							
-							final long lNow = System.currentTimeMillis();
-		    				
-		            		System.out.println( "ERR> " + strLine );
-		    				
-							synchronized ( arrLastLine ) {
-								arrLastLine[0] = strLine;
-							}
-		    				for ( final Listener listener : listListeners ) {
-		    					listener.process( lNow, strLine );
-		    				}
-						}
-				    };
-
-//				    final OutputStream osLocal = new LogOutputStream() {
-//						
-//						@Override
-//						protected void processLine(String line, int logLevel) {
-//							// TODO Auto-generated method stub
-//							
-//						}
-//					};();
-//					
-//					final ByteArrayInputStream bais = new ByteArrayInputStream(buf)
-//				    
-//				    final InputStreamPumper isb = new InputStreamPumper(is, streamStdErr)
-//				    final InputStream streamStdIn = new InputStream() {
-//				    	
-//				    };
-				    
-//				    final InputStreamPumper isp = new InputStreamPumper();
-				    
-//				    new ExecInputStream();
-//				    final PipedOutputStream pos = new PipedOutputStream();
-				    final PipedOutputStream pos = new PipedOutputStream();
-				    os = pos;
-				    final PipedInputStream pis = new PipedInputStream( pos );
-				    
-				    
-					final PumpStreamHandler psh = new PumpStreamHandler( 
-			    					streamStdOut, streamStdErr, pis );
-				    executor.setStreamHandler( psh );
-
-				    
 				    lStartTime = System.currentTimeMillis();
-
-				    final int iExitValue = executor.execute( cmd );
-
 				    
 //				    System.out.println( "Process.isAlive()-1: " + process.isAlive() );
-//				    final InputStream is = process.getInputStream();
+				    final InputStream is = process.getInputStream();
 
 ////				    final InputStreamReader isr = new InputStreamReader(is);
 //				    final InputStreamReader isr = new InputStreamReader( is ) {
@@ -238,10 +135,10 @@ public class MonitorProcess {
 //				    	}
 //				    };
 				    
-//				    os = process.getOutputStream();
+				    os = process.getOutputStream();
 				    
 //				    addOutputMonitor( br );
-//				    addOutputMonitor_03( is );
+				    addOutputMonitor_03( is );
 				    
 				    System.out.println( "External process "
 				    					+ "stopped: \"" + strName + "\"" );

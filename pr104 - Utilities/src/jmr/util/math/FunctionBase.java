@@ -30,6 +30,8 @@ public abstract class FunctionBase {
 	
 	public abstract Double evaluate();
 	
+	public abstract boolean hasEnoughSamples();
+
 	
 	public String getUnit() {
 		return this.strUnit;

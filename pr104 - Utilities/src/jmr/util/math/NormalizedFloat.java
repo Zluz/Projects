@@ -14,8 +14,9 @@ public class NormalizedFloat extends FunctionBase {
 	private final List<Float> listGood;
 	private final List<Float> listRaw;
 	private final int iSize;
-	private final int iCutTop;
-	private final int iCutBottom;
+	private final int iCutTop; // now unused (remove?)
+	private final int iCutBottom; // now unused (remove?)
+	private boolean bEnough = false;
 	
 	public NormalizedFloat( final int iSize,
 							final int iCutTop,
@@ -28,12 +29,23 @@ public class NormalizedFloat extends FunctionBase {
 		this.iCutTop = iCutTop;
 		this.iCutBottom = iCutBottom;
 	}
+
+	public NormalizedFloat( final int iSize,
+							final String strUnit ) {
+		super( strUnit );
+		this.listGood = new LinkedList<Float>();
+		this.listRaw = new LinkedList<Float>();
+		this.iSize = iSize;
+		this.iCutTop = 0;
+		this.iCutBottom = 0;
+	}
 	
 	public void add( final Float fValue ) {
 		synchronized ( listGood ) {
 			this.listGood.add( fValue );
 			if ( this.listGood.size() > iSize ) {
 				this.listGood.remove( 0 );
+				this.bEnough = true;
 			}
 		}
 		synchronized ( listRaw ) {
@@ -132,11 +144,18 @@ public class NormalizedFloat extends FunctionBase {
 
 	@Override
 	public Double evaluate() {
+		if ( ! bEnough ) {
+			return null;
+		}
 //		return evaluate_001();
 		return evaluate_002();
 	}
 
 
+	@Override
+	public boolean hasEnoughSamples() {
+		return bEnough;
+	}
 	
 	
 	public Double evaluate_002() {

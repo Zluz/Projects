@@ -161,6 +161,13 @@ public class Pimoroni_AutomationHAT {
 				mapAnalogOutput = new EnumMap<>( Port.class );
 	
 	
+	private final static int POLLING_AVG_SAMPLES = 40;
+	
+	private final NormalizedFloat nfPollingInterval = 
+					new NormalizedFloat( POLLING_AVG_SAMPLES, "seconds" );
+	private long lLastPollingData;
+	private double dAvgPollingInterval = 0;
+	
 	private final String strCommFile;
 	
 	
@@ -169,7 +176,7 @@ public class Pimoroni_AutomationHAT {
 	
 	
 	private Pimoroni_AutomationHAT() {
-		if ( !OSUtil.isWin() ) {
+		if ( ! OSUtil.isWin() ) {
 			
 			strCommFile = "/tmp/" + UUID.randomUUID().toString() + ".txt";
 			
@@ -186,6 +193,18 @@ public class Pimoroni_AutomationHAT {
 									 final String strLine ) {
 //					System.out.print( ">" );
 					updateData( lTime, strLine );
+					
+					final long lElapsed = lTime - lLastPollingData;
+					nfPollingInterval.add( (float) lElapsed / 1000 );
+					lLastPollingData = lTime;
+					
+					if ( 0==dAvgPollingInterval 
+							&& nfPollingInterval.hasEnoughSamples() ) {
+						final Double dAvg = nfPollingInterval.evaluate();
+						if ( null != dAvg ) {
+							dAvgPollingInterval = dAvg.doubleValue();
+						}
+					}
 				}
 			});
 		} else {
@@ -400,8 +419,10 @@ System.out.println( "port parameters: " + strParameters );
 			
 			boolean bPost = false;
 			String strTriggerName = null;
-			Double dTriggerValue = null;
-			Map<String,Object> map = null;
+			final Double dTriggerValue;
+			final Map<String,Object> map = new HashMap<>();
+			final double dAdjust;
+			final double dThreshold;
 			
 			final Double dLastPostValue = nf.getParamDouble( 
 							FunctionParameter.VAR_VALUE_LAST_POSTED );
@@ -418,14 +439,12 @@ System.out.println( "port parameters: " + strParameters );
 							ANALOG_THRESHOLD_DRIFT );
 				final Double dLastPostTime = nf.getParamDouble( 
 							FunctionParameter.VAR_TIME_LAST_POSTED );
-				final double dThreshold;
 				if ( null!=dLastPostTime ) {
-					final double dAdjust = 
-							( (double) lTime - dLastPostTime ) / 1000000000;
-					dThreshold = dParam - dAdjust;
+					dAdjust = ( (double) lTime - dLastPostTime ) / 1000000000;
 				} else {
-					dThreshold = dParam;
+					dAdjust = 0;
 				}
+				dThreshold = dParam - dAdjust;
 
 				if ( DEBUG ) {
 					System.out.print( 
@@ -436,21 +455,21 @@ System.out.println( "port parameters: " + strParameters );
 					if ( DEBUG ) {
 						System.out.print( " - HIT " );
 					}
-//				}
-				
-//				if ( dDiff > dParam ) {
 
 					bPost = true;
-					map = new HashMap<>();
 
 					strTriggerName = "drift";
 					dTriggerValue = dDiff;
+				} else {
+					dTriggerValue = null;
 				}
 			} else {
 				bPost = true;
-				map = new HashMap<>();
-				
 				strTriggerName = "initialize";
+				
+				dTriggerValue = null;
+				dAdjust = 0;
+				dThreshold = 0;
 			}
 			
 			final float fPctDiff = fDiff * 100 / fOld;
@@ -465,15 +484,17 @@ System.out.println( "port parameters: " + strParameters );
 			}
 
 			if ( bPost && ( fOld > ANALOG_MIN_VALUE ) ) { 
-				
+
+				if ( null!=dTriggerValue ) {
+					map.put( "trigger-value", dTriggerValue );
+					map.put( "trigger-adjust", dAdjust );
+					map.put( "trigger-threshold", dThreshold );
+				}
+
 				nf.setParamDouble( 
 						FunctionParameter.VAR_VALUE_LAST_POSTED, dNewNorm );
 				nf.setParamDouble( 
 						FunctionParameter.VAR_TIME_LAST_POSTED, (double) lTime );
-
-				if ( null==map ) {
-					map = new HashMap<>();
-				}
 
 				map.put( "value-latest", fNewValue );
 				map.put( "value-last-post", dLastPostValue );
@@ -528,10 +549,24 @@ System.out.println( "port parameters: " + strParameters );
 	}
 	
 	
+	public Double getAveragePollingInterval() {
+		if ( dAvgPollingInterval > 0 ) {
+			return dAvgPollingInterval;
+		} else {
+			return null;
+		}
+	}
+	
 	private void checkRunTrigger( final Port port,
 								  final Map<String,Object> map, 
 								  final long lTime ) {
 		if ( null==port ) return;
+		
+		final Double dInterval = nfPollingInterval.evaluate();
+		if ( null != dInterval ) {
+			dAvgPollingInterval = dInterval;
+			map.put( "data-collection-interval", dAvgPollingInterval );
+		}
 		
 		if ( this.listListeners.containsKey( port ) ) {
 			final Listener listener = this.listListeners.get( port );
