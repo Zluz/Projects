@@ -218,13 +218,25 @@ public class Event extends TableBase {
 								final String strSubject,
 								final String strValue,
 								final String strThreshold,
-								final Map<String,String> map,
+								final Map<String,Object> map,
 								final long lTime,
 								final Long seqPage,
 								final Long seqTrigger,
 								final Long seqLog
 								) {
-		final String strJson = GSON.toJson( map );
+
+		final String strJson;
+		if ( null==map || map.isEmpty() ) {
+			LOGGER.warning( "Event.add(), map is not populated." );
+			strJson = "{}";
+		} else {
+			strJson = GSON.toJson( map );
+			if ( ! map.containsKey( "source-initiate" ) ) {
+				LOGGER.warning( "Event.add(), map is not populated." );
+				final Exception e = new Exception();
+				e.printStackTrace();
+			}
+		}
 
 		final Event event = add( type, strSubject, strValue, strThreshold, 
 						strJson, lTime, seqPage, seqTrigger, seqLog );

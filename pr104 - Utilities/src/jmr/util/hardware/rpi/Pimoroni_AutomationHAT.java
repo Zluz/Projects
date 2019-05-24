@@ -29,6 +29,7 @@ import jmr.util.hardware.HardwareOutput;
 import jmr.util.math.FunctionBase;
 import jmr.util.math.FunctionParameter;
 import jmr.util.math.NormalizedFloat;
+import jmr.util.report.TraceMap;
 
 public class Pimoroni_AutomationHAT {
 
@@ -141,7 +142,8 @@ public class Pimoroni_AutomationHAT {
 	private final Map<Port,Listener> listListeners = new HashMap<>();
 
 	public static interface Listener {
-		public void inputTrigger( final Map<String,Object> map, 
+		public void inputTrigger( // final Map<String,Object> map,
+								  final TraceMap map,
 								  final long lTime );
 	}
 	
@@ -285,14 +287,16 @@ public class Pimoroni_AutomationHAT {
 
 	private void updateDigitalInput( 	final Port port,
 										final boolean bNewValue,
+										final TraceMap map,
 										final long lTime ) {
 		final Boolean bOrigValue = mapDigitalInput.get( port );
 		if ( null!=bOrigValue && bOrigValue.booleanValue() != bNewValue ) {
 			
 			mapDigitalInput.put( port, bNewValue );
-			final Map<String,Object> map = new HashMap<>();
-			map.put( "time-initiate", new Long( lTime ) );
-			map.put( "source-initiate", "PAHAT.updateDigitalInput()" );
+//			final Map<String,Object> map = new HashMap<>();
+//			final TraceMap map = new TraceMap();
+//			map.put( "time-initiate", new Long( lTime ) );
+//			map.put( "source-initiate", "PAHAT.updateDigitalInput()" );
 			checkRunTrigger( port, map, lTime );
 		} else {
 			mapDigitalInput.put( port, bNewValue );
@@ -320,7 +324,7 @@ public class Pimoroni_AutomationHAT {
 			double dMultiplier = 0;
 			
 			double fDriftThreshold = ANALOG_THRESHOLD_DRIFT;
-			String strUnit = "";
+			String strUnit = null;
 			
 			if ( mapParameters.containsKey( port ) ) {
 				final String strParameters = mapParameters.get( port );
@@ -342,13 +346,19 @@ System.out.println( "port parameters: " + strParameters );
 						LOGGER.severe( "Failed to process input "
 								+ "parameters \"" + strParameters + "\"" );
 					}
-				} else {
-					System.out.println( "Missing parameters, using defaults." );
+//				} else {
+//					System.out.println( "Missing parameters, using defaults." );
 				}
 			}
 			
-			final NormalizedFloat nf = new NormalizedFloat( 
-							iSampleSize, iDropTop, iDropBottom, strUnit );
+			final NormalizedFloat nf;
+			if ( StringUtils.isNotBlank( strUnit ) ) {
+				nf = new NormalizedFloat( 
+						iSampleSize, iDropTop, iDropBottom, strUnit );
+			} else {
+				nf = NormalizedFloat.INVALID;
+			}
+			
 			nf.setParamDouble( FunctionParameter.TRIGGER_NORM_DRIFT_THRESHOLD, 
 										fDriftThreshold );
 			nf.setParamDouble( FunctionParameter.IRL_INTERCEPT, dIntercept );
@@ -367,6 +377,7 @@ System.out.println( "port parameters: " + strParameters );
 	
 	private void updateAnalogInput( final Port port,
 									final float fNewValue,
+									final TraceMap map,
 									final long lTime ) {
 		if ( null==port ) return;
 
@@ -377,6 +388,7 @@ System.out.println( "port parameters: " + strParameters );
 //		mapAnalogInput.put( port, fNewValue );
 		
 		final NormalizedFloat nf = getAnalogInputData( port, true );
+		if ( ! nf.isValid() ) return;
 		final Double dOrigNorm = nf.evaluate();
 		
 		nf.add( fNewValue );
@@ -420,7 +432,8 @@ System.out.println( "port parameters: " + strParameters );
 			boolean bPost = false;
 			String strTriggerName = null;
 			final Double dTriggerValue;
-			final Map<String,Object> map = new HashMap<>();
+//			final Map<String,Object> map = new HashMap<>();
+//			final TraceMap map = new TraceMap( false );
 			final double dAdjust;
 			final double dThreshold;
 			
@@ -457,14 +470,16 @@ System.out.println( "port parameters: " + strParameters );
 					}
 
 					bPost = true;
-
+					map.addFrame();
 					strTriggerName = "drift";
+					
 					dTriggerValue = dDiff;
 				} else {
 					dTriggerValue = null;
 				}
 			} else {
 				bPost = true;
+				map.addFrame();
 				strTriggerName = "initialize";
 				
 				dTriggerValue = null;
@@ -500,8 +515,8 @@ System.out.println( "port parameters: " + strParameters );
 				map.put( "value-last-post", dLastPostValue );
 				map.put( "value-normalized", dNewNorm );
 				map.put( "percent-diff", fPctDiff );
-				map.put( "time-initiate", lTime );
-				map.put( "source-initiate", "PAHAT.updateAnalogInput()" );
+//				map.put( "time-initiate", lTime );
+//				map.put( "source-initiate", "PAHAT.updateAnalogInput()" );
 
 				final Double dIntercept = 
 						nf.getParamDouble( FunctionParameter.IRL_INTERCEPT );
@@ -558,7 +573,8 @@ System.out.println( "port parameters: " + strParameters );
 	}
 	
 	private void checkRunTrigger( final Port port,
-								  final Map<String,Object> map, 
+//								  final Map<String,Object> map,
+								  final TraceMap map,
 								  final long lTime ) {
 		if ( null==port ) return;
 		
@@ -635,6 +651,10 @@ System.out.println( "port parameters: " + strParameters );
 		
 		final JsonElement je;
 		
+		final TraceMap map = new TraceMap();
+		map.put( "initial-time", lTime );
+		map.put( "initial-event", "hardware-input" );
+		
 //		final String strLine = mp.getLatestLine();
 //		System.out.println( strLine );
 		if ( null==strLine || strLine.isEmpty() 
@@ -652,19 +672,19 @@ System.out.println( "port parameters: " + strParameters );
 				final JsonObject joA = ja.get( 1 ).getAsJsonObject();
 				
 				synchronized ( mapDigitalInput ) {
-					updateDigitalInput( Port.IN_D_1, 1==joD.get( "one" ).getAsInt(), lTime );
-					updateDigitalInput( Port.IN_D_2, 1==joD.get( "two" ).getAsInt(), lTime );
-					updateDigitalInput( Port.IN_D_3, 1==joD.get( "three" ).getAsInt(), lTime );
+					updateDigitalInput( Port.IN_D_1, 1==joD.get( "one" ).getAsInt(), map, lTime );
+					updateDigitalInput( Port.IN_D_2, 1==joD.get( "two" ).getAsInt(), map, lTime );
+					updateDigitalInput( Port.IN_D_3, 1==joD.get( "three" ).getAsInt(), map, lTime );
 				}
 				
 				synchronized ( mapAnalogInput ) {
 					
 //					System.out.println( "Updating to data: " + joA.toString() );
 					
-					updateAnalogInput( Port.IN_A_1, joA.get( "one" ).getAsFloat(), lTime );
-					updateAnalogInput( Port.IN_A_2, joA.get( "two" ).getAsFloat(), lTime );
-					updateAnalogInput( Port.IN_A_3, joA.get( "three" ).getAsFloat(), lTime );
-					updateAnalogInput( Port.IN_A_4, joA.get( "four" ).getAsFloat(), lTime );
+					updateAnalogInput( Port.IN_A_1, joA.get( "one" ).getAsFloat(), map, lTime );
+					updateAnalogInput( Port.IN_A_2, joA.get( "two" ).getAsFloat(), map, lTime );
+					updateAnalogInput( Port.IN_A_3, joA.get( "three" ).getAsFloat(), map, lTime );
+					updateAnalogInput( Port.IN_A_4, joA.get( "four" ).getAsFloat(), map, lTime );
 				}
 				
 //				for ( final Entry<String, JsonElement> entry : jo.entrySet() ) {

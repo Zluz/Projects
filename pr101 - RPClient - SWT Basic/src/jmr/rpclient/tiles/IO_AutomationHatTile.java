@@ -33,6 +33,7 @@ import jmr.util.hardware.rpi.Pimoroni_AutomationHAT;
 import jmr.util.hardware.rpi.Pimoroni_AutomationHAT.Port;
 import jmr.util.math.FunctionBase;
 import jmr.util.math.FunctionParameter;
+import jmr.util.report.TraceMap;
 
 public class IO_AutomationHatTile extends TileBase {
 
@@ -106,8 +107,10 @@ public class IO_AutomationHatTile extends TileBase {
 				hat.registerChangeExec( port, 
 									new Pimoroni_AutomationHAT.Listener() {
 					@Override
-					public void inputTrigger( final Map<String, Object> map,
+					public void inputTrigger( // final Map<String, Object> map,
+											  final TraceMap map,
 											  final long lTime ) {
+						map.addFrame();
 						processInputEvent( port, lTime, map );
 					}
 				});
@@ -147,6 +150,16 @@ public class IO_AutomationHatTile extends TileBase {
 				final String strPort = map.get( "port" );
 				final Port port = Port.getPortFor( strPort );
 
+				final TraceMap mapData = new TraceMap( false );
+				mapData.addStringMap( mapOptions );
+//				final Map<String,Object> mapData = new HashMap<>();
+//				final TraceMap mapData = TraceMap.addFrame( null );
+				mapData.putAll( map );
+				mapData.put( "job.seq", job.getJobSeq() );
+				mapData.put( "job.request", job.getRequest() );
+				mapData.putIfAbsent( "initial-event", "incoming (remote) job" );
+				mapData.putIfAbsent( "initial-time", lTime );
+
 				joResult.addProperty( "port", "strPort" );
 
 				if ( null!=port && ! port.isInput() ) {
@@ -156,7 +169,10 @@ public class IO_AutomationHatTile extends TileBase {
 					final String strValue = map.get( "value" );
 					final Boolean bValue = Boolean.valueOf( strValue );
 					
-					setPortValue( port, bValue, lTime );
+					// map: put( "job", job.getSeq() )
+					
+					mapData.addFrame();
+					setPortValue( port, bValue, lTime, mapData ); // add map here
 					
 					job.setState( JobState.COMPLETE, joResult.toString() );
 				} else {
@@ -172,8 +188,12 @@ public class IO_AutomationHatTile extends TileBase {
 	
 	public void processInputEvent(	final Port port,
 									final long lTime,
-									final Map<String,Object> map ) {
+//									final Map<String,Object> map
+									final TraceMap map
+									) {
 		System.out.println( "Input event for port: " + port.name() );
+		
+		map.addFrame();
 
 		final HardwareInput input = hat.getHardwareInputForPort( port );
 		
@@ -421,7 +441,10 @@ System.out.println( "Map: " + jeMap.toString() );
 	
 	public void setPortValue(	final Port port,
 								final boolean bValue,
-								final long lTime ) {
+								final long lTime,
+//								final Map<String,Object> mapIn
+								final TraceMap map
+								) {
 		if ( null==port ) return;
 
 		hat.setPortValue( port, bValue );
@@ -430,22 +453,42 @@ System.out.println( "Map: " + jeMap.toString() );
 		final Boolean bValueVerified = hat.getDigitalPortValue( port );
 		
 		if ( null!=output && null!=bValueVerified ) {
-			
+
 			final JsonObject jsonMap = new JsonObject();
 			jsonMap.addProperty( "port", port.name() );
 			jsonMap.addProperty( "type", "boolean" );
 			jsonMap.addProperty( "value", bValue );
 
+//			final Map<String,Object> map = new HashMap<>();
+//			final TraceMap map = new TraceMap( mapIn );
+//			if ( null!=mapIn ) {
+//				map.putAll( mapIn );
+//			}
+			map.put( "port", port.name() );
+			map.put( "type", "boolean" );
+			map.put( "value", bValue );
+//			map.put( "time-initiate", lTime );
+//			map.put( "source-initiate", "IOAHAT.setPortValue()" );
+			map.put( "data-collection-interval", 
+									this.hat.getAveragePollingInterval() );
+
 			final String strSubject = output.name();
 //			final JsonPrimitive jsonData = new JsonPrimitive( bValueVerified.booleanValue() );
 //			final String strData = jsonData.getAsString();
-			final String strData = jsonMap.toString();
+//			final String strData = jsonMap.toString();
 			final String strValue = Boolean.toString( bValue );
 			final String strThreshold = "";
 			
-			final Event event = Event.add( 
+//			final Event event = Event.add( 
+//					EventType.USER, strSubject, strValue, strThreshold, 
+//					strData, lTime, null, null, null );
+
+			final Event event = Event.add(
 					EventType.USER, strSubject, strValue, strThreshold, 
-					strData, lTime, null, null, null );
+					map, lTime, null, null, null );
+//					EventType.USER, strSubject, strValue, strThreshold, 
+//					strData, lTime, null, null, null );
+
 			
 			System.out.println( "Event created: seq " + event.getEventSeq() );
 		}
@@ -454,11 +497,15 @@ System.out.println( "Map: " + jeMap.toString() );
 	
 
 	private void play(	final S2Button button,
-						final HardwareTest test ) {
+						final HardwareTest test,
+						final TraceMap map ) {
 
 		System.out.println( "Selected hardware test: " + test.strTitle );
 
 		final long lTime = System.currentTimeMillis();
+//		final Map<String,Object> map = new HashMap<>();
+//		final TraceMap map = new TraceMap();
+//		map.put( "source-initiate", "IOAHT.play()" );
 
 		final Thread thread = new Thread( "Hardware test (IO_AutomationHatTile)" ) {
 			public void run() {
@@ -466,7 +513,7 @@ System.out.println( "Map: " + jeMap.toString() );
 
 				final Job job = null;
 				
-				setPortValue( test.port, test.bValue, lTime );
+				setPortValue( test.port, test.bValue, lTime, map );
 				
 				button.setJob( job );
 				button.setState( ButtonState.READY );
@@ -480,7 +527,9 @@ System.out.println( "Map: " + jeMap.toString() );
 	protected void activateButton( final S2Button button ) {
 		for ( final HardwareTest program : HardwareTest.values() ) {
 			if ( program.ordinal()==button.getIndex() ) {
-				play( button, program );
+				final TraceMap map = new TraceMap();
+				map.put( "initial-event", "touchscreen click" );
+				play( button, program, map );
 			}
 		}
 	}

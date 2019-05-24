@@ -22,6 +22,7 @@ import jmr.rpclient.swt.Theme.Colors;
 import jmr.s2db.Client;
 import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
+import jmr.util.report.TraceMap;
 import jmr.util.transform.DateFormatting;
 
 public class TeslaTile extends TileBase {
@@ -400,7 +401,8 @@ public class TeslaTile extends TileBase {
 			bRefreshRequest = true;
 			final Job.JobSet set = new Job.JobSet( 3 );
 
-			final Map<String,Object> map = new HashMap<>();
+//			final Map<String,Object> map = new HashMap<>();
+			final TraceMap map = new TraceMap();
 			map.put( "reason", "user-click.canvas" );
 			map.put( "job-set.first", set.lFirstSeq );
 			map.put( "job-set.count", 3 );
@@ -422,7 +424,8 @@ public class TeslaTile extends TileBase {
 		}
 		Job job = null;
 		
-		final Map<String,Object> map = new HashMap<>();
+//		final Map<String,Object> map = new HashMap<>();
+		final TraceMap map = new TraceMap();
 		map.put( "reason", "user-click.button" );
 		map.put( "button-name", button.getName() );
 		map.put( "button-index", button.getIndex() );

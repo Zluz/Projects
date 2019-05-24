@@ -17,6 +17,7 @@ import jmr.s2db.job.*;
 import jmr.pr115.schedules.run.*;
 import jmr.util.*;
 import jmr.util.hardware.*;
+import jmr.util.report.TraceMap;
 
 
 
@@ -33,7 +34,9 @@ rule "Turn on WTOP"
 						new String[] {
 						"remote", "media",
 						"command", "/Local/scripts/play_wtop.sh",
-					}, Collections.emptyMap() );
+					}, 
+					new TraceMap() 
+					);
 					
 		System.out.println( "Job created." ); 
 end
@@ -51,7 +54,9 @@ rule "Turn on WTOP - TEST"
 		jmr.s2db.tables.Job.add( JobType.REMOTE_EXECUTE, new String[] {
 						"remote", "media",
 						"command", "/Local/scripts/play_wtop.sh",
-					}, Collections.emptyMap() );
+					}, 
+					new TraceMap() 
+					);
 		System.out.println( "Job created." ); 
 end
 */

@@ -13,6 +13,7 @@ import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
+import jmr.util.report.TraceMap;
 
 public class AudioSelectionTile extends TileBase {
 
@@ -125,7 +126,8 @@ public class AudioSelectionTile extends TileBase {
 				final Map<String,String> map = new HashMap<>();
 				map.put( "remote", "media" );
 				map.put( "command", program.strScript );
-				final Map<String,Object> mapData = new HashMap<>();
+//				final Map<String,Object> mapData = new HashMap<>();
+				final TraceMap mapData = new TraceMap();
 				mapData.put( "remote", "media" );
 				mapData.put( "command", program.strScript );
 					

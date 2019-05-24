@@ -22,6 +22,7 @@ Rules seem to break easily (PrepareTesla.drl would often not work)
 
 Limitations?
 	* no blank lines in conditionals ?
+	* avoid using line-comments (assume line breaks are removed)
 
 Acceptable:
 	* tab char in rule

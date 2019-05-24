@@ -5,10 +5,13 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 public class NormalizedFloat extends FunctionBase {
 
+	public static NormalizedFloat INVALID = new NormalizedFloat( 0, null );
+	
 	public final static int MAX_RAW_HISTORY = 200;
 	
 	private final List<Float> listGood;
@@ -17,6 +20,7 @@ public class NormalizedFloat extends FunctionBase {
 	private final int iCutTop; // now unused (remove?)
 	private final int iCutBottom; // now unused (remove?)
 	private boolean bEnough = false;
+	private final boolean bValid; 
 	
 	public NormalizedFloat( final int iSize,
 							final int iCutTop,
@@ -28,6 +32,7 @@ public class NormalizedFloat extends FunctionBase {
 		this.iSize = iSize;
 		this.iCutTop = iCutTop;
 		this.iCutBottom = iCutBottom;
+		this.bValid = StringUtils.isNotBlank( strUnit );
 	}
 
 	public NormalizedFloat( final int iSize,
@@ -38,9 +43,12 @@ public class NormalizedFloat extends FunctionBase {
 		this.iSize = iSize;
 		this.iCutTop = 0;
 		this.iCutBottom = 0;
+		this.bValid = StringUtils.isNotBlank( strUnit );
 	}
 	
 	public void add( final Float fValue ) {
+		if ( ! this.bValid ) return;
+		
 		synchronized ( listGood ) {
 			this.listGood.add( fValue );
 			if ( this.listGood.size() > iSize ) {
@@ -141,7 +149,11 @@ public class NormalizedFloat extends FunctionBase {
 		}
 	}
 
+	public boolean isValid() {
+		return this.bValid;
+	}
 
+	
 	@Override
 	public Double evaluate() {
 		if ( ! bEnough ) {

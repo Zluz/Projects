@@ -52,6 +52,7 @@ import jmr.s2fs.FileSessionManager;
 import jmr.util.TimeUtil;
 import jmr.util.hardware.rpi.Pimoroni_AutomationHAT.Port;
 import jmr.util.http.ContentType;
+import jmr.util.report.TraceMap;
 import jmr.util.transform.JsonUtils;
 
 public class Simple implements RulesConstants {
@@ -418,7 +419,8 @@ public class Simple implements RulesConstants {
 	public static void submitJob_TeslaRefresh3() {
 		System.out.println( "--- Simple.submitJob_TeslaRefresh3()" );
 		try {
-			final Map<String,Object> map = new HashMap<>();
+//			final Map<String,Object> map = new HashMap<>();
+			final TraceMap map = new TraceMap();
 			final Job.JobSet set = new Job.JobSet( 3 );
 			map.put( "job-set.first", set.lFirstSeq );
 			map.put( "job-set.count", 3 );
@@ -553,12 +555,13 @@ public class Simple implements RulesConstants {
 		int i=0;
 		final long lNow = System.currentTimeMillis();
 
-		final Map<String, String> map = new HashMap<>();
+		final Map<String, Object> map = new HashMap<>();
 		map.put( "reason", strReason );
-		map.put( "time-manage", "" + lNow );
-		final Map<String, Object> mapData = new HashMap<>();
+		map.put( "time-manage", lNow );
+//		final Map<String, Object> mapData = new HashMap<>();
+		final TraceMap mapData = new TraceMap();
 		mapData.put( "reason", strReason );
-		mapData.put( "time-initiate", lNow );
+//		mapData.put( "time-initiate", lNow );
 
 		boolean bHVACStarted = false;
 		do {
@@ -633,9 +636,10 @@ public class Simple implements RulesConstants {
 		final long lNow = System.currentTimeMillis();
 		final long lOldest = lNow - TimeUnit.HOURS.toMillis( 1 );
 		
-		final Map<String, Object> mapData = new HashMap<>();
+//		final Map<String, Object> mapData = new HashMap<>();
+		final TraceMap mapData = new TraceMap();
 		mapData.put( "reason", strReason );
-		mapData.put( "time-initiate", lNow );
+//		mapData.put( "time-initiate", lNow );
 
 		while ( listRecentTriggers.size() > 0 
 				&& listRecentTriggers.get( 0 ) < lOldest ) {
@@ -724,15 +728,18 @@ public class Simple implements RulesConstants {
 	
 	public static void doControlParkingAssist( final Event e ) {
 
-		final Map<String, Object> mapData = new HashMap<>();
+//		final Map<String, Object> mapData = new HashMap<>();
+		final TraceMap mapData = new TraceMap();
 		mapData.putAll( e.getDataAsMap() );
+		mapData.put( "event-seq", e.getEventSeq() );
 
 		final Thread thread = new Thread( "Momentary Parking Assist" ) {
 			public void run() {
 				try {
 
-					final long lTimeOn = System.currentTimeMillis();
-					mapData.put( "time-on", lTimeOn );
+//					final long lTimeOn = System.currentTimeMillis();
+//					mapData.put( "time-on", lTimeOn );
+					mapData.addFrame( "time-on" );
 
 //					if ( Boolean.FALSE.equals( bClosed ) ) {
 						jmr.s2db.tables.Job.add( JobType.REMOTE_OUTPUT, null,
@@ -746,8 +753,9 @@ public class Simple implements RulesConstants {
 //						Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
 //					}
 
-					final long lTimeOff = System.currentTimeMillis();
-					mapData.put( "time-off", lTimeOff );
+//					final long lTimeOff = System.currentTimeMillis();
+//					mapData.put( "time-off", lTimeOff );
+					mapData.addFrame( "time-off" );
 
 					jmr.s2db.tables.Job.add( JobType.REMOTE_OUTPUT, null,
 							new String[] {
@@ -770,11 +778,15 @@ public class Simple implements RulesConstants {
 //		final String strValue = e.getValue();
 //		final Boolean bClosed = Boolean.valueOf( strValue );
 
+		final long lNow = System.currentTimeMillis();
 		final long lLightDuration = TimeUnit.MINUTES.toMillis( 2 );
 		
-		final Map<String, Object> mapData = new HashMap<>();
+//		final Map<String, Object> mapData = new HashMap<>();
+		final TraceMap mapData = new TraceMap();
 		mapData.putAll( e.getDataAsMap() );
-		
+		mapData.put( "time-react", lNow );
+		mapData.put( "event-seq", e.getEventSeq() );
+
 //		final boolean bAcquireCooldown = checkCooldown( 
 //							"GarageFastLight", lLightDuration );
 //		if ( ! bAcquireCooldown ) {
@@ -787,8 +799,9 @@ public class Simple implements RulesConstants {
 			public void run() {
 				try {
 
-					final long lTimeOn = System.currentTimeMillis();
-					mapData.put( "time-on", lTimeOn );
+//					final long lTimeOn = System.currentTimeMillis();
+//					mapData.put( "time-on", lTimeOn );
+					mapData.addFrame( "time-on" );
 
 //					if ( Boolean.FALSE.equals( bClosed ) ) {
 						jmr.s2db.tables.Job.add( JobType.REMOTE_OUTPUT, null,
@@ -802,8 +815,9 @@ public class Simple implements RulesConstants {
 //						Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
 //					}
 
-					final long lTimeOff = System.currentTimeMillis();
-					mapData.put( "time-off", lTimeOff );
+//					final long lTimeOff = System.currentTimeMillis();
+//					mapData.put( "time-off", lTimeOff );
+					mapData.addFrame( "time-off" );
 
 					jmr.s2db.tables.Job.add( JobType.REMOTE_OUTPUT, null,
 							new String[] {

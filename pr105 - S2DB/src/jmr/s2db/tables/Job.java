@@ -24,6 +24,7 @@ import jmr.s2db.DataFormatter;
 import jmr.s2db.comm.ConnectionProvider;
 import jmr.s2db.comm.Notifier;
 import jmr.s2db.job.JobType;
+import jmr.util.report.TraceMap;
 import jmr.util.transform.JsonUtils;
 
 
@@ -235,7 +236,9 @@ public class Job extends TableBase {
 	public static Job add(	final JobType type,
 							final JobSet jobset,
 							final String strResult,
-							final Map<String,Object> mapData ) {
+//							final Map<String,Object> mapData
+							final TraceMap mapData 
+							) {
 		return Job.add( null, type, jobset, strResult, mapData );
 	}
 	
@@ -247,7 +250,9 @@ public class Job extends TableBase {
 	public static Job add(	final JobType type,
 							final JobSet jobset,
 							final Map<String,String> mapResult,
-							final Map<String,Object> mapData ) {
+//							final Map<String,Object> mapData 
+							final TraceMap mapData 
+							) {
 		final StringBuilder strResult = new StringBuilder();
 		if ( null!=mapResult ) {
 			for ( final Entry<String, String> entry : mapResult.entrySet() ) {
@@ -264,7 +269,9 @@ public class Job extends TableBase {
 	public static Job add(	final JobType type,
 							final JobSet jobset,
 							final String[] arrResult,
-							final Map<String,Object> mapData ) {
+//							final Map<String,Object> mapData 
+							final TraceMap mapData 
+							) {
 		final Map<String,String> mapResult = new HashMap<>();
 		for ( int i=1; i<arrResult.length; i=i+2 ) {
 			mapResult.put( arrResult[i-1], arrResult[i-0] );
@@ -295,7 +302,9 @@ public class Job extends TableBase {
 							final JobType type,
 							final JobSet jobset,
 							final String strResult,
-							final Map<String,Object> mapData ) {
+//							final Map<String,Object> mapData 
+							final TraceMap mapData 
+							) {
 		final Long lSession = Session.getSessionSeq();
 		if ( null==lSession ) {
 			LOGGER.log( Level.SEVERE, 

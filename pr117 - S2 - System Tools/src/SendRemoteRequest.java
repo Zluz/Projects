@@ -5,6 +5,7 @@ import jmr.s2db.Client;
 import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
 import jmr.util.NetUtil;
+import jmr.util.report.TraceMap;
 
 /**
  * Utility for requesting the call stack from its Client UI or 
@@ -39,7 +40,8 @@ public class SendRemoteRequest {
 			
 			
 			final Map<String,String> map = new HashMap<>();
-			final Map<String,Object> mapData = new HashMap<>();
+//			final Map<String,Object> mapData = new HashMap<>();
+			final TraceMap mapData = new TraceMap();
 			map.put( "remote", strRemoteIP );
 			mapData.put( "remote", strRemoteIP );
 			

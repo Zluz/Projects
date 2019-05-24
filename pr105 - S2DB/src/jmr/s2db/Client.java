@@ -244,7 +244,7 @@ public class Client {
 
 		final long lTime = System.currentTimeMillis();
 		final String strURL = HttpListener.getInstance().getHostedURL();
-		final Map<String,String> map = new HashMap<>();
+		final Map<String,Object> map = new HashMap<>();
 		map.put( "URL", strURL );
 		map.put( "REMOTE_NAME", strRemoteName );
 		
