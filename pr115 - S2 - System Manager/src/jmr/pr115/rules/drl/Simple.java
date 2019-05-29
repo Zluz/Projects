@@ -50,7 +50,7 @@ import jmr.s2fs.FileSession;
 import jmr.s2fs.FileSession.ImageLookupOptions;
 import jmr.s2fs.FileSessionManager;
 import jmr.util.TimeUtil;
-import jmr.util.hardware.rpi.Pimoroni_AutomationHAT.Port;
+import jmr.util.hardware.rpi.pimoroni.Port;
 import jmr.util.http.ContentType;
 import jmr.util.report.TraceMap;
 import jmr.util.transform.JsonUtils;

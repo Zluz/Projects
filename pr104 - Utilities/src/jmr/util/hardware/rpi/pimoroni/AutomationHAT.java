@@ -1,4 +1,4 @@
-package jmr.util.hardware.rpi;
+package jmr.util.hardware.rpi.pimoroni;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,12 +26,18 @@ import jmr.util.MonitorProcess;
 import jmr.util.OSUtil;
 import jmr.util.hardware.HardwareInput;
 import jmr.util.hardware.HardwareOutput;
+import jmr.util.hardware.PortInterface;
+import jmr.util.hardware.PortInterface.InputAnalogInterface;
+import jmr.util.hardware.PortInterface.InputDigitalInterface;
+import jmr.util.hardware.PortInterface.OutputDigitalInterface;
 import jmr.util.math.FunctionBase;
 import jmr.util.math.FunctionParameter;
 import jmr.util.math.NormalizedFloat;
 import jmr.util.report.TraceMap;
 
-public class Pimoroni_AutomationHAT {
+import jmr.util.hardware.rpi.pimoroni.Port;
+
+public class AutomationHAT {
 
 	private static final double VOLTS_LOGICAL_ON = 1.5;
 
@@ -40,7 +46,7 @@ public class Pimoroni_AutomationHAT {
 	
 
 	private final static Logger 
-			LOGGER = Logger.getLogger( Pimoroni_AutomationHAT.class.getName() );
+			LOGGER = Logger.getLogger( AutomationHAT.class.getName() );
 
 
 	/**
@@ -60,67 +66,6 @@ public class Pimoroni_AutomationHAT {
 	final private static double ANALOG_MIN_VALUE = 0.1;
 	
 	
-	
-	public static enum Port {
-
-		// digital inputs
-		IN_D_1,
-		IN_D_2,
-		IN_D_3,
-		
-		// analog inputs
-		IN_A_1,
-		IN_A_2,
-		IN_A_3,
-		IN_A_4, // available?
-		
-		// digital outputs
-		OUT_D_1( '4' ),
-		OUT_D_2( '5' ),
-		OUT_D_3( '6' ),
-		
-		// relay outputs
-		OUT_R_1( '1' ),
-		OUT_R_2( '2' ),
-		OUT_R_3( '3' ),
-
-		;
-		
-		final char cCommIndex;
-		
-		Port( final char cCommIndex ) {
-			this.cCommIndex = cCommIndex;
-		}
-		
-		Port() {
-			this.cCommIndex = 0;
-		}
-		
-		public static Port getPortFor( final String value ) {
-			if ( null==value ) return null;
-			
-			final String strNorm = value.trim().toUpperCase();
-			for ( final Port port : Port.values() ) {
-				if ( strNorm.equals( port.name() ) ) {
-					return port;
-				}
-			}
-			return null;
-		}
-		
-		public boolean isInput() {
-			return this.name().startsWith( "IN_" );
-		}
-		
-		public boolean isAnalog() {
-			return this.name().contains( "_A_" );
-		}
-
-		public boolean isRelay() {
-			return this.name().contains( "_R_" );
-		}
-	};
-	
 
 	private final static JsonParser PARSER = new JsonParser();
 
@@ -135,57 +80,8 @@ public class Pimoroni_AutomationHAT {
 		};
 
 
-
-	protected abstract static class PortInterface {
-		// fixed ?
-		final public Port port;
-		final public String strParameters;
-//		public Listener listener;
-		
-		public PortInterface( final Port port, 
-							  final String strParameters ) {
-			this.port = port;
-			this.strParameters = strParameters;
-		}
-	}
-
-	protected static class OutputDigitalInterface extends PortInterface {
-		public boolean bValue;
-		public OutputDigitalInterface( final Port port ) {
-			super( port, null );
-		}
-	}
-
-	protected abstract static class InputInterface extends PortInterface {
-		
-		public boolean bLogical;
-		
-		public InputInterface( final Port port,
-							   final String strParameters ) {
-			super( port, strParameters );
-		}
-	}
 	
-	protected static class InputDigitalInterface extends InputInterface {
-		public InputDigitalInterface( final Port port ) {
-			super( port, null );
-		}
-
-		public Boolean bValue;
-	}
-
-	protected static class InputAnalogInterface extends InputInterface {
-		public InputAnalogInterface( final Port port,
-									 final String strParameters ) {
-			super( port, strParameters );
-		}
-		
-		public NormalizedFloat nfValue;
-	}
-
-	
-	
-	public final static EnumMap<Port,PortInterface> 
+	public final static EnumMap<Port,PortInterface<Port>> 
 								mapInterface = new EnumMap<>( Port.class );
 	
 	//TODO use a class for all these Map<Port,*> fields (Map<Port,class>) 
@@ -193,16 +89,11 @@ public class Pimoroni_AutomationHAT {
 								mapInputs = new EnumMap<>( Port.class );
 	private final EnumMap<Port,HardwareOutput> 
 								mapOutputs = new EnumMap<>( Port.class );
-//	private final EnumMap<Port,String> 
-//								mapParameters = new EnumMap<>( Port.class );
-//	private final EnumMap<Port,Boolean> 
-//								mapLogical = new EnumMap<>( Port.class );
 	
 	private final Map<Port,Listener> listListeners = new HashMap<>();
 
 	public static interface Listener {
-		public void inputTrigger( // final Map<String,Object> map,
-								  final TraceMap map,
+		public void inputTrigger( final TraceMap map,
 								  final long lTime );
 	}
 	
@@ -210,16 +101,6 @@ public class Pimoroni_AutomationHAT {
 	
 	private final MonitorProcess mp;
 	
-//	private final static EnumMap<Port,Boolean> 
-//				mapDigitalInput = new EnumMap<>( Port.class );
-	//TODO create a project for math functions/util, split from pr127
-//	private final static EnumMap<Port,jmr.util.math.NormalizedFloat> 
-//				mapAnalogInput = new EnumMap<>( Port.class );
-	
-//	private final static EnumMap<Port,Boolean> 
-//				mapDigitalOutput = new EnumMap<>( Port.class );
-//	private final static EnumMap<Port,Float> 
-//				mapAnalogOutput = new EnumMap<>( Port.class );
 	
 	
 	private final static int POLLING_AVG_SAMPLES = 40;
@@ -233,10 +114,10 @@ public class Pimoroni_AutomationHAT {
 	
 	
 	
-	private static Pimoroni_AutomationHAT instance = null;
+	private static AutomationHAT instance = null;
 	
 	
-	private Pimoroni_AutomationHAT() {
+	private AutomationHAT() {
 		if ( ! OSUtil.isWin() ) {
 			
 			strCommFile = "/tmp/" + UUID.randomUUID().toString() + ".txt";
@@ -301,7 +182,7 @@ public class Pimoroni_AutomationHAT {
 				final HardwareOutput 
 							output = HardwareOutput.getValueFor( strHwName );
 
-				final PortInterface pi;
+				final PortInterface<Port> pi;
 				
 				if ( null==input && null==output ) {
 					pi = null;
@@ -326,13 +207,13 @@ public class Pimoroni_AutomationHAT {
 								+ port.name() + " as " + input.name() );
 					
 					if ( port.isAnalog() ) {
-						pi = new InputAnalogInterface( port, strParameters );
+						pi = new InputAnalogInterface<Port>( port, strParameters );
 					} else {
-						pi = new InputDigitalInterface( port );
+						pi = new InputDigitalInterface<Port>( port );
 					}
 					
 				} else {
-					pi = new OutputDigitalInterface( port );
+					pi = new OutputDigitalInterface<Port>( port );
 					
 					mapOutputs.put( port, output );
 					System.out.println( "Registering output " 
@@ -347,9 +228,9 @@ public class Pimoroni_AutomationHAT {
 	}
 	
 	
-	public static synchronized Pimoroni_AutomationHAT get() {
+	public static synchronized AutomationHAT get() {
 		if ( null==instance ) {
-			instance = new Pimoroni_AutomationHAT();
+			instance = new AutomationHAT();
 		}
 		return instance;
 	}
@@ -367,10 +248,10 @@ public class Pimoroni_AutomationHAT {
 										final long lTime ) {
 //		final Boolean bOrigValue = mapDigitalInput.get( port );
 		
-		final PortInterface pi = mapInterface.get( port );
-		final InputDigitalInterface input;
+		final PortInterface<Port> pi = mapInterface.get( port );
+		final InputDigitalInterface<Port> input;
 		if ( pi instanceof InputDigitalInterface ) {
-			input = (InputDigitalInterface)pi;
+			input = (InputDigitalInterface<Port>)pi;
 		} else {
 			LOGGER.severe( "Digital port cannot be updated: " 
 					+ port.name() + ", registered as " + pi );
@@ -424,11 +305,11 @@ public class Pimoroni_AutomationHAT {
 											    final boolean bCreate ) {
 		if ( null==port ) return null;
 		
-		final PortInterface pi = mapInterface.get( port );
+		final PortInterface<Port> pi = mapInterface.get( port );
 		if ( ! ( pi instanceof InputAnalogInterface ) ) {
 			return null;
 		}
-		final InputAnalogInterface input = (InputAnalogInterface)pi;
+		final InputAnalogInterface<Port> input = (InputAnalogInterface<Port>)pi;
 		
 //		if ( mapAnalogInput.containsKey( port ) ) {
 		if ( null != input.nfValue ) {
@@ -519,11 +400,11 @@ System.out.println( "port parameters: " + strParameters );
 		final HardwareInput hw = this.getHardwareInputForPort( port );
 		if ( null==hw ) return;
 
-		final PortInterface pi = mapInterface.get( port );
+		final PortInterface<Port> pi = mapInterface.get( port );
 		if ( ! ( pi instanceof InputAnalogInterface ) ) {
 			return;
 		}
-		final InputAnalogInterface input = (InputAnalogInterface)pi;
+		final InputAnalogInterface<Port> input = (InputAnalogInterface<Port>)pi;
 
 		
 //		final Float fOrigValue = mapAnalogInput.get( port );
@@ -882,16 +763,16 @@ System.out.println( "port parameters: " + strParameters );
 	 */
 	public Boolean getDigitalPortValue( final Port port ) {
 		
-		final PortInterface pi = mapInterface.get( port );
+		final PortInterface<Port> pi = mapInterface.get( port );
 		
 		if ( pi instanceof InputDigitalInterface ) {
-			final InputDigitalInterface input = (InputDigitalInterface)pi;
+			final InputDigitalInterface<Port> input = (InputDigitalInterface<Port>)pi;
 			synchronized ( input ) {
 				final Boolean value = input.bValue;
 				return value;
 			}
 		} else if ( pi instanceof OutputDigitalInterface ) {
-			final OutputDigitalInterface output = (OutputDigitalInterface)pi;
+			final OutputDigitalInterface<Port> output = (OutputDigitalInterface<Port>)pi;
 			synchronized ( output ) {
 				final Boolean value = output.bValue;
 				return value;
@@ -960,7 +841,7 @@ System.out.println( "port parameters: " + strParameters );
 		final char cCommPort = port.cCommIndex;
 		if ( 0==cCommPort ) return;
 		
-		final PortInterface pi = mapInterface.get( port );
+		final PortInterface<Port> pi = mapInterface.get( port );
 		
 		
 		/*
@@ -984,7 +865,7 @@ System.out.println( "port parameters: " + strParameters );
 //				Pimoroni_AutomationHAT.mapDigitalOutput.put( port, bOn );
 //			}
 			if ( pi instanceof OutputDigitalInterface ) {
-				final OutputDigitalInterface output = (OutputDigitalInterface)pi;
+				final OutputDigitalInterface<Port> output = (OutputDigitalInterface<Port>)pi;
 				synchronized ( output ) {
 					output.bValue = bOn;
 				}

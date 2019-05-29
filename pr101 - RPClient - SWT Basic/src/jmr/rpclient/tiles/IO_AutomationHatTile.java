@@ -29,8 +29,8 @@ import jmr.s2db.tables.Session;
 import jmr.util.NetUtil;
 import jmr.util.hardware.HardwareInput;
 import jmr.util.hardware.HardwareOutput;
-import jmr.util.hardware.rpi.Pimoroni_AutomationHAT;
-import jmr.util.hardware.rpi.Pimoroni_AutomationHAT.Port;
+import jmr.util.hardware.rpi.pimoroni.AutomationHAT;
+import jmr.util.hardware.rpi.pimoroni.Port;
 import jmr.util.math.FunctionBase;
 import jmr.util.math.FunctionParameter;
 import jmr.util.report.TraceMap;
@@ -77,7 +77,7 @@ public class IO_AutomationHatTile extends TileBase {
 
 	public final static int PIN_COUNT = 32;
 
-	private final Pimoroni_AutomationHAT hat;
+	private final AutomationHAT hat;
 	
 	
 	public static RemoteJobMonitor monitor = null;
@@ -88,7 +88,7 @@ public class IO_AutomationHatTile extends TileBase {
 									final Map<String, String> mapOptions  ) {
 		this.type = type;
 		
-		hat = Pimoroni_AutomationHAT.get();
+		hat = AutomationHAT.get();
 		hat.initialize( mapOptions );
 		
 		registerJobListener( mapOptions );
@@ -105,7 +105,7 @@ public class IO_AutomationHatTile extends TileBase {
 			if ( port.isInput() ) {
 				
 				hat.registerChangeExec( port, 
-									new Pimoroni_AutomationHAT.Listener() {
+									new AutomationHAT.Listener() {
 					@Override
 					public void inputTrigger( // final Map<String, Object> map,
 											  final TraceMap map,
