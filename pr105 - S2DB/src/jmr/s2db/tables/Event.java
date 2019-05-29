@@ -231,7 +231,8 @@ public class Event extends TableBase {
 			strJson = "{}";
 		} else {
 			strJson = GSON.toJson( map );
-			if ( ! map.containsKey( "source-initiate" ) ) {
+			if ( ! map.containsKey( "source-initiate" ) 
+					&& ! map.containsKey( "01-source" ) ) {
 				LOGGER.warning( "Event.add(), map is not populated." );
 				final Exception e = new Exception();
 				e.printStackTrace();

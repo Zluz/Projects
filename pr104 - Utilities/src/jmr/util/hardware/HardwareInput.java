@@ -37,7 +37,9 @@ public enum HardwareInput {
 	
 	POWER_HPWC( true ),
 	POWER_AUX2C_OUTLET( true ),
-	
+
+//	L_POWER_AUX2C_OUTLET,
+
 	L_POWER_THEATER_RECEIVER,
 	L_POWER_THEATER_PROJECTOR,
 	

@@ -2,7 +2,6 @@ package jmr.s2db;
 
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,6 +24,7 @@ import jmr.s2db.tables.Path;
 import jmr.s2db.tables.Session;
 import jmr.s2db.tables.Tables;
 import jmr.util.NetUtil;
+import jmr.util.report.TraceMap;
 
 public class Client {
 
@@ -244,7 +244,7 @@ public class Client {
 
 		final long lTime = System.currentTimeMillis();
 		final String strURL = HttpListener.getInstance().getHostedURL();
-		final Map<String,Object> map = new HashMap<>();
+		final TraceMap map = new TraceMap( true );
 		map.put( "URL", strURL );
 		map.put( "REMOTE_NAME", strRemoteName );
 		

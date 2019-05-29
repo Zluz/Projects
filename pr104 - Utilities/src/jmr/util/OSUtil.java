@@ -4,6 +4,8 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.apache.commons.io.FileUtils;
+
 public abstract class OSUtil {
 
 	/**
@@ -55,7 +57,7 @@ public abstract class OSUtil {
 	public static String getProgramName() {
 	    String path = OSUtil.class.getResource(
 	    		OSUtil.class.getSimpleName() + ".class" ).getFile();
-	    if(path.startsWith("/")) {
+	    if (path.startsWith("/")) {
 	    	return "(not running from a jar)";
 	    }
 	    path = ClassLoader.getSystemClassLoader().getResource(path).getFile();
@@ -64,6 +66,16 @@ public abstract class OSUtil {
 	    return file.getName();
 	}
 
+	
+	public static void register( final String strDeviceName ) {
+		if ( ! isWin() ) {
+			final File fileConky = new File( "/tmp/conky-device_info.txt" );
+			if ( ! fileConky.exists() ) {
+				FileUtil.saveToFile( fileConky, strDeviceName );
+			}
+		}
+	}
+	
 	
 	
 }

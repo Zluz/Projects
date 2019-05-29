@@ -622,6 +622,8 @@ public class SWTBasic {
 	    
 	    shell.open();
 	    
+	    OSUtil.register( strDeviceName );
+	    
 //	    final ShellTopMenu menu = new ShellTopMenu( shell );
 
 //	    compLeft.addMouseMoveListener( new MouseMoveListener() {
