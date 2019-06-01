@@ -34,6 +34,11 @@ public class HistogramTile extends TileBase {
 		private Float fMax;
 		private Float fWidth;
 		
+		private Integer iThresholdMax;
+		private Integer iThresholdMin;
+		private Double dThresholdMax;
+		private Double dThresholdMin;
+		
 		public Graph( final int iWidth,
 					  final int iSampleSize ) {
 			this.iWidth = iWidth;
@@ -110,6 +115,48 @@ public class HistogramTile extends TileBase {
 			set.addAll( listRecent );
 			return set;
 		}
+
+		private Integer calcSafeValue( final Double dValue ) {
+			if ( null!=dValue ) {
+				final int iValue = this.getIndexOfSample( dValue.floatValue() );
+				if ( iValue < 0 ) {
+					return null;
+				} else if ( iValue >= iWidth ) {
+					return null;
+				} else {
+					return iValue;
+				}
+			} else {
+				return null;
+			}
+		}
+		
+		public void setThresholdMax( final Double fThresholdMax ) {
+			this.dThresholdMax = fThresholdMax;
+			this.iThresholdMax = this.calcSafeValue( fThresholdMax );
+		}
+		
+		public void setThresholdMin( final Double fThresholdMin ) {
+			this.dThresholdMin = fThresholdMin;
+			this.iThresholdMin = this.calcSafeValue( fThresholdMin );
+		}
+		
+		public Integer getThresholdIndexMax() {
+			return this.iThresholdMax;
+		}
+
+		public Integer getThresholdIndexMin() {
+			return this.iThresholdMin;
+		}
+		
+		public Double getThresholdValueMax() {
+			return this.dThresholdMax;
+		}
+
+		public Double getThresholdValueMin() {
+			return this.dThresholdMin;
+		}
+
 	}
 
 	
@@ -144,10 +191,6 @@ public class HistogramTile extends TileBase {
 		
 		try {
 
-			gc.setFont( Theme.get().getFont( 10 ) );
-			gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
-			gc.drawText( this.strName, 2, 2 );
-
 			final int iWidth = image.getBounds().width;
 			final int iHeight = image.getBounds().height - 14;
 
@@ -155,6 +198,7 @@ public class HistogramTile extends TileBase {
 				gc.setBackground( UI.COLOR_BLUE );
 				gc.fillRectangle( iLastMinRecent, iHeight, 
 						  		  iLastMaxRecent - iLastMinRecent, 8 );
+				gc.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
 			}
 
 			if ( null == this.graph ) {
@@ -164,7 +208,54 @@ public class HistogramTile extends TileBase {
 			
 			final int[] iPlot = this.graph.getPlot();
 			final Set<Integer> set = this.graph.getRecent();
+			final Integer iThresholdMin = this.graph.getThresholdIndexMin();
+			final Integer iThresholdMax = this.graph.getThresholdIndexMax();
+			
+			gc.setFont( Theme.get().getFont( 7 ) );
+			
+			if ( null!=iThresholdMin ) {
 
+				gc.setForeground( UI.COLOR_DARK_BLUE );
+				gc.drawLine( iThresholdMin, iHeight, iThresholdMin, iHeight/2 );
+				if ( null!=iLastMinRecent ) {
+					gc.drawLine( iThresholdMin, 0, iLastMinRecent, iHeight );
+				}
+
+				gc.setForeground( UI.COLOR_GRAY );
+				gc.drawLine( iThresholdMin, 20, iThresholdMin, iHeight/2 );
+			} else {
+				final Double dThresholdMin = this.graph.getThresholdValueMin();
+				if ( null!=dThresholdMin ) {
+					final String strMin = String.format( 
+							"<  %.6f", dThresholdMin.doubleValue() );
+					gc.drawText( strMin, 40, iHeight + 6 );
+				}
+			}
+			if ( null!=iThresholdMax ) {
+
+				gc.setForeground( UI.COLOR_DARK_BLUE );
+				gc.drawLine( iThresholdMax, iHeight, iThresholdMax, iHeight/2 );
+				if ( null!=iLastMaxRecent ) {
+					gc.drawLine( iThresholdMax, 0, iLastMaxRecent, iHeight );
+				}
+				
+				gc.setForeground( UI.COLOR_GRAY );
+				gc.drawLine( iThresholdMax, 20, iThresholdMax, iHeight/2 );
+			} else {
+				final Double dThresholdMax = this.graph.getThresholdValueMax();
+				if ( null!=dThresholdMax ) {
+					final String strMax = String.format( 
+							"%.6f  >", dThresholdMax.doubleValue() );
+					gc.drawText( strMax, iWidth - 90, iHeight + 6 );
+				}
+			}
+			
+
+			gc.setFont( Theme.get().getFont( 10 ) );
+			gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
+			gc.drawText( "Port:  " + this.strName, 2, 2 );
+
+			
 			iLastMinRecent = null;
 			iLastMaxRecent = null;
 			
@@ -172,7 +263,7 @@ public class HistogramTile extends TileBase {
 				final int iY2;
 				if ( set.contains( i ) ) {
 					gc.setForeground( UI.COLOR_WHITE );
-					iY2 = iHeight + 8;
+					iY2 = iHeight + 6;
 					if ( null==iLastMaxRecent || null==iLastMinRecent ) {
 						iLastMaxRecent = i;
 						iLastMinRecent = i;
@@ -189,148 +280,14 @@ public class HistogramTile extends TileBase {
 				gc.drawLine( i, iY2, i, iHeight - (int)fY );
 			}
 			
-			gc.setFont( Theme.get().getFont( 7 ) );
+			gc.setFont( Theme.get().getFont( 8 ) );
 			gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 
-			final String strMin = String.format( "%.2f", graph.fMin );
-			gc.drawText( strMin, 2, iHeight + 2, true );
-			final String strMax = String.format( "%.2f", graph.fMax );
-			gc.drawText( strMax, iWidth - 24, iHeight + 2, true );
+			final String strMin = String.format( "%.3f", graph.fMin );
+			gc.drawText( strMin, 2, iHeight + 4 );
+			final String strMax = String.format( "%.3f", graph.fMax );
+			gc.drawText( strMax, iWidth - 30, iHeight + 4 );
 
-			
-////			arrTimes[ iTimeIndex ] = System.currentTimeMillis();
-//			arrTimes[ iTimeIndex ] = System.nanoTime() / 100000;
-//			arrTemp[ iTimeIndex ] = cpu.getTemperature();
-//			if ( iTimeIndex<SAMPLE_COUNT-1 ) {
-//				iTimeIndex++;
-//			} else {
-//				iTimeIndex = 0;
-//			}
-//			
-//			final boolean bBar = image.getImageData().width < 100;
-//			
-//			gc.fillRectangle( image.getBounds() );
-//			
-//			int iXTime = iTimeIndex;
-//			Long lLastTime = null;
-//			Long lThisTime = null;
-//			int iTimeElapsed = 0;
-//			
-//			long iElapsedMax = 0;
-//			long iElapsedMin = 10000;
-//			long lTotal = 0;
-//			int iSampleCount = 0;
-//			
-//			gc.setForeground( UI.COLOR_GREEN );
-//			
-//			for ( int iX = 0; iX<SAMPLE_COUNT; iX++ ) {
-//				lThisTime = arrTimes[ iXTime ];
-//				
-//				if ( !bBar ) {
-//					if ( iXTime % 20 == 0 ) {
-//						gc.setForeground( UI.COLOR_DARK_BLUE );
-//						gc.drawLine( 10+iX, 140, 10+iX, 40 );
-//						gc.setForeground( UI.COLOR_GREEN );
-//					}
-//				}
-//				
-//				if ( ( null!=lThisTime ) && ( null!=lLastTime ) 
-//								&& ( lLastTime > 0 ) ) {
-//					iTimeElapsed = (int)( lThisTime - lLastTime 
-//												- TileCanvas.REFRESH_SLEEP );
-//					lTotal = lTotal + iTimeElapsed;
-//					iSampleCount++;
-//					
-//					iElapsedMax = Math.max( iElapsedMax, iTimeElapsed );
-//					iElapsedMin = Math.min( iElapsedMin, iTimeElapsed );
-//
-//					final int iY;
-//					final int iXframe;
-//					gc.setForeground( UI.COLOR_GREEN );
-//					if ( bBar ) {
-//						iXframe = iTimeElapsed * 2/100;
-//						iY = 47 + iX;
-//						gc.drawLine( 0, iY, iXframe, iY );
-//					} else {
-//						final float fGraphY = ( iTimeElapsed * 150 / 10000 );
-//						gc.drawLine( 10+iX, 145, 10+iX, 130 - (int)fGraphY );
-//						iY = 0;
-//						iXframe = 0;
-//					}
-//					
-//					final Double dTemp = arrTemp[ iXTime ];
-//					if ( bBar && null!=dTemp ) {
-//						
-//						final double dX = ( dTemp.doubleValue() - 10.0 ) / 2; 
-//						
-//						gc.setForeground( UI.COLOR_RED );
-//						
-////						if ( dTemp.doubleValue() > TEMP_ALERT_THRESHOLD ) {
-////							gc.drawLine( iXframe, iY, (int)dX, iY );
-////						} else {
-//							gc.drawPoint( (int)dX, iY );
-////						}
-//					}
-//				}
-//				
-//				lLastTime = lThisTime;
-//	
-//				if ( iXTime<SAMPLE_COUNT-1 ) {
-//					iXTime++;
-//				} else {
-//					iXTime = 0;
-//				}
-//			}
-//			
-//			final int iAvg;
-//			if ( iSampleCount>0 ) {
-//				iAvg = (int) ( lTotal / iSampleCount ) /10;
-//			} else {
-//				iAvg = 0;
-//			}
-//
-//			if ( !bBar ) {
-//				
-//				gc.setFont( Theme.get().getFont( 16 ) );
-//				gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
-//	
-////				final float fElapsedAvg;
-////				if ( iSampleCount>0 ) {
-////					fElapsedAvg = lTotal / iSampleCount;
-////					gc.drawText( "Avg: " + (int)fElapsedAvg/10 + " ms", 10, 10, true );
-////				} else {
-////					gc.drawText( "Avg: (N/A)", 10, 10, true );
-////				}
-//				gc.drawText( "Avg: " + iAvg + " ms", 10, 10, true );
-//
-////				gc.drawText( "Max: " + iElapsedMax/2 + " ms", 10, 36, true );
-//		//		gc.drawText( "Min: " + iElapsedMin, 10, 40 );
-//	
-//				final boolean bDebug = gc.getDevice().getDeviceData().debug;
-//				if ( bDebug ) {
-//					gc.setFont( Theme.get().getFont( 8 ) );
-//	//				final boolean bTracking = gc.getDevice().getDeviceData().tracking;
-//					final int iLength = gc.getDevice().getDeviceData().objects.length;
-//					final String strResCount = "" + iLength;
-//					gc.drawText( "SWT #: " + strResCount, 10, 62 );
-//				} else {
-//					gc.setFont( Theme.get().getFont( 8 ) );
-//					gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
-//					
-//	//				gc.drawText( "No SWT Debug", 10, 62, true );
-//	//				gc.drawText( "[X]  SWT Debug", 10, 80, true );
-//				}
-//			} else {
-//				gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
-//				gc.drawLine( 0, 179, 50, 179 );
-//				
-//
-//				gc.setFont( Theme.get().getFont( 10 ) );
-//				gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
-//				gc.drawText( "" + iAvg + " ms", 2, 30, true );
-//			}
-
-	//		drawTextCentered( strText, 10 );
 		} catch ( final Throwable t ) {
 			t.printStackTrace();
 		}

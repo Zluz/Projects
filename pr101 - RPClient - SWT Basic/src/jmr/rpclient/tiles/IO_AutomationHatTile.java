@@ -389,6 +389,20 @@ System.out.println( "Map: " + jeMap.toString() );
 					final Graph graph = HistogramTile.getGraph( port.name() );
 					if ( null!=graph ) {
 						graph.add( fValue );
+						final Object objMax = hat.getDataForPort( 
+												port, "threshold.max" );
+						if ( null!=objMax ) {
+							graph.setThresholdMax( (Double)objMax );
+						} else {
+							graph.setThresholdMax( null );
+						}
+						final Object objMin = hat.getDataForPort( 
+												port, "threshold.min" );
+						if ( null!=objMin ) {
+							graph.setThresholdMin( (Double)objMin );
+						} else {
+							graph.setThresholdMin( null );
+						}
 					}
 				}
 			}

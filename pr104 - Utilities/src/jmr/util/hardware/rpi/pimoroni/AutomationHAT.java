@@ -374,6 +374,14 @@ System.out.println( "port parameters: " + strParameters );
 	}
 	
 	
+	public Object getDataForPort( final Port port,
+								  final String strKey ) {
+		final PortInterface<Port> pi = mapInterface.get( port );
+		final Object obj = pi.mapData.get( strKey );
+		return obj;
+	}
+	
+	
 	private void updateAnalogInput( final Port port,
 									final float fNewValue,
 									final TraceMap map,
@@ -456,12 +464,23 @@ System.out.println( "port parameters: " + strParameters );
 				if ( input.bLogical ) {
 					dAdjust = 0;
 				} else if ( null!=dLastPostTime ) {
-					dAdjust = ( (double) lTime - dLastPostTime ) / 1000000000;
+					dAdjust = ( (double) lTime - dLastPostTime ) / 100000000;
 				} else {
 					dAdjust = 0;
 				}
 				dThreshold = dParam - dAdjust;
 
+				if ( input.bLogical ) {
+					if ( ! input.mapData.containsKey( "threshold.min" ) ) {
+//						input.mapData.put( "threshold.max", VOLTS_LOGICAL_ON );
+						input.mapData.put( "threshold.min", VOLTS_LOGICAL_ON );
+					}
+				} else {
+					input.mapData.put( "threshold.max", dLastPostValue + dThreshold );
+					input.mapData.put( "threshold.min", dLastPostValue - dThreshold );
+				}
+				
+				
 				if ( DEBUG ) {
 					System.out.print( 
 						", adjusted(" + String.format( "%.5f", dParam ) + ")= " 
