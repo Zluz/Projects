@@ -79,14 +79,15 @@ comment: NULL
     seq: 13
     mac: B8-27-EB-65-2D-01
    name: RPi - Media Closet Sensors
-options:       tiles.perspective=auto_hat
-          IN_A_1=SUMP_WATER_LEVEL:60,-2.79,8.91,0.06,inches
-          IN_D_1=L_POWER_THEATER_RECEVER
-          IN_D_2=L_POWER_THEATER_PROJECTOR
-          IN_D_3=L_POWER_HOT_WATER
-          OUT_D_1=
-          OUT_R_1=AUDIO_BROADCAST_POWER_ENCODER
-          remote=MEDIA_CLOSET
+options: tiles.perspective=auto_hat
+   IN_A_1=SUMP_WATER_LEVEL:60,-2.79,8.91,0.06,inches
+   IN_D_1=L_POWER_THEATER_RECEIVER
+   IN_D_2=L_POWER_THEATER_PROJECTOR
+   IN_D_3=L_POWER_HOT_WATER
+   OUT_D_1=
+   OUT_R_1=AUDIO_BROADCAST_POWER_ENCODER
+   remote=MEDIA_CLOSET
+
 
 comment: Layered lexan enclosure (red)
 *************************** 14. row ***************************
@@ -132,16 +133,16 @@ comment: NULL
     seq: 19
     mac: B8-27-EB-4E-46-E2
    name: RPi - IO-002 - Garage IO
-options: 
-tiles.perspective=auto_hat
- IN_D_1=GARAGE_PED_DOOR_CLOSED_STOP
- IN_D_2=L_POWER_WELL_PUMP
- IN_D_3=L_POWER_LAUNDY_DRYER
- OUT_R_1=GARAGE_PARK_ASSIST_1
- IN_A_2=POWER_HPWC
- IN_A_2.input=POWER_HPWC
- IN_A_2.threshold=10.0
- 
+options:   tiles.perspective=auto_hat
+    IN_D_1=GARAGE_PED_DOOR_CLOSED_STOP
+    IN_D_2=L_POWER_WELL_PUMP
+    IN_D_3=L_POWER_LAUNDY_DRYER
+    OUT_R_1=GARAGE_PARK_ASSIST_1
+    IN_A_1=POWER_AUX2C_OUTLET:20,0.0,1.0,3.0,volts
+    IN_A_2=POWER_HPWC
+    IN_A_2.input=POWER_HPWC
+    IN_A_2.threshold=10.0
+
 comment: NULL
 *************************** 20. row ***************************
     seq: 20
@@ -249,14 +250,64 @@ comment: NULL
     seq: 37
     mac: B8-27-EB-EC-58-92
    name: RPi - Garage Sensors
-options:       tiles.perspective=auto_hat
-           IN_A_1=VEH_SPACE_1_RANGE_DOWN:40,-1.66,109,0.04,inches
-           IN_D_1=GARAGE_VEH_DOOR_1_CLOSED_STOP
-           IN_D_2=GARAGE_VEH_DOOR_1_CLOSED_AWAY
-           IN_D_3=GARAGE_VEH_DOOR_1_OPEN_STOP
-           OUT_D_1=GARAGE_PARK_ASSIST_1
-           OUT_D_2=GARAGE_FAST_LIGHTS
-           OUT_D_3=
-           OUT_R_1=
-           remote=GARAGE_LIGHTS
+options: tiles.perspective=auto_hat
+    IN_A_1=VEH_SPACE_1_RANGE_DOWN:50,-1.66,109,0.10,inches
+    IN_D_1=GARAGE_VEH_DOOR_1_CLOSED_STOP
+    IN_D_2=GARAGE_VEH_DOOR_1_CLOSED_AWAY
+    IN_D_3=GARAGE_VEH_DOOR_1_OPEN_STOP
+    OUT_D_1=GARAGE_PARK_ASSIST_1
+    OUT_D_2=GARAGE_FAST_LIGHTS
+    OUT_D_3=
+    OUT_R_1=
+    remote=GARAGE_LIGHTS
+comment: NULL
+*************************** 38. row ***************************
+    seq: 38
+    mac: B8-27-EB-90-A3-BD
+   name: RPi - Image processor
+options: tiles.perspective=IMAGE_PROCESSING
+proc_image.file=/Share/Sessions/94-C6-91-18-C8-33/capture_vid1.jpg
+proc_image.threshold=0.060
+comment: NULL
+*************************** 39. row ***************************
+    seq: 39
+    mac: B8-27-EB-70-3C-8D
+   name: L32--B8-27-EB-70-3C-8D--00361--16AD2A2E606
+options: NULL
+comment: NULL
+*************************** 40. row ***************************
+    seq: 40
+    mac: 00-0F-00-5B-B2-D8
+   name: L32--00-0F-00-5B-B2-D8--03180--16AD4AF314D
+options: NULL
+comment: NULL
+*************************** 41. row ***************************
+    seq: 41
+    mac: B8-27-EB-25-69-D8
+   name: L32--B8-27-EB-25-69-D8--018F5--16AD8550A86
+options: NULL
+comment: NULL
+*************************** 42. row ***************************
+    seq: 42
+    mac: B8-27-EB-B3-3F-B9
+   name: L32--B8-27-EB-B3-3F-B9--005FE--16AD8F01FC7
+options: NULL
+comment: NULL
+*************************** 43. row ***************************
+    seq: 43
+    mac: B8-27-EB-B3-3F-B9
+   name: L32--B8-27-EB-B3-3F-B9--005FF--16AD8F01FC7
+options: NULL
+comment: NULL
+*************************** 44. row ***************************
+    seq: 44
+    mac: B8-27-EB-B3-3F-B9
+   name: L32--B8-27-EB-B3-3F-B9--00600--16AD8F01FD4
+options: NULL
+comment: NULL
+*************************** 45. row ***************************
+    seq: 45
+    mac: B8-27-EB-C5-F6-E8
+   name: L32--B8-27-EB-C5-F6-E8--00BE6--16AD8F9D85A
+options: NULL
 comment: NULL
