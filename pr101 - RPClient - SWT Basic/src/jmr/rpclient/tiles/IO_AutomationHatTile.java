@@ -18,6 +18,7 @@ import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.S2Button.ButtonState;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
+import jmr.rpclient.tiles.HistogramTile.Graph;
 import jmr.s2db.event.EventType;
 import jmr.s2db.job.JobMonitor;
 import jmr.s2db.job.RemoteJobMonitor;
@@ -152,8 +153,6 @@ public class IO_AutomationHatTile extends TileBase {
 
 				final TraceMap mapData = new TraceMap( false );
 				mapData.addStringMap( mapOptions );
-//				final Map<String,Object> mapData = new HashMap<>();
-//				final TraceMap mapData = TraceMap.addFrame( null );
 				mapData.putAll( map );
 				mapData.put( "job.seq", job.getJobSeq() );
 				mapData.put( "job.request", job.getRequest() );
@@ -188,7 +187,6 @@ public class IO_AutomationHatTile extends TileBase {
 	
 	public void processInputEvent(	final Port port,
 									final long lTime,
-//									final Map<String,Object> map
 									final TraceMap map
 									) {
 		System.out.println( "Input event for port: " + port.name() );
@@ -205,7 +203,6 @@ public class IO_AutomationHatTile extends TileBase {
 		
 		final JsonPrimitive jsonValue;
 		
-//		final JsonObject jsonMap = new JsonObject();
 		final JsonElement jeMap = new Gson().toJsonTree( map );
 		final JsonObject jsonMap = jeMap.getAsJsonObject();
 		
@@ -258,6 +255,8 @@ System.out.println( "Map: " + jeMap.toString() );
 			System.out.println( "\tstrValue = " + strValue );
 			System.out.println( "\tjsonValue = " + jsonValue );
 		}
+		
+		
 	}
 	
 	
@@ -344,11 +343,12 @@ System.out.println( "Map: " + jeMap.toString() );
 			
 			text.println( "Analog Inputs:" );
 			for ( final Port port : Port.values() ) {
+				final Float fValue;
 				if ( port.isInput() && port.isAnalog() ) {
-					final Float value = hat.getAnalogPortValue( port );
-					if ( null!=value ) {
+					fValue = hat.getAnalogPortValue( port );
+					if ( null!=fValue ) {
 	//					final String strValue = value.toString();
-						final String strValue = String.format( "%8.4f", value );
+						final String strValue = String.format( "%8.4f", fValue );
 						final HardwareInput 
 								hardware = hat.getHardwareInputForPort( port );
 						final String strHardware = null!=hardware 
@@ -380,6 +380,15 @@ System.out.println( "Map: " + jeMap.toString() );
 						text.println( strIndent + strIndent + " -" + strIndent  
 								+ strSpacer + port.name()
 								+ strSpacer + "<unmapped>" );
+					}
+				} else {
+					fValue = null;
+				}
+
+				if ( Port.IN_A_1.equals( port ) && ( null!=fValue ) ) {
+					final Graph graph = HistogramTile.getGraph( port.name() );
+					if ( null!=graph ) {
+						graph.add( fValue );
 					}
 				}
 			}
@@ -442,7 +451,6 @@ System.out.println( "Map: " + jeMap.toString() );
 	public void setPortValue(	final Port port,
 								final boolean bValue,
 								final long lTime,
-//								final Map<String,Object> mapIn
 								final TraceMap map
 								) {
 		if ( null==port ) return;

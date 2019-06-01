@@ -1,5 +1,8 @@
 package jmr.util.hardware;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import jmr.util.math.NormalizedFloat;
 
 
@@ -11,6 +14,7 @@ public abstract class PortInterface<T> {
 	final public String strParameters;
 //	public Listener listener;
 	
+	final public Map<String,Object> mapData = new HashMap<>();
 	
 	public PortInterface( final T port, 
 						  final String strParameters ) {

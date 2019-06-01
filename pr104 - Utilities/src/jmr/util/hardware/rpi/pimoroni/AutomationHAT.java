@@ -63,7 +63,7 @@ public class AutomationHAT {
 	/**
 	 * minimum analog low (sanity check)
 	 */
-	final private static double ANALOG_MIN_VALUE = 0.1;
+//	final private static double ANALOG_MIN_VALUE = 0.1;
 	
 	
 
@@ -246,7 +246,6 @@ public class AutomationHAT {
 										final boolean bNewValue,
 										final TraceMap map,
 										final long lTime ) {
-//		final Boolean bOrigValue = mapDigitalInput.get( port );
 		
 		final PortInterface<Port> pi = mapInterface.get( port );
 		final InputDigitalInterface<Port> input;
@@ -282,22 +281,6 @@ public class AutomationHAT {
 			}
 			checkRunTrigger( port, tm, lTime );
 		}
-		
-////		if ( null!=bOrigValue && bOrigValue.booleanValue() != bNewValue ) {
-//		if ( null != input.bValue && input.bValue != bNewValue ) {
-//			
-////			mapDigitalInput.put( port, bNewValue );
-//			input.bValue = bNewValue;
-//			
-////			final Map<String,Object> map = new HashMap<>();
-////			final TraceMap map = new TraceMap();
-////			map.put( "time-initiate", new Long( lTime ) );
-////			map.put( "source-initiate", "PAHAT.updateDigitalInput()" );
-//			checkRunTrigger( port, map, lTime );
-//		} else {
-////			mapDigitalInput.put( port, bNewValue );
-//			input.bValue
-//		}
 	}
 	
 
@@ -407,9 +390,6 @@ System.out.println( "port parameters: " + strParameters );
 		final InputAnalogInterface<Port> input = (InputAnalogInterface<Port>)pi;
 
 		
-//		final Float fOrigValue = mapAnalogInput.get( port );
-//		mapAnalogInput.put( port, fNewValue );
-		
 		final NormalizedFloat nf = getAnalogInputData( port, true );
 		if ( ! nf.isValid() ) return;
 		final Double dOrigNorm = nf.evaluate();
@@ -455,8 +435,6 @@ System.out.println( "port parameters: " + strParameters );
 			boolean bPost = false;
 			String strTriggerName = null;
 			final Double dTriggerValue;
-//			final Map<String,Object> map = new HashMap<>();
-//			final TraceMap map = new TraceMap( false );
 			final double dAdjust;
 			final double dThreshold;
 			
@@ -475,7 +453,9 @@ System.out.println( "port parameters: " + strParameters );
 							ANALOG_THRESHOLD_DRIFT );
 				final Double dLastPostTime = nf.getParamDouble( 
 							FunctionParameter.VAR_TIME_LAST_POSTED );
-				if ( null!=dLastPostTime ) {
+				if ( input.bLogical ) {
+					dAdjust = 0;
+				} else if ( null!=dLastPostTime ) {
 					dAdjust = ( (double) lTime - dLastPostTime ) / 1000000000;
 				} else {
 					dAdjust = 0;
@@ -511,17 +491,80 @@ System.out.println( "port parameters: " + strParameters );
 			}
 			
 			final float fPctDiff = fDiff * 100 / fOld;
-//			if ( fPctDiff > ANALOG_THRESHOLD_PCT_DIFF ) {
-//				bPost = true;
-//			}
-//			System.out.print( ", pct-diff: " 
-//									+ String.format( "%.5f", fPctDiff ) );
 			
 			if ( DEBUG ) {
 				System.out.println();
 			}
+			
+			
+			// check special case: analog current sensor
+			// first calculate a few more things
+			if ( bPost ) {
 
-			if ( bPost && ( fOld > ANALOG_MIN_VALUE ) ) { 
+				
+//				if ( Boolean.TRUE.equals( mapLogical.get( port ) ) ) {
+				final Boolean bLogicalValue;
+				if ( input.bLogical ) {
+					bLogicalValue = dNewNorm > VOLTS_LOGICAL_ON;
+					map.put( "value-logical", bLogicalValue );
+				} else {
+					bLogicalValue = null;
+				}
+
+				
+				final Object objTimeLast = input.mapData.get( "last-time" );
+//				final Object objValueLast = input.mapData.get( "last-value" );
+				
+				if ( objTimeLast instanceof Long ) {
+						//&& objValueLast instanceof Double ) {
+					
+System.out.print( "> candidate event on " + port.name() + ", "
+		+ "value=" + dNewNorm + " - " );					
+					
+					final long lElapsed = lTime - (Long)objTimeLast;
+					map.put( "last-post-elapsed", lElapsed );
+					
+					
+					
+					if ( input.bLogical ) {
+
+						
+						
+						if ( Boolean.TRUE.equals( bLogicalValue ) ) {
+
+
+							
+nf.setParamDouble( FunctionParameter.VAR_VALUE_LAST_POSTED, dNewNorm );
+
+
+							// just don't report power-on
+							// (in the future, delay this)
+							bPost = false;
+System.out.println( "[Logical = TRUE]" );					
+							
+						} else if ( lElapsed < 1000 ) {
+							
+							// only post power-off if more than 1 sec
+							bPost = false;
+System.out.println( "[Elapsed too short (" + lElapsed + ")]" );					
+							
+						} else {
+							
+							// looks good
+System.out.println( "[Ok to post]" );					
+							bPost = true;
+						}
+					}
+				}
+
+				
+				input.mapData.put( "last-time", (Long)lTime );
+			}
+			
+			
+
+//			if ( bPost && ( fOld > ANALOG_MIN_VALUE ) ) { 
+			if ( bPost ) { 
 
 				if ( null!=dTriggerValue ) {
 					map.put( "trigger-value", dTriggerValue );
@@ -529,11 +572,15 @@ System.out.println( "port parameters: " + strParameters );
 					map.put( "trigger-threshold", dThreshold );
 				}
 
+				//TODO replace these with input.mapData ..
 				nf.setParamDouble( 
 						FunctionParameter.VAR_VALUE_LAST_POSTED, dNewNorm );
 				nf.setParamDouble( 
 						FunctionParameter.VAR_TIME_LAST_POSTED, (double) lTime );
 
+//				input.mapData.put( "last-value", (Double)dNewNorm );
+//				input.mapData.put( "last-time", (Long)lTime );
+				
 				map.put( "value-latest", fNewValue );
 				map.put( "value-normalized", dNewNorm );
 				map.put( "percent-diff", fPctDiff );
@@ -565,12 +612,6 @@ System.out.println( "port parameters: " + strParameters );
 					map.put( "trigger-value", dTriggerValue );
 				}
 				
-//				if ( Boolean.TRUE.equals( mapLogical.get( port ) ) ) {
-				if ( input.bLogical ) {
-					final boolean bLogicalValue = dNewNorm > VOLTS_LOGICAL_ON;
-					map.put( "value-logical", bLogicalValue );
-				}
-
 				if ( DEBUG ) {
 					System.out.println( "--- updateAnalogInput()"
 								+ "\n\tport = " + port.name() 
@@ -588,7 +629,7 @@ System.out.println( "port parameters: " + strParameters );
 //System.out.println( "--- updateAnalogInput(), "
 //		+ "map: " + JsonUtils.report( mapAnalogInput ) );
 
-
+System.out.println( " << POSTING EVENT - " + port.name() + " >> " );
 				checkRunTrigger( port, map, lTime );
 			}
 		}
@@ -604,7 +645,6 @@ System.out.println( "port parameters: " + strParameters );
 	}
 	
 	private void checkRunTrigger( final Port port,
-//								  final Map<String,Object> map,
 								  final TraceMap map,
 								  final long lTime ) {
 		if ( null==port ) return;

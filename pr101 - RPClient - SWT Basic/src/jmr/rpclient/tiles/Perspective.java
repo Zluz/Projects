@@ -321,10 +321,13 @@ public enum Perspective {
 					IO_AutomationHatTile.TileType.CONTROL, mapOptions ), 
 						new Rectangle( 3, 1, 2, 2 ) ) ); 
 
+		list.add( new TileGeometry( new HistogramTile( "IN_A_1" ), 
+						new Rectangle( 3, 0, 2, 1 ) ) );
+		
 		list.add( new TileGeometry( new SystemInfoTile(), 
-						new Rectangle( 3, 0, 1, 1 ) ) );
+						new Rectangle( 3, 2, 1, 1 ) ) );
 		list.add( new TileGeometry( new PerformanceMonitorTile(), 
-						new Rectangle( 4, 0, 1, 1 ) ) );
+						new Rectangle( 4, 2, 1, 1 ) ) );
 //		list.add( new TileGeometry( new CalibrationTile(), 
 //						new Rectangle( 4, 2, 1, 1 ) ) ); 
 	}

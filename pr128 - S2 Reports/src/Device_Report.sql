@@ -1,5 +1,6 @@
 
 SELECT 
+	d.seq,
     d.mac,
     
     CONCAT( TIMEDIFF( current_timestamp(), max_start ), "" ) as 'age',
