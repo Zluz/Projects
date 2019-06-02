@@ -39,11 +39,14 @@ public class HistogramTile extends TileBase {
 		private Double dThresholdMax;
 		private Double dThresholdMin;
 		
+		public boolean bEnabled;
+		
 		public Graph( final int iWidth,
 					  final int iSampleSize ) {
 			this.iWidth = iWidth;
 			this.iPlot = new int[ iWidth ];
 			this.iSampleSize = iSampleSize;
+			bEnabled = false;
 		}
 		
 		private void pop() {
@@ -78,6 +81,7 @@ public class HistogramTile extends TileBase {
 		}
 		
 		public synchronized void add( final float fSample ) {
+			this.bEnabled = true;
 			while ( listSamples.size() >= iSampleSize ) {
 				pop();
 			}
@@ -86,8 +90,8 @@ public class HistogramTile extends TileBase {
 			}
 			
 			if ( null==fMin || null==fMax ) {
-				fMin = fSample - 0.01f;
-				fMax = fSample + 0.01f;
+				fMin = fSample - 0.001f;
+				fMax = fSample + 0.001f;
 				recalibrate();
 				
 			} else if ( fSample < fMin ) {
@@ -156,7 +160,10 @@ public class HistogramTile extends TileBase {
 		public Double getThresholdValueMin() {
 			return this.dThresholdMin;
 		}
-
+		
+		public void setEnabled( final boolean bEnabled ) {
+			this.bEnabled = bEnabled;
+		}
 	}
 
 	
@@ -201,6 +208,10 @@ public class HistogramTile extends TileBase {
 				gc.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
 			}
 
+			gc.setForeground( UI.COLOR_DARK_BLUE );
+			gc.drawLine( 0, iHeight, iWidth, iHeight );
+			gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
+
 			if ( null == this.graph ) {
 				this.graph = new Graph( iWidth, 500 );
 				mapGraphs.put( this.strName, this.graph );
@@ -216,44 +227,49 @@ public class HistogramTile extends TileBase {
 			if ( null!=iThresholdMin ) {
 
 				gc.setForeground( UI.COLOR_DARK_BLUE );
-				gc.drawLine( iThresholdMin, iHeight, iThresholdMin, iHeight/2 );
+				gc.drawLine( iThresholdMin, iHeight, iThresholdMin, iHeight/4 );
 				if ( null!=iLastMinRecent ) {
-					gc.drawLine( iThresholdMin, 0, iLastMinRecent, iHeight );
+					gc.drawLine( iThresholdMin, 20, iLastMinRecent, iHeight );
 				}
 
 				gc.setForeground( UI.COLOR_GRAY );
-				gc.drawLine( iThresholdMin, 20, iThresholdMin, iHeight/2 );
-			} else {
-				final Double dThresholdMin = this.graph.getThresholdValueMin();
-				if ( null!=dThresholdMin ) {
-					final String strMin = String.format( 
-							"<  %.6f", dThresholdMin.doubleValue() );
-					gc.drawText( strMin, 40, iHeight + 6 );
-				}
+				gc.drawLine( iThresholdMin, 20, iThresholdMin, iHeight/4 );
+			} 
+			final Double dThresholdMin = this.graph.getThresholdValueMin();
+			if ( null!=dThresholdMin ) {
+				final String strMin = String.format( 
+						"<  %.6f", dThresholdMin.doubleValue() );
+				gc.drawText( strMin, 40, iHeight + 6 );
 			}
 			if ( null!=iThresholdMax ) {
 
 				gc.setForeground( UI.COLOR_DARK_BLUE );
-				gc.drawLine( iThresholdMax, iHeight, iThresholdMax, iHeight/2 );
+				gc.drawLine( iThresholdMax, iHeight, iThresholdMax, iHeight/4 );
 				if ( null!=iLastMaxRecent ) {
-					gc.drawLine( iThresholdMax, 0, iLastMaxRecent, iHeight );
+					gc.drawLine( iThresholdMax, 20, iLastMaxRecent, iHeight );
 				}
 				
 				gc.setForeground( UI.COLOR_GRAY );
-				gc.drawLine( iThresholdMax, 20, iThresholdMax, iHeight/2 );
-			} else {
-				final Double dThresholdMax = this.graph.getThresholdValueMax();
-				if ( null!=dThresholdMax ) {
-					final String strMax = String.format( 
-							"%.6f  >", dThresholdMax.doubleValue() );
-					gc.drawText( strMax, iWidth - 90, iHeight + 6 );
-				}
+				gc.drawLine( iThresholdMax, 20, iThresholdMax, iHeight/4 );
+			}
+			final Double dThresholdMax = this.graph.getThresholdValueMax();
+			if ( null!=dThresholdMax ) {
+				final String strMax = String.format( 
+						"%.6f  >", dThresholdMax.doubleValue() );
+				gc.drawText( strMax, iWidth - 90, iHeight + 6 );
 			}
 			
 
 			gc.setFont( Theme.get().getFont( 10 ) );
-			gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
-			gc.drawText( "Port:  " + this.strName, 2, 2 );
+			if ( graph.bEnabled ) {
+				gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
+			} else {
+				gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
+				
+				gc.drawLine( 30, 30, iWidth - 30, iHeight - 30 );
+				gc.drawLine( 30, iHeight - 30, iWidth - 30, 30 );
+			}
+			gc.drawText( "Histogram:  " + this.strName, 2, 2 );
 
 			
 			iLastMinRecent = null;
@@ -281,13 +297,17 @@ public class HistogramTile extends TileBase {
 			}
 			
 			gc.setFont( Theme.get().getFont( 8 ) );
-			gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 
+			if ( graph.bEnabled ) {
+				gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
+			} else {
+				gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
+			}
 			final String strMin = String.format( "%.3f", graph.fMin );
 			gc.drawText( strMin, 2, iHeight + 4 );
 			final String strMax = String.format( "%.3f", graph.fMax );
 			gc.drawText( strMax, iWidth - 30, iHeight + 4 );
-
+			
 		} catch ( final Throwable t ) {
 			t.printStackTrace();
 		}

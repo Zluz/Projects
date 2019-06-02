@@ -19,13 +19,13 @@ public enum Perspective {
 	REMOTE( 6, 2, false, false ),
 	GPIO( 4, 5, false, false ),
 	AUTO_HAT( 5, 3, false, false ),
+	PROC_IMAGE( 7, 3, false, false ),
 	
 	TEST( 5, 3, false, false ),
 	;
 	
 	
 
-	@SuppressWarnings("unused")
 	private static final Logger 
 			LOGGER = Logger.getLogger( Perspective.class.getName() );
 
@@ -83,6 +83,7 @@ public enum Perspective {
 				case REMOTE: this.build_Remote( mapOptions ); break;
 				case GPIO: this.build_GPIO( mapOptions ); break;
 				case AUTO_HAT: this.build_AutoHAT( mapOptions ); break;
+				case PROC_IMAGE: this.build_ProcImage( mapOptions ); break;
 				case DESKTOP: this.build_Desktop( mapOptions ); break;
 			}
 			validate();
@@ -101,14 +102,23 @@ public enum Perspective {
 			}
 		}
 		
-		//TODO add  java.lang.ArrayIndexOutOfBoundsException check
 		for ( final TileGeometry tile : list ) {
 			final Rectangle r = tile.rect;
 			for ( int iTX = 0; iTX<r.width; iTX++ ) {
 				for ( int iTY = 0; iTY<r.height; iTY++ ) {
+
 					final int iX = r.x + iTX;
 					final int iY = r.y + iTY;
-					grid[iX][iY]++; 
+
+					if ( iY >= iRows ) {
+						LOGGER.warning( "Tile hanging over Y bounds: " 
+								+ tile.tile.toString() );
+					} else if ( iX >= iCols ) {
+						LOGGER.warning( "Tile hanging over X bounds: " 
+								+ tile.tile.toString() );
+					} else {
+						grid[iX][iY]++;
+					}
 				}
 			}
 		}
@@ -119,6 +129,9 @@ public enum Perspective {
 				if ( 0==iCount ) {
 					list.add( new TileGeometry( new TextTile( null ),
 							new Rectangle( iCol, iRow, 1, 1 ) ) );
+				} else if ( iCount>1 ) {
+					LOGGER.warning( "Overlapping tiles "
+							+ "(at " + iRow + ", " + iCol + ")" );
 				}
 			}
 		}
@@ -330,6 +343,37 @@ public enum Perspective {
 						new Rectangle( 4, 2, 1, 1 ) ) );
 //		list.add( new TileGeometry( new CalibrationTile(), 
 //						new Rectangle( 4, 2, 1, 1 ) ) ); 
+	}
+
+	private void build_ProcImage( final Map<String, String> mapOptions ) {
+		
+		list.add( new TileGeometry( new ProcImageTile( "1", mapOptions ), 
+						new Rectangle( 2, 0, 2, 1 ) ) );
+		list.add( new TileGeometry( new HistogramTile( "IMAGE_CHANGE_VALUE_1" ), 
+						new Rectangle( 4, 0, 3, 1 ) ) );
+		list.add( new TileGeometry( new HistogramTile( "FILE_UPDATE_INTERVAL_1" ), 
+						new Rectangle( 0, 0, 2, 1 ) ) );
+
+		list.add( new TileGeometry( new ProcImageTile( "2", mapOptions ), 
+						new Rectangle( 2, 1, 2, 1 ) ) );
+		list.add( new TileGeometry( new HistogramTile( "IMAGE_CHANGE_VALUE_2" ), 
+						new Rectangle( 4, 1, 3, 1 ) ) );
+		list.add( new TileGeometry( new HistogramTile( "FILE_UPDATE_INTERVAL_2" ), 
+						new Rectangle( 0, 1, 2, 1 ) ) );
+
+		list.add( new TileGeometry( new ProcImageTile( "3", mapOptions ), 
+						new Rectangle( 2, 2, 2, 1 ) ) );
+		list.add( new TileGeometry( new HistogramTile( "IMAGE_CHANGE_VALUE_3" ), 
+						new Rectangle( 4, 2, 3, 1 ) ) );
+		list.add( new TileGeometry( new HistogramTile( "FILE_UPDATE_INTERVAL_3" ), 
+						new Rectangle( 0, 2, 2, 1 ) ) );
+
+//		list.add( new TileGeometry( new SystemInfoTile(), 
+//						new Rectangle( 2, 2, 1, 1 ) ) );
+//		list.add( new TileGeometry( new PerformanceMonitorTile(), 
+//						new Rectangle( 3, 2, 1, 1 ) ) );
+//		list.add( new TileGeometry( new CalibrationTile(), 
+//						new Rectangle( 3, 2, 1, 1 ) ) ); 
 	}
 
 	private void build_Tesla( final Map<String, String> mapOptions ) {

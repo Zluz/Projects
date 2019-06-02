@@ -99,7 +99,7 @@ public abstract class UI {
 						if ( lElapsed > UI_LOOP_DELAY_ABORT ) {
 							emergencyShutdown( "UI thread unresponsive" );
 						} else if ( lElapsed > UI_LOOP_DELAY_WARN ) {
-							printUIStack( "UI thread is less responsive"
+							printUIStack( 8, "UI thread is less responsive"
 									+ " (" + lElapsed + "ms elapsed)." );
 						}
 						Thread.sleep( 2000 );
@@ -113,12 +113,17 @@ public abstract class UI {
     }
     
     
-    public static void printUIStack( final String strMessage ) {
+    public static void printUIStack( final int iDepth,
+    								 final String strMessage ) {
     	System.out.println( strMessage );
 		final StackTraceElement[] stack = 
 				UI.display.getThread().getStackTrace();
+		int i=0;
 		for ( final StackTraceElement frame : stack ) {
-			System.out.println( "\t" + frame.toString() );
+			if ( i<iDepth ) {
+				System.out.println( "\t" + frame.toString() );
+				i++;
+			}
 		}
     }
     
@@ -153,7 +158,7 @@ public abstract class UI {
 		new Thread( "Printing UI stack" ) {
 			@Override
 			public void run() {
-				printUIStack( "UI Stack:" );
+				printUIStack( 12, "UI Stack:" );
 			}
 		}.start();
 
