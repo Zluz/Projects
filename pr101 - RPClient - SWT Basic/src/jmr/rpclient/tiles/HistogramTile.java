@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 
 import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
@@ -29,7 +30,7 @@ public class HistogramTile extends TileBase {
 		private final int[] iPlot;
 		
 		private final int iSampleSize;
-		
+
 		private Float fMin;
 		private Float fMax;
 		private Float fWidth;
@@ -38,6 +39,8 @@ public class HistogramTile extends TileBase {
 		private Integer iThresholdMin;
 		private Double dThresholdMax;
 		private Double dThresholdMin;
+		
+		private Float fMark;
 		
 		public boolean bEnabled;
 		
@@ -78,6 +81,12 @@ public class HistogramTile extends TileBase {
 			final float fX = ( fSample - fMin ) / fWidth;
 			final int iIndex = (int)( fX * (iWidth-1) );
 			return iIndex;
+		}
+		
+		public float getValueForIndex( final int iX ) {
+			final float fValue = 
+					( fWidth * ( (float)iX / ( iWidth - 1 ) ) ) + fMin;
+			return fValue;
 		}
 		
 		public synchronized void add( final float fSample ) {
@@ -164,6 +173,14 @@ public class HistogramTile extends TileBase {
 		public void setEnabled( final boolean bEnabled ) {
 			this.bEnabled = bEnabled;
 		}
+		
+		public void setMark( final Float fValue ) {
+			this.fMark = fValue;
+		}
+
+		public Float getMark() {
+			return this.fMark;
+		}
 	}
 
 	
@@ -178,6 +195,8 @@ public class HistogramTile extends TileBase {
 	
 	private final String strName;
 	private Graph graph;
+	
+	
 	
 //	private Integer iSampleSize;
 //	private Integer iPlotHeight;
@@ -296,6 +315,16 @@ public class HistogramTile extends TileBase {
 				gc.drawLine( i, iY2, i, iHeight - (int)fY );
 			}
 			
+			final Float fMark = graph.getMark();
+			if ( null!=fMark ) {
+				gc.setForeground( UI.COLOR_RED );
+				final int iX = graph.getIndexOfSample( fMark.floatValue() );
+				gc.drawLine( iX, 0, iX, iHeight + 10 );
+				gc.setForeground( UI.COLOR_WHITE );
+				final String strValue = String.format( "%.4f", fMark.floatValue() );
+				gc.drawText( strValue, iWidth / 2 - 12, iHeight + 2 );
+			}
+			
 			gc.setFont( Theme.get().getFont( 8 ) );
 
 			if ( graph.bEnabled ) {
@@ -306,7 +335,7 @@ public class HistogramTile extends TileBase {
 			final String strMin = String.format( "%.3f", graph.fMin );
 			gc.drawText( strMin, 2, iHeight + 4 );
 			final String strMax = String.format( "%.3f", graph.fMax );
-			gc.drawText( strMax, iWidth - 30, iHeight + 4 );
+			gc.drawText( strMax, iWidth - 30, iHeight + 2 );
 			
 		} catch ( final Throwable t ) {
 			t.printStackTrace();
@@ -316,6 +345,21 @@ public class HistogramTile extends TileBase {
 	
 	@Override
 	protected void activateButton( final S2Button button ) {}
+
+	
+	@Override
+	public boolean clickCanvas( final Point point ) {
+		if ( null != this.graph ) {
+			final Float fValue;
+			if ( point.y < 110 ) {
+				fValue = this.graph.getValueForIndex( point.x );
+			} else {
+				fValue = null;
+			}
+			this.graph.setMark( fValue );
+		}
+		return super.clickCanvas( point );
+	}
 	
 
 }

@@ -260,6 +260,17 @@ System.out.println( "Map: " + jeMap.toString() );
 	}
 	
 	
+	private void setEnabled( final GC gc, 
+							 final boolean bEnabled ) {
+		if ( null==gc ) return;
+		if ( bEnabled ) {
+			gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
+		} else {
+			gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
+		}
+	}
+	
+	
 	@Override
 	public void paint( 	final GC gc, 
 						final Image image ) {
@@ -347,13 +358,20 @@ System.out.println( "Map: " + jeMap.toString() );
 				if ( port.isInput() && port.isAnalog() ) {
 					fValue = hat.getAnalogPortValue( port );
 					if ( null!=fValue ) {
-	//					final String strValue = value.toString();
+						
 						final String strValue = String.format( "%8.4f", fValue );
 						final HardwareInput 
 								hardware = hat.getHardwareInputForPort( port );
-						final String strHardware = null!=hardware 
-													? hardware.name() 
-													: "<no hw name>";
+						
+						final boolean bEnabled = null!=hardware;
+
+						final String strHardware;
+						if ( bEnabled ) {
+							strHardware = hardware.name();
+						} else {
+							strHardware = "<no hw name>";
+						}
+						setEnabled( gc, bEnabled );
 													
 						final String strIRLValue;
 						final FunctionBase fb = 
@@ -377,6 +395,7 @@ System.out.println( "Map: " + jeMap.toString() );
 										+ strSpacer + strHardware 
 										+ "   = " + strIRLValue );
 					} else {
+						setEnabled( gc, false );
 						text.println( strIndent + strIndent + " -" + strIndent  
 								+ strSpacer + port.name()
 								+ strSpacer + "<unmapped>" );
@@ -407,6 +426,7 @@ System.out.println( "Map: " + jeMap.toString() );
 				}
 			}
 			
+			setEnabled( gc, true );
 			text.println( "Digital Line Outputs:" );
 			for ( final Port port : Port.values() ) {
 				if ( ! port.isInput() && ! port.isRelay() ) {
@@ -418,9 +438,11 @@ System.out.println( "Map: " + jeMap.toString() );
 											: strIndent + "-" + strIndent;
 						final HardwareOutput 
 								hardware = hat.getHardwareOutputForPort( port );
-						final String strHardware = null!=hardware 
+						final boolean bEnabled = ( null!=hardware );
+						final String strHardware = bEnabled 
 												? hardware.name() 
 												: "<no hw name>";
+						setEnabled( gc, bEnabled );
 						text.println( strIndent + strValue 
 										+ strSpacer + port.name()
 										+ strSpacer + strHardware );
@@ -432,6 +454,7 @@ System.out.println( "Map: " + jeMap.toString() );
 				}
 			}
 
+			setEnabled( gc, true );
 			text.println( "Automation Relays:" );
 			for ( final Port port : Port.values() ) {
 				if ( ! port.isInput() && port.isRelay() ) {
@@ -442,9 +465,11 @@ System.out.println( "Map: " + jeMap.toString() );
 												: ( strIndent + "-" );
 						final HardwareOutput 
 								hardware = hat.getHardwareOutputForPort( port );
-						final String strHardware = null!=hardware 
+						final boolean bEnabled = ( null!=hardware );
+						final String strHardware = bEnabled 
 												? hardware.name() 
 												: "<no hw name>";
+						setEnabled( gc, bEnabled );
 						text.println( strIndent + strValue + strIndent 
 										+ strSpacer + port.name()
 										+ strSpacer + strHardware );

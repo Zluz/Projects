@@ -143,7 +143,8 @@ public class ProcImageTile extends TileBase {
 
 	
 	public static Float getImageDifference( final File fileLHS,
-										    final File fileRHS ) {
+										    final File fileRHS,
+										    final String strLogPrefix ) {
 		
 		final String[] strCommand = { "/bin/bash", 
 									  COMMAND, 
@@ -158,7 +159,7 @@ public class ProcImageTile extends TileBase {
 		final Integer iResult = run.run();
 		final String strOut = run.getStdOut();
 		if ( null==iResult || iResult != 0 ) {
-			LOGGER.warning( "Non-zero result from process." );
+			LOGGER.warning( strLogPrefix + "Non-zero result from process." );
 			return null;
 		} else if ( StringUtils.isNotBlank( strOut ) ) {
 			
@@ -170,13 +171,13 @@ public class ProcImageTile extends TileBase {
 				return fOutput;
 			} catch ( final NumberFormatException e ) {
 				
-				LOGGER.warning( "Failed to parse float. "
+				LOGGER.warning( strLogPrefix + "Failed to parse float. "
 						+ "Full process output:\n" + strOut );
 				return null;
 			}
 			
 		} else {
-			LOGGER.warning( "Empty output from process." );
+			LOGGER.warning( strLogPrefix + "Empty output from process." );
 			return null;
 		}
 	}
@@ -268,7 +269,8 @@ public class ProcImageTile extends TileBase {
 			final File fileCurrent = new File( getFilenameCurrent() );
 			
 			this.state = State.EXECUTING_COMPARISON;
-			final Float fDiff = getImageDifference( filePrevious, fileCurrent );
+			final Float fDiff = getImageDifference( 
+							filePrevious, fileCurrent, strPrefix );
 			this.state = State.POST_COMPARISON;
 
 			this.iCountCompleted++;
