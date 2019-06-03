@@ -19,6 +19,7 @@ import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.rpclient.swt.UI;
 import jmr.rpclient.tiles.HistogramTile.Graph;
+import jmr.util.FileUtil;
 import jmr.util.RunProcess;
 
 public class ProcImageTile extends TileBase {
@@ -47,12 +48,16 @@ public class ProcImageTile extends TileBase {
 	private final String strName;
 	private final String strSourceImage;
 	private final String strIndex;
+	private final float fThreshold;
+	private final File fileSourcePath;
 	
 	private State state = State.IDLE;
 	private int iCountTotal;
 	private int iCountCompleted;
 	private boolean bUsingMask;
 	private boolean bWarmup;
+	
+	String strData = "uninitialized";
 	
 	
 	
@@ -64,6 +69,8 @@ public class ProcImageTile extends TileBase {
 			threadUpdater = null;
 			this.strIndex = null;
 			this.strName = null;
+			this.fThreshold = 0.0f;
+			this.fileSourcePath = null;
 			return;
 		}
 		
@@ -71,8 +78,18 @@ public class ProcImageTile extends TileBase {
 		this.bWarmup = true;
 		
 		final String strPrefix = "proc_image." + strIndex;
+
 		this.strSourceImage = mapOptions.get( strPrefix + ".file" );
 		this.strName = mapOptions.get( strPrefix + ".name" );
+		final String strThreshold = mapOptions.get( strPrefix + ".threshold" );
+		float fThresholdParsed = 10.0f; 
+		try {
+			fThresholdParsed = Float.parseFloat( strThreshold );
+		} catch ( final Exception e ) {
+			fThresholdParsed = 10.0f;
+			LOGGER.warning( "Failed to parse threshold value: " + strThreshold );
+		}
+		this.fThreshold = fThresholdParsed;
 		
 		if ( StringUtils.isBlank( this.strSourceImage ) ) {
 			this.state = State.DISABLED;
@@ -81,15 +98,20 @@ public class ProcImageTile extends TileBase {
 		} else {
 			MONITOR_FILES.add( this.strSourceImage );
 			this.state = State.IDLE;
-			
+
 			clearOldFiles();
+		}
+		
+		if ( State.IDLE.equals( this.state ) ) {
+			final File fileSource = new File( this.strSourceImage );
+			this.fileSourcePath = fileSource.getParentFile();
+		} else {
+			this.fileSourcePath = null;
 		}
 		
 		this.threadUpdater = createThread();
 	}
 
-	
-	String strData = "uninitialized";
 	
 	private boolean doWaitForFileToMove( final String strFilename ) {
 		if ( StringUtils.isBlank( strFilename ) ) return false;
@@ -186,10 +208,6 @@ public class ProcImageTile extends TileBase {
 									  fileRHS.getAbsolutePath(),
 									  strFileMask };
 		
-//		System.out.println( "Running command: " 
-//						+ strCommand[0] + " " + strCommand[1] + " " 
-//						+ strCommand[2] + " " + strCommand[3] );
-		
 		final RunProcess run = new RunProcess( strCommand );
 		final Integer iResult = run.run();
 		final String strOut = run.getStdOut();
@@ -220,33 +238,29 @@ public class ProcImageTile extends TileBase {
 
 	public void clearOldFiles() {
 		
-//		try {
-			final File fileCurrent = new File( getFilenameCurrent() );
-			if ( fileCurrent.exists() ) {
-				if ( ! fileCurrent.delete() ) {
-					LOGGER.warning( "Failed to delete file: " 
-								+ fileCurrent.getAbsolutePath() );
-				}
+		final File fileCurrent = new File( getFilenameCurrent() );
+		if ( fileCurrent.exists() ) {
+			if ( ! fileCurrent.delete() ) {
+				LOGGER.warning( "Failed to delete file: " 
+									+ fileCurrent.getAbsolutePath() );
 			}
-			
-			final File filePrevious = new File( getFilenamePrevious() );
-			if ( filePrevious.exists() ) {
-				if ( ! filePrevious.delete() ) {
-					LOGGER.warning( "Failed to delete file: " 
-								+ filePrevious.getAbsolutePath() );
-				}
+		}
+		
+		final File filePrevious = new File( getFilenamePrevious() );
+		if ( filePrevious.exists() ) {
+			if ( ! filePrevious.delete() ) {
+				LOGGER.warning( "Failed to delete file: " 
+									+ filePrevious.getAbsolutePath() );
 			}
-			
-			final File fileMask = new File( getFilenameMask() );
-			if ( fileMask.exists() ) {
-				if ( ! fileMask.delete() ) {
-					LOGGER.warning( "Failed to delete file: " 
-								+ fileMask.getAbsolutePath() );
-				}
+		}
+		
+		final File fileMask = new File( getFilenameMask() );
+		if ( fileMask.exists() ) {
+			if ( ! fileMask.delete() ) {
+				LOGGER.warning( "Failed to delete file: " 
+									+ fileMask.getAbsolutePath() );
 			}
-//		} catch ( final IOException e ) {
-//			LOGGER.warning( "Failed to clear old files. " + e.toString() );
-//		}
+		}
 	}
 	
 	
@@ -307,6 +321,8 @@ public class ProcImageTile extends TileBase {
 			this.state = State.FAULT;
 		}
 		
+		long lSourceFileTimestamp = 0;
+		
 		if ( bReady ) {
 			
 //			System.out.println( "002" );
@@ -318,6 +334,7 @@ public class ProcImageTile extends TileBase {
 
 				if ( fileSource.exists() ) {
 					FileUtils.copyFile( fileSource, fileCurrent );
+					lSourceFileTimestamp = fileSource.lastModified();
 				} else {
 					this.state = State.FAULT;
 					// file probably just moved
@@ -367,7 +384,11 @@ public class ProcImageTile extends TileBase {
 										"IMAGE_CHANGE_VALUE_" + strIndex );
 					graph.add( fDiff );
 					
-					// potentially fire event here
+					if ( fDiff >= this.fThreshold ) {
+						this.reportChangeDetected( 
+									fileCurrent, lSourceFileTimestamp, fDiff );
+					}
+
 				} else {
 					System.out.println( strPrefix + "(still in warmup)" );
 					this.bWarmup = false;
@@ -381,6 +402,35 @@ public class ProcImageTile extends TileBase {
 		this.state = State.IDLE;
 
 		return true;
+	}
+	
+	
+	private void reportChangeDetected( final File fileChanged,
+									   final long lFileTimestamp,
+									   final float fDiffValue ) {
+		if ( null == fileChanged ) return;
+		if ( null == this.fileSourcePath ) return;
+		
+		final File fileChangeDir = 
+//						new File( this.fileSourcePath, ""+ lFileTimestamp );
+						new File( "\tmp", ""+ lFileTimestamp );
+
+		try {
+			FileUtils.forceMkdir( fileChangeDir );
+			
+			final File fileDestImage = new File( fileChangeDir, "image.jpg" );
+			final File fileDestText = new File( fileChangeDir, "info.txt" );
+			
+			FileUtils.copyFile( fileChanged, fileDestImage );
+			
+			final String strText = "Comparison value: " 
+									+ String.format( "%.5f", fDiffValue );
+			
+			FileUtil.saveToFile( fileDestText, strText );
+			
+		} catch ( final IOException e ) {
+			LOGGER.warning( "Failed to record change data. " + e.toString() );
+		}
 	}
 	
 	
@@ -450,6 +500,9 @@ public class ProcImageTile extends TileBase {
 		text.addSpace( 10 );
 		
 		gc.setFont( Theme.get().getFont( 9 ) );
+		
+		text.println( "Threshold: " + String.format( "%.3f", fThreshold ) );
+
 		if ( this.bUsingMask ) {
 			text.println( "[mask]" );
 		} else {
@@ -459,7 +512,6 @@ public class ProcImageTile extends TileBase {
 
 //		text.println( "Source Data:" );
 //		text.println( this.strData );
-
 	}
 
 	
