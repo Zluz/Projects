@@ -264,17 +264,30 @@ comment: NULL
 *************************** 38. row ***************************
     seq: 38
     mac: B8-27-EB-90-A3-BD
-   name: RPi - Image processor
-options: tiles.perspective=IMAGE_PROCESSING
-proc_image.file=/Share/Sessions/94-C6-91-18-C8-33/capture_vid1.jpg
-proc_image.threshold=0.060
-comment: NULL
+   name: RPi - Image processor 1
+options: tiles.perspective=PROC_IMAGE
+proc_image.1.name=Garage, Inside
+proc_image.1.threshold=0.060
+proc_image.1.file=/Share/Sessions/94-C6-91-18-C8-33/capture_vid1.jpg
+proc_image.2.name=Driveway, from Deck
+proc_image.2.threshold=0.060
+proc_image.2.file=/Share/Sessions/94-C6-91-18-C8-33/capture_vid2.jpg
+proc_image.3.name=Front Yard
+proc_image.3.threshold=0.060
+proc_image.3.file=/Share/Sessions/B8-27-EB-90-07-BD/capture_cam.jpg
+
+comment: Bad eth0
 *************************** 39. row ***************************
     seq: 39
     mac: B8-27-EB-70-3C-8D
-   name: L32--B8-27-EB-70-3C-8D--00361--16AD2A2E606
-options: NULL
-comment: NULL
+   name: RPi - Image processor 2
+options: tiles.perspective=PROC_IMAGE
+proc_image.1.file=/Share/Sessions/B8-27-EB-70-3C-8D/capture_cam.jpg
+proc_image.1.threshold=0.060
+proc_image.2.file=/Share/Sessions/94-C6-91-18-C8-33/capture_vid1.jpg
+proc_image.2.threshold=0.060
+ 
+comment: 3rd party system camera
 *************************** 40. row ***************************
     seq: 40
     mac: 00-0F-00-5B-B2-D8
