@@ -319,12 +319,14 @@ public class ProcImageTile extends TileBase {
 		text.addSpace( 10 );
 		text.println( this.strName );
 
-		gc.setFont( Theme.get().getFont( 10 ) );
+		gc.setFont( Theme.get().getFont( 8 ) );
 		
-		text.addSpace( 6 );
+		text.addSpace( 4 );
 //		text.println( "Source Image File:" );
 		text.println( this.strSourceImage );
 		text.addSpace( 10 );
+
+		gc.setFont( Theme.get().getFont( 10 ) );
 
 		switch ( this.state ) {
 			case IDLE:
@@ -351,7 +353,7 @@ public class ProcImageTile extends TileBase {
 		gc.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
 
 		text.addSpace( 10 );
-		text.println( "Count - Total: " + this.iCountTotal + ", "
+		text.println( "Counts  -  Total: " + this.iCountTotal + ", "
 				+ "Completed: " + this.iCountCompleted ); 
 //				+ "Fault: " + this.iCountFault ); 
 

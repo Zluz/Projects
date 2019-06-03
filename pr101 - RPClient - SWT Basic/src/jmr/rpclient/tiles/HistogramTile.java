@@ -11,6 +11,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import jmr.rpclient.swt.GCTextUtils;
 import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
@@ -41,6 +42,8 @@ public class HistogramTile extends TileBase {
 		private Double dThresholdMin;
 		
 		private Float fMark;
+		private long lTimeLastSample;
+		private long lElapsedLastSample;
 		
 		public boolean bEnabled;
 		
@@ -90,6 +93,13 @@ public class HistogramTile extends TileBase {
 		}
 		
 		public synchronized void add( final float fSample ) {
+			
+			final long lNow = System.currentTimeMillis();
+			if ( this.lTimeLastSample > 0 ) {
+				this.lElapsedLastSample = lNow - this.lTimeLastSample;
+			}
+			this.lTimeLastSample = lNow;
+			
 			this.bEnabled = true;
 			while ( listSamples.size() >= iSampleSize ) {
 				pop();
@@ -127,6 +137,16 @@ public class HistogramTile extends TileBase {
 			final Set<Integer> set = new HashSet<>();
 			set.addAll( listRecent );
 			return set;
+		}
+		
+		public Float getLatestSample() {
+			if ( listSamples.isEmpty() ) return null;
+			final Float fValue = listSamples.get( listSamples.size() - 1 );
+			return fValue;
+		}
+		
+		public long getLatestElapsed() {
+			return this.lElapsedLastSample;
 		}
 
 		private Integer calcSafeValue( final Double dValue ) {
@@ -194,6 +214,7 @@ public class HistogramTile extends TileBase {
 	
 	
 	private final String strName;
+	private final boolean bIsElapsedGraph;
 	private Graph graph;
 	
 	
@@ -203,10 +224,16 @@ public class HistogramTile extends TileBase {
 	
 	
 	
-	public HistogramTile( final String strName ) {
+	public HistogramTile( final String strName,
+						  final boolean bIsElapsedGraph ) {
 		this.strName = strName;
+		this.bIsElapsedGraph = bIsElapsedGraph;
 	}
-	
+
+	public HistogramTile( final String strName ) {
+		this( strName, false );
+	}
+
 	
 	private Integer iLastMaxRecent;
 	private Integer iLastMinRecent;
@@ -219,6 +246,7 @@ public class HistogramTile extends TileBase {
 
 			final int iWidth = image.getBounds().width;
 			final int iHeight = image.getBounds().height - 14;
+			final int iWidthHalf = iWidth / 2;
 
 			if ( null != iLastMaxRecent ) {
 				gc.setBackground( UI.COLOR_BLUE );
@@ -294,6 +322,10 @@ public class HistogramTile extends TileBase {
 			iLastMinRecent = null;
 			iLastMaxRecent = null;
 			
+			int iCountLeft = 0;
+			int iCountRight = 0;
+			boolean bLow = true;
+			
 			for ( int i = 0; i<iWidth; i++ ) {
 				final int iY2;
 				if ( set.contains( i ) ) {
@@ -313,7 +345,18 @@ public class HistogramTile extends TileBase {
 				}
 				final float fY = (float)( iPlot[i] ^ ( 1/4 ) ) * 4;
 				gc.drawLine( i, iY2, i, iHeight - (int)fY );
+				
+				if ( iWidthHalf == i ) {
+					bLow = false;
+				}
+				if ( bLow ) {
+					iCountLeft = iCountLeft + iPlot[i];
+				} else {
+					iCountRight = iCountRight + iPlot[i];
+				}
 			}
+			
+			final boolean bMoreEmptyLeft = iCountRight > iCountLeft;
 			
 			final Float fMark = graph.getMark();
 			if ( null!=fMark ) {
@@ -322,7 +365,7 @@ public class HistogramTile extends TileBase {
 				gc.drawLine( iX, 0, iX, iHeight + 10 );
 				gc.setForeground( UI.COLOR_WHITE );
 				final String strValue = String.format( "%.4f", fMark.floatValue() );
-				gc.drawText( strValue, iWidth / 2 - 12, iHeight + 2 );
+				gc.drawText( strValue, iWidthHalf - 12, iHeight + 2 );
 			}
 			
 			gc.setFont( Theme.get().getFont( 8 ) );
@@ -336,6 +379,27 @@ public class HistogramTile extends TileBase {
 			gc.drawText( strMin, 2, iHeight + 4 );
 			final String strMax = String.format( "%.3f", graph.fMax );
 			gc.drawText( strMax, iWidth - 30, iHeight + 2 );
+			
+			
+			final Float fLatest = graph.getLatestSample();
+			if ( null!=fLatest ) {
+				
+				final GCTextUtils text = new GCTextUtils( gc );
+				text.setRect( gc.getClipping() );
+				text.setRightAligned( ! bMoreEmptyLeft );
+				text.addSpace( 14 );
+
+				if ( ! bIsElapsedGraph ) {
+					text.println( "last" );
+					final String strLatest = String.format( "%.3f", fLatest );
+					text.println( strLatest );
+				}
+				
+				final float fElapsed = (float) graph.getLatestElapsed() / 1000;
+				final String strElapsed = String.format( "%.3f", fElapsed );
+				text.println( "elapsed" );
+				text.println( strElapsed );
+			}
 			
 		} catch ( final Throwable t ) {
 			t.printStackTrace();
