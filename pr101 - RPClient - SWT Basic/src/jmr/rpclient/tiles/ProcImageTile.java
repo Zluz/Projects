@@ -2,7 +2,9 @@ package jmr.rpclient.tiles;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -37,6 +39,9 @@ public class ProcImageTile extends TileBase {
 		;
 	}
 	
+	private final static Set<String> MONITOR_FILES = new HashSet<>();
+	
+	
 	private final Thread threadUpdater;
 
 	private final String strName;
@@ -46,6 +51,8 @@ public class ProcImageTile extends TileBase {
 	private State state = State.IDLE;
 	private int iCountTotal;
 	private int iCountCompleted;
+	private boolean bUsingMask;
+	private boolean bWarmup;
 	
 	
 	
@@ -61,6 +68,7 @@ public class ProcImageTile extends TileBase {
 		}
 		
 		this.strIndex = strIndex;
+		this.bWarmup = true;
 		
 		final String strPrefix = "proc_image." + strIndex;
 		this.strSourceImage = mapOptions.get( strPrefix + ".file" );
@@ -68,8 +76,13 @@ public class ProcImageTile extends TileBase {
 		
 		if ( StringUtils.isBlank( this.strSourceImage ) ) {
 			this.state = State.DISABLED;
+		} else if ( MONITOR_FILES.contains( this.strSourceImage ) ) {
+			this.state = State.DISABLED;
 		} else {
+			MONITOR_FILES.add( this.strSourceImage );
 			this.state = State.IDLE;
+			
+			clearOldFiles();
 		}
 		
 		this.threadUpdater = createThread();
@@ -129,6 +142,7 @@ public class ProcImageTile extends TileBase {
 
 	final public static String FILENAME_CURRENT = "/tmp/compare-current";
 	final public static String FILENAME_PREVIOUS = "/tmp/compare-previous";
+	final public static String FILENAME_MASK = "/tmp/compare-mask";
 	
 	final public static String COMMAND = "/Local/scripts/compare_images.sh";
 	
@@ -141,15 +155,36 @@ public class ProcImageTile extends TileBase {
 		return FILENAME_PREVIOUS + "_" + this.strIndex + ".jpg";
 	}
 
+	private String getFilenameMask() {
+		return FILENAME_MASK + "_" + this.strIndex + ".jpg";
+	}
+
+	private String getFilenameSourceMask() {
+		final String strSourceMask = 
+						this.strSourceImage.replace( ".", "-mask." );
+		return strSourceMask;
+	}
+
+
 	
+	/*
+	 * Get a numeric difference between the files.
+	 * From the external process this is a float between 0 and 1.
+	 * The returned number is 100 x this number (a percentage).
+	 */
 	public static Float getImageDifference( final File fileLHS,
 										    final File fileRHS,
+										    final File fileMask,
 										    final String strLogPrefix ) {
 		
+		final String strFileMask = ( null!=fileMask ) 
+										? fileMask.getAbsolutePath()
+										: null;
 		final String[] strCommand = { "/bin/bash", 
 									  COMMAND, 
 									  fileLHS.getAbsolutePath(), 
-									  fileRHS.getAbsolutePath() };
+									  fileRHS.getAbsolutePath(),
+									  strFileMask };
 		
 //		System.out.println( "Running command: " 
 //						+ strCommand[0] + " " + strCommand[1] + " " 
@@ -167,7 +202,7 @@ public class ProcImageTile extends TileBase {
 			
 			try {
 				final String strValue = strOut.split( "\\n" )[0];
-				final float fOutput = Float.parseFloat( strValue );
+				final float fOutput = Float.parseFloat( strValue ) * 100;
 				return fOutput;
 			} catch ( final NumberFormatException e ) {
 				
@@ -182,8 +217,38 @@ public class ProcImageTile extends TileBase {
 		}
 	}
 	
+
+	public void clearOldFiles() {
+		
+//		try {
+			final File fileCurrent = new File( getFilenameCurrent() );
+			if ( fileCurrent.exists() ) {
+				if ( ! fileCurrent.delete() ) {
+					LOGGER.warning( "Failed to delete file: " 
+								+ fileCurrent.getAbsolutePath() );
+				}
+			}
+			
+			final File filePrevious = new File( getFilenamePrevious() );
+			if ( filePrevious.exists() ) {
+				if ( ! filePrevious.delete() ) {
+					LOGGER.warning( "Failed to delete file: " 
+								+ filePrevious.getAbsolutePath() );
+				}
+			}
+			
+			final File fileMask = new File( getFilenameMask() );
+			if ( fileMask.exists() ) {
+				if ( ! fileMask.delete() ) {
+					LOGGER.warning( "Failed to delete file: " 
+								+ fileMask.getAbsolutePath() );
+				}
+			}
+//		} catch ( final IOException e ) {
+//			LOGGER.warning( "Failed to clear old files. " + e.toString() );
+//		}
+	}
 	
-//	private long lNextExpected
 	
 	public boolean scan() {
 
@@ -219,6 +284,11 @@ public class ProcImageTile extends TileBase {
 					FileUtils.forceDelete( filePrevious );
 				}
 
+//				final File fileMask = new File( getFilenameMask() );
+//				if ( fileMask.exists() ) {
+//					FileUtils.forceDelete( fileMask );
+//				}
+
 //				System.out.println( "001.02" );
 
 				final File fileCurrent1 = new File( getFilenameCurrent() );
@@ -253,6 +323,18 @@ public class ProcImageTile extends TileBase {
 					// file probably just moved
 					bReady = false;
 				}
+
+				final File fileSourceMask = new File( getFilenameSourceMask() );
+				
+				if ( fileSourceMask.exists() ) {
+					final File fileMask = new File( getFilenameMask() );
+					if ( ! fileMask.exists() ) {
+						FileUtils.copyFile( fileSourceMask, fileMask );
+					}
+					bUsingMask = true;
+				} else {
+					bUsingMask = false;
+				}
 				
 			} catch ( final IOException e ) {
 				this.state = State.FAULT;
@@ -267,10 +349,11 @@ public class ProcImageTile extends TileBase {
 
 			final File filePrevious = new File( getFilenamePrevious() );
 			final File fileCurrent = new File( getFilenameCurrent() );
+			final File fileMask = new File( getFilenameMask() );
 			
 			this.state = State.EXECUTING_COMPARISON;
 			final Float fDiff = getImageDifference( 
-							filePrevious, fileCurrent, strPrefix );
+							filePrevious, fileCurrent, fileMask, strPrefix );
 			this.state = State.POST_COMPARISON;
 
 			this.iCountCompleted++;
@@ -279,9 +362,16 @@ public class ProcImageTile extends TileBase {
 			
 				System.out.println( strPrefix + "Comparison result: " + fDiff );
 			
-				final Graph graph = HistogramTile.getGraph( 
-									"IMAGE_CHANGE_VALUE_" + strIndex );
-				graph.add( fDiff );
+				if ( ! this.bWarmup ) {
+					final Graph graph = HistogramTile.getGraph( 
+										"IMAGE_CHANGE_VALUE_" + strIndex );
+					graph.add( fDiff );
+					
+					// potentially fire event here
+				} else {
+					System.out.println( strPrefix + "(still in warmup)" );
+					this.bWarmup = false;
+				}
 				
 			} else {
 				System.out.println( strPrefix + "Comparison returned null result." );
@@ -353,11 +443,20 @@ public class ProcImageTile extends TileBase {
 		gc.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
 
 		text.addSpace( 10 );
-		text.println( "Counts  -  Total: " + this.iCountTotal + ", "
+		text.println( "Total: " + this.iCountTotal + ",  "
 				+ "Completed: " + this.iCountCompleted ); 
 //				+ "Fault: " + this.iCountFault ); 
 
 		text.addSpace( 10 );
+		
+		gc.setFont( Theme.get().getFont( 9 ) );
+		if ( this.bUsingMask ) {
+			text.println( "[mask]" );
+		} else {
+			text.setRightAligned( true );
+			text.println( "<no-mask>" );
+		}
+
 //		text.println( "Source Data:" );
 //		text.println( this.strData );
 

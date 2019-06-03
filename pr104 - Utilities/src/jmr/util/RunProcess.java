@@ -7,6 +7,7 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.LogOutputStream;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.lang3.StringUtils;
 
 public class RunProcess {
 	
@@ -25,7 +26,9 @@ public class RunProcess {
 	    	if ( 0 == i ) {
 			    cl = new CommandLine( strEntry );
 	    	} else {
-	    		cl.addArgument( strEntry );
+	    		if ( StringUtils.isNotBlank( strEntry ) ) {
+	    			cl.addArgument( strEntry );
+	    		}
 	    	}
 	    }
 	    this.cmd = cl;
