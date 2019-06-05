@@ -20,6 +20,7 @@ public enum EventType {
 	EXTERNAL,
 	TIME,
 	USER,
+	ENVIRONMENT,
 	SYSTEM,
 	;
 	

@@ -60,9 +60,11 @@ public class RunProcess {
 		try {
 			final int iExitValue = executor.execute( cmd );
 		    return iExitValue;
+		    
 		} catch ( final ExecuteException e ) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			final int iExitValue = e.getExitValue();
+			return iExitValue;
+			
 		} catch ( final IOException e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

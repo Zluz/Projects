@@ -316,7 +316,8 @@ public class HistogramTile extends TileBase {
 				gc.drawLine( 30, 30, iWidth - 30, iHeight - 30 );
 				gc.drawLine( 30, iHeight - 30, iWidth - 30, 30 );
 			}
-			gc.drawText( "Histogram:  " + this.strName, 2, 2 );
+//			gc.drawText( "Histogram:  " + this.strName, 2, 2 );
+			gc.drawText( this.strName, 2, 2 );
 
 			
 			iLastMinRecent = null;

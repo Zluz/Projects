@@ -19,7 +19,7 @@ public enum Perspective {
 	REMOTE( 6, 2, false, false ),
 	GPIO( 4, 5, false, false ),
 	AUTO_HAT( 5, 3, false, false ),
-	PROC_IMAGE( 7, 3, false, false ),
+	PROC_IMAGE( 8, 3, false, false ),
 	
 	TEST( 5, 3, false, false ),
 	;
@@ -347,26 +347,32 @@ public enum Perspective {
 
 	private void build_ProcImage( final Map<String, String> mapOptions ) {
 		
-		list.add( new TileGeometry( new ProcImageTile( "1", mapOptions ), 
-						new Rectangle( 2, 0, 2, 1 ) ) );
-		list.add( new TileGeometry( new HistogramTile( "IMAGE_CHANGE_VALUE_1" ), 
-						new Rectangle( 4, 0, 3, 1 ) ) );
-		list.add( new TileGeometry( new HistogramTile( "FILE_UPDATE_INTERVAL_1", true ), 
+		list.add( new TileGeometry( new HistogramTile( "FILE_INTERVAL_1", true ), 
 						new Rectangle( 0, 0, 2, 1 ) ) );
+		list.add( new TileGeometry( new HistogramTile( "CHANGE_INTERVAL_1", true ), 
+						new Rectangle( 2, 0, 1, 1 ) ) );
+		list.add( new TileGeometry( new ProcImageTile( "1", mapOptions ), 
+						new Rectangle( 3, 0, 2, 1 ) ) );
+		list.add( new TileGeometry( new HistogramTile( "IMAGE_CHANGE_VALUE_1" ), 
+						new Rectangle( 5, 0, 3, 1 ) ) );
 
-		list.add( new TileGeometry( new ProcImageTile( "2", mapOptions ), 
-						new Rectangle( 2, 1, 2, 1 ) ) );
-		list.add( new TileGeometry( new HistogramTile( "IMAGE_CHANGE_VALUE_2" ), 
-						new Rectangle( 4, 1, 3, 1 ) ) );
-		list.add( new TileGeometry( new HistogramTile( "FILE_UPDATE_INTERVAL_2", true ), 
+		list.add( new TileGeometry( new HistogramTile( "FILE_INTERVAL_2", true ), 
 						new Rectangle( 0, 1, 2, 1 ) ) );
+		list.add( new TileGeometry( new HistogramTile( "CHANGE_INTERVAL_2", true ), 
+						new Rectangle( 2, 1, 1, 1 ) ) );
+		list.add( new TileGeometry( new ProcImageTile( "2", mapOptions ), 
+						new Rectangle( 3, 1, 2, 1 ) ) );
+		list.add( new TileGeometry( new HistogramTile( "IMAGE_CHANGE_VALUE_2" ), 
+						new Rectangle( 5, 1, 3, 1 ) ) );
 
-		list.add( new TileGeometry( new ProcImageTile( "3", mapOptions ), 
-						new Rectangle( 2, 2, 2, 1 ) ) );
-		list.add( new TileGeometry( new HistogramTile( "IMAGE_CHANGE_VALUE_3" ), 
-						new Rectangle( 4, 2, 3, 1 ) ) );
-		list.add( new TileGeometry( new HistogramTile( "FILE_UPDATE_INTERVAL_3", true ), 
+		list.add( new TileGeometry( new HistogramTile( "FILE_INTERVAL_3", true ), 
 						new Rectangle( 0, 2, 2, 1 ) ) );
+		list.add( new TileGeometry( new HistogramTile( "CHANGE_INTERVAL_3", true ), 
+						new Rectangle( 2, 2, 1, 1 ) ) );
+		list.add( new TileGeometry( new ProcImageTile( "3", mapOptions ), 
+						new Rectangle( 3, 2, 2, 1 ) ) );
+		list.add( new TileGeometry( new HistogramTile( "IMAGE_CHANGE_VALUE_3" ), 
+						new Rectangle( 5, 2, 3, 1 ) ) );
 
 //		list.add( new TileGeometry( new SystemInfoTile(), 
 //						new Rectangle( 2, 2, 1, 1 ) ) );

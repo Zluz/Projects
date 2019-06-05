@@ -2,8 +2,10 @@ package jmr.rpclient.tiles;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -19,8 +21,13 @@ import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.rpclient.swt.UI;
 import jmr.rpclient.tiles.HistogramTile.Graph;
+import jmr.s2db.event.EventType;
+import jmr.s2db.tables.Event;
 import jmr.util.FileUtil;
+import jmr.util.NetUtil;
 import jmr.util.RunProcess;
+import jmr.util.report.TraceMap;
+import jmr.util.transform.DateFormatting;
 
 public class ProcImageTile extends TileBase {
 
@@ -36,7 +43,9 @@ public class ProcImageTile extends TileBase {
 		EXECUTING_COMPARISON,
 		POST_COMPARISON,
 		FAULT,
-		DISABLED,
+		INFO__DISABLED,
+		WARNING__SHARE_READONLY,
+		WARNING__MISSING_SOURCE_DIR,
 		;
 	}
 	
@@ -52,13 +61,25 @@ public class ProcImageTile extends TileBase {
 	private final File fileSourcePath;
 	
 	private State state = State.IDLE;
+	private float fChoke;
 	private int iCountTotal;
 	private int iCountCompleted;
+	private int iCountChanged;
 	private boolean bUsingMask;
-	private boolean bWarmup;
+	private boolean bWarmup = true;
 	
 	String strData = "uninitialized";
 	
+	
+	public String getBaseFilename() {
+		final int iPosSlash = this.strSourceImage.lastIndexOf( '/' );
+		final String strNoPath = this.strSourceImage.substring( iPosSlash + 1 );
+		final int iPosDot = strNoPath.lastIndexOf( '.' );
+		final String strNoExt = strNoPath.substring( 0, iPosDot );
+//		final int iPosDash = strNoExt.lastIndexOf( '-' );
+//		final String strNoDash = strNoExt.substring( 0, iPosDash );
+		return strNoExt;
+	}
 	
 	
 	public ProcImageTile( final String strIndex,
@@ -70,6 +91,7 @@ public class ProcImageTile extends TileBase {
 			this.strIndex = null;
 			this.strName = null;
 			this.fThreshold = 0.0f;
+			this.fChoke = 0.0f;
 			this.fileSourcePath = null;
 			return;
 		}
@@ -90,11 +112,12 @@ public class ProcImageTile extends TileBase {
 			LOGGER.warning( "Failed to parse threshold value: " + strThreshold );
 		}
 		this.fThreshold = fThresholdParsed;
+		this.fChoke = 0.0f;
 		
 		if ( StringUtils.isBlank( this.strSourceImage ) ) {
-			this.state = State.DISABLED;
+			this.state = State.INFO__DISABLED;
 		} else if ( MONITOR_FILES.contains( this.strSourceImage ) ) {
-			this.state = State.DISABLED;
+			this.state = State.INFO__DISABLED;
 		} else {
 			MONITOR_FILES.add( this.strSourceImage );
 			this.state = State.IDLE;
@@ -105,6 +128,12 @@ public class ProcImageTile extends TileBase {
 		if ( State.IDLE.equals( this.state ) ) {
 			final File fileSource = new File( this.strSourceImage );
 			this.fileSourcePath = fileSource.getParentFile();
+			
+			if ( ! this.fileSourcePath.isDirectory() ) {
+				this.state = State.WARNING__MISSING_SOURCE_DIR;
+			} else if ( ! this.fileSourcePath.canWrite() ) {
+				this.state = State.WARNING__SHARE_READONLY;
+			}
 		} else {
 			this.fileSourcePath = null;
 		}
@@ -159,8 +188,10 @@ public class ProcImageTile extends TileBase {
 	}
 	
 	
-	long lLastUpdate = System.currentTimeMillis();
+	long lLastUpdate = 0;
+	long lLastChange = 0;
 	long lCycleCount = 0;
+
 
 	final public static String FILENAME_CURRENT = "/tmp/compare-current";
 	final public static String FILENAME_PREVIOUS = "/tmp/compare-previous";
@@ -212,7 +243,9 @@ public class ProcImageTile extends TileBase {
 		final Integer iResult = run.run();
 		final String strOut = run.getStdOut();
 		if ( null==iResult || iResult != 0 ) {
-			LOGGER.warning( strLogPrefix + "Non-zero result from process." );
+			LOGGER.warning( strLogPrefix + "Non-zero result from process. "
+					+ "Exit code = " + iResult + "\n"
+					+ "Full process output:\n" + strOut );
 			return null;
 		} else if ( StringUtils.isNotBlank( strOut ) ) {
 			
@@ -279,15 +312,21 @@ public class ProcImageTile extends TileBase {
 		lCycleCount++;
 		final long lElapsed = lTimeNow - lLastUpdate;
 		lLastUpdate = lTimeNow;
+		
+		final TraceMap map;
 
 		if ( bReady ) {
+
+			map = new TraceMap();
 
 //			System.out.println( "001" );
 
 			final Graph graph = HistogramTile.getGraph( 
-									"FILE_UPDATE_INTERVAL_" + strIndex );
+									"FILE_INTERVAL_" + strIndex );
 			if ( null!=graph && ( lCycleCount > 1 ) ) {
 				graph.add( ( (float) lElapsed ) / 1000 );
+//				graph.setThresholdMin( new Double( this.fThreshold ) );
+//				graph.setThresholdMax( new Double( this.fThreshold ) );
 			}
 			
 			try {
@@ -319,6 +358,7 @@ public class ProcImageTile extends TileBase {
 			}
 		} else {
 			this.state = State.FAULT;
+			map = null;
 		}
 		
 		long lSourceFileTimestamp = 0;
@@ -380,13 +420,39 @@ public class ProcImageTile extends TileBase {
 				System.out.println( strPrefix + "Comparison result: " + fDiff );
 			
 				if ( ! this.bWarmup ) {
-					final Graph graph = HistogramTile.getGraph( 
-										"IMAGE_CHANGE_VALUE_" + strIndex );
-					graph.add( fDiff );
 					
-					if ( fDiff >= this.fThreshold ) {
-						this.reportChangeDetected( 
-									fileCurrent, lSourceFileTimestamp, fDiff );
+					final float fThresholdAdjusted = this.fThreshold - this.fChoke;
+					
+					{
+						final Graph graph = HistogramTile.getGraph( 
+										"IMAGE_CHANGE_VALUE_" + strIndex );
+						graph.add( fDiff );
+						graph.setThresholdMax( new Double( fThresholdAdjusted ) );
+					}
+
+					
+					if ( fDiff >= fThresholdAdjusted ) {
+						
+						// image changed
+						
+						this.fChoke = this.fChoke - 0.1f;
+						this.iCountChanged++;
+						final long lChangeElapsed = lTimeNow - lLastChange;
+						lLastChange = lTimeNow;
+						
+						System.out.println( "Change above threshold. Reporting.." );
+						this.reportChangeDetected( fileCurrent, filePrevious, 
+										lSourceFileTimestamp, fDiff, 
+										lTimeNow, map );
+						
+						final Graph graph = HistogramTile.getGraph( 
+										"CHANGE_INTERVAL_" + strIndex );
+						final float fChangeMinutes = 
+										(float)lChangeElapsed / 1000 / 60;
+						graph.add( fChangeMinutes );
+						
+					} else {
+						this.fChoke = this.fChoke + 0.001f;
 					}
 
 				} else {
@@ -406,27 +472,103 @@ public class ProcImageTile extends TileBase {
 	
 	
 	private void reportChangeDetected( final File fileChanged,
+									   final File filePrevious,
 									   final long lFileTimestamp,
-									   final float fDiffValue ) {
+									   final float fDiffValue,
+									   final long lTimeDetect,
+									   final TraceMap map ) {
 		if ( null == fileChanged ) return;
 		if ( null == this.fileSourcePath ) return;
 		
+		final Date dateFile = new Date( lFileTimestamp );
+		
+		final String strTimestamp = 
+				DateFormatting.getTimestamp( dateFile ).substring( 0, 15 );
+		
+		final String strBaseFilename = getBaseFilename();
+		final String strChangeDir = strTimestamp + "_" + strBaseFilename;
+		
 		final File fileChangeDir = 
 //						new File( this.fileSourcePath, ""+ lFileTimestamp );
-						new File( "\tmp", ""+ lFileTimestamp );
+//						new File( "/tmp", strTimestamp );
+//						new File( this.fileSourcePath, ""+ lFileTimestamp );
+						new File( this.fileSourcePath, strChangeDir );
+		
+		final String strChangePath = fileChangeDir.getAbsolutePath();
 
 		try {
 			FileUtils.forceMkdir( fileChangeDir );
 			
-			final File fileDestImage = new File( fileChangeDir, "image.jpg" );
+			final File fileDestChangedImage = new File( fileChangeDir, "changed.jpg" );
+			final File fileDestPrevImage = new File( fileChangeDir, "previous.jpg" );
 			final File fileDestText = new File( fileChangeDir, "info.txt" );
 			
-			FileUtils.copyFile( fileChanged, fileDestImage );
+			FileUtils.copyFile( fileChanged, fileDestChangedImage );
+			FileUtils.copyFile( filePrevious, fileDestPrevImage );
 			
-			final String strText = "Comparison value: " 
-									+ String.format( "%.5f", fDiffValue );
+			final StringBuffer sb = new StringBuffer();
+
+			sb.append( String.format( 
+					"Name: %s\n", this.strName ) );
+			sb.append( String.format( 
+					"Source image file: %s\n", this.strSourceImage ) );
+			sb.append( String.format( 
+					"Source image timestamp: %s\n", strTimestamp ) );
+			sb.append( String.format( 
+					"Change directory: %s\n", strChangePath ) );
 			
-			FileUtil.saveToFile( fileDestText, strText );
+			sb.append( String.format( 
+					"Comparison value: %.6f\n", fDiffValue ) );
+			sb.append( String.format( 
+					"Comparison threshold base: %.6f\n", this.fThreshold ) );
+			sb.append( String.format( 
+					"Comparison threshold choke: %.6f\n", this.fChoke ) );
+			
+			sb.append( String.format( 
+					"Count, total: %d\n", this.iCountTotal ) );
+			sb.append( String.format( 
+					"Count, completed: %d\n", this.iCountCompleted ) );
+			sb.append( String.format( 
+					"Count, changed: %d\n", this.iCountChanged ) );
+			
+			
+			map.put( "name", this.strName );
+			map.put( "change-directory", strChangePath );
+			map.put( "source-image-timestamp", strTimestamp );
+			map.put( "diff-value", fDiffValue );
+			map.put( "diff-threshold", fThreshold );
+			map.put( "diff-choke", fChoke );
+			
+			map.put( "file-info", fileDestText.getAbsolutePath() );
+			map.put( "file-source", this.strSourceImage );
+			map.put( "file-previous", fileDestPrevImage.getAbsolutePath() );
+			map.put( "file-changed", fileDestChangedImage.getAbsolutePath() );
+
+			map.put( "identity-camera", strBaseFilename );
+			map.put( "identity-timestamp", strTimestamp );
+			map.put( "identity-mac", NetUtil.getMAC() );
+
+			sb.append( "\nTraceMap:\n" );
+			for ( final Entry<String, Object> entry : map.entrySet() ) {
+				sb.append( "\t\"" + entry.getKey() + "\" "
+						+ "= " + entry.getValue() + "\n" );
+			}
+			
+			FileUtil.saveToFile( fileDestText, sb.toString() );
+
+			
+			final String strSubject = "IMAGE_CHANGE";
+//			final String strValue = ""+ fDiffValue; 
+			final String strValue = this.strName; 
+			
+			map.addFrame();
+			
+			final Event event = Event.add( 
+					EventType.ENVIRONMENT, strSubject, strValue, 
+					""+ fThreshold, map, lTimeDetect, 
+					null, null, null ); 
+			
+			System.out.println( "Event created: seq " + event.getEventSeq() );
 			
 		} catch ( final IOException e ) {
 			LOGGER.warning( "Failed to record change data. " + e.toString() );
@@ -438,7 +580,7 @@ public class ProcImageTile extends TileBase {
 	public void paint(	final GC gc, 
 						final Image image ) {
 		
-		final boolean bEnabled = ! State.DISABLED.equals( this.state );
+		final boolean bEnabled = ( ! this.state.name().contains( "__" ) );
 		
 		if ( bEnabled && ! threadUpdater.isAlive() ) {
 			threadUpdater.start();
@@ -470,7 +612,7 @@ public class ProcImageTile extends TileBase {
 
 		switch ( this.state ) {
 			case IDLE:
-			case DISABLED:
+			case INFO__DISABLED:
 			case WAITING_FOR_FILE: {
 				gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 				gc.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
@@ -483,8 +625,13 @@ public class ProcImageTile extends TileBase {
 				gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
 				gc.setBackground( UI.COLOR_BLUE );
 				break;
+			case WARNING__MISSING_SOURCE_DIR:
+			case WARNING__SHARE_READONLY:
+				gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
+				gc.setBackground( Theme.get().getColor( Colors.BACK_ALERT ) );
+				break;
 		}
-		text.println( "State: " + this.state.name() );
+		text.println( "State:  " + this.state.name() );
 		if ( bEnabled ) {
 			gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 		} else {
@@ -494,21 +641,36 @@ public class ProcImageTile extends TileBase {
 
 		text.addSpace( 10 );
 		text.println( "Total: " + this.iCountTotal + ",  "
-				+ "Completed: " + this.iCountCompleted ); 
+				+ "Completed: " + this.iCountCompleted + ",  "
+				+ "Changes: " + this.iCountChanged ); 
 //				+ "Fault: " + this.iCountFault ); 
 
-		text.addSpace( 10 );
+		text.addSpace( 4 );
 		
 		gc.setFont( Theme.get().getFont( 9 ) );
 		
-		text.println( "Threshold: " + String.format( "%.3f", fThreshold ) );
+		text.println( String.format( 
+					"Threshold:   %1$.3f   -   %2$.3f   =   %3$.3f", 
+							this.fThreshold, this.fChoke, 
+							this.fThreshold - this.fChoke ) );
 
+		final StringBuilder sbEnabled = new StringBuilder();
+		final StringBuilder sbDisabled = new StringBuilder();
+		
 		if ( this.bUsingMask ) {
-			text.println( "[mask]" );
+			sbEnabled.append( "[mask] " );
 		} else {
-			text.setRightAligned( true );
-			text.println( "<no-mask>" );
+			sbDisabled.append( " <no-mask>" );
 		}
+		if ( this.bWarmup ) {
+			sbDisabled.append( " <warmup>" );
+		} else {
+			sbEnabled.append( "[ready] " );
+		}
+		text.println( sbEnabled.toString() );
+		text.setRightAligned( true );
+		text.addSpace( -14 );
+		text.println( sbDisabled.toString() );
 
 //		text.println( "Source Data:" );
 //		text.println( this.strData );
@@ -519,4 +681,9 @@ public class ProcImageTile extends TileBase {
 	protected void activateButton( final S2Button button ) {}
 	
 
+	public static void main(String[] args) {
+		final String strValue = "value";
+		System.out.println( String.format( "String: %1$s eol", strValue ) );
+	}
+	
 }
