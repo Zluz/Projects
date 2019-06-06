@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -67,6 +69,7 @@ public class ProcImageTile extends TileBase {
 	private int iCountChanged;
 	private boolean bUsingMask;
 	private boolean bWarmup = true;
+	private int iCyclesSinceLastChange = 10;
 	
 	String strData = "uninitialized";
 	
@@ -193,6 +196,9 @@ public class ProcImageTile extends TileBase {
 	long lCycleCount = 0;
 
 
+	private final List<String> listTags = new LinkedList<>();
+
+
 	final public static String FILENAME_CURRENT = "/tmp/compare-current";
 	final public static String FILENAME_PREVIOUS = "/tmp/compare-previous";
 	final public static String FILENAME_MASK = "/tmp/compare-mask";
@@ -307,49 +313,37 @@ public class ProcImageTile extends TileBase {
 		this.state = State.PREPARING_FILES;
 		final long lTimeNow = System.currentTimeMillis();
 		
-//		System.out.println( "Source image file updated.." );
-		
+
 		lCycleCount++;
-		final long lElapsed = lTimeNow - lLastUpdate;
+		final long lElapsed = ( lLastUpdate > 0 ) ? lTimeNow - lLastUpdate : 0;
 		lLastUpdate = lTimeNow;
 		
+		listTags.clear();
 		final TraceMap map;
 
 		if ( bReady ) {
 
 			map = new TraceMap();
 
-//			System.out.println( "001" );
-
-			final Graph graph = HistogramTile.getGraph( 
-									"FILE_INTERVAL_" + strIndex );
-			if ( null!=graph && ( lCycleCount > 1 ) ) {
+			final Graph graph = 
+						HistogramTile.getGraph( "FILE_INTERVAL_" + strIndex );
+			
+			if ( null!=graph && ( lCycleCount > 1 ) && ( lElapsed > 0 ) ) {
+				
 				graph.add( ( (float) lElapsed ) / 1000 );
-//				graph.setThresholdMin( new Double( this.fThreshold ) );
-//				graph.setThresholdMax( new Double( this.fThreshold ) );
 			}
 			
 			try {
-//				System.out.println( "001.01" );
 				
 				final File filePrevious = new File( getFilenamePrevious() );
 				if ( filePrevious.exists() ) {
 					FileUtils.forceDelete( filePrevious );
 				}
 
-//				final File fileMask = new File( getFilenameMask() );
-//				if ( fileMask.exists() ) {
-//					FileUtils.forceDelete( fileMask );
-//				}
-
-//				System.out.println( "001.02" );
-
 				final File fileCurrent1 = new File( getFilenameCurrent() );
 				if ( fileCurrent1.isFile() ) {
 					fileCurrent1.renameTo( filePrevious );
 				}
-
-//				System.out.println( "001.03" );
 
 			} catch ( final IOException e ) {
 				this.state = State.FAULT;
@@ -435,24 +429,44 @@ public class ProcImageTile extends TileBase {
 						
 						// image changed
 						
-						this.fChoke = this.fChoke - 0.1f;
+						if ( this.iCyclesSinceLastChange < 2 ) {
+							this.fChoke = this.fChoke - 0.5f;
+							this.listTags.add( "{+change+}" );
+						} else {
+							this.fChoke = this.fChoke - 0.1f;
+							this.listTags.add( "{change}" );
+						}
+						this.iCyclesSinceLastChange = 0;
+						
 						this.iCountChanged++;
 						final long lChangeElapsed = lTimeNow - lLastChange;
-						lLastChange = lTimeNow;
 						
 						System.out.println( "Change above threshold. Reporting.." );
 						this.reportChangeDetected( fileCurrent, filePrevious, 
 										lSourceFileTimestamp, fDiff, 
 										lTimeNow, map );
 						
-						final Graph graph = HistogramTile.getGraph( 
-										"CHANGE_INTERVAL_" + strIndex );
-						final float fChangeMinutes = 
-										(float)lChangeElapsed / 1000 / 60;
-						graph.add( fChangeMinutes );
+						System.out.print( "lLastChange = " + lLastChange + ", "
+								+ "lTimeNow = " + lTimeNow );
+						
+						if ( lLastChange > 0 ) {
+							final Graph graph = HistogramTile.getGraph( 
+											"CHANGE_INTERVAL_" + strIndex );
+							
+							System.out.print( ", graph: " + graph.hashCode() );
+							
+							final float fChangeMinutes = 
+											(float)lChangeElapsed / 1000 / 60;
+
+							System.out.print( ", fChangeMinutes: " + fChangeMinutes );
+
+							graph.add( fChangeMinutes );
+						}
+						lLastChange = lTimeNow;
 						
 					} else {
-						this.fChoke = this.fChoke + 0.001f;
+						this.fChoke = this.fChoke + 0.02f;
+						this.iCyclesSinceLastChange++;
 					}
 
 				} else {
@@ -565,7 +579,7 @@ public class ProcImageTile extends TileBase {
 			
 			final Event event = Event.add( 
 					EventType.ENVIRONMENT, strSubject, strValue, 
-					""+ fThreshold, map, lTimeDetect, 
+					""+ ( this.fThreshold - this.fChoke ), map, lTimeDetect, 
 					null, null, null ); 
 			
 			System.out.println( "Event created: seq " + event.getEventSeq() );
@@ -667,6 +681,11 @@ public class ProcImageTile extends TileBase {
 		} else {
 			sbEnabled.append( "[ready] " );
 		}
+		
+		for ( final String strTag : listTags ) {
+			sbEnabled.append( strTag + " " );
+		}
+		
 		text.println( sbEnabled.toString() );
 		text.setRightAligned( true );
 		text.addSpace( -14 );

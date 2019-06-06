@@ -41,6 +41,9 @@ public class PerformanceMonitorTile extends TileBase {
 			
 			final boolean bBar = image.getImageData().width < 100;
 			
+			if ( bBar && cpu.isHeatWarning() ) {
+				gc.setBackground( Theme.get().getColor( Colors.BACK_ALERT ) );
+			}
 			gc.fillRectangle( image.getBounds() );
 			
 			int iXTime = iTimeIndex;

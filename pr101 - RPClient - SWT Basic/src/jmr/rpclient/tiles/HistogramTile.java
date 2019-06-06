@@ -228,6 +228,11 @@ public class HistogramTile extends TileBase {
 						  final boolean bIsElapsedGraph ) {
 		this.strName = strName;
 		this.bIsElapsedGraph = bIsElapsedGraph;
+
+//		if ( bIsElapsedGraph && "CHANGE_INTERVAL_3".equals( strName ) ) {
+//			System.out.println( "Histogram instantiated: CHANGE_INTERVAL_3" );
+//			System.out.println( ExceptionUtils.getStackTrace( new Throwable() ) );
+//		}
 	}
 
 	public HistogramTile( final String strName ) {
@@ -242,6 +247,7 @@ public class HistogramTile extends TileBase {
 	public void paint(	final GC gc, 
 						final Image image ) {
 		
+		final long lNow = System.currentTimeMillis();
 		try {
 
 			final int iWidth = image.getBounds().width;
@@ -255,8 +261,9 @@ public class HistogramTile extends TileBase {
 				gc.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
 			}
 
-			gc.setForeground( UI.COLOR_DARK_BLUE );
+			gc.setForeground( UI.COLOR_DARK_GRAY );
 			gc.drawLine( 0, iHeight, iWidth, iHeight );
+			gc.drawLine( 0, iHeight, 0, iHeight / 2 );
 			gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 
 			if ( null == this.graph ) {
@@ -311,7 +318,7 @@ public class HistogramTile extends TileBase {
 			if ( graph.bEnabled ) {
 				gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 			} else {
-				gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
+				gc.setForeground( UI.COLOR_DARK_GRAY );
 				
 				gc.drawLine( 30, 30, iWidth - 30, iHeight - 30 );
 				gc.drawLine( 30, iHeight - 30, iWidth - 30, 30 );
@@ -379,7 +386,7 @@ public class HistogramTile extends TileBase {
 			final String strMin = String.format( "%.3f", graph.fMin );
 			gc.drawText( strMin, 2, iHeight + 4 );
 			final String strMax = String.format( "%.3f", graph.fMax );
-			gc.drawText( strMax, iWidth - 30, iHeight + 2 );
+			gc.drawText( strMax, iWidth - 34, iHeight + 4 );
 			
 			
 			final Float fLatest = graph.getLatestSample();
@@ -400,6 +407,12 @@ public class HistogramTile extends TileBase {
 				final String strElapsed = String.format( "%.3f", fElapsed );
 				text.println( "elapsed" );
 				text.println( strElapsed );
+				
+				if ( bIsElapsedGraph ) {
+					final float fSince = lNow - graph.lTimeLastSample;
+					text.println( "since" );
+					text.println( String.format( "%.3f", fSince / 1000 ) );
+				}
 			}
 			
 		} catch ( final Throwable t ) {

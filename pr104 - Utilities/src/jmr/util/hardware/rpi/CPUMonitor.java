@@ -26,6 +26,9 @@ public class CPUMonitor {
 			""
 		};
 
+	public final static double WARNING_TEMP_HIGH = 80.0;
+	
+	
 	
 	private JsonObject joLast;
 	
@@ -96,6 +99,11 @@ public class CPUMonitor {
 		} else {
 			return null;
 		}
+	}
+	
+	
+	public boolean isHeatWarning() {
+		return ( this.getTemperature() > WARNING_TEMP_HIGH );
 	}
 	
 	
