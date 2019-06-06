@@ -7,16 +7,24 @@ export RHS=$2
 export MASK=$3
 
 # validate source image files
-export LHS_CHECK=`/usr/bin/identify $LHS | grep JPEG | wc -l`
-if [ "$LHS_CHECK" -eq "0" ]; then
+# export LHS_CHECK=`/usr/bin/identify $LHS | grep JPEG | wc -l`
+export LHS_ERRORS=`/usr/bin/identify -verbose $LHS 2>&1`
+export LHS_CHECK=`echo $LHS_ERRORS | grep warning | wc -l`
+if [ ! "$LHS_CHECK" -eq "0" ]; then
 	echo ""
 	echo "Comparison aborted. Image file corrupt: $LHS"
+	echo ""
+	echo $LHS_ERRORS
 	exit 100
 fi
-export RHS_CHECK=`/usr/bin/identify $RHS | grep JPEG | wc -l`
-if [ "$RHS_CHECK" -eq "0" ]; then
+# export RHS_CHECK=`/usr/bin/identify $RHS | grep JPEG | wc -l`
+export RHS_ERRORS=`/usr/bin/identify -verbose $RHS 2>&1`
+export RHS_CHECK=`echo $RHS_ERRORS | grep warning | wc -l`
+if [ ! "$RHS_CHECK" -eq "0" ]; then
 	echo ""
 	echo "Comparison aborted. Image file corrupt: $RHS"
+	echo ""
+	echo $RHS_ERRORS
 	exit 100
 fi
 
