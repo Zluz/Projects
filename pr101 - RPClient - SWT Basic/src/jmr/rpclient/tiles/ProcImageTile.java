@@ -34,6 +34,11 @@ import jmr.util.transform.DateFormatting;
 public class ProcImageTile extends TileBase {
 
 
+	private static final float CHOKE_CLOSE_SLOW = 0.002f;
+	private static final float CHOKE_OPEN_SLOW  = 0.020f;
+	private static final float CHOKE_OPEN_FAST  = 0.500f;
+
+
 	private static final Logger 
 			LOGGER = Logger.getLogger( ProcImageTile.class.getName() );
 
@@ -53,6 +58,8 @@ public class ProcImageTile extends TileBase {
 	
 	private final static Set<String> MONITOR_FILES = new HashSet<>();
 	
+	
+	private RunProcess run;
 	
 	private final Thread threadUpdater;
 
@@ -231,7 +238,7 @@ public class ProcImageTile extends TileBase {
 	 * From the external process this is a float between 0 and 1.
 	 * The returned number is 100 x this number (a percentage).
 	 */
-	public static Float getImageDifference( final File fileLHS,
+	public Float getImageDifference( final File fileLHS,
 										    final File fileRHS,
 										    final File fileMask,
 										    final String strLogPrefix ) {
@@ -245,32 +252,17 @@ public class ProcImageTile extends TileBase {
 									  fileRHS.getAbsolutePath(),
 									  strFileMask };
 		
-		final RunProcess run = new RunProcess( strCommand );
+		run = new RunProcess( strCommand );
 		final Integer iResult = run.run();
-		final String strOut = run.getStdOut();
 		if ( null==iResult || iResult != 0 ) {
-			LOGGER.warning( strLogPrefix + "Non-zero result from process. "
-					+ "Exit code = " + iResult + "\n"
-					+ "Full process output:\n" + strOut );
+			LOGGER.warning( strLogPrefix + "Non-zero result from process ("
+					+ "exit code = " + iResult + ")." ); // + "\n"
+//					+ "Full process output:\n" + strOut );
 			return null;
-		} else if ( StringUtils.isNotBlank( strOut ) ) {
-			
-//			System.out.println( "Output: " + strOut );
-			
-			try {
-				final String strValue = strOut.split( "\\n" )[0];
-				final float fOutput = Float.parseFloat( strValue ) * 100;
-				return fOutput;
-			} catch ( final NumberFormatException e ) {
-				
-				LOGGER.warning( strLogPrefix + "Failed to parse float. "
-						+ "Full process output:\n" + strOut );
-				return null;
-			}
-			
 		} else {
-			LOGGER.warning( strLogPrefix + "Empty output from process." );
-			return null;
+
+			final Float fValue = run.getOutputFloat();
+			return fValue;
 		}
 	}
 	
@@ -403,13 +395,15 @@ public class ProcImageTile extends TileBase {
 			final File fileMask = new File( getFilenameMask() );
 			
 			this.state = State.EXECUTING_COMPARISON;
-			final Float fDiff = getImageDifference( 
+			final Float fOutputDiff = getImageDifference( 
 							filePrevious, fileCurrent, fileMask, strPrefix );
 			this.state = State.POST_COMPARISON;
 
 			this.iCountCompleted++;
 
-			if ( null != fDiff ) {
+			if ( null != fOutputDiff ) {
+				
+				final float fDiff = fOutputDiff * 100;
 			
 				System.out.println( strPrefix + "Comparison result: " + fDiff );
 			
@@ -430,10 +424,10 @@ public class ProcImageTile extends TileBase {
 						// image changed
 						
 						if ( this.iCyclesSinceLastChange < 2 ) {
-							this.fChoke = this.fChoke - 0.5f;
+							this.fChoke = this.fChoke - CHOKE_OPEN_FAST;
 							this.listTags.add( "{+change+}" );
 						} else {
-							this.fChoke = this.fChoke - 0.1f;
+							this.fChoke = this.fChoke - CHOKE_OPEN_SLOW;
 							this.listTags.add( "{change}" );
 						}
 						this.iCyclesSinceLastChange = 0;
@@ -465,7 +459,7 @@ public class ProcImageTile extends TileBase {
 						lLastChange = lTimeNow;
 						
 					} else {
-						this.fChoke = this.fChoke + 0.02f;
+						this.fChoke = this.fChoke + CHOKE_CLOSE_SLOW;
 						this.iCyclesSinceLastChange++;
 					}
 
@@ -475,8 +469,10 @@ public class ProcImageTile extends TileBase {
 				}
 				
 			} else {
-				System.out.println( strPrefix + "Comparison returned null result." );
+				System.out.println( strPrefix + "Comparison process failed." );
+				System.out.println( strPrefix + "Output:\n" + run.getStdOut() );
 			}
+			this.run = null;
 		}
 
 		this.state = State.IDLE;
@@ -544,6 +540,8 @@ public class ProcImageTile extends TileBase {
 					"Count, completed: %d\n", this.iCountCompleted ) );
 			sb.append( String.format( 
 					"Count, changed: %d\n", this.iCountChanged ) );
+			
+			sb.append( "\nComparison process output:\n" + this.run.getStdOut() );
 			
 			
 			map.put( "name", this.strName );
