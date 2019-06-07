@@ -9,7 +9,7 @@ export MASK=$3
 # validate source image files
 # export LHS_CHECK=`/usr/bin/identify $LHS | grep JPEG | wc -l`
 export LHS_ERRORS=`/usr/bin/identify -verbose $LHS 2>&1`
-export LHS_CHECK=`echo $LHS_ERRORS | grep warning | wc -l`
+export LHS_CHECK=`echo $LHS_ERRORS | grep @ | wc -l`
 if [ ! "$LHS_CHECK" -eq "0" ]; then
 	echo ""
 	echo "Comparison aborted. Image file corrupt: $LHS"
@@ -19,7 +19,7 @@ if [ ! "$LHS_CHECK" -eq "0" ]; then
 fi
 # export RHS_CHECK=`/usr/bin/identify $RHS | grep JPEG | wc -l`
 export RHS_ERRORS=`/usr/bin/identify -verbose $RHS 2>&1`
-export RHS_CHECK=`echo $RHS_ERRORS | grep warning | wc -l`
+export RHS_CHECK=`echo $RHS_ERRORS | grep @ | wc -l`
 if [ ! "$RHS_CHECK" -eq "0" ]; then
 	echo ""
 	echo "Comparison aborted. Image file corrupt: $RHS"
@@ -50,10 +50,22 @@ if [ "$#" -eq 3 ] && [ -f $MASK ]; then
 fi
 
 echo $OUT4
-#echo
-#echo "processing:"
+echo
+echo "Command:"
+echo "$CMD"
+echo
+echo "Validation:"
+echo
+echo "[LHS]"
+echo "$LHS_ERRORS"
+echo
+echo "[RHS]"
+echo "$RHS_ERRORS"
+echo
+echo "Processing:"
+echo
+echo $OUT1
 #echo $OUT3
 #echo $OUT2
 #echo $OUT1
 
-echo "Command:  $CMD"
