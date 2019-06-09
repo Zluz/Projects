@@ -12,16 +12,17 @@ import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
 import com.google.cloud.vision.v1.EntityAnnotation;
 import com.google.cloud.vision.v1.Feature;
+import com.google.cloud.vision.v1.Feature.Type;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
-import com.google.cloud.vision.v1.Feature.Type;
 import com.google.protobuf.ByteString;
 
 public class VisionService {
 
 	final private String strSourceFilename;
 
-	private BatchAnnotateImagesResponse response; 
+	private BatchAnnotateImagesResponse response;
+//	private final JsonObject jo = new JsonObject();
 	
 	public VisionService( final String strSourceFilename ) {
 		this.strSourceFilename = strSourceFilename;
@@ -96,5 +97,22 @@ public class VisionService {
 	        }
 		}
 	}
+	
+	
+//	public boolean toJsonFile( final File file ) {
+//		final ObjectMapper om = new ObjectMapper();
+//		try {
+//			om.writeValue( file, this.response );
+//			return true;
+//		} catch ( final IOException e ) {
+//			System.err.println( "Failed to write file. " + e.toString() );
+//			return false;
+//		}
+//	}
+	
+	
+//	public JsonObject toJson() {
+//		return this.jo;
+//	}
 	
 }
