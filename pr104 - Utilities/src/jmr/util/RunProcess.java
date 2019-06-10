@@ -93,20 +93,35 @@ public class RunProcess {
 	
 	
 	public Float getOutputFloat() {
-		if ( 0==this.sbStdOut.length() ) return null;
-
-		final String strOut = this.sbStdOut.toString().trim();
-		if ( strOut.isEmpty() ) return null;
+		
+		final String strLine = getOutputLine();
+		if ( strLine.isEmpty() ) return null;
 		
 		try {
-			final String strValue = strOut.split( "\\n" )[0];
-			final float fOutput = Float.parseFloat( strValue );
+			final float fOutput = Float.parseFloat( strLine );
 			return fOutput;
 		} catch ( final NumberFormatException e ) {
 //			LOGGER.warning( strLogPrefix + "Failed to parse float. "
 //					+ "Full process output:\n" + strOut );
 			return null;
 		}
+	}
+	
+	
+	/**
+	 * Return the first line of output.
+	 * Guaranteed not to be null.
+	 * Will not pull from STDERR.
+	 * @return
+	 */
+	public String getOutputLine() {
+		if ( 0==this.sbStdOut.length() ) return "";
+
+		final String strOut = this.sbStdOut.toString().trim();
+		if ( strOut.isEmpty() ) return "";
+		
+		final String strValue = strOut.split( "\\n" )[0];
+		return strValue;
 	}
 
 }

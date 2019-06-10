@@ -34,9 +34,9 @@ import jmr.util.transform.DateFormatting;
 public class ProcImageTile extends TileBase {
 
 
-	private static final float CHOKE_CLOSE_SLOW = 0.002f;
-	private static final float CHOKE_OPEN_SLOW  = 0.020f;
-	private static final float CHOKE_OPEN_FAST  = 0.500f;
+	private static final float CHOKE_CLOSE_SLOW = 0.0001f;
+	private static final float CHOKE_OPEN_SLOW  = 0.0100f;
+	private static final float CHOKE_OPEN_FAST  = 0.5000f;
 
 
 	private static final Logger 
@@ -66,6 +66,7 @@ public class ProcImageTile extends TileBase {
 	private final String strName;
 	private final String strSourceImage;
 	private final String strIndex;
+	private final String strExpectedObjects;
 	private final float fThreshold;
 	private final File fileSourcePath;
 	
@@ -103,6 +104,7 @@ public class ProcImageTile extends TileBase {
 			this.fThreshold = 0.0f;
 			this.fChoke = 0.0f;
 			this.fileSourcePath = null;
+			this.strExpectedObjects = null;
 			return;
 		}
 		
@@ -113,6 +115,12 @@ public class ProcImageTile extends TileBase {
 
 		this.strSourceImage = mapOptions.get( strPrefix + ".file" );
 		this.strName = mapOptions.get( strPrefix + ".name" );
+		final String strValue = mapOptions.get( strPrefix + ".expected.objects" );
+		if ( ! StringUtils.isBlank( strValue ) ) {
+			this.strExpectedObjects = strValue;
+		} else {
+			this.strExpectedObjects = "<not-specified>";
+		}
 		final String strThreshold = mapOptions.get( strPrefix + ".threshold" );
 		float fThresholdParsed = 10.0f; 
 		try {
@@ -547,6 +555,8 @@ public class ProcImageTile extends TileBase {
 			map.put( "name", this.strName );
 			map.put( "change-directory", strChangePath );
 			map.put( "source-image-timestamp", strTimestamp );
+			map.put( "expected-objects", this.strExpectedObjects );
+			
 			map.put( "diff-value", fDiffValue );
 			map.put( "diff-threshold", fThreshold );
 			map.put( "diff-choke", fChoke );

@@ -1,5 +1,6 @@
 package jmr.util.transform;
 
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -13,8 +14,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import java.lang.reflect.Type;
 import com.google.gson.reflect.TypeToken;
+
 public class JsonUtils {
 
 	public final static JsonParser PARSER = new JsonParser();
@@ -113,11 +114,11 @@ public class JsonUtils {
 	
 	
 	public static String reportMap( final Map<String,Object> map ) {
-
 		String str = "Map:[\n";
-		for ( Entry<String, Object> entry : map.entrySet() ) {
-			final String strKey = entry.getKey();
-			final Object objValue = entry.getValue();
+		final List<String> list = new LinkedList<>( map.keySet() );
+		Collections.sort( list );
+		for ( final String strKey : list ) {
+			final Object objValue = map.get( strKey );
 			
 			str += "\t" + strKey + "=\"" + report( objValue ) + "\"\n";
 		}

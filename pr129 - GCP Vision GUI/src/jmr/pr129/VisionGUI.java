@@ -20,10 +20,12 @@ import jmr.pr123.vision.VisionService;
 public class VisionGUI {
 
 	final static String FILENAME_IMAGE_SOURCE = 
-			"S:/xfer/Vision testing/unsorted/capture_vid2 - yard sale 002.jpg";
-//			"S:/xfer/Vision testing/unsorted/capture_vid2 - yard sale 001.1.jpg";
+//			"S:/xfer/Vision testing/unsorted/capture_vid2 - yard sale 002.jpg";
+			"S:/xfer/Vision testing/unsorted/capture_vid2 - yard sale 001.1.jpg";
 //			"S:/xfer/Vision testing/D035-v2 - car - plate.jpg";
+//			"S:/xfer/Vision testing/D007-c - outside.jpg";
 //			"S:/Sessions/94-C6-91-18-C8-33/20190605-085938_capture_vid2/previous.jpg";
+//			"S:/Sessions/94-C6-91-18-C8-33/20190607-084254_capture_vid2/changed.jpg";
 	
 	
 	final static Display display = new Display();

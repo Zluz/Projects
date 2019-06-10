@@ -6,6 +6,7 @@ import static jmr.pr102.Command.HVAC_STOP;
 import static jmr.pr102.DataRequest.CLIMATE_STATE;
 
 import java.io.File;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -19,9 +20,16 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+
 //import org.apache.http.entity.ContentType;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
 import jmr.pr102.DataRequest;
 import jmr.pr115.actions.SendMessage;
@@ -49,6 +57,8 @@ import jmr.s2db.tables.Job.JobState;
 import jmr.s2fs.FileSession;
 import jmr.s2fs.FileSession.ImageLookupOptions;
 import jmr.s2fs.FileSessionManager;
+import jmr.util.FileUtil;
+import jmr.util.RunProcess;
 import jmr.util.TimeUtil;
 import jmr.util.hardware.rpi.pimoroni.Port;
 import jmr.util.http.ContentType;
@@ -299,7 +309,11 @@ public class Simple implements RulesConstants {
 						FileSession.ImageLookupOptions.SINCE_PAST_HOUR };
 		LOGGER.info( ()-> "About to send device files.." );
 		sendDeviceFiles( false, true, false, options );
-		sendDeviceFiles( true, false, false, options );
+
+		final ImageLookupOptions[] optionsFull = { 
+//						FileSession.ImageLookupOptions.ONLY_THUMB,
+						FileSession.ImageLookupOptions.SINCE_PAST_HOUR };
+		sendDeviceFiles( true, false, false, optionsFull );
 		LOGGER.info( ()-> "About to send device files...Done." );
 	}
 
@@ -340,7 +354,8 @@ public class Simple implements RulesConstants {
 				final File[] arrScreenshots = session.getScreenshotImageFiles();
 				for ( final File file : arrScreenshots ) {
 					if ( null!=file && file.isFile() 
-							&& FileSession.isThumbnail( file.getName() ) ) {
+//							&& FileSession.isThumbnail( file.getName() ) 
+							) {
 						if ( file.lastModified() > lCutoff ) {
 							listFiles.add( file );
 							bCurrent = true;
@@ -834,6 +849,193 @@ public class Simple implements RulesConstants {
 		thread.start();
 	}
 	
+	
+	public static void performObjectDetection( final Event event ) {
+		if ( null==event ) return;
+//		if ( ! event.getValue().contains( "Driveway" ) ) return;
+		
+		final String strName = event.getValue();
+		
+		final Map<String, Object> map = event.getDataAsMap();
+		final Object objFileChanged = map.get( "file-changed" );
+		if ( null == objFileChanged ) {
+			System.out.println( "Map does not contain 'file-changed'" );
+			return;
+		}
+		
+		String strFileChanged = objFileChanged.toString();
+		strFileChanged = StringUtils.replace( 
+				strFileChanged, "\\Share\\Sessions\\", "S:\\Sessions\\" );
+		strFileChanged = StringUtils.replace( 
+				strFileChanged, "/Share/Sessions/", "S:/Sessions/" );
+		
+		System.out.println( "Opening file (1): " + strFileChanged );
+		LOGGER.info( "Opening file (2): " + strFileChanged );
+		
+		final File fileChanged = new File( strFileChanged );
+		if ( ! fileChanged.exists() ) {
+			LOGGER.warning(  
+					"File-changed image missing: " + strFileChanged );
+			return;
+		}
+		
+		final Object objExpectedObjects = map.get( "expected-objects" );
+		final String strExpectedObjects;
+		if ( null!=objExpectedObjects ) {
+			strExpectedObjects = objExpectedObjects.toString();
+		} else {
+			strExpectedObjects = "";
+		}
+		
+//		final String strFilenameChanged = strFileChanged;
+		
+		System.out.println( "Performing image analysis.." );
+		
+//		final VisionGUI vision = new VisionGUI();
+//		vision.setSourceImage( strFileChanged );
+//		vision.analyze( 800, 450 );
+//		System.out.println( "Performing image analysis...Done." );
+//		
+//		System.out.println( "Sending image analysis report via email.." );
+//		final Image image = vision.getAnalysisImage();
+//		String strReport = vision.getAnalysisReport();
+
+//		final Image imageArr[] = { null };
+//		final String strReportArr[] = { null };
+		
+//		final Device device;
+//		final Display device = Display.getCurrent();
+//		final Display device = Display.getDefault();
+//		device.syncExec( new Runnable() {
+//			@Override
+//			public void run() {
+//				final VisionServiceSWT vss = 
+//						new VisionServiceSWT( device, strFilenameChanged );
+//				vss.analyze();
+//				imageArr[0] = vss.getAnalysisImage( 800, 450 );
+//				strReportArr[0] = vss.getAnalysisReport();
+//			}
+//		});
+		
+		final String[] strCommand = {
+				"java.exe",
+				"-jar",
+				"S:\\Development\\Export\\pr129_20190609_005.jar",
+				strFileChanged
+		};
+		final RunProcess process = new RunProcess( strCommand );
+		process.run();
+		final String strAnalysisJsonFile = process.getOutputLine();
+		final File fileAnalysisJson = new File( strAnalysisJsonFile );
+		if ( ! fileAnalysisJson.exists() ) {
+			LOGGER.warning( "Analysis JSON file not found: " 
+						+ strAnalysisJsonFile );
+			return;
+		}
+		
+		final JsonObject jo;
+		try {
+			final String strJson = 
+					FileUtils.readFileToString( fileAnalysisJson, UTF_8 );
+			jo = JsonUtils.getJsonObjectFor( strJson );
+		} catch ( final IOException e ) {
+			LOGGER.warning( "Failed to read JSON file: " + strAnalysisJsonFile );
+			return;
+		} catch ( final JsonParseException e ) {
+			LOGGER.warning( "Failed to parse JSON file: " + strAnalysisJsonFile );
+			return;
+		}
+
+		final JsonObject joAnnotations = jo.getAsJsonObject( "annotations" );
+		final JsonArray jaAObjects = joAnnotations.get( "objects" ).getAsJsonArray();
+		final JsonArray jaAText = joAnnotations.get( "text" ).getAsJsonArray();
+		final int iItemsOfInterest = jaAObjects.size() + jaAText.size();
+		if ( 0 == iItemsOfInterest ) {
+			LOGGER.info( "No items of interest in changed image. "
+						+ "No email to be sent." );
+			return;
+		} else {
+			LOGGER.info( "" + iItemsOfInterest + " item(s) of "
+						+ "interest detected. Preparing to send email.." );
+		}
+		
+		final List<String> listDetectedUnexpectedObjects = new LinkedList<>();
+		final List<String> listDetectedExpectedObjects = new LinkedList<>();
+		
+		if ( ( ! StringUtils.isBlank( strExpectedObjects ) ) 
+				&& ( ! strExpectedObjects.startsWith( "<" ) ) ) {
+			final List<String> listExpectedObjects = new LinkedList<>();
+			for ( final String str : strExpectedObjects.split( "," ) ) {
+				final String strNorm = StringUtils.replace( str, ",", "" );
+				listExpectedObjects.add( strNorm.trim() );
+			}
+			
+			for ( final JsonElement je : jaAObjects ) {
+				final String strObjectName = je.getAsJsonObject()
+						.getAsJsonPrimitive( "name" ).getAsString();
+				if ( listExpectedObjects.contains( strObjectName ) ) {
+					listDetectedExpectedObjects.add( strObjectName );
+				} else {
+					listDetectedUnexpectedObjects.add( strObjectName );
+				}
+			}
+		}
+		
+		if ( listDetectedUnexpectedObjects.isEmpty() && ( 0 == jaAText.size() ) ) {
+			LOGGER.info( "All objects detected are expected, no text detected. "
+								+ "No email to be sent." );
+			return;
+		}
+		
+		final JsonObject joAnalysis = jo.getAsJsonObject( "image-analysis" );
+		final String strAnalysisImageFile = joAnalysis.get( "filename" ).getAsString();
+		final File fileAnalysisImage = new File( strAnalysisImageFile );
+
+		final JsonObject joReport = jo.getAsJsonObject( "report" );
+		final String strReportFile = joReport.get( "filename" ).getAsString();
+		final File fileReport = new File( strReportFile );
+		final String strReport = FileUtil.readFromFile( fileReport );
+
+
+//		final String strReport;
+//		if ( null==strReportArr[0] ) {
+//			strReport = "Report from VisionGUI was null.";
+//			LOGGER.warning( strReport );
+//		} else {
+//			strReport = strReportArr[0];
+//			System.out.println( "Analysis report: " 
+//						+ StringUtils.abbreviate( strReport, 60 ) );
+//		}
+
+		System.out.println( "Sending image analysis report via email.." );
+
+		final File[] fileAttached = 
+				new File[] { fileAnalysisImage, fileAnalysisJson };
+		
+		
+		final String strSubject = "Image Change, Analysis - " + strName;
+		
+		final StringBuilder sbBody = new StringBuilder();
+		sbBody.append( "Change detected on camera: " + strName + "\n\n" );
+		if ( jaAText.size() > 0 ) {
+			sbBody.append( "Text found in image, see below.\n\n" );
+		}
+		if ( ! listDetectedUnexpectedObjects.isEmpty() ) {
+			sbBody.append( "Objects of interest:\n" );
+			for ( final String strObject : listDetectedUnexpectedObjects ) {
+				sbBody.append( "\t" + strObject + "\n" );
+			}
+			sbBody.append( "\n\n" );
+		}
+		sbBody.append( "Event (seq " + event.getEventSeq() + ") details:\n" );
+		sbBody.append( JsonUtils.reportMap( map ) + "\n\n" ); 
+		sbBody.append( strReport );
+
+		SendMessage.send( MessageType.EMAIL, 
+					strSubject, sbBody.toString(), fileAttached );
+		
+		System.out.println( "Sending image analysis report via email...Done." );
+	}
 	
 	
 	

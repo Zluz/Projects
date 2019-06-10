@@ -391,19 +391,32 @@ public class VisionServiceSWT {
 	
 	public static void main( final String[] args ) {
 		
+		final long lTimeStart = System.currentTimeMillis();
+		
 		String strFilename = null;
 		Integer iWidth = null;
+		Integer iHeight = null;
 		boolean bShowHelpExit = false;
 		
 		if ( 0 == args.length ) {
 			strFilename = VisionGUI.FILENAME_IMAGE_SOURCE;
-		} else if ( 2 == args.length ) {
+		} else if ( args.length < 4 ) {
 			strFilename = args[0];
-			try {
-				iWidth = Integer.parseInt( args[1] );
-			} catch ( final NumberFormatException e ) {
-				System.err.println( "Error: bad width." );
-				bShowHelpExit = true;
+			if ( args.length > 1 ) {
+				try {
+					iWidth = Integer.parseInt( args[1] );
+				} catch ( final NumberFormatException e ) {
+					System.err.println( "Error: bad width." );
+					bShowHelpExit = true;
+				}
+			}
+			if ( args.length > 2 ) {
+				try {
+					iHeight = Integer.parseInt( args[2] );
+				} catch ( final NumberFormatException e ) {
+					System.err.println( "Error: bad height." );
+					bShowHelpExit = true;
+				}
 			}
 		}
 		
@@ -423,19 +436,20 @@ public class VisionServiceSWT {
 			System.out.println( "Syntax:" );
 			System.out.println( "java -jar " 
 						+ VisionServiceSWT.class.getSimpleName() 
-						+ ".jar <image_filename> <analysis_image_width>" );
+						+ ".jar <image_filename> [<analysis_image_width> [<analysis_image_height]]" );
 			System.exit( 1 );
 		}
 
-		System.out.println( "Analyzing image: " + strFilename );
-		
-		
 		final int iDotPos = strFilename.lastIndexOf( "." );
 		final String strImageBase = strFilename.substring( 0, iDotPos );
 		final String strAnalysisImageFile = strImageBase + "-analysis.jpg";
 		final String strAnalysisTextFile = strImageBase + "-analysis.txt";
 		final String strAnalysisJsonFile = strImageBase + "-analysis.json";
-		
+
+		System.out.println( strAnalysisJsonFile );
+
+		System.out.println( "Analyzing image: " + strFilename );
+
 		System.out.println( "Output image file: " + strAnalysisImageFile );
 		System.out.println( "Output text file: " + strAnalysisTextFile );
 		System.out.println( "Output JSON file: " + strAnalysisJsonFile );
@@ -445,8 +459,13 @@ public class VisionServiceSWT {
 		final VisionServiceSWT vss = new VisionServiceSWT( device, strFilename );
 		
 		vss.analyze();
-		final Image image = vss.getAnalysisImage( iWidth );
+		final Image image = vss.getAnalysisImage( iWidth, iHeight );
 		final String strReport = vss.getAnalysisReport();
+		final JsonObject jo = vss.toJson();
+		
+		
+		final long lTimeAnalysisComplete = System.currentTimeMillis();
+		final long lElapsedAnalysis = lTimeAnalysisComplete - lTimeStart;
 		
 		
 		final ImageData id = image.getImageData();
@@ -460,9 +479,20 @@ public class VisionServiceSWT {
 		FileUtil.saveToFile( fileReport, strReport );
 		System.out.println( "Analysis report file saved." );
 
+		
+		
 		final File fileJson = new File( strAnalysisJsonFile );
-//		vss.saveToJSONFile( fileJson );
-		final String strJson = JsonUtils.getPretty( vss.toJson() );
+		final JsonObject joAnalysis = jo.getAsJsonObject( "image-analysis" );
+		joAnalysis.addProperty( "filename", strAnalysisImageFile );
+		
+		final JsonObject joReport = new JsonObject();
+		joReport.addProperty( "filename", strAnalysisTextFile );
+		joReport.addProperty( "time-start", lTimeStart );
+		joReport.addProperty( "time-analysis-complete", lTimeAnalysisComplete );
+		joReport.addProperty( "time-elapsed", lElapsedAnalysis );
+		
+		jo.add( "report", joReport );
+		final String strJson = JsonUtils.getPretty( jo );
 		FileUtil.saveToFile( fileJson, strJson );
 		System.out.println( "Analysis JSON file saved." );
 	}

@@ -1,0 +1,27 @@
+package pr115.rules.drl;
+
+import jmr.s2db.tables.Event;
+import jmr.s2db.event.*;
+import jmr.pr115.schedules.run.*;
+import jmr.util.hardware.*;
+import jmr.util.*;
+import com.google.gson.JsonObject;
+
+import jmr.pr115.rules.drl.Simple;
+
+dialect "mvel"
+
+
+
+rule "ExamineChangedImage"
+	when
+		e : Event(
+				// getEventType() == EventType.ENVIRONMENT, 
+				getSubject().equals( "IMAGE_CHANGE" )
+				// getValue().equals( "Driveway, from Deck" ) 
+			)
+	then
+		System.out.println( "ExamineChangedImage fired." );
+		
+		Simple.performObjectDetection( e );
+end
