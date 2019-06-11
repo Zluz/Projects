@@ -231,9 +231,18 @@ comment: NULL
 *************************** 34. row ***************************
     seq: 34
     mac: B8-27-EB-4E-93-AF
-   name: L32--B8-27-EB-4E-93-AF--010E9--16910016C4A
-options: NULL
-comment: NULL
+   name: RPi - IC2 - Image Processor 02
+options: tiles.perspective=PROC_IMAGE
+  proc_image.1.name=Test RPi
+  proc_image.1.file=/Share/Sessions/B8-27-EB-70-3C-8D/capture_cam.jpg
+  proc_image.1.threshold=1.000
+  proc_image.1.expected.objects="Window"
+  
+  proc_image.2.name=Deck, from Kitchen
+  proc_image.2.file=/Share/Sessions/B8-27-EB-09-D3-9E/capture_cam.jpg
+  proc_image.2.threshold=1.500
+  proc_image.2.expected.objects="Chair"
+comment: Immersive Cooling Test, BEC Test
 *************************** 35. row ***************************
     seq: 35
     mac: 94-C6-91-18-C8-33
@@ -264,29 +273,14 @@ comment: NULL
 *************************** 38. row ***************************
     seq: 38
     mac: B8-27-EB-90-A3-BD
-   name: RPi - Image processor 1
-options: tiles.perspective=PROC_IMAGE
-proc_image.1.name=Garage, Inside
-proc_image.1.threshold=0.060
-proc_image.1.file=/Share/Sessions/94-C6-91-18-C8-33/capture_vid1.jpg
-proc_image.2.name=Driveway, from Deck
-proc_image.2.threshold=0.060
-proc_image.2.file=/Share/Sessions/94-C6-91-18-C8-33/capture_vid2.jpg
-proc_image.3.name=Front Yard
-proc_image.3.threshold=0.060
-proc_image.3.file=/Share/Sessions/B8-27-EB-90-07-BD/capture_cam.jpg
-
+   name: RPi - Image processor 1 (alternate)
+options: 
 comment: Bad eth0
 *************************** 39. row ***************************
     seq: 39
     mac: B8-27-EB-70-3C-8D
-   name: RPi - Image processor 2
-options: tiles.perspective=PROC_IMAGE
-proc_image.1.file=/Share/Sessions/B8-27-EB-70-3C-8D/capture_cam.jpg
-proc_image.1.threshold=0.060
-proc_image.2.file=/Share/Sessions/94-C6-91-18-C8-33/capture_vid1.jpg
-proc_image.2.threshold=0.060
- 
+   name: RPi
+options: 
 comment: 3rd party system camera
 *************************** 40. row ***************************
     seq: 40
@@ -322,5 +316,32 @@ comment: NULL
     seq: 45
     mac: B8-27-EB-C5-F6-E8
    name: L32--B8-27-EB-C5-F6-E8--00BE6--16AD8F9D85A
+options: NULL
+comment: NULL
+*************************** 46. row ***************************
+    seq: 46
+    mac: B8-27-EB-1E-F3-31
+   name: RPi - IC1 - Image Processing 01
+options: tiles.perspective=PROC_IMAGE
+     proc_image.1.name=Garage, Inside
+     proc_image.1.threshold=50.0
+     proc_image.1.file=/Share/Sessions/94-C6-91-18-C8-33/capture_vid1.jpg
+     proc_image.1.expected.objects=""
+     
+     proc_image.2.name=Driveway, from Deck
+     proc_image.2.threshold=0.001
+     proc_image.2.file=/Share/Sessions/94-C6-91-18-C8-33/capture_vid2.jpg
+     proc_image.2.expected.objects=""
+     
+     proc_image.3.name=Front Yard
+     proc_image.3.threshold=0.600
+     proc_image.3.file=/Share/Sessions/B8-27-EB-90-07-BD/capture_cam.jpg
+     proc_image.3.expected.objects=""
+
+comment: Immersive Cooling Test
+*************************** 47. row ***************************
+    seq: 47
+    mac: B8-27-EB-84-4F-5A
+   name: L32--B8-27-EB-84-4F-5A--003ED--16AD20E241C
 options: NULL
 comment: NULL
