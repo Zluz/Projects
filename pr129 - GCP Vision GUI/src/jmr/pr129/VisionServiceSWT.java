@@ -12,20 +12,18 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 
 import java.io.File;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
-import com.google.cloud.vision.v1.BoundingPoly;
 import com.google.cloud.vision.v1.EntityAnnotation;
 import com.google.cloud.vision.v1.LocalizedObjectAnnotation;
 import com.google.cloud.vision.v1.LocationInfo;
-import com.google.cloud.vision.v1.NormalizedVertex;
-import com.google.cloud.vision.v1.Vertex;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -92,45 +90,16 @@ public class VisionServiceSWT {
 	public static boolean drawPoly( final GC gc,
 									final Color colorFore,
 									final Color colorShadow,
-								 	final BoundingPoly poly,
+									final DrawablePoly poly,
 								 	final String strText,
-								 	final int iImageWidth,
-								 	final int iImageHeight,
-								 	final int iWidth,
-								 	final int iHeight ) {
+								 	final int iBoxAlpha ) {
 		if ( null==poly ) return false;
 
-		final List<Point> listPoints = new LinkedList<>();
+		final List<Point> listPoints = poly.getVertices();
 		
-		final List<NormalizedVertex> listNorm = poly.getNormalizedVerticesList();
-		if ( null!=listNorm && !listNorm.isEmpty() ) {
-		
-			for ( final NormalizedVertex nv : listNorm ) {
-				float fX = nv.getX() * iWidth;
-				float fY = nv.getY() * iHeight;
-				
-				final Point pt = new Point( (int)fX, (int)fY );
-				listPoints.add( pt );
-			}
-		}
-		
-		final List<Vertex> listRaw = poly.getVerticesList();
-		if ( null!=listRaw && !listRaw.isEmpty() ) {
-			
-			for ( final Vertex vertex : listRaw ) {
-
-				final float fX = (float)vertex.getX() / iImageWidth * iWidth;
-				final float fY = (float)vertex.getY() / iImageHeight * iHeight;
-
-				final Point pt = new Point( (int)fX, (int)fY );
-				listPoints.add( pt );
-			}
-		}
-
-
-//		final String strNormText = strText.trim();
 
 		gc.setForeground( colorFore );
+		gc.setAlpha( iBoxAlpha );
 
 		if ( ! listPoints.isEmpty() ) {
 			
@@ -148,29 +117,49 @@ public class VisionServiceSWT {
 				if ( null==ptFirst ) ptFirst = pt;
 			}
 			
-			final int iX = ptFirst.x;
-			final int iY = ptFirst.y;
-			gc.drawLine( iX, iY, ptLast.x, ptLast.y );
+			gc.drawLine( ptFirst.x, ptFirst.y, ptLast.x, ptLast.y );
+			
+			final Point ptText;
+			if ( poly.isOrthogonal() ) {
+				ptText = ptFirst;
+			} else {
+				ptText = poly.getTopmostPoint();
+			}
+
+			final Point ptExtent = gc.textExtent( strText );
+			final Point ptTop = poly.getTopmostPoint();
+
+			final int iY = Math.max( ptText.y - ptExtent.y + 2, 4 );
+			final int iX;
+			if ( poly.isOrthogonal() ) {
+				iX = ptText.x;
+			} else if ( ptTop.x > poly.getAveragePoint().x ) {
+				iX = ptText.x - ptExtent.x;
+			} else {
+				iX = ptText.x;
+			}
 
 			gc.setForeground( colorShadow );
+			gc.setAlpha( 80 );
+			
 			gc.drawText( strText, iX + 1, iY - 1, true );
 			gc.drawText( strText, iX + 3, iY - 1, true );
 			gc.drawText( strText, iX + 1, iY + 1, true );
 			gc.drawText( strText, iX + 3, iY + 1, true );
+			
 			gc.setForeground( colorFore );
+			gc.setAlpha( 255 );
+
 			gc.drawText( strText, iX + 2, iY, true );
 			
-//			System.out.println( "Drawing at " + iX + ", " + iY 
-//								+ " \"" + strText + "\"" );
+			gc.drawOval( ptTop.x-1, ptTop.y-1, 2, 2 );
+			
+			return true;
+			
 		} else {
-//			gc.drawText( "<no points> - " + strNormText, 4, 10, true );
-//			System.out.println( "No location identified for" 
-//								+ " \"" + strText + "\"" );
+			// no points
 			return false;
 		}
-		
-
-		return true;
 	}
 	
 
@@ -216,6 +205,9 @@ public class VisionServiceSWT {
 		final ImageData idAnalysis = imageAnalysis.getImageData();
 		final GC gc = new GC( imageAnalysis );
 		
+		gc.setAdvanced( true );
+		gc.setAntialias( SWT.ON );
+		
 		joAnalysisImage.addProperty( "width", idAnalysis.width );
 		joAnalysisImage.addProperty( "height", idAnalysis.height );
 		joAnalysisImage.addProperty( "depth", idAnalysis.depth );
@@ -232,11 +224,11 @@ public class VisionServiceSWT {
 		final AnnotateImageResponse air = response.getResponses( 0 );
 		
 		final List<LocalizedObjectAnnotation> 
-				listObjects = air.getLocalizedObjectAnnotationsList();
+				listAObjects = air.getLocalizedObjectAnnotationsList();
 		final List<EntityAnnotation> 
-				listText = air.getTextAnnotationsList();
+				listAText = air.getTextAnnotationsList();
 		final List<EntityAnnotation> 
-				listLabels = air.getLabelAnnotationsList();
+				listALabels = air.getLabelAnnotationsList();
 
 		
 		
@@ -248,8 +240,8 @@ public class VisionServiceSWT {
 		sbReport.append( "\n" );
 		sbReport.append( "Label annotations:\n" );
 		
-		if ( ! listLabels.isEmpty() ) {
-			for ( final EntityAnnotation ea : listLabels ) {
+		if ( ! listALabels.isEmpty() ) {
+			for ( final EntityAnnotation ea : listALabels ) {
 	
 				final JsonObject jo = new JsonObject();
 				
@@ -281,8 +273,8 @@ public class VisionServiceSWT {
 
 		System.out.println( "Drawing Localized Object annotations" );
 		
-		if ( ! listObjects.isEmpty() ) {
-			for ( final LocalizedObjectAnnotation loa : listObjects ) {
+		if ( ! listAObjects.isEmpty() ) {
+			for ( final LocalizedObjectAnnotation loa : listAObjects ) {
 
 				final JsonObject jo = new JsonObject();
 
@@ -295,12 +287,13 @@ public class VisionServiceSWT {
 				sbReport.append( String.format( 
 							"\tObject (%.3f): %s", fScore, strText ) );
 	
-				final BoundingPoly poly = loa.getBoundingPoly();
-				final boolean bDrawn = drawPoly( 
-								gc, colorObjects, colorShadow,
-								poly, strText,
+				final DrawablePoly poly = new DrawablePoly(
+								loa.getBoundingPoly(), 
 								id.width, id.height,
 								rect.width, rect.height );
+				final boolean bDrawn = drawPoly( 
+								gc, colorObjects, colorShadow,
+								poly, strText, 220 );
 				
 				if ( ! bDrawn ) {
 					sbReport.append( "  (not drawn)" );
@@ -316,9 +309,26 @@ public class VisionServiceSWT {
 		
 		sbReport.append( "\n" );
 		sbReport.append( "Text annotations (shown in yellow):\n" );
+		
+		
+		final Map<String,Integer> mapNormText = new HashMap<>();
+		if ( ! listAText.isEmpty() ) {
+			for ( final EntityAnnotation ea : listAText ) {
 
-		if ( ! listText.isEmpty() ) {
-			for ( final EntityAnnotation ea : listText ) {
+				final String strText = normalize( ea.getDescription() );
+				
+				if ( mapNormText.keySet().contains( strText ) ) {
+					final int iCount = mapNormText.get( strText );
+					mapNormText.put( strText, 1 + iCount );
+				} else {
+					mapNormText.put( strText, 1 );
+				}
+			}
+		}
+
+
+		if ( ! listAText.isEmpty() ) {
+			for ( final EntityAnnotation ea : listAText ) {
 
 				final JsonObject jo = new JsonObject();
 
@@ -328,12 +338,26 @@ public class VisionServiceSWT {
 	
 				sbReport.append( String.format( "\tText: %s", strText ) );
 	
-				final BoundingPoly poly = ea.getBoundingPoly();
+				final DrawablePoly poly = new DrawablePoly(
+										ea.getBoundingPoly(), 
+										id.width, id.height,
+										rect.width, rect.height );
+				final String strDrawText;
+				final int iBoxAlpha;
+				if ( poly.isOrthogonal() 
+								&& ( mapNormText.get( strText ) > 1 ) ) {
+					strDrawText = "";
+					iBoxAlpha = 40;
+				} else {
+					strDrawText = StringUtils.abbreviate( strText, 40 );
+					iBoxAlpha = 160;
+				}
 				final boolean bDrawn = drawPoly( 
-								gc, colorText, colorShadow,
-								poly, strText, 
-								id.width, id.height,
-								rect.width, rect.height );
+										gc, colorText, colorShadow,
+										poly, strDrawText,
+										iBoxAlpha );
+
+
 				if ( ! bDrawn ) {
 					sbReport.append( "  (not drawn)" );
 				}

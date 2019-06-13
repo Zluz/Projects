@@ -849,8 +849,23 @@ public class Simple implements RulesConstants {
 		thread.start();
 	}
 	
-	
+
 	public static void performObjectDetection( final Event event ) {
+		if ( null==event ) return;
+		
+		final String strName = event.getValue();
+		
+		final Thread thread = new Thread( "Processing Image: " + strName ) {
+			@Override
+			public void run() {
+				performObjectDetectionThreaded( event );
+			}
+		};
+		thread.start();
+	}
+	
+
+	public static void performObjectDetectionThreaded( final Event event ) {
 		if ( null==event ) return;
 //		if ( ! event.getValue().contains( "Driveway" ) ) return;
 		
@@ -882,7 +897,10 @@ public class Simple implements RulesConstants {
 		final Object objExpectedObjects = map.get( "expected-objects" );
 		final String strExpectedObjects;
 		if ( null!=objExpectedObjects ) {
-			strExpectedObjects = objExpectedObjects.toString();
+			String strValue = objExpectedObjects.toString();
+			strValue = StringUtils.replace( strValue, "'", "" );
+			strValue = StringUtils.replace( strValue, "\"", "" );
+			strExpectedObjects = strValue.trim();
 		} else {
 			strExpectedObjects = "";
 		}
@@ -920,7 +938,7 @@ public class Simple implements RulesConstants {
 		final String[] strCommand = {
 				"java.exe",
 				"-jar",
-				"S:\\Development\\Export\\pr129_20190609_005.jar",
+				"S:\\Development\\Export\\pr129_20190611_004.jar",
 				strFileChanged
 		};
 		final RunProcess process = new RunProcess( strCommand );
@@ -962,24 +980,46 @@ public class Simple implements RulesConstants {
 		final List<String> listDetectedUnexpectedObjects = new LinkedList<>();
 		final List<String> listDetectedExpectedObjects = new LinkedList<>();
 		
-		if ( ( ! StringUtils.isBlank( strExpectedObjects ) ) 
-				&& ( ! strExpectedObjects.startsWith( "<" ) ) ) {
+		final List<String> listAddObjects = new LinkedList<>();
+		for ( final JsonElement je : jaAObjects ) {
+			final String strObjectName = je.getAsJsonObject()
+					.getAsJsonPrimitive( "name" ).getAsString();
+			listAddObjects.add( strObjectName );
+		}
+		
+		System.out.println( "\tstrExpectedObjects = " + strExpectedObjects );
+		
+		if ( StringUtils.isBlank( strExpectedObjects ) ) {
+			System.out.println( 
+					"\tNo expected objects specified (1). Skipping check." );
+			listDetectedUnexpectedObjects.addAll( listAddObjects );
+			
+		} else if ( strExpectedObjects.startsWith( "<" ) ) {
+			System.out.println( 
+					"\tNo expected objects specified (2). Skipping check." );
+			listDetectedUnexpectedObjects.addAll( listAddObjects );
+			
+		} else {
+		
+			System.out.println( "Examining found objects.." );
+			
 			final List<String> listExpectedObjects = new LinkedList<>();
 			for ( final String str : strExpectedObjects.split( "," ) ) {
 				final String strNorm = StringUtils.replace( str, ",", "" );
 				listExpectedObjects.add( strNorm.trim() );
 			}
 			
-			for ( final JsonElement je : jaAObjects ) {
-				final String strObjectName = je.getAsJsonObject()
-						.getAsJsonPrimitive( "name" ).getAsString();
+			for ( final String strObjectName : listAddObjects ) {
 				if ( listExpectedObjects.contains( strObjectName ) ) {
 					listDetectedExpectedObjects.add( strObjectName );
+					System.out.println( "\tExpected: " + strObjectName );
 				} else {
 					listDetectedUnexpectedObjects.add( strObjectName );
+					System.out.println( "\tUnxpected: " + strObjectName );
 				}
 			}
 		}
+		
 		
 		if ( listDetectedUnexpectedObjects.isEmpty() && ( 0 == jaAText.size() ) ) {
 			LOGGER.info( "All objects detected are expected, no text detected. "
@@ -1018,15 +1058,17 @@ public class Simple implements RulesConstants {
 		final StringBuilder sbBody = new StringBuilder();
 		sbBody.append( "Change detected on camera: " + strName + "\n\n" );
 		if ( jaAText.size() > 0 ) {
-			sbBody.append( "Text found in image, see below.\n\n" );
+			sbBody.append( "Text found in image, see below.\n" );
 		}
 		if ( ! listDetectedUnexpectedObjects.isEmpty() ) {
 			sbBody.append( "Objects of interest:\n" );
 			for ( final String strObject : listDetectedUnexpectedObjects ) {
 				sbBody.append( "\t" + strObject + "\n" );
 			}
-			sbBody.append( "\n\n" );
+			sbBody.append( "\n" );
 		}
+		
+		sbBody.append( "\n" );
 		sbBody.append( "Event (seq " + event.getEventSeq() + ") details:\n" );
 		sbBody.append( JsonUtils.reportMap( map ) + "\n\n" ); 
 		sbBody.append( strReport );

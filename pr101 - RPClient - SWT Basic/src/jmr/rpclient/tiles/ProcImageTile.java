@@ -116,10 +116,10 @@ public class ProcImageTile extends TileBase {
 		this.strSourceImage = mapOptions.get( strPrefix + ".file" );
 		this.strName = mapOptions.get( strPrefix + ".name" );
 		final String strValue = mapOptions.get( strPrefix + ".expected.objects" );
-		if ( ! StringUtils.isBlank( strValue ) ) {
+		if ( StringUtils.isNotBlank( strValue ) ) {
 			this.strExpectedObjects = strValue;
 		} else {
-			this.strExpectedObjects = "<not-specified>";
+			this.strExpectedObjects = "(not-specified)";
 		}
 		final String strThreshold = mapOptions.get( strPrefix + ".threshold" );
 		float fThresholdParsed = 10.0f; 
@@ -698,6 +698,10 @@ public class ProcImageTile extends TileBase {
 		text.setRightAligned( true );
 		text.addSpace( -14 );
 		text.println( sbDisabled.toString() );
+
+		gc.setFont( Theme.get().getFont( 8 ) );
+		text.setRightAligned( false );
+		text.println( "Expected objects: " + this.strExpectedObjects );
 
 //		text.println( "Source Data:" );
 //		text.println( this.strData );

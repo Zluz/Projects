@@ -34,5 +34,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/pr123 - Google Cloud Services"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/SWT_Win64"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr128 - S2 Reports"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr129 - GCP Vision GUI"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
