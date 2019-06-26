@@ -63,6 +63,7 @@ public class DeletionScheduleUI {
 		System.out.println( strMessage );
 	}
 	
+	private Thread threadDeletionSchedule = null;
 	
 	public void start() {
 		final Thread thread = new Thread( "Deletion schedule" ) {
@@ -92,11 +93,13 @@ public class DeletionScheduleUI {
 			}
 		};
 		thread.start();
+		this.threadDeletionSchedule = thread;
 	}
 
 	
 	public void stop() {
 		this.bActive = false;
+		this.threadDeletionSchedule.interrupt();
 	}
 	
 	

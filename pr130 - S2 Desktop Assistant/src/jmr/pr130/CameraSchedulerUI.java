@@ -15,7 +15,6 @@ import org.eclipse.swt.widgets.Text;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
@@ -24,6 +23,7 @@ import com.github.sarxos.webcam.Webcam;
 import jmr.SessionPath;
 import jmr.pr124.ImageCapture;
 import jmr.pr125.PostStillsContinuous;
+import jmr.pr125.PostStillsContinuous.PostStillsListener;
 import jmr.util.NetUtil;
 import jmr.util.SystemUtil;
 
@@ -120,7 +120,6 @@ public class CameraSchedulerUI {
 	
 	
 	public static boolean capture( final Webcam camera,
-//								   final File fileSrc,
 								   final File fileTempDir,
 								   final File fileSession,
 								   final int iCameraIndex,
@@ -156,9 +155,38 @@ public class CameraSchedulerUI {
 	}
 
 	
+	final PostStillsListener listener = new PostStillsListener() {
+		
+		@Override
+		public void reportNewFile( final File file ) {
+			
+			final String strFilename = file.getName();
+			final File fileTransfer = 
+					new File( SessionPath.getSessionDir(), strFilename + "_" );
+			final File fileTarget = 
+					new File( SessionPath.getSessionDir(), strFilename );
+			try {
+				FileUtils.copyFile( file, fileTransfer );
+				FileUtils.moveFile( fileTransfer, fileTarget );
+			} catch ( final IOException e ) {
+				log( "Failed to copy file, encountered " + e.toString() );
+				e.printStackTrace();
+			}
+			
+			log( "File posted: " + fileTarget.getAbsolutePath() );
+		};
+		
+		@Override
+		public void reportProcessEnded() {
+			log( "reportProcessEnded()" );
+			captureStop();
+			captureStart();
+		}
+	};
+	
+	
 	public void captureStart() {
 		CameraSchedulerUI.log( "--- captureStart()" );
-
 
 		this.threadCapture = new Thread( "Camera Capture" ) {
 			@Override
@@ -172,7 +200,7 @@ public class CameraSchedulerUI {
 		
 						System.out.println( "Starting post-stills process." );
 						
-						post = new PostStillsContinuous();
+						post = new PostStillsContinuous( listener );
 						post.start();
 						
 						while ( post.isRunning() && bActive ) {
@@ -195,94 +223,11 @@ public class CameraSchedulerUI {
 	}
 		
 	
-	public void captureStart_() {
-		CameraSchedulerUI.log( "--- captureStart()" );
-
-		this.bActive = true;
-		
-		final List<Webcam> listCameras = Webcam.getWebcams();
-		
-//		List<Webcam> listCameras = new LinkedList<>();
-//		try {
-//			listCameras.addAll( Webcam.getWebcams( TimeUnit.MINUTES.toMillis( 10 ) ) );
-//		} catch (WebcamException e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//		} catch (TimeoutException e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//		}
-//		final ImageCapture capture = new ImageCapture();
-
-		/* shut up log spam
-21:33:35.102 [webcam-discovery-service] DEBUG c.g.s.w.d.b.WebcamDefaultDriver - Searching devices
-21:33:35.135 [webcam-discovery-service] DEBUG c.g.s.w.d.b.WebcamDefaultDriver - Found device USB Camera 0
-		 */
-		
-
-//		final Enumeration<String> enumLoggerNames = LogManager.getLogManager().getLoggerNames();
-//		for ( ; enumLoggerNames.hasMoreElements();  ) {
-//			final String strName = enumLoggerNames.nextElement();
-//			LogManager.getLogManager().getLogger( strName ).setLevel( Level.INFO );
-//		}
-////		LogManager.getLogManager().getLogger( WebcamDefaultDriver.class.getName() ).setLevel( Level.INFO );
-//
-//		LogManager.getLogManager().reset();
-		
-		ImageCapture.init();
-		
-//		WebcamDefaultDriver.class.getName();
-//		Logger loggerWebcam = org.slf4j.LoggerFactory.getLogger(WebcamDefaultDriver.class);
-
-		
-//		final File fileTempDir = SystemUtil.getTempDir();
-
-		this.threadCapture = new Thread( "Camera Capture" ) {
-			@Override
-			public void run() {
-				log( "--- captureStart - capture thread started" );
-				try {
-					while ( bActive ) {
-						int i=0;
-						for ( final Webcam camera : listCameras ) {
-
-//							final long lTimeNow = System.currentTimeMillis();
-							
-//							final File fileSrc = File.createTempFile( "Capture_", ".jpg" );
-//							final File fileSrc = new File( fileTempDir, "Capture_" + lTimeNow + ".jpg" );
-//			
-////							final String strFileThumb = "capture_vid" + i + "-thumb.jpg";
-////							final File fileThumbDest = new File( fileSession, strFileThumb );
-//
-//							
-////							final String strName = camera.getName();
-//							ImageCapture.capture( camera, fileSrc );
-//
-							final String strFileFull = "capture_vid" + i + ".jpg";
-							final File fileFullDest = new File( fileSession, strFileFull );
-//							FileUtils.copyFile( fileSrc, fileFullDest );
-							
-							capture( camera, fileTempDir, fileSession, 
-											i, fileFullDest );
-
-						}
-						Thread.sleep( 1000 );
-					}
-				} catch ( final InterruptedException e ) {
-					log( "--- captureStart - interrupted" );
-					e.printStackTrace();
-				}
-				log( "--- captureStart - capture thread stopped" );
-			}
-		};
-		this.threadCapture.start();
-	}
-	
 	public void captureStop() {
 		CameraSchedulerUI.log( "--- captureStop()" );
+		this.threadCapture.interrupt();
 		this.bActive = false;
 	}
-	
 	
 	
 	public static synchronized CameraSchedulerUI get() {

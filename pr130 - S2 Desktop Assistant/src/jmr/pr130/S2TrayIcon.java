@@ -138,6 +138,7 @@ public class S2TrayIcon {
 	
 	public void close() {
 		CameraSchedulerUI.get().close();
+		DeletionScheduleUI.get().stop();
 		this.bActive = false;
 		this.trayitem.dispose();
 	}
@@ -218,7 +219,12 @@ public class S2TrayIcon {
 				SystemUtil.getTempDir(), "capture_vid._.*.jpg_", 1 ) );
 		scheduler.addSchedule( new Schedule( 
 				SystemUtil.getTempDir(), "Capture_.*.jpg", 1 ) );
-		
+
+		scheduler.addSchedule( new Schedule( 
+				SessionPath.getSessionDir(), "capture_vid._.*.jpg", 1 ) );
+		scheduler.addSchedule( new Schedule( 
+				SessionPath.getSessionDir(), "capture_vid._.*.jpg_", 1 ) );
+
 		scheduler.addSchedule( new Schedule( 
 				SystemUtil.getTempDir(), "pr124_.*jar", 24 * 2 ) );
 		scheduler.addSchedule( new Schedule( 

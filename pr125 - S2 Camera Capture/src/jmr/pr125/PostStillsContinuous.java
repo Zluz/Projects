@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 
-import jmr.SessionPath;
 import jmr.util.MonitorProcess;
 import jmr.util.SystemUtil;
 
@@ -29,10 +28,26 @@ public class PostStillsContinuous {
 	
 	final File fileTempDir = SystemUtil.getTempDir();
 	
-//	final List<File> listFilesPosted = new LinkedList<>();
 	final Set<String> setFilesPosted = new TreeSet<>();
 	
+	
+	
 
+	public static interface PostStillsListener {
+		
+		public void reportNewFile( final File file );
+		
+		public void reportProcessEnded();
+	}
+	
+	
+	final private PostStillsListener listener;
+	
+
+	public PostStillsContinuous( final PostStillsListener listener ) {
+		this.listener = listener;
+	}
+	
 	
 	final IOFileFilter filter = new IOFileFilter() {
 		
@@ -83,7 +98,10 @@ public class PostStillsContinuous {
 							final String strName = file.getName();
 							if ( ! setFilesPosted.contains( strName ) ) {
 								if ( ! bInitializing ) {
-									postNewImageFile( file );
+									
+									System.out.println( "File to post: " 
+												+ file.getAbsolutePath() );
+									listener.reportNewFile( file );
 								}
 								setFilesPosted.add( strName );
 							}
@@ -104,9 +122,11 @@ public class PostStillsContinuous {
 					System.out.println( "Exit code: " + process.exitValue() );
 					bRunning = false;
 					
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
+					listener.reportProcessEnded();
+					
+				} catch ( final IOException e ) {
 					e.printStackTrace();
+					bRunning = false;
 				}
 			}
 		};
@@ -120,11 +140,6 @@ public class PostStillsContinuous {
 		}
 	}
 	
-	
-	public void postNewImageFile( final File file ) {
-		System.out.println( "File to post: " + file.getAbsolutePath() );
-//		System.out.println( "\tcopy to: " + SessionPath.getSessionDir() );
-	}
 	
 	
 	public void stop() {
@@ -156,7 +171,13 @@ public class PostStillsContinuous {
 	
 	
 	public static void main( final String[] args ) {
-		final PostStillsContinuous post = new PostStillsContinuous();
+		final PostStillsListener listener = new PostStillsListener() {
+			@Override
+			public void reportProcessEnded() {}
+			@Override
+			public void reportNewFile(File file) {}
+		};
+		final PostStillsContinuous post = new PostStillsContinuous( listener );
 		post.start();
 	}
 	
