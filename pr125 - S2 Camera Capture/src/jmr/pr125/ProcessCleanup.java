@@ -5,7 +5,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
+
+import jmr.util.SystemUtil;
 
 public class ProcessCleanup {
 
@@ -16,11 +17,12 @@ public class ProcessCleanup {
 	final File fileTEMP;
 	
 	public ProcessCleanup() {
-		String strTempDir = System.getenv( "TEMP" );
-		if ( StringUtils.isBlank( strTempDir ) ) {
-			strTempDir = System.getenv( "TMP" );
-		}
-		fileTEMP = new File( strTempDir );
+//		String strTempDir = System.getenv( "TEMP" );
+//		if ( StringUtils.isBlank( strTempDir ) ) {
+//			strTempDir = System.getenv( "TMP" );
+//		}
+//		fileTEMP = new File( strTempDir );
+		this.fileTEMP = SystemUtil.getTempDir();
 	}
 	
 	

@@ -20,6 +20,11 @@ import org.eclipse.swt.widgets.TrayItem;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
+import jmr.SessionPath;
+import jmr.pr130.DeletionScheduleUI.Schedule;
+import jmr.util.NetUtil;
+import jmr.util.SystemUtil;
+
 public class S2TrayIcon {
 
 	final static Display display;
@@ -63,8 +68,12 @@ public class S2TrayIcon {
 		
 		this.shell = new Shell( display, SWT.NONE );
 		final Menu menu = new Menu( shell, SWT.POP_UP );
-		
+
+		final MenuItem miSession = new MenuItem( menu, SWT.PUSH );
+		new MenuItem( menu, SWT.SEPARATOR );
+
 		final MenuItem miShowSchedule = new MenuItem( menu, SWT.PUSH );
+		final MenuItem miShowDevices = new MenuItem( menu, SWT.PUSH );
 		final MenuItem miLaunchClient = new MenuItem( menu, SWT.PUSH );
 		new MenuItem( menu, SWT.SEPARATOR );
 		final MenuItem miShowMenu = new MenuItem( menu, SWT.RADIO );
@@ -72,9 +81,12 @@ public class S2TrayIcon {
 		final MenuItem miPostEvent = new MenuItem( menu, SWT.RADIO );
 		new MenuItem( menu, SWT.SEPARATOR );
 		final MenuItem miClose = new MenuItem( menu, SWT.PUSH );
-		
-		miShowSchedule.setText( "Show Scheduler UI" );
-		miLaunchClient.setText( "Launch latest S2 client" );
+
+		miSession.setText( NetUtil.getMAC() );
+
+		miShowSchedule.setText( "Show Scheduler" );
+		miShowDevices.setText( "Show Devices" );
+		miLaunchClient.setText( "Launch S2 client" );
 		
 		miShowMenu.setText( "Show this pop-up menu" );
 		miClipboard.setText( "Clipboard to plain text" );
@@ -107,7 +119,7 @@ public class S2TrayIcon {
 		miShowSchedule.addSelectionListener( new SelectionAdapter() {
 			@Override
 			public void widgetSelected( final SelectionEvent e ) {
-				SchedulerGUI.get().open();
+				CameraSchedulerUI.get().open();
 			}
 		});
 		
@@ -125,7 +137,7 @@ public class S2TrayIcon {
 	}
 	
 	public void close() {
-		SchedulerGUI.get().close();
+		CameraSchedulerUI.get().close();
 		this.bActive = false;
 		this.trayitem.dispose();
 	}
@@ -189,13 +201,45 @@ public class S2TrayIcon {
 	}
 	
 	
+	public static void initializeDeletionSchedule() {
+		
+		final DeletionScheduleUI scheduler = DeletionScheduleUI.get();
+		scheduler.start();
+		
+		scheduler.addSchedule( new Schedule( 
+				SystemUtil.getTempDir(), ".webcam-lock-.*", 1 ) );
+		
+		scheduler.addSchedule( new Schedule( 
+				SystemUtil.getTempDir(), "capture_vid._.*.jpg", 1 ) );
+		
+		scheduler.addSchedule( new Schedule( 
+				SystemUtil.getTempDir(), "_capture_vid._.*.jpg", 1 ) );
+		scheduler.addSchedule( new Schedule( 
+				SystemUtil.getTempDir(), "capture_vid._.*.jpg_", 1 ) );
+		scheduler.addSchedule( new Schedule( 
+				SystemUtil.getTempDir(), "Capture_.*.jpg", 1 ) );
+		
+		scheduler.addSchedule( new Schedule( 
+				SystemUtil.getTempDir(), "pr124_.*jar", 24 * 2 ) );
+		scheduler.addSchedule( new Schedule( 
+				SystemUtil.getTempDir(), "BridJExtractedLibraries.*", 2 ) );
+
+		scheduler.addSchedule( new Schedule( 
+				SessionPath.getSessionDir(), "capture_vid._.*.jpg", 1 ) );
+		//BridJExtractedLibraries7152577194854756978
+	}
+	
 	
 
 	public static void main( final String[] args ) {
 
 		final S2TrayIcon trayicon = new S2TrayIcon();
 
-	    while ( trayicon.isActive() && ! display.isDisposed() ) {
+		initializeDeletionSchedule();
+
+	    while ( trayicon.isActive() 
+	    				&& ! display.isDisposed() 
+	    				&& null!=display ) {
 		      if ( display.readAndDispatch()) {
 		    	  display.sleep();
 		      }
@@ -203,6 +247,8 @@ public class S2TrayIcon {
 	    if ( ! display.isDisposed() ) {
 	    	display.dispose();
 	    }
+	    
+	    DeletionScheduleUI.get().stop();
 	}
 	
 

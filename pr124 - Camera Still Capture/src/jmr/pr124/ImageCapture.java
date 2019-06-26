@@ -9,23 +9,50 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.io.FileUtils;
+
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamException;
 
 import jmr.util.SelfDestruct;
+import jmr.util.SystemUtil;
 
 public class ImageCapture {
 	
-	public final static long TIME_TIMEOUT = 10L;
+	public final static long TIME_TIMEOUT = 10L; // 4 seconds per picture
 
-	
-	private static void capture( final String strName ) {
 
-		Webcam webcam = null;
+	public static void capture( final String strName ) {
 		
+		final File file = new File( strName + ".jpg" );
+
+		final Webcam webcam = Webcam.getWebcamByName( strName );
+		capture( webcam, file );
+	}
+	
+	
+	public static void init() {
+//		final String strClassName = WebcamDefaultDriver.class.getName();
+//		final String strClassPackage = WebcamDefaultDriver.class.getPackage().toString();
+//		org.slf4j.Logger loggerWebcam = org.slf4j.LoggerFactory.getLogger(
+//									WebcamDefaultDriver.class );
+//		
+//		LoggerContext lc =  (LoggerContext)LoggerFactory.getILoggerFactory();
+//		final org.slf4j.Logger logger = lc.getLogger( strClassPackage );
+//		logger.setl
+//		
+//		if ( loggerWebcam instanceof org.slf4j.Logger ) {
+//			loggerWebcam.
+//		}
+	}
+	
+
+	public static void capture( final Webcam webcam,
+								final File fileTarget ) {
+
 		try {
-			webcam = Webcam.getWebcamByName( strName );
-			System.out.println( "---\tgetName(): " + webcam.getName() );
+			final String strName = webcam.getName();
+			System.out.println( "---\tgetName(): " + strName );
 			final Dimension[] arrSizes = webcam.getViewSizes();
 			
 			Dimension dimBest = null;
@@ -46,10 +73,48 @@ public class ImageCapture {
 				final BufferedImage image = webcam.getImage();
 				
 	//			final File file = new File("Capture_" + i + ".jpg");
-				final File file = new File( strName + ".jpg" );
-				System.out.println( "--- Saving to \"" 
-									+ file.getAbsolutePath() + "\"" );
-				ImageIO.write(image, "JPG", file);
+//				final File file = new File( strName + ".jpg" );
+				
+				final File fileWrite = new File( 
+									fileTarget.getAbsoluteFile() + "_" );
+				
+//				System.out.println( "--- Saving to \"" 
+//									+ fileTarget.getAbsolutePath() + "\"" );
+
+				System.out.print( "Writing to:   " 
+							+ fileWrite.getAbsolutePath() + "  ... " );				
+				ImageIO.write( image, "JPG", fileWrite );
+				System.out.println( "Done." );
+
+				System.out.print( "Renaming to:  " 
+							+ fileTarget.getAbsolutePath() + "   ... " );				
+				FileUtils.moveFile( fileWrite, fileTarget );
+				System.out.println( "Done." );
+
+////				Thread.sleep( 700 );
+//				System.out.println( "Saving to BAOS.." );
+//				
+//				final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//				
+//				ImageIO.write( image, "JPG", baos );
+//				baos.flush();
+//
+////				Thread.sleep( 700 );
+//				System.out.println( "Saving to byte array.." );
+//
+//				final byte[] buffer = baos.toByteArray();
+//				baos.close();
+//
+////				Thread.sleep( 700 );
+//				System.out.println( "Saving to File.." );
+//
+//				final OutputStream os = new FileOutputStream( fileTarget );
+//				os.write( buffer );
+//				os.close();
+				
+//				Thread.sleep( 700 );
+//				System.out.println( "(saved)" );
+				
 			} catch ( final WebcamException e ) {
 				System.err.println( "WARNING: Failed to access camera \"" 
 										+ webcam.getName() + "\", "
@@ -68,6 +133,19 @@ public class ImageCapture {
 	public static void main( final String[] args ) 
 							throws IOException, InterruptedException {
 		
+		final File fileTempDir = SystemUtil.getTempDir();
+		
+		final boolean bContinuous;
+		if ( args.length > 0 && "continuous".equals( args[0].toLowerCase() ) ) {
+			bContinuous = true;
+			System.out.println( "Running in continuous mode." );
+		} else {
+			bContinuous = false;
+			System.out.println( "Running in a single pass." );
+		}
+
+		SelfDestruct.setTime( TIME_TIMEOUT, "Timeout while starting up." );
+
 //		com.github.sarxos.webcam.ds.buildin.natives.OpenIMAJGrabber.class.getName();
 //		new OpenIMAJGrabber();
 		
@@ -76,6 +154,11 @@ public class ImageCapture {
 		System.out.println( "Camera system:");
 		System.out.println( "\tgetDriver(): " + Webcam.getDriver().toString() );
 		System.out.println( "Detected cameras:" );
+		
+		if ( list.isEmpty() ) {
+			System.out.println( "WARNING: No cameras found. Exiting." );
+			System.exit( 100 );
+		}
 		
 		final List<String> listNames = new LinkedList<>();
 		
@@ -89,15 +172,28 @@ public class ImageCapture {
 			System.out.println( "\tgetViewSizes():" );
 		}
 
-		System.out.println( "Capturing stills:" );
-		for ( final String strName : listNames ) {
-			
-			SelfDestruct.setTime( TIME_TIMEOUT, 
-							"Timeout on still capture of \"" + strName + "\"" );
-			
-			capture( strName );
-			
-			Thread.sleep( 1000L );
+		System.out.println( "Capturing stills.." );
+		for (;;) {
+			int i=0;
+			for ( final Webcam webcam : list ) {
+				
+				final long lTimeNow = System.currentTimeMillis();
+				final File file = new File( fileTempDir, 
+						"capture_vid" + i + "_" + lTimeNow + ".jpg" );
+
+				final String strName = webcam.getName();
+				SelfDestruct.setTime( TIME_TIMEOUT, 
+						"Timeout on still capture of \"" + strName + "\"." );
+				
+				capture( webcam, file );
+				
+//				Thread.sleep( 100L );
+				i++;
+			}
+			if ( ! bContinuous ) {
+				System.out.println( "Capture complete. Exiting." );
+				System.exit( 0 );
+			}
 		}
 		
 //		new OpenIMAJGrabber();

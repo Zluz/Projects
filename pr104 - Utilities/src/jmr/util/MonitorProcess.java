@@ -3,6 +3,7 @@ package jmr.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
@@ -18,6 +20,10 @@ import org.apache.commons.exec.PumpStreamHandler;
 
 public class MonitorProcess {
 
+	private static final Logger 
+					LOGGER = Logger.getLogger( MonitorProcess.class.getName() );
+
+	
 	/** echo output from the process to the console for the first second. */
 	public static final long ECHO_OUTPUT_DURATION = 3000;
 	
@@ -46,6 +52,58 @@ public class MonitorProcess {
 		public void process( final long lTime,
 							 final String strLine );
 	}
+	
+	
+	
+
+	public static void addConsoleEcho( final Process process,
+									   final boolean bStdOut ) {
+		
+		final Thread threadOutput = new Thread() {
+			public void run() {
+				final InputStream is = bStdOut 
+										? process.getInputStream()
+										: process.getErrorStream();
+				final InputStreamReader isr = new InputStreamReader( is );
+				try ( final BufferedReader br = new BufferedReader( isr ) ) {
+					String strLine = null;
+					while ( ( strLine = br.readLine() ) != null ) {
+						System.out.println( 
+								( bStdOut ? "\tout> " : "\terr> " ) + strLine );
+					}
+				} catch ( final IOException e ) {
+					LOGGER.warning( e.toString() + " encountered "
+							+ "while handling " 
+							+ ( bStdOut ? "STDOUT." : "STDERR." ) );
+				}
+			};
+		};
+		threadOutput.start();
+	}
+	
+	
+
+
+	/**
+	 * This was added to handle the pr124 process.
+	 * This seems to be required to get the JRE error to end the process.
+	 * Otherwise the process will stop functioning but continue to exist.
+	 * @param process
+	 */
+	public static void addDummyStream( final Process process ) {
+		
+		final InputStream is = process.getInputStream();
+		final InputStreamReader isr = new InputStreamReader( is );
+		try ( final BufferedReader br = new BufferedReader( isr ) ) {
+//			// do nothing
+		} catch ( final IOException e ) {
+			LOGGER.warning( e.toString() + " encountered "
+					+ "while attaching to STDOUT." );
+		}
+	}
+	
+	
+	
 
 
 	public MonitorProcess(	final String strName,

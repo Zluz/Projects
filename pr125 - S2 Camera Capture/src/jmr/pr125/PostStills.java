@@ -24,7 +24,8 @@ public class PostStills {
 	
 	public final static long TIME_TIMEOUT = 120L;
 	
-	public final static long TIME_DELAY = 30L;
+	// delay in seconds between capture cycles
+	public final static long TIME_DELAY = 1L; // 30L;
 	
 	
 	
