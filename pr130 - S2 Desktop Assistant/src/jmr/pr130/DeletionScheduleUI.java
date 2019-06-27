@@ -2,12 +2,15 @@ package jmr.pr130;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
@@ -32,22 +35,22 @@ public class DeletionScheduleUI {
 		
 		final File filePath;
 		final String strFileRegex;
-		final int iMaxHours;
+		final int iMaxSeconds;
 		boolean bActive;
 		
 		Schedule( final File filePath,
 				  final String strFileRegex,
-				  final int iMaxHours ) {
+				  final int iMaxSeconds ) {
 			this.filePath = filePath;
 			this.strFileRegex = strFileRegex;
-			this.iMaxHours = iMaxHours;
+			this.iMaxSeconds = iMaxSeconds;
 			this.bActive = this.filePath.isDirectory();
 		}
 		
 		Schedule( final String strPath,
 				  final String strFileRegex,
-				  final int iMaxDays ) {
-			this( new File( strPath ), strFileRegex, iMaxDays );
+				  final int iMaxSeconds ) {
+			this( new File( strPath ), strFileRegex, iMaxSeconds );
 		}
 	}
 	
@@ -83,7 +86,7 @@ public class DeletionScheduleUI {
 					}
 					
 					try {
-						Thread.sleep( TimeUnit.SECONDS.toMillis( 45 ) );
+						Thread.sleep( TimeUnit.SECONDS.toMillis( 14 ) );
 					} catch ( final InterruptedException e ) {
 						bActive = false;
 					}
@@ -100,6 +103,7 @@ public class DeletionScheduleUI {
 	public void stop() {
 		this.bActive = false;
 		this.threadDeletionSchedule.interrupt();
+		DeletionScheduleUI.pool.shutdown();
 	}
 	
 	
@@ -110,7 +114,7 @@ public class DeletionScheduleUI {
 		if ( ! schedule.bActive ) return;
 		
 		final long lTimeLimit = 
-					lTimeNow - TimeUnit.HOURS.toMillis( schedule.iMaxHours );
+					lTimeNow - TimeUnit.SECONDS.toMillis( schedule.iMaxSeconds );
 		
 		final FileFilter filter = new FileFilter() {
 			@Override
@@ -127,17 +131,16 @@ public class DeletionScheduleUI {
 				if ( lModDate > lTimeLimit ) return false;
 				
 //				System.out.println( "--- File passes: " + file.getAbsolutePath() );
-				
 				return true;
 			}
 		};
 		
 		
-		//TODO exclude the latest file
+		//TODO exclude the two latest files
 		
 		final List<File> list = new LinkedList<>( 
 				Arrays.asList( schedule.filePath.listFiles(filter) ) );
-		if ( list.size() > 2 ) {
+		if ( list.size() > 3 ) {
 			Collections.sort( list, new Comparator<File>() {
 				public int compare( final File fileLHS, final File fileRHS ) {
 					return (int)( fileRHS.lastModified() - fileLHS.lastModified() );
@@ -145,33 +148,37 @@ public class DeletionScheduleUI {
 			} );
 			
 			list.remove( 0 );
+			list.remove( 0 );
 			
 			for ( final File file : list ) {
-	//			try {
-	//				System.out.println( "Deleting: " + file.getAbsolutePath() );
-	//				FileUtils.forceDelete( file );
-	//			} catch ( final IOException e ) {
-	//				e.printStackTrace();
-	//			}	
 				delete( file );
 			}
 		}
 	}
+	
+	
+	
+	final static ThreadPoolExecutor 
+				pool = (ThreadPoolExecutor)Executors.newFixedThreadPool( 4 );
+	
 
 	
 	private void delete( final File file ) {
-		final Thread thread = new Thread( "Deleting: " + file.getName() ) {
+//		final Thread thread = new Thread( "Deleting: " + file.getName() ) {
+		final Runnable runnable = new Runnable() {
 			public void run() {
-				System.out.println( "Deleting: " + file.getAbsolutePath() );
 				try {
 					FileUtils.forceDelete( file );
-				} catch (IOException e) {
+				} catch ( final FileNotFoundException e ) {
+					// ignore; temporary file probably disappeared on its own
+				} catch ( final IOException e ) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			};
 		};
-		thread.start();
+//		thread.start();
+		pool.execute( runnable );
 	}
 	
 	

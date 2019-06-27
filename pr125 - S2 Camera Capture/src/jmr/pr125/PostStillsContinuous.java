@@ -25,12 +25,13 @@ public class PostStillsContinuous {
 	
 	boolean bActive;
 	boolean bRunning;
+	boolean bForceStop;
 	
 	final File fileTempDir = SystemUtil.getTempDir();
 	
 	final Set<String> setFilesPosted = new TreeSet<>();
 	
-	
+	private Process process;
 	
 
 	public static interface PostStillsListener {
@@ -41,10 +42,14 @@ public class PostStillsContinuous {
 	}
 	
 	
-	final private PostStillsListener listener;
+	private PostStillsListener listener;
 	
 
 	public PostStillsContinuous( final PostStillsListener listener ) {
+		this.listener = listener;
+	}
+	
+	public void setListener( final PostStillsListener listener ) {
 		this.listener = listener;
 	}
 	
@@ -74,8 +79,7 @@ public class PostStillsContinuous {
 			public void run() {
 
 				try {
-					final Process process = 
-								Runtime.getRuntime().exec( strCommand );
+					process = Runtime.getRuntime().exec( strCommand );
 					System.out.println( "Launched: " + strCommand );
 					
 					bRunning = true;
@@ -88,7 +92,7 @@ public class PostStillsContinuous {
 					// monitor STDERR
 					MonitorProcess.addConsoleEcho( process, false );
 
-					while ( process.isAlive() ) {
+					while ( process.isAlive() && ! bForceStop ) {
 
 //						System.out.println( "Scanning temp dir.." );
 						
@@ -99,9 +103,11 @@ public class PostStillsContinuous {
 							if ( ! setFilesPosted.contains( strName ) ) {
 								if ( ! bInitializing ) {
 									
-									System.out.println( "File to post: " 
-												+ file.getAbsolutePath() );
-									listener.reportNewFile( file );
+//									System.out.println( "File to post: " 
+//												+ file.getAbsolutePath() );
+									if ( null!=listener ) {
+										listener.reportNewFile( file );
+									}
 								}
 								setFilesPosted.add( strName );
 							}
@@ -114,19 +120,30 @@ public class PostStillsContinuous {
 							Thread.sleep( 100 );
 						} catch ( final InterruptedException e ) {
 							System.out.println( "Interrupted" );
+							process.destroyForcibly();
+							// maybe wait?
+							
 							bActive = false;
 						}
 					}
 					
-					System.out.println( "Process ended." );
-					System.out.println( "Exit code: " + process.exitValue() );
+					if ( ! process.isAlive() ) {
+						System.out.println( "Process ended." );
+						System.out.println( "Exit code: " + process.exitValue() );
+					} else {
+						System.out.println( "Process monitoring abandoned, "
+											+ "process still alive." );
+					}
 					bRunning = false;
-					
-					listener.reportProcessEnded();
 					
 				} catch ( final IOException e ) {
 					e.printStackTrace();
 					bRunning = false;
+
+				}
+				
+				if ( null!=listener ) {
+					listener.reportProcessEnded();
 				}
 			}
 		};
@@ -143,6 +160,7 @@ public class PostStillsContinuous {
 	
 	
 	public void stop() {
+		bForceStop = true;
 	}
 	
 	public boolean isActive() {

@@ -208,30 +208,30 @@ public class S2TrayIcon {
 		scheduler.start();
 		
 		scheduler.addSchedule( new Schedule( 
-				SystemUtil.getTempDir(), ".webcam-lock-.*", 1 ) );
+				SystemUtil.getTempDir(), ".webcam-lock-.*", 3600 ) );
 		
 		scheduler.addSchedule( new Schedule( 
-				SystemUtil.getTempDir(), "capture_vid._.*.jpg", 1 ) );
+				SystemUtil.getTempDir(), "capture_vid._.*.jpg", 60 ) );
 		
 		scheduler.addSchedule( new Schedule( 
-				SystemUtil.getTempDir(), "_capture_vid._.*.jpg", 1 ) );
+				SystemUtil.getTempDir(), "_capture_vid._.*.jpg", 60 ) );
 		scheduler.addSchedule( new Schedule( 
-				SystemUtil.getTempDir(), "capture_vid._.*.jpg_", 1 ) );
+				SystemUtil.getTempDir(), "capture_vid._.*.jpg_", 10 ) );
 		scheduler.addSchedule( new Schedule( 
-				SystemUtil.getTempDir(), "Capture_.*.jpg", 1 ) );
+				SystemUtil.getTempDir(), "Capture_.*.jpg", 60 ) );
 
 		scheduler.addSchedule( new Schedule( 
-				SessionPath.getSessionDir(), "capture_vid._.*.jpg", 1 ) );
+				SessionPath.getSessionDir(), "capture_vid._.*.jpg", 60 ) );
 		scheduler.addSchedule( new Schedule( 
-				SessionPath.getSessionDir(), "capture_vid._.*.jpg_", 1 ) );
+				SessionPath.getSessionDir(), "capture_vid._.*.jpg_", 10 ) );
 
 		scheduler.addSchedule( new Schedule( 
-				SystemUtil.getTempDir(), "pr124_.*jar", 24 * 2 ) );
+				SystemUtil.getTempDir(), "pr124_.*jar", 24 * 2 * 3600 ) );
 		scheduler.addSchedule( new Schedule( 
-				SystemUtil.getTempDir(), "BridJExtractedLibraries.*", 2 ) );
+				SystemUtil.getTempDir(), "BridJExtractedLibraries.*", 2 * 3600 ) );
 
 		scheduler.addSchedule( new Schedule( 
-				SessionPath.getSessionDir(), "capture_vid._.*.jpg", 1 ) );
+				SessionPath.getSessionDir(), "capture_vid._.*.jpg", 60 ) );
 		//BridJExtractedLibraries7152577194854756978
 	}
 	

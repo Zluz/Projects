@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.github.sarxos.webcam.Webcam;
 
@@ -38,14 +39,13 @@ public class CameraSchedulerUI {
 	
 	final private Text textLog;
 	
-	private boolean bActive = false;
-
-	private Thread threadCapture = null;
+	private PostStillsContinuous post = null; 
 	
 	final File fileTempDir = SystemUtil.getTempDir();
 	final File fileSession = SessionPath.getSessionDir();
 	final String strMAC = NetUtil.getMAC();
 
+	private final static int LOG_HISTORY_SIZE = 10 * 1024;
 
 	
 	private static void log( final String strText ) {
@@ -56,10 +56,21 @@ public class CameraSchedulerUI {
 		display.asyncExec( new Runnable() {
 			@Override
 			public void run() {
-				final String strNewText = 
-						instance.textLog.getText() + Text.DELIMITER 
-						+ strText;
-				instance.textLog.setText( strNewText );
+				final Text text = instance.textLog;
+				
+				String strWidgetText = text.getText();
+				if ( strWidgetText.length() > LOG_HISTORY_SIZE ) {
+					strWidgetText = StringUtils.right( 
+										strWidgetText, LOG_HISTORY_SIZE );
+					strWidgetText = StringUtils.substringAfter( 
+										strWidgetText, Text.DELIMITER );
+				}
+				strWidgetText = strWidgetText + Text.DELIMITER + strText;
+				
+				text.setText( strWidgetText );
+				text.setSelection( strWidgetText.length() );
+				
+				System.out.println( "log> " + strText );
 			}
 		});
 	}
@@ -71,13 +82,13 @@ public class CameraSchedulerUI {
 		
 		shell.setLayout( new FillLayout( SWT.HORIZONTAL ) );
 
-		this.textLog = new Text( shell, SWT.MULTI );
-		
+		this.textLog = new Text( shell, SWT.MULTI | SWT.V_SCROLL );
+		this.textLog.setText( "textLog" + Text.DELIMITER + Text.DELIMITER );
 		
 		final Composite compControls = new Composite( shell, SWT.NONE );
 		compControls.setLayout( new FillLayout( SWT.VERTICAL ) );
 		
-		final Text text = new Text( compControls, SWT.MULTI );
+		final Text text = new Text( compControls, SWT.MULTI | SWT.V_SCROLL );
 		text.setText( "<Configuration text here>" );
 		
 		final Button btnActivate = new Button( compControls, SWT.CHECK );
@@ -186,47 +197,16 @@ public class CameraSchedulerUI {
 	
 	
 	public void captureStart() {
-		CameraSchedulerUI.log( "--- captureStart()" );
-
-		this.threadCapture = new Thread( "Camera Capture" ) {
-			@Override
-			public void run() {
-				log( "--- captureStart - capture thread started" );
-				try {
-					PostStillsContinuous post = null; 
-					while ( bActive ) {
-						
-						Thread.sleep( 1000 );
-		
-						System.out.println( "Starting post-stills process." );
-						
-						post = new PostStillsContinuous( listener );
-						post.start();
-						
-						while ( post.isRunning() && bActive ) {
-							Thread.sleep( 1000 );
-						}
-
-						System.out.println( "Post-stills process ended." );
-
-						Thread.sleep( 5000 );
-
-					}
-				} catch ( final InterruptedException e ) {
-					bActive = false;
-				}
-			}
-		};
-		threadCapture.start();
-		
-		this.bActive = true;
+		if ( null!=this.post ) {
+			this.post.setListener( null );
+			this.post.stop();
+		}
+		this.post = new PostStillsContinuous( listener );
+		post.start();
 	}
-		
 	
 	public void captureStop() {
 		CameraSchedulerUI.log( "--- captureStop()" );
-		this.threadCapture.interrupt();
-		this.bActive = false;
 	}
 	
 	
@@ -250,6 +230,10 @@ public class CameraSchedulerUI {
 
 	
 	public void close() {
+		if ( null!=this.post ) {
+			this.post.setListener( null );
+			this.post.stop();
+		}
 		this.shell.close();
 		this.shell.dispose();
 	}
