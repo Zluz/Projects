@@ -15,6 +15,9 @@ import org.eclipse.swt.widgets.Text;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,8 +28,13 @@ import jmr.SessionPath;
 import jmr.pr124.ImageCapture;
 import jmr.pr125.PostStillsContinuous;
 import jmr.pr125.PostStillsContinuous.PostStillsListener;
+import jmr.s2db.comm.ConnectionProvider;
+import jmr.s2db.job.JobType;
+import jmr.s2db.tables.Job;
+import jmr.s2db.tables.Job.JobSet;
 import jmr.util.NetUtil;
 import jmr.util.SystemUtil;
+import jmr.util.report.TraceMap;
 
 public class CameraSchedulerUI {
 
@@ -111,7 +119,7 @@ public class CameraSchedulerUI {
 			}
 		});
 		
-		shell.setSize( 500, 300 );
+		shell.setSize( 1000, 600 );
 		shell.layout();
 		
 		final Image image = S2TrayIcon.getS2Icon();
@@ -168,6 +176,8 @@ public class CameraSchedulerUI {
 	
 	final PostStillsListener listener = new PostStillsListener() {
 		
+		File filePrevious = null;
+		
 		@Override
 		public void reportNewFile( final File file ) {
 			
@@ -184,7 +194,71 @@ public class CameraSchedulerUI {
 				e.printStackTrace();
 			}
 			
+			final String strFilenameBase = 
+							StringUtils.substringBeforeLast( 
+							fileTarget.getAbsolutePath(), "_" );
+			
+			final File fileMask = new File( strFilenameBase + "-mask.jpg" );
+			
 			log( "File posted: " + fileTarget.getAbsolutePath() );
+			
+			if ( null==filePrevious ) {
+				this.filePrevious = fileTarget;
+				return;
+			}
+			
+			final TraceMap mapData = new TraceMap();
+			mapData.put( "image_current", fileTarget.getAbsoluteFile().toString() );
+			mapData.put( "image_previous", filePrevious.getAbsoluteFile().toString() );
+			if ( fileMask.isFile() ) {
+				mapData.put( "image_mask", fileMask.getAbsoluteFile().toString() );
+			}
+			
+			final String strResult = strFilenameBase;
+			final JobSet jobset = null;
+			final JobType type = JobType.PROCESSING_IMAGE_DIFF;
+			Job.add( type, jobset, strResult, mapData );
+			
+			this.filePrevious = fileTarget;
+			
+			
+			final String strRequest = type.name() + ":" + strFilenameBase;
+			final String strSQLDelete =
+//					"DELETE " +
+////					"SELECT * \n" + 
+//					"FROM s2db.job " + 
+////					"WHERE request LIKE \"PROCESSING_IMAGE_DIFF:S:%Sessions%94-C6-91-19-C5-CC%capture_vid0\" " + 
+////					"WHERE request LIKE ? " + 
+//					"WHERE request LIKE '" + StringUtils.replace( strRequest, "\\", "%" ) + "' " + 
+//					"ORDER BY seq DESC " + 
+//					"LIMIT 10,10000"
+//					+ ""
+//					+ ""
+					"DELETE j \n" + 
+					"FROM s2db.job j \n" + 
+					"	JOIN ( SELECT * FROM s2db.job "
+								+ "WHERE ( request LIKE 'PROCESSING_IMAGE_DIFF:%' ) "
+								+ "ORDER BY seq DESC LIMIT 1 OFFSET 100 ) as oldest \n" + 
+					"		ON ( TRUE \n" + 
+					"				AND ( j.seq < oldest.seq ) \n" + 
+					"				AND ( j.request LIKE '" + StringUtils.replace( strRequest, "\\", "%" ) + "' ) \n" + 
+					"			);";
+			
+			try (	final Connection conn = ConnectionProvider.get().getConnection();
+					final PreparedStatement stmt = 
+									conn.prepareStatement( strSQLDelete ) ) {
+
+//				stmt.setString( 1, strRequest );
+				stmt.executeUpdate();
+				
+			} catch ( final SQLException e ) {
+				e.printStackTrace();
+				
+				System.err.println( "SQL: " + strSQLDelete );
+				
+//				LOGGER.log( Level.SEVERE, "Query SQL: " + strQuery, e );
+			}
+			
 		};
 		
 		@Override

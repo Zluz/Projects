@@ -154,8 +154,8 @@ public class ImageCaptureS2 {
 //							strLowPriorityCommand, null, fileDir );
 
 			if ( bShowOutput ) {
-				MonitorProcess.addConsoleEcho( process, true );
-				MonitorProcess.addConsoleEcho( process, false );
+				MonitorProcess.addConsoleEcho( process, true, null );
+				MonitorProcess.addConsoleEcho( process, false, null );
 			}
 			
 			process.waitFor( 60L, TimeUnit.SECONDS );

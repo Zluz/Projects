@@ -79,25 +79,32 @@ public class PostStillsContinuous {
 			public void run() {
 
 				try {
+					final long lTimeStart = System.currentTimeMillis();
 					process = Runtime.getRuntime().exec( strCommand );
 					System.out.println( "Launched: " + strCommand );
 					
 					bRunning = true;
 					
 					boolean bInitializing = true;
-					
+
+					final Long[] lLastOutput = { lTimeStart, lTimeStart };
+					boolean bUnresponsive = false;
+
 					// required end the process when it stops working
 					MonitorProcess.addDummyStream( process );
 					
 					// monitor STDERR
-					MonitorProcess.addConsoleEcho( process, false );
-
-					while ( process.isAlive() && ! bForceStop ) {
+					MonitorProcess.addConsoleEcho( process, false, lLastOutput );
+					
+					while ( process.isAlive() 
+									&& ! bForceStop 
+									&& ! bUnresponsive ) {
 
 //						System.out.println( "Scanning temp dir.." );
 						
 						final Collection<File> listFiles = 
 								FileUtils.listFiles( fileTempDir, filter, null );
+						
 						for ( final File file : listFiles ) {
 							final String strName = file.getName();
 							if ( ! setFilesPosted.contains( strName ) ) {
@@ -125,6 +132,13 @@ public class PostStillsContinuous {
 							
 							bActive = false;
 						}
+						
+						final long lNow = System.currentTimeMillis();
+						final long lElapsed = lNow - lLastOutput[0];
+						if ( lElapsed > TimeUnit.SECONDS.toMillis( 120 ) ) {
+							bUnresponsive = true;
+							System.out.println( "Process is unresponsive." );
+						}
 					}
 					
 					if ( ! process.isAlive() ) {
@@ -139,7 +153,6 @@ public class PostStillsContinuous {
 				} catch ( final IOException e ) {
 					e.printStackTrace();
 					bRunning = false;
-
 				}
 				
 				if ( null!=listener ) {

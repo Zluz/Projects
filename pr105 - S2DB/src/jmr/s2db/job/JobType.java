@@ -13,6 +13,8 @@ public enum JobType {
 	REMOTE_SHUTDOWN( true ),
 	REMOTE_GET_CALL_STACK( true ),
 	
+	PROCESSING_IMAGE_DIFF,
+	
 	SEND_EMAIL,
 	SEND_TEXT,
 	

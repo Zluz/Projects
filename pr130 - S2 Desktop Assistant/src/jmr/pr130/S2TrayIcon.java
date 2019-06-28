@@ -18,10 +18,13 @@ import org.eclipse.swt.widgets.Tray;
 import org.eclipse.swt.widgets.TrayItem;
 
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import jmr.SessionPath;
 import jmr.pr130.DeletionScheduleUI.Schedule;
+import jmr.s2db.Client;
+import jmr.s2db.tables.Session;
 import jmr.util.NetUtil;
 import jmr.util.SystemUtil;
 
@@ -231,7 +234,10 @@ public class S2TrayIcon {
 				SystemUtil.getTempDir(), "BridJExtractedLibraries.*", 2 * 3600 ) );
 
 		scheduler.addSchedule( new Schedule( 
-				SessionPath.getSessionDir(), "capture_vid._.*.jpg", 60 ) );
+				Paths.get( "." ).toFile(), "hs_err_pid.*.log", 60 ) );
+		scheduler.addSchedule( new Schedule( 
+				Paths.get( "." ).toFile(), "replay_pid.*.log", 60 ) );
+		
 		//BridJExtractedLibraries7152577194854756978
 	}
 	
@@ -240,6 +246,9 @@ public class S2TrayIcon {
 	public static void main( final String[] args ) {
 
 		final S2TrayIcon trayicon = new S2TrayIcon();
+		
+		Client.get().register( 
+					"Desktop Assistant", S2TrayIcon.class.getSimpleName() );
 
 		initializeDeletionSchedule();
 
