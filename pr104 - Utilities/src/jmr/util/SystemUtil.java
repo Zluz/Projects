@@ -1,5 +1,6 @@
 package jmr.util;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -7,6 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
+
+import org.apache.commons.lang3.StringUtils;
 
 
 public abstract class SystemUtil {
@@ -133,6 +136,20 @@ public abstract class SystemUtil {
 										+ "encountered " + e.toString() );
 			return 0;
 		}
+	}
+	
+	
+	private static File fileTemp = null;
+	
+	public static File getTempDir() {
+		if ( null==fileTemp ) {
+			String strTempDir = System.getenv( "TEMP" );
+			if ( StringUtils.isBlank( strTempDir ) ) {
+				strTempDir = System.getenv( "TMP" );
+			}
+			fileTemp = new File( strTempDir );
+		}
+		return fileTemp;
 	}
 	
 	

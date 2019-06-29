@@ -1,10 +1,8 @@
 package jmr.pr125;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,14 +17,14 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import jmr.SessionPath;
-import jmr.util.NetUtil;
+import jmr.util.MonitorProcess;
 import jmr.util.OSUtil;
 
 public class ImageCaptureS2 {
 
 
 	private static final Logger 
-					LOGGER = Logger.getLogger( NetUtil.class.getName() );
+					LOGGER = Logger.getLogger( ImageCaptureS2.class.getName() );
 
 
 	private static final String COMMAND_KILL_ERROR_WIN = 
@@ -129,6 +127,7 @@ public class ImageCaptureS2 {
 	}
 	
 	
+	
 	public synchronized boolean runCapture( final boolean bShowOutput ) {
 		final String strCommand = getCommand();
 		
@@ -155,41 +154,8 @@ public class ImageCaptureS2 {
 //							strLowPriorityCommand, null, fileDir );
 
 			if ( bShowOutput ) {
-				final Thread threadStdOut = new Thread() {
-					public void run() {
-						final InputStreamReader isr = 
-								new InputStreamReader( process.getInputStream() );
-						try ( final BufferedReader 
-								br = new BufferedReader( isr ) ) {
-							String strLine = null;
-							while ( ( strLine = br.readLine() ) != null ) {
-								System.out.println( "\tout> " + strLine );
-							}
-						} catch ( final IOException e ) {
-							LOGGER.warning( e.toString() + " encountered "
-									+ "while handling STDOUT." );
-						}
-					};
-				};
-				threadStdOut.start();
-	
-				final Thread threadStdErr = new Thread() {
-					public void run() {
-						final InputStreamReader isr = 
-								new InputStreamReader( process.getErrorStream() );
-						try ( final BufferedReader 
-								br = new BufferedReader( isr ) ) {
-							String strLine = null;
-							while ( ( strLine = br.readLine() ) != null ) {
-								System.err.println( "\tERR>>" + strLine );
-							}
-						} catch ( final IOException e ) {
-							LOGGER.warning( e.toString() + " encountered "
-									+ "while handling STDERR." );
-						}
-					};
-				};
-				threadStdErr.start();
+				MonitorProcess.addConsoleEcho( process, true, null );
+				MonitorProcess.addConsoleEcho( process, false, null );
 			}
 			
 			process.waitFor( 60L, TimeUnit.SECONDS );
@@ -238,7 +204,7 @@ public class ImageCaptureS2 {
 	private static String strCommand = null;
 	
 	
-	private static String getCommand() {
+	public static String getCommand() {
 		
 		if ( null==strCommand ) {
 			
@@ -254,7 +220,9 @@ public class ImageCaptureS2 {
 					+ "S:\\Resources\\lib\\hamcrest-library-1.3.jar;"
 					+ "S:\\Resources\\lib\\hamcrest-core-1.3.jar;"
 					+ "S:\\Resources\\lib\\cglib-nodep-3.1.jar;"
-					+ "S:\\Resources\\lib\\objenesis-2.1.jar\" "
+					+ "S:\\Resources\\lib\\objenesis-2.1.jar;"
+					+ "S:\\Resources\\lib\\commons-lang3-3.7.jar;"
+					+ "S:\\Resources\\lib\\commons-io-2.6.jar\" "
 					+ "jmr.pr124.ImageCapture";
 		}
 		return strCommand;
