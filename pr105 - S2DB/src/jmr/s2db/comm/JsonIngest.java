@@ -13,6 +13,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import jmr.s2db.Client;
+import jmr.s2db.Client.ClientType;
 import jmr.s2db.imprt.SummaryRegistry;
 import jmr.s2db.tables.Page;
 import jmr.s2db.tables.Path;
@@ -273,7 +274,7 @@ public class JsonIngest {
 
 		final String strSession = NetUtil.getSessionID();
 		final String strClass = JsonIngest.class.getName();
-		Client.get().register( strSession, strClass );
+		Client.get().register( ClientType.TEST, strSession, strClass );
 		
 		final JsonIngest ingest = new JsonIngest();
 		final Long seq = ingest.saveJson( strNode, strContents );

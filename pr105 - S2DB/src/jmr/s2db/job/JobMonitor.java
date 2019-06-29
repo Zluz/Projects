@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import jmr.pr126.comm.http.HttpListener;
 import jmr.pr126.comm.http.HttpListener.Listener;
 import jmr.s2db.Client;
+import jmr.s2db.Client.ClientType;
 import jmr.s2db.comm.Notifier;
 import jmr.s2db.tables.Job;
 import jmr.s2db.tables.Job.JobState;
@@ -100,7 +101,8 @@ public class JobMonitor {
 	
 	public void initializeJobMonitorThread() {
 		
-		HttpListener.getInstance().registerListener( listener );
+		HttpListener.getInstance( ClientType.TILE_GUI.getPort() )
+											.registerListener( listener );
 		
 		if ( null!=threadUpdater ) return;
 		

@@ -24,7 +24,9 @@ import java.util.concurrent.TimeUnit;
 import jmr.SessionPath;
 import jmr.pr130.DeletionScheduleUI.Schedule;
 import jmr.s2db.Client;
+import jmr.s2db.Client.ClientType;
 import jmr.util.NetUtil;
+import jmr.util.OSUtil;
 import jmr.util.SystemUtil;
 
 public class S2TrayIcon {
@@ -71,6 +73,7 @@ public class S2TrayIcon {
 		this.shell = new Shell( display, SWT.NONE );
 		final Menu menu = new Menu( shell, SWT.POP_UP );
 
+		final MenuItem miProgram = new MenuItem( menu, SWT.PUSH );
 		final MenuItem miSession = new MenuItem( menu, SWT.PUSH );
 		new MenuItem( menu, SWT.SEPARATOR );
 
@@ -84,6 +87,7 @@ public class S2TrayIcon {
 		new MenuItem( menu, SWT.SEPARATOR );
 		final MenuItem miClose = new MenuItem( menu, SWT.PUSH );
 
+		miProgram.setText( OSUtil.getProgramName() );
 		miSession.setText( NetUtil.getMAC() );
 
 		miShowSchedule.setText( "Show Scheduler" );
@@ -154,6 +158,7 @@ public class S2TrayIcon {
 					display.syncExec( new Runnable() {
 						@Override
 						public void run() {
+							shell.dispose();
 							trayitem.dispose();
 						}
 					});
@@ -232,19 +237,21 @@ public class S2TrayIcon {
 				SystemUtil.getTempDir(), ".webcam-lock-.*", 10 * 60 ) );
 		
 		scheduler.addSchedule( new Schedule( 
-				SystemUtil.getTempDir(), "capture_vid._.*.jpg", 60 ) );
+				SystemUtil.getTempDir(), "capture_vid.-.*.jpg", 60 ) );
 		
 		scheduler.addSchedule( new Schedule( 
-				SystemUtil.getTempDir(), "_capture_vid._.*.jpg", 60 ) );
+				SystemUtil.getTempDir(), "_capture_vid.-.*.jpg", 60 ) );
 		scheduler.addSchedule( new Schedule( 
-				SystemUtil.getTempDir(), "capture_vid._.*.jpg_", 10 ) );
+				SystemUtil.getTempDir(), "capture_vid.-.*.jpg_", 10 ) );
 		scheduler.addSchedule( new Schedule( 
 				SystemUtil.getTempDir(), "Capture_.*.jpg", 60 ) );
 
 		scheduler.addSchedule( new Schedule( 
-				SessionPath.getSessionDir(), "capture_vid.-t.*.jpg", 60 ) );
+				SessionPath.getSessionDir(), "capture_vid.-t.*.jpg", 2 * 60 ) );
 		scheduler.addSchedule( new Schedule( 
 				SessionPath.getSessionDir(), "capture_vid.-t.*.jpg_", 10 ) );
+		scheduler.addSchedule( new Schedule( 
+				SessionPath.getSessionDir(), "pr125_.*.pid", 10 * 60 ) );
 
 		scheduler.addSchedule( new Schedule( 
 				SystemUtil.getTempDir(), "pr124_.*jar", 24 * 2 * 3600 ) );
@@ -255,6 +262,8 @@ public class S2TrayIcon {
 				Paths.get( "." ).toFile(), "hs_err_pid.*.log", 10 ) );
 		scheduler.addSchedule( new Schedule( 
 				Paths.get( "." ).toFile(), "replay_pid.*.log", 10 ) );
+		scheduler.addSchedule( new Schedule( 
+				SystemUtil.getTempDir(), "hs_err_pid.*.log", 10 ) );
 		
 		//BridJExtractedLibraries7152577194854756978
 	}
@@ -263,10 +272,17 @@ public class S2TrayIcon {
 
 	public static void main( final String[] args ) {
 
-		final S2TrayIcon trayicon = new S2TrayIcon();
-		
-		Client.get().register( 
+		final Long seqSession = Client.get().register( ClientType.TRAY_GUI, 
 					"Desktop Assistant", S2TrayIcon.class.getSimpleName() );
+		
+		if ( null==seqSession ) {
+			System.err.println( "Failed to initialize client session." );
+			System.out.println( "Another client instance may already be running." );
+			System.out.println( "Exiting." );
+			Runtime.getRuntime().exit( 0 );
+		}
+
+		final S2TrayIcon trayicon = new S2TrayIcon();
 
 		initializeDeletionSchedule();
 

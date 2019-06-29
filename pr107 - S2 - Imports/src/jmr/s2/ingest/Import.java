@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import jmr.s2db.Client;
+import jmr.s2db.Client.ClientType;
 import jmr.s2db.comm.ConnectionProvider;
 import jmr.s2db.imprt.WebImport;
 import jmr.util.NetUtil;
@@ -84,7 +85,7 @@ public enum Import {
 		
 		final String strSession = NetUtil.getSessionID();
 		final String strClass = Import.class.getName();
-		Client.get().register( strSession, strClass );
+		Client.get().register( ClientType.TEST, strSession, strClass );
 		
 //		final Import source = Import.NEWS_CURRENT__CNN_NEWSAPI;
 		final Import source = Import.WEATHER_FORECAST__YAHOO;

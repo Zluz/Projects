@@ -1,6 +1,7 @@
 package jmr.s2db.event;
 
 import java.lang.ref.WeakReference;
+import java.net.BindException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import jmr.pr126.comm.http.HttpListener;
+import jmr.s2db.Client.ClientType;
 import jmr.s2db.comm.Notifier;
 import jmr.s2db.tables.Event;
 
@@ -62,10 +64,10 @@ public class EventMonitor {
 	};
 	
 	
-	static {
-//		httplistener.registerListener( listener );
-		HttpListener.getInstance().registerListener( listener );
-	}
+//	static {
+//		HttpListener.getInstance( ClientType.TILE_GUI.getPort() )
+//										.registerListener( listener );
+//	}
 	
 	private static long seqLastEventScanned = 0;
 
@@ -78,16 +80,39 @@ public class EventMonitor {
 	
 	
 	private static EventMonitor instance;
+	private ClientType type;
+	private boolean bListening;
 	
-	private EventMonitor() {};
+	private EventMonitor( ClientType type ) {
+		if ( null!=type ) {
+			final HttpListener hl = HttpListener.getInstance( type.getPort() );
+			if ( null != hl ) {
+				hl.registerListener( listener );
+				bListening = true;
+			} else {
+				bListening = false;
+			}
+		} else {
+			bListening = false;
+		}
+	};
 	
-	public static EventMonitor get() {
-		if ( null==instance ) {
-			instance = new EventMonitor();
+	public static EventMonitor get( ClientType type ) {
+		if ( null==instance || null==instance.type ) {
+			final EventMonitor monitor = new EventMonitor( type );
+			if ( monitor.bListening ) {
+				return monitor;
+			} else {
+				return null;
+			}
 		}
 		return instance;
 	}
-	
+
+	public static EventMonitor get() {
+		return EventMonitor.get( null );
+	}
+
 
 	public void initializeEventMonitorThread() {
 		if ( null!=threadUpdater ) return;

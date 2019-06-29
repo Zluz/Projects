@@ -14,6 +14,7 @@ import jmr.pr102.DataRequest;
 import jmr.pr102.TeslaVehicleInterface;
 import jmr.pr102.comm.TeslaLogin;
 import jmr.s2db.Client;
+import jmr.s2db.Client.ClientType;
 import jmr.s2db.imprt.WebImport;
 import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
@@ -40,7 +41,7 @@ public class TeslaIngestManager {
 //	    s2db.register( 	NetUtil.getMAC(), strIP, 
 //	    				NetUtil.getSessionID(), 
 //	    				strClass, now );
-	    s2db.register( NetUtil.getSessionID(), strClass );
+	    s2db.register( ClientType.TEST, NetUtil.getSessionID(), strClass );
 
 	    
 	    
@@ -356,7 +357,7 @@ public class TeslaIngestManager {
 		
 		final String strSession = NetUtil.getSessionID();
 		final String strClass = TeslaIngestManager.class.getName();
-		Client.get().register( strSession, strClass );
+		Client.get().register( ClientType.TEST, strSession, strClass );
 		
 //		System.out.println( TimeUnit.HOURS.toMillis( 1 ) );
 

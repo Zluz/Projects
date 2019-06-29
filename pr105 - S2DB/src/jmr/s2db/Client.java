@@ -14,6 +14,7 @@ import com.google.gson.JsonObject;
 import jmr.pr126.comm.http.HttpListener;
 import jmr.s2db.comm.ConnectionProvider;
 import jmr.s2db.comm.Notifier;
+import jmr.s2db.event.EventMonitor;
 import jmr.s2db.event.EventType;
 import jmr.s2db.event.SystemEvent;
 import jmr.s2db.imprt.SummaryRegistry;
@@ -33,12 +34,36 @@ public class Client {
 	private static final Logger 
 			LOGGER = Logger.getLogger( Client.class.getName() );
 
+	
+	public enum ClientType {
+	
+			TILE_GUI( 8090 ),
+			TRAY_GUI( 8092 ),
+			TEST( 8094 ),
+			;
+		
+		private final int iPort;
+		
+		private ClientType( final int iPort ) {
+			this.iPort = iPort;
+		}
+		
+		public int getPort() {
+			return this.iPort;
+		}
+	};
+
+	
+	
 	private static Client instance;
 	
 	private Client() {};
 	
 	private Long seqDevice;
 	private Long seqSession;
+	
+	
+	
 	
 	
 	public static synchronized Client get() {
@@ -50,14 +75,16 @@ public class Client {
 	}
 	
 
-	public long register(	final String strName,
+	public Long register(	final ClientType type,
+							final String strName,
 							final String strClass ) {
-		final long lResult = this.register( strName, strClass, false );
+		final Long lResult = this.register( type, strName, strClass, false );
 		return lResult;
 	}
 	
 	
-	public long register(	final String strName,
+	public Long register(	final ClientType type,
+						    final String strName,
 							final String strClass,
 							final boolean bQuiet ) {
 		final Date now = new Date();
@@ -65,6 +92,11 @@ public class Client {
 	    final String strMAC = NetUtil.getMAC();
 	    final Map<String, String> mapNICs = NetUtil.getIPAddresses();
 	    final String strIP = NetUtil.getIPAddress();
+	    
+    	final EventMonitor monitor = EventMonitor.get( type );
+    	if ( null==monitor ) {
+    		return null;
+    	}
 	    
 	    String strRegex = strMAC.replaceAll( "-", "." );
 	    strRegex = "/Sessions/.+" + strRegex + ".+";
@@ -82,7 +114,8 @@ public class Client {
 	    
 	    if ( ! bQuiet ) {
 			final Event event = Event.add(
-					EventType.SYSTEM, SystemEvent.CLIENT_REGISTERED.name(), 
+					EventType.SYSTEM, 
+					SystemEvent.CLIENT_REGISTERED.name(), 
 					strIP, null, 
 					strData, lNow, null, null, null );
 			System.out.println( "Client registered. "
@@ -232,7 +265,8 @@ public class Client {
 	}
 
 
-	public boolean registerAsRemote( final String strRemoteName, 
+	public boolean registerAsRemote( final ClientType type,
+									 final String strRemoteName, 
 								  	 final String strIP ) {
 		if ( StringUtils.isBlank( strRemoteName ) ) return false;
 		if ( StringUtils.isBlank( strIP ) ) return false;
@@ -240,11 +274,11 @@ public class Client {
 		LOGGER.info( ()-> "Client.registerAsRemote(), "
 									+ "strRemoteName = " + strRemoteName );
 		
-//		Notifier.getInstance().setLocalIP( strIP );
-		HttpListener.getInstance().setIP( strIP );
+		HttpListener.getInstance( type.iPort ).setIP( strIP );
 
 		final long lTime = System.currentTimeMillis();
-		final String strURL = HttpListener.getInstance().getHostedURL();
+		final String strURL = 
+					HttpListener.getInstance( type.iPort ).getHostedURL();
 		final TraceMap map = new TraceMap( true );
 		map.put( "URL", strURL );
 		map.put( "REMOTE_NAME", strRemoteName );

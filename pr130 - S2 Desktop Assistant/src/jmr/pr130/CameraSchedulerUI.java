@@ -1,9 +1,12 @@
 package jmr.pr130;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -22,6 +25,8 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -42,6 +47,7 @@ import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
 import jmr.s2db.tables.Job.JobSet;
 import jmr.util.NetUtil;
+import jmr.util.OSUtil;
 import jmr.util.SystemUtil;
 import jmr.util.report.TraceMap;
 import jmr.util.transform.TextUtils;
@@ -56,6 +62,10 @@ public class CameraSchedulerUI {
 	private static CameraSchedulerUI instance = null;
 	
 	final private Text textLog;
+	final private Text textTrace;
+	
+	final private Text textPoolThreads;
+	final private Text textCameras;
 	
 	private PostStillsContinuous post = null; 
 	
@@ -73,8 +83,10 @@ public class CameraSchedulerUI {
 	boolean bActive;
 
 
-	final static ThreadPoolExecutor 
-				pool = (ThreadPoolExecutor)Executors.newFixedThreadPool( 4 );
+	public static final int POOL_SIZE = 4;
+	
+	final static ThreadPoolExecutor pool = 
+			(ThreadPoolExecutor)Executors.newFixedThreadPool( POOL_SIZE );
 	
 
 	
@@ -106,27 +118,98 @@ public class CameraSchedulerUI {
 	}
 	
 	
+	private void refreshControls() {
+		display.asyncExec( new Runnable() {
+			@Override
+			public void run() {
+				
+				final List<String> list = 
+								new LinkedList<>( mapBaseFilenames.values() );
+				Collections.sort( list );
+				final String strCameraFilenames = 
+								String.join( Text.DELIMITER, list );
+				textCameras.setText( 
+							"Cameras (base filenames)" + Text.DELIMITER 
+							+ strCameraFilenames );
+				
+				textPoolThreads.setText( "Thread Pool: " + Text.DELIMITER 
+							+ pool.getActiveCount() + " of " + POOL_SIZE 
+								+ " active threads" ); 
+			}
+		});
+	}
+	
+
+	private static void showTrace( final TraceMap mapData ) {
+		if ( null==display || display.isDisposed() ) return;
+		if ( null==instance ) return;
+		if ( null==instance.textTrace || instance.textTrace.isDisposed() ) return;
+		
+		display.asyncExec( new Runnable() {
+			@Override
+			public void run() {
+				final Text text = instance.textTrace;
+				
+				final StringBuilder sb = new StringBuilder();
+				
+				final List<String> list = new LinkedList<>( mapData.keySet() );
+				Collections.sort( list );
+				for ( final String strKey : list ) {
+					final Object objValue = mapData.get( strKey );
+					sb.append( strKey );
+					sb.append( " = " );
+					if ( objValue instanceof String ) {
+						sb.append( "\"" + objValue.toString() + "\"" );
+					} else {
+						sb.append( objValue.toString() );
+					}
+					sb.append( Text.DELIMITER );
+				}
+				
+				text.setText( sb.toString() );
+			}
+		});
+	}
+	
+	
 	private CameraSchedulerUI() {
 		shell = new Shell( display, SWT.TITLE | SWT.MIN | SWT.RESIZE );
-		this.shell.setText( CameraSchedulerUI.class.getName() );
+		this.shell.setText( OSUtil.getProgramName() + "  -  " 
+							+ CameraSchedulerUI.class.getName() );
 		
 		shell.setLayout( new FillLayout( SWT.HORIZONTAL ) );
 
-		this.textLog = new Text( shell, SWT.MULTI | SWT.V_SCROLL );
+		this.textLog = new Text( shell, SWT.MULTI | SWT.V_SCROLL | SWT.WRAP );
 		this.textLog.setText( "textLog" + Text.DELIMITER + Text.DELIMITER );
-		
-		final Composite compControls = new Composite( shell, SWT.NONE );
+
+		final Composite compRight = new Composite( shell, SWT.NONE );
+		compRight.setLayout( new FillLayout( SWT.VERTICAL ) );
+
+		this.textTrace = new Text( compRight, SWT.MULTI | SWT.V_SCROLL );
+		this.textTrace.setText( "<Last Trace Map here>" );
+
+		final Composite compControls = new Composite( compRight, SWT.NONE );
 		compControls.setLayout( new FillLayout( SWT.VERTICAL ) );
 		
-		final Text text = new Text( compControls, SWT.MULTI | SWT.V_SCROLL );
-		text.setText( "<Configuration text here>" );
+		this.textCameras = new Text( compControls, SWT.MULTI | SWT.READ_ONLY );
+		this.textPoolThreads = new Text( compControls, SWT.READ_ONLY );
 		
 		final Button btnActivate = new Button( compControls, SWT.CHECK );
 		final Text txtSessionDir = new Text( compControls, SWT.READ_ONLY );
 		final Text txtTempDir = new Text( compControls, SWT.READ_ONLY );
 		
-		txtSessionDir.setText( "Session Dir:  " + fileSession.getAbsolutePath().toString() );
-		txtTempDir.setText( "Temp Dir:  " + fileTempDir.getAbsolutePath().toString() );
+		final String strSessionDir = fileSession.getAbsolutePath().toString();
+		txtSessionDir.setText( "Session Dir: " + Text.DELIMITER + strSessionDir );
+		if ( ! strSessionDir.contains( "Sessions" ) ) {
+			txtSessionDir.setBackground( display.getSystemColor( SWT.COLOR_YELLOW ) );
+		}
+
+		final String strTempDir = fileTempDir.getAbsolutePath().toString();
+		txtTempDir.setText( "Temp Dir:  " + Text.DELIMITER + strTempDir );
+		if ( strTempDir.contains( "C:\\Users" ) ) {
+			txtTempDir.setBackground( display.getSystemColor( SWT.COLOR_YELLOW ) );
+		}
+		
 		
 		btnActivate.setText( "Active" );
 
@@ -141,7 +224,7 @@ public class CameraSchedulerUI {
 			}
 		});
 		
-		shell.setSize( 1000, 600 );
+		shell.setSize( 1100, 800 );
 		shell.layout();
 		
 		final Image image = S2TrayIcon.getS2Icon();
@@ -152,6 +235,14 @@ public class CameraSchedulerUI {
 			public void handleEvent( final Event event ) {
 				shell.setVisible( false );
 				event.doit = false;
+			}
+		});
+		
+		shell.addControlListener( new ControlAdapter() {
+			@Override
+			public void controlResized( final ControlEvent e ) {
+				final Point pt = shell.getSize();
+				log( "Shell resized to " + pt.x + ", " + pt.y );
 			}
 		});
 		
@@ -226,7 +317,8 @@ public class CameraSchedulerUI {
 								 final TraceMap mapData ) {
 		
 		mapData.addFrame();
-
+		refreshControls();
+		
 		final String strFilename = file.getName();
 		final File fileTransfer = 
 				new File( SessionPath.getSessionDir(), strFilename + "_" );
@@ -302,6 +394,8 @@ public class CameraSchedulerUI {
 		Job.add( type, jobset, 1, strResult, mapData );
 		
 		mapPreviousFile.put( cCameraIndex, fileTarget );
+		
+		showTrace( mapData );
 	}
 	
 	

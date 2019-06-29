@@ -8,7 +8,13 @@ public class ProcessEvent extends EventMonitorAction {
 
 	public ProcessEvent() {
 		System.out.println( "--- ProcessEvent instantiated" );
-		EventMonitor.get().addListener( this, this.getClass().getName() );
+		final EventMonitor em = EventMonitor.get();
+		if ( null!=em ) {
+			em.addListener( this, this.getClass().getName() );
+		} else {
+			System.err.println( "Failed to initialize ProcessEvent; "
+										+ "listener not registered." );
+		}
 	}
 
 	@Override

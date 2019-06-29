@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jmr.s2db.Client;
+import jmr.s2db.Client.ClientType;
 import jmr.s2db.DataFormatter;
 import jmr.s2db.comm.ConnectionProvider;
 import jmr.util.NetUtil;
@@ -336,7 +337,7 @@ public class Page extends TableBase {
 
 		final String strSession = NetUtil.getSessionID();
 		final String strClass = Page.class.getName();
-		Client.get().register( strSession, strClass );
+		Client.get().register( ClientType.TEST, strSession, strClass );
 		
 		new Page().expireAll( "/tmp/jmr.s2db.comm.JsonIngest_1502256041720/forecast/simpleforecast/forecastday/08/qpf_day" );
 	}

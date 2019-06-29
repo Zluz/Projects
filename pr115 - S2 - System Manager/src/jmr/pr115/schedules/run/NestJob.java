@@ -17,6 +17,7 @@ import jmr.pr115.rules.drl.RulesConstants;
 import jmr.pr122.CommGAE;
 import jmr.pr122.DocKey;
 import jmr.s2db.Client;
+import jmr.s2db.Client.ClientType;
 import jmr.s2db.event.EventType;
 import jmr.s2db.event.TimeEvent;
 import jmr.util.http.ContentType;
@@ -182,7 +183,7 @@ public class NestJob extends JobWorker {
 	public static void main( final String[] args ) {
 
 		final Client client = Client.get();
-		client.register( "test", NestJob.class.getName() );
+		client.register( ClientType.TEST, "test", NestJob.class.getName() );
 		
 		final NestJob nest = new NestJob( true );
 		

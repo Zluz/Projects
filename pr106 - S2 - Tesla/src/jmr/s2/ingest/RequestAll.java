@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 
 import jmr.pr102.DataRequest;
 import jmr.s2db.Client;
+import jmr.s2db.Client.ClientType;
 import jmr.util.NetUtil;
 
 public class RequestAll {
@@ -59,7 +60,7 @@ public class RequestAll {
 		
 		final String strSession = NetUtil.getSessionID();
 		final String strClass = TeslaIngestManager.class.getName();
-		Client.get().register( strSession, strClass );
+		Client.get().register( ClientType.TEST, strSession, strClass );
 		
 		final TeslaIngestManager tim = new TeslaIngestManager();
 		tim.login();

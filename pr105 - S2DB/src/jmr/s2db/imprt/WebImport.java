@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Date;
 
 import jmr.s2db.Client;
+import jmr.s2db.Client.ClientType;
 import jmr.s2db.comm.JsonIngest;
 import jmr.util.NetUtil;
 import jmr.util.http.ContentRetriever;
@@ -102,7 +103,7 @@ public class WebImport {
 
 		final String strSession = NetUtil.getSessionID();
 		final String strClass = WebImport.class.getName();
-		Client.get().register( strSession, strClass );
+		Client.get().register( ClientType.TEST, strSession, strClass );
 		
 		
 		final String strURL = 

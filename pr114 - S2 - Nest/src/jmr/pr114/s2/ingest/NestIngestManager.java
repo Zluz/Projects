@@ -10,6 +10,7 @@ import jmr.SettingKey;
 import jmr.pr113.FullStatus;
 import jmr.pr113.Session;
 import jmr.s2db.Client;
+import jmr.s2db.Client.ClientType;
 import jmr.s2db.tables.Page;
 import jmr.s2db.tables.Path;
 import jmr.util.NetUtil;
@@ -98,7 +99,7 @@ public class NestIngestManager {
 		System.out.println( "Registering S2 client.." );
 		final String strSession = NetUtil.getSessionID();
 		final String strClass = NestIngestManager.class.getName();
-		Client.get().register( strSession, strClass );
+		Client.get().register( ClientType.TEST, strSession, strClass );
 
 		final char[] cUsername = 
 				SystemUtil.getProperty( SUProperty.NEST_USERNAME ).toCharArray(); 
