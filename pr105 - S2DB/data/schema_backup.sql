@@ -75,15 +75,15 @@ CREATE TABLE `job` (
   `seq_session` bigint(20) NOT NULL,
   `seq_device_target` bigint(20) DEFAULT NULL,
   `seq_trigger` bigint(20) DEFAULT NULL,
-  `state` char(1) NOT NULL,
   `seq_part` bigint(20) DEFAULT NULL,
   `part_count` int(11) DEFAULT NULL,
+  `step` int(11) DEFAULT NULL,
+  `state` char(1) NOT NULL,
   `request` varchar(2048) NOT NULL,
   `request_time` bigint(20) NOT NULL,
   `complete_time` bigint(20) DEFAULT NULL,
   `result` text,
   `data` json DEFAULT NULL,
-  `step` int(11) DEFAULT NULL,
   PRIMARY KEY (`seq`),
   KEY `fk_job_session_idx` (`seq_session`),
   KEY `fk_job_device_target_idx` (`seq_device_target`),
@@ -95,7 +95,7 @@ CREATE TABLE `job` (
   CONSTRAINT `fk_job_job` FOREIGN KEY (`seq_part`) REFERENCES `job` (`seq`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_job_session` FOREIGN KEY (`seq_session`) REFERENCES `session` (`seq`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_job_trigger` FOREIGN KEY (`seq_trigger`) REFERENCES `trigger` (`seq`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=28234 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=28643 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -116,7 +116,7 @@ CREATE TABLE `log` (
   PRIMARY KEY (`seq`),
   KEY `fk_log_session_idx` (`seq_session`),
   CONSTRAINT `fk_log_session` FOREIGN KEY (`seq_session`) REFERENCES `session` (`seq`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=12380494 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=12382543 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -137,7 +137,7 @@ CREATE TABLE `page` (
   KEY `fk_page_session_idx` (`seq_session`),
   CONSTRAINT `fk_page_path` FOREIGN KEY (`seq_path`) REFERENCES `path` (`seq`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_page_session` FOREIGN KEY (`seq_session`) REFERENCES `session` (`seq`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=966514 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=966541 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -224,4 +224,4 @@ CREATE TABLE `trigger` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-06-28 22:05:14
+-- Dump completed on 2019-06-28 22:24:01
