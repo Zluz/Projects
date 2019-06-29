@@ -233,15 +233,21 @@ comment: NULL
     mac: B8-27-EB-4E-93-AF
    name: RPi - IC2 - Image Processor 02
 options: tiles.perspective=PROC_IMAGE
-  proc_image.1.name=Test RPi
-  proc_image.1.file=/Share/Sessions/B8-27-EB-70-3C-8D/capture_cam.jpg
-  proc_image.1.threshold=1.000
-  proc_image.1.expected.objects="Window"
-  
-  proc_image.2.name=Deck, from Kitchen
-  proc_image.2.file=/Share/Sessions/B8-27-EB-09-D3-9E/capture_cam.jpg
-  proc_image.2.threshold=1.500
-  proc_image.2.expected.objects="Chair"
+   proc_image.1.name=Test RPi 01
+   proc_image.1.file=/Share/Sessions/B8-27-EB-70-3C-8D/capture_cam.jpg
+   proc_image.1.threshold=1.000
+   proc_image.1.expected.objects=Window
+   
+   proc_image.2.name=Deck, from Kitchen
+   proc_image.2.file=/Share/Sessions/B8-27-EB-09-D3-9E/capture_cam.jpg
+   proc_image.2.threshold=1.500
+   proc_image.2.expected.objects=Chair
+   
+   proc_image.3.name=Test RPi 02
+   proc_image.3.file=/Share/Sessions/B8-27-EB-E6-6A-EC/capture_cam.jpg
+   proc_image.3.threshold=1.500
+   proc_image.3.expected.objects=universe
+
 comment: Immersive Cooling Test, BEC Test
 *************************** 35. row ***************************
     seq: 35
@@ -343,5 +349,17 @@ comment: Immersive Cooling Test
     seq: 47
     mac: B8-27-EB-84-4F-5A
    name: L32--B8-27-EB-84-4F-5A--003ED--16AD20E241C
+options: NULL
+comment: NULL
+*************************** 48. row ***************************
+    seq: 48
+    mac: B8-27-EB-9C-C4-5F
+   name: RPi - IC3
+options: NULL
+comment: Immersive Cooling Test, BEC Test
+*************************** 49. row ***************************
+    seq: 49
+    mac: B8-27-EB-A6-6F-DE
+   name: L32--B8-27-EB-A6-6F-DE--003CD--16AD20E4E15
 options: NULL
 comment: NULL

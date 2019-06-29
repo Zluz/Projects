@@ -29,7 +29,7 @@ CREATE TABLE `device` (
   `options` varchar(1024) DEFAULT NULL,
   `comment` text,
   PRIMARY KEY (`seq`,`mac`)
-) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -60,7 +60,7 @@ CREATE TABLE `event` (
   CONSTRAINT `fk_event_page` FOREIGN KEY (`seq_page`) REFERENCES `page` (`seq`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_event_session` FOREIGN KEY (`seq_session`) REFERENCES `session` (`seq`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_event_trigger` FOREIGN KEY (`seq_trigger`) REFERENCES `trigger` (`seq`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=76446 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=84747 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -83,16 +83,19 @@ CREATE TABLE `job` (
   `complete_time` bigint(20) DEFAULT NULL,
   `result` text,
   `data` json DEFAULT NULL,
+  `step` int(11) DEFAULT NULL,
   PRIMARY KEY (`seq`),
   KEY `fk_job_session_idx` (`seq_session`),
   KEY `fk_job_device_target_idx` (`seq_device_target`),
   KEY `fk_job_trigger_idx` (`seq_trigger`),
   KEY `fk_job_job_idx` (`seq_part`),
+  KEY `idx_step` (`step`),
+  KEY `idx_state` (`state`),
   CONSTRAINT `fk_job_device_target` FOREIGN KEY (`seq_device_target`) REFERENCES `device` (`seq`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_job_job` FOREIGN KEY (`seq_part`) REFERENCES `job` (`seq`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_job_session` FOREIGN KEY (`seq_session`) REFERENCES `session` (`seq`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_job_trigger` FOREIGN KEY (`seq_trigger`) REFERENCES `trigger` (`seq`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=8264 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=28234 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -113,7 +116,7 @@ CREATE TABLE `log` (
   PRIMARY KEY (`seq`),
   KEY `fk_log_session_idx` (`seq_session`),
   CONSTRAINT `fk_log_session` FOREIGN KEY (`seq_session`) REFERENCES `session` (`seq`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=12245473 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=12380494 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -134,7 +137,7 @@ CREATE TABLE `page` (
   KEY `fk_page_session_idx` (`seq_session`),
   CONSTRAINT `fk_page_path` FOREIGN KEY (`seq_path`) REFERENCES `path` (`seq`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_page_session` FOREIGN KEY (`seq_session`) REFERENCES `session` (`seq`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=932201 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=966514 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -148,7 +151,7 @@ CREATE TABLE `path` (
   `seq` bigint(20) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`seq`)
-) ENGINE=InnoDB AUTO_INCREMENT=2843 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2852 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -166,7 +169,7 @@ CREATE TABLE `prop` (
   PRIMARY KEY (`seq`),
   KEY `fk_prop_page_idx` (`seq_page`),
   CONSTRAINT `fk_prop_page` FOREIGN KEY (`seq_page`) REFERENCES `page` (`seq`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=3565296 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3709104 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -185,7 +188,7 @@ CREATE TABLE `session` (
   PRIMARY KEY (`seq`),
   KEY `fk_session_device_idx` (`seq_device`),
   CONSTRAINT `fk_session_device` FOREIGN KEY (`seq_device`) REFERENCES `device` (`seq`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=27473 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=31986 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -221,4 +224,4 @@ CREATE TABLE `trigger` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-06-10 21:59:40
+-- Dump completed on 2019-06-28 22:05:14
