@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 import jmr.SessionPath;
 import jmr.pr130.DeletionScheduleUI.Schedule;
 import jmr.s2db.Client;
-import jmr.s2db.tables.Session;
 import jmr.util.NetUtil;
 import jmr.util.SystemUtil;
 
@@ -143,7 +142,26 @@ public class S2TrayIcon {
 		CameraSchedulerUI.get().close();
 		DeletionScheduleUI.get().stop();
 		this.bActive = false;
-		this.trayitem.dispose();
+		
+		final Thread threadShutdown = new Thread( "Shutting down" ) {
+			public void run() {
+				try {
+					TimeUnit.SECONDS.sleep( 2 );
+				} catch (InterruptedException e) {
+					// just ignore, quitting anyway
+				}
+				if ( ! display.isDisposed() ) {
+					display.syncExec( new Runnable() {
+						@Override
+						public void run() {
+							trayitem.dispose();
+						}
+					});
+				}
+				Runtime.getRuntime().exit( 0 );
+			};
+		};
+		threadShutdown.start();
 	}
 	
 	
@@ -211,7 +229,7 @@ public class S2TrayIcon {
 		scheduler.start();
 		
 		scheduler.addSchedule( new Schedule( 
-				SystemUtil.getTempDir(), ".webcam-lock-.*", 3600 ) );
+				SystemUtil.getTempDir(), ".webcam-lock-.*", 10 * 60 ) );
 		
 		scheduler.addSchedule( new Schedule( 
 				SystemUtil.getTempDir(), "capture_vid._.*.jpg", 60 ) );
@@ -224,19 +242,19 @@ public class S2TrayIcon {
 				SystemUtil.getTempDir(), "Capture_.*.jpg", 60 ) );
 
 		scheduler.addSchedule( new Schedule( 
-				SessionPath.getSessionDir(), "capture_vid._.*.jpg", 60 ) );
+				SessionPath.getSessionDir(), "capture_vid.-t.*.jpg", 60 ) );
 		scheduler.addSchedule( new Schedule( 
-				SessionPath.getSessionDir(), "capture_vid._.*.jpg_", 10 ) );
+				SessionPath.getSessionDir(), "capture_vid.-t.*.jpg_", 10 ) );
 
 		scheduler.addSchedule( new Schedule( 
 				SystemUtil.getTempDir(), "pr124_.*jar", 24 * 2 * 3600 ) );
 		scheduler.addSchedule( new Schedule( 
-				SystemUtil.getTempDir(), "BridJExtractedLibraries.*", 2 * 3600 ) );
+				SystemUtil.getTempDir(), "BridJExtractedLibraries.*", 10 * 60 ) );
 
 		scheduler.addSchedule( new Schedule( 
-				Paths.get( "." ).toFile(), "hs_err_pid.*.log", 60 ) );
+				Paths.get( "." ).toFile(), "hs_err_pid.*.log", 10 ) );
 		scheduler.addSchedule( new Schedule( 
-				Paths.get( "." ).toFile(), "replay_pid.*.log", 60 ) );
+				Paths.get( "." ).toFile(), "replay_pid.*.log", 10 ) );
 		
 		//BridJExtractedLibraries7152577194854756978
 	}

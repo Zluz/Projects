@@ -179,7 +179,7 @@ public class ImageCapture {
 				
 				final long lTimeNow = System.currentTimeMillis();
 				final File file = new File( fileTempDir, 
-						"capture_vid" + i + "_" + lTimeNow + ".jpg" );
+						"capture_vid" + i + "-t" + lTimeNow + ".jpg" );
 
 				final String strName = webcam.getName();
 				SelfDestruct.setTime( TIME_TIMEOUT, 

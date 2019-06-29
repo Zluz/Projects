@@ -78,6 +78,9 @@ public class PostStillsContinuous {
 			@Override
 			public void run() {
 
+				@SuppressWarnings("unused")
+				final Thread threadStdOut;
+				
 				try {
 					final long lTimeStart = System.currentTimeMillis();
 					process = Runtime.getRuntime().exec( strCommand );
@@ -94,7 +97,8 @@ public class PostStillsContinuous {
 					MonitorProcess.addDummyStream( process );
 					
 					// monitor STDERR
-					MonitorProcess.addConsoleEcho( process, false, lLastOutput );
+					threadStdOut = MonitorProcess.addConsoleEcho( 
+											process, false, lLastOutput );
 					
 					while ( process.isAlive() 
 									&& ! bForceStop 
@@ -140,6 +144,8 @@ public class PostStillsContinuous {
 							System.out.println( "Process is unresponsive." );
 						}
 					}
+					
+//					threadStdOut.stop();
 					
 					if ( ! process.isAlive() ) {
 						System.out.println( "Process ended." );

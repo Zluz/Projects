@@ -2,6 +2,7 @@ package jmr.s2db;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -261,5 +262,17 @@ public class Client {
 		
 		return true;
 	}
+	
+	
+	public Map<String,String> getDetails() {
+		final Map<String,String> map = new HashMap<>();
+		map.put( "device_seq", Long.toString( this.getDeviceSeq() ) );
+		map.put( "session_seq", Long.toString( this.getSessionSeq() ) );
+		map.put( "net_mac", NetUtil.getMAC() );
+		map.put( "net_ip", NetUtil.getIPAddress() );
+		map.put( "process_name", NetUtil.getProcessName() );
+		return map;
+	}
+	
 	
 }
