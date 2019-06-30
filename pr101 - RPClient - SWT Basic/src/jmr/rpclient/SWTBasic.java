@@ -57,6 +57,7 @@ import jmr.rpclient.tiles.Perspective;
 import jmr.rpclient.tiles.TileBase;
 import jmr.rpclient.tiles.TileCanvas;
 import jmr.s2db.Client;
+import jmr.s2db.Client.ClientType;
 import jmr.s2db.event.EventType;
 import jmr.s2db.event.SystemEvent;
 import jmr.s2db.job.JobManager;
@@ -229,7 +230,7 @@ public class SWTBasic {
 //		s2db.register( 	NetUtil.getMAC(), strIP, 
 //	    				strSessionID, 
 //	    				strClass, now );
-		s2db.register( 	strSessionID, strClass );
+		s2db.register( 	ClientType.TILE_GUI, strSessionID, strClass );
 		
 		final String strDeviceName = s2db.getThisDevice().getName();
 		final Map<String,String> 
@@ -253,7 +254,7 @@ public class SWTBasic {
 	    if ( StringUtils.isNotBlank( strRemoteName ) ) {
 	    	LOGGER.info( ()-> "Registering as remote "
 	    								+ "\"" + strRemoteName + "\"" );
-		    s2db.registerAsRemote( strRemoteName, strIP );
+		    s2db.registerAsRemote( ClientType.TILE_GUI, strRemoteName, strIP );
 	    }
 	    
 	    JobManager.getInstance().setOptions( mapOptionsNorm );

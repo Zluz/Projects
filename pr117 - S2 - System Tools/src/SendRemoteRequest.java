@@ -2,6 +2,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import jmr.s2db.Client;
+import jmr.s2db.Client.ClientType;
 import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
 import jmr.util.NetUtil;
@@ -32,7 +33,7 @@ public class SendRemoteRequest {
 		    final String strClass = PostSystemEvent.class.getName();
 //		    final String strMAC = NetUtil.getMAC();
 		    final String strSessionID = NetUtil.getSessionID();
-			client.register( strSessionID, strClass );
+			client.register( ClientType.TEST, strSessionID, strClass );
 			
 
 //			final String strDeviceName = client.getThisDevice().getName();

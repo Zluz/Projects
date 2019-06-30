@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import jmr.s2db.Client;
+import jmr.s2db.Client.ClientType;
 import jmr.s2db.event.EventType;
 import jmr.s2db.event.SystemEvent;
 import jmr.s2db.tables.Event;
@@ -81,7 +82,8 @@ public class PostSystemEvent {
 		    final String strMAC = NetUtil.getMAC();
 		    final String strClass = PostSystemEvent.class.getName();
 		    final String strSessionID = NetUtil.getSessionID();
-			client.register( strSessionID, strClass, REGISTER_QUIET );
+			client.register( ClientType.TEST, strSessionID, 
+										strClass, REGISTER_QUIET );
 
 			final String strDeviceName = client.getThisDevice().getName();
 //			final Map<String,String> mapOptions = client.getThisDevice().getOptions();

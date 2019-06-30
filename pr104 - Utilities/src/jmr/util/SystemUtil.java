@@ -147,7 +147,13 @@ public abstract class SystemUtil {
 			if ( StringUtils.isBlank( strTempDir ) ) {
 				strTempDir = System.getenv( "TMP" );
 			}
-			fileTemp = new File( strTempDir );
+			if ( null!=strTempDir ) {
+				fileTemp = new File( strTempDir );
+			} else if ( ! OSUtil.isWin() ) {
+				fileTemp = new File( "/tmp" );
+			} else {
+				fileTemp = new File( "." );
+			}
 		}
 		return fileTemp;
 	}

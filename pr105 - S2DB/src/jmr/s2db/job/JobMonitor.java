@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import jmr.pr126.comm.http.HttpListener;
 import jmr.pr126.comm.http.HttpListener.Listener;
 import jmr.s2db.Client;
+import jmr.s2db.Client.ClientType;
 import jmr.s2db.comm.Notifier;
 import jmr.s2db.tables.Job;
 import jmr.s2db.tables.Job.JobState;
@@ -100,7 +101,8 @@ public class JobMonitor {
 	
 	public void initializeJobMonitorThread() {
 		
-		HttpListener.getInstance().registerListener( listener );
+		HttpListener.getInstance( ClientType.TILE_GUI.getPort() )
+											.registerListener( listener );
 		
 		if ( null!=threadUpdater ) return;
 		
@@ -143,7 +145,7 @@ public class JobMonitor {
 		
 		final List<Job> listingActive = manager.getJobListing( 
 //				"( job.request LIKE \"%\" )" );
-				"( job.state = \"R\" )", 100 );
+				"( job.state = \"R\" AND ISNULL( job.step ) )", 100 );
 		final boolean bQueryCompleted =
 				( listingActive.size() != iLastActiveCount )
 				|| ( iCompletedQuerySkipCount > iCompletedQuerySkipMax )
@@ -156,7 +158,7 @@ public class JobMonitor {
 			final List<Job> listingCompleted = manager.getJobListing( 
 	//				"( job.request LIKE \"%\" )" );
 					"( ( job.state = \"C\" ) OR ( job.state = \"F\" ) "
-					+ "OR ( job.state = \"W\" ) )", 8 );
+					+ "OR ( job.state = \"W\" ) ) AND ISNULL( job.step )", 8 );
 			synchronized ( listingLastCompleted ) {
 				listingLastCompleted.clear();
 				listingLastCompleted.addAll( listingCompleted );

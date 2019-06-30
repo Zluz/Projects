@@ -13,7 +13,6 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.json.JsonException;
-import javax.xml.ws.spi.http.HttpContext;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -51,10 +50,12 @@ public class HttpListener implements HttpCommConstants {
 	private String strIP;
 	private final int iPort;
 	private final String strEndpoint;
+	
 
 	
 	private HttpListener( final int iPort, 
-			              final String strEndpoint ) {
+			              final String strEndpoint,
+			              final boolean bQuiet ) {
 		this.iPort = iPort;
 		this.strEndpoint = strEndpoint;
 		try {
@@ -73,10 +74,17 @@ public class HttpListener implements HttpCommConstants {
 
 			this.addHostRegistryListener();
 			
-		} catch (final IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch ( final IOException e ) {
+			server = null;
+			if ( ! bQuiet ) {
+				e.printStackTrace();
+			}
 		}
+	}
+	
+	
+	public boolean isListening() {
+		return ( null != this.server );
 	}
 	
 	
@@ -123,14 +131,19 @@ public class HttpListener implements HttpCommConstants {
 	}
 
 
-	private HttpListener() {
-		this( PORT, ENDPOINT );
+	private HttpListener( final int iPort ) {
+		this( iPort, ENDPOINT, true );
 	}
 	
 	
-	public synchronized static HttpListener getInstance() {
+	public synchronized static HttpListener getInstance( final int iPort ) {
 		if ( null==instance ) {
-			instance = new HttpListener();
+			final HttpListener listener = new HttpListener( iPort );
+			if ( listener.isListening() ) {
+				instance = listener;
+			} else {
+				return null;
+			}
 		}
 		return instance;
 	}
@@ -248,7 +261,7 @@ public class HttpListener implements HttpCommConstants {
 
 	public static void main( final String[] args ) {
 //		final HttpListener server = new HttpListener(8090, "/test");
-		final HttpListener server = new HttpListener();
+		final HttpListener server = new HttpListener( 8090 );
 		server.toString();
 		
 		System.out.println( "Hosted URL: " + server.getHostedURL() );

@@ -30,6 +30,7 @@ import jmr.rpclient.tiles.Perspective;
 import jmr.rpclient.tiles.TileBase;
 import jmr.rpclient.tiles.TileCanvas;
 import jmr.s2db.Client;
+import jmr.s2db.Client.ClientType;
 import jmr.s2db.job.JobManager;
 import jmr.util.Logging;
 import jmr.util.NetUtil;
@@ -158,7 +159,7 @@ public class ConsoleClient {
 //		s2db.register( 	NetUtil.getMAC(), strIP, 
 //	    				strSessionID, 
 //	    				strClass, now );
-		s2db.register( 	strSessionID, strClass );
+		s2db.register( 	ClientType.TEST, strSessionID, strClass );
 		
 		final String strDeviceName = s2db.getThisDevice().getName();
 		final Map<String,String> mapOptions = s2db.getThisDevice().getOptions();

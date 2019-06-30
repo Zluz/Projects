@@ -38,7 +38,7 @@ public class MonitorProcess {
 	
 	private OutputStream os;
 	
-//	private long lStartTime = 0L;
+	private long lStartTime = 0L;
 	
 	private final boolean bDebug;
 
@@ -54,8 +54,9 @@ public class MonitorProcess {
 	
 	
 
-	public static void addConsoleEcho( final Process process,
-									   final boolean bStdOut ) {
+	public static Thread addConsoleEcho( final Process process,
+									   	 final boolean bStdOut,
+									   	 final Long[] lLastOutput ) {
 		
 		final Thread threadOutput = new Thread() {
 			public void run() {
@@ -69,6 +70,12 @@ public class MonitorProcess {
 												&& process.isAlive() ) {
 						System.out.println( 
 								( bStdOut ? "\tout> " : "\terr> " ) + strLine );
+						
+						if ( null != lLastOutput && lLastOutput.length > 1 ) {
+							lLastOutput[ bStdOut ? 0 : 1 ] = 
+												System.currentTimeMillis();
+						}
+						
 					}
 				} catch ( final IOException e ) {
 					LOGGER.warning( e.toString() + " encountered "
@@ -78,6 +85,7 @@ public class MonitorProcess {
 			};
 		};
 		threadOutput.start();
+		return threadOutput;
 	}
 	
 	
@@ -146,7 +154,6 @@ public class MonitorProcess {
 
 	private Thread buildThread() {
 		final Thread thread = new Thread( this.strName ) {
-
 
 			public void run() {
 				
@@ -231,9 +238,9 @@ public class MonitorProcess {
 				    executor.setStreamHandler( psh );
 
 				    
-//				    lStartTime = System.currentTimeMillis();
+				    lStartTime = System.currentTimeMillis();
 
-//				    final int iExitValue = executor.execute( cmd );
+				    final int iExitValue = executor.execute( cmd );
 
 				    
 				    System.out.println( "External process "

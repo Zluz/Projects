@@ -102,7 +102,9 @@ public class DeletionScheduleUI {
 	
 	public void stop() {
 		this.bActive = false;
-		this.threadDeletionSchedule.interrupt();
+		if ( null!=this.threadDeletionSchedule ) {
+			this.threadDeletionSchedule.interrupt();
+		}
 		DeletionScheduleUI.pool.shutdown();
 	}
 	

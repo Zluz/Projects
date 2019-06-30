@@ -112,6 +112,7 @@ public class TraceMap extends HashMap<String,Object> {
 		
 		tm.put( strPrefix + "-time", lNow );
 		tm.put( strPrefix + "-source", strSource );
+		tm.put( strPrefix + "-thread", Thread.currentThread().getName() );
 		if ( null!=strComment ) {
 			tm.put( strPrefix + "-comment", strComment );
 		}
@@ -131,6 +132,16 @@ public class TraceMap extends HashMap<String,Object> {
 			return this.put( strKey, objValue );
 		} else {
 			return this.get( strKey );
+		}
+	}
+	
+	
+	public void putAllUnder( final String strPrefix,
+							 final Map<String,String> map ) {
+		for ( final Entry<String, String> entry : map.entrySet() ) {
+			final String strKey = strPrefix + "." + entry.getKey();
+			final String strValue = entry.getValue();
+			this.put( strKey, strValue );
 		}
 	}
 

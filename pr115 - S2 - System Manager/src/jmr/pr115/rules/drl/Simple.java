@@ -437,11 +437,12 @@ public class Simple implements RulesConstants {
 //			final Map<String,Object> map = new HashMap<>();
 			final TraceMap map = new TraceMap();
 			final Job.JobSet set = new Job.JobSet( 3 );
+			final JobType jt = JobType.TESLA_READ;
 			map.put( "job-set.first", set.lFirstSeq );
 			map.put( "job-set.count", 3 );
-			Job.add( JobType.TESLA_READ, set, DataRequest.CHARGE_STATE.name(), map );
-			Job.add( JobType.TESLA_READ, set, DataRequest.VEHICLE_STATE.name(), map );
-			Job.add( JobType.TESLA_READ, set, DataRequest.CLIMATE_STATE.name(), map );
+			Job.add( jt, set, null, DataRequest.CHARGE_STATE.name(), map );
+			Job.add( jt, set, null, DataRequest.VEHICLE_STATE.name(), map );
+			Job.add( jt, set, null, DataRequest.CLIMATE_STATE.name(), map );
 		} catch ( final Throwable t ) {
 			LOGGER.severe( "ERROR in Simple.submitJob_TeslaRefresh3()" );
 			t.printStackTrace();
@@ -590,8 +591,8 @@ public class Simple implements RulesConstants {
 			}
 			
 			LOGGER.info( "POSTing HVAC_START.." );
-			final Job jobActivate = Job.add( 
-					JobType.TESLA_WRITE, null, HVAC_START.name(), mapData );
+			final Job jobActivate = Job.add( JobType.TESLA_WRITE, null, null, 
+							HVAC_START.name(), mapData );
 
 			if ( ! waitForJob( jobActivate, 20 ) ) {
 				LOGGER.info( "Request to start Tesla HVAC timed-out.");
@@ -601,8 +602,8 @@ public class Simple implements RulesConstants {
 			Thread.sleep( TimeUnit.SECONDS.toMillis( 30 ) );
 
 			LOGGER.info( "Requesting CLIMATE_STATE.." );
-			final Job jobCheck = Job.add( 
-					JobType.TESLA_READ, null, CLIMATE_STATE.name(), mapData );
+			final Job jobCheck = Job.add( JobType.TESLA_READ, null, null, 
+							CLIMATE_STATE.name(), mapData );
 			if ( ! waitForJob( jobCheck, 10 ) ) {
 				LOGGER.info( "Request to check Tesla HVAC timed-out.");
 				return;
@@ -694,7 +695,7 @@ public class Simple implements RulesConstants {
 			threadPrepareTesla.start();
 			
 		} else {
-			Job.add( JobType.TESLA_WRITE, null, HVAC_STOP.name(), mapData );
+			Job.add( JobType.TESLA_WRITE, null, null, HVAC_STOP.name(), mapData );
 		}
 	}
 	

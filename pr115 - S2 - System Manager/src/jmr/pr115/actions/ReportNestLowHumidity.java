@@ -20,8 +20,14 @@ public class ReportNestLowHumidity extends EventMonitorAction {
 	public ReportNestLowHumidity() {
 		if ( null==instance ) {
 			instance = this;
-			
-			EventMonitor.get().addListener( this, this.getClass().getName() );
+
+			final EventMonitor em = EventMonitor.get();
+			if ( null!=em ) {
+				em.addListener( this, this.getClass().getName() );
+			} else {
+				System.err.println( "Failed to fully initialize "
+						+ "EventMonitor in ReportNestLowHumidity." );
+			}
 		}
 	}
 	

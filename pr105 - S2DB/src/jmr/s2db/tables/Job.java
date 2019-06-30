@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -235,24 +236,19 @@ public class Job extends TableBase {
 	
 	public static Job add(	final JobType type,
 							final JobSet jobset,
+							final Integer iStep,
 							final String strResult,
-//							final Map<String,Object> mapData
 							final TraceMap mapData 
 							) {
-		return Job.add( null, type, jobset, strResult, mapData );
+		return Job.add( null, type, jobset, iStep, strResult, mapData );
 	}
 	
-//	public static Job add(	final JobType type,
-//							final String strOptions ) {
-//		return Job.add( null, type, null, strOptions );
-//	}
 	
 	public static Job add(	final JobType type,
 							final JobSet jobset,
+//							final Integer iStep,
 							final Map<String,String> mapResult,
-//							final Map<String,Object> mapData 
-							final TraceMap mapData 
-							) {
+							final TraceMap mapData ) {
 		final StringBuilder strResult = new StringBuilder();
 		if ( null!=mapResult ) {
 			for ( final Entry<String, String> entry : mapResult.entrySet() ) {
@@ -262,16 +258,14 @@ public class Job extends TableBase {
 				strResult.append( strKey + "=" + strValue + "\\" );
 			}
 		}
-		return Job.add( null, type, jobset, strResult.toString(), mapData );
+		return Job.add( null, type, jobset, null, strResult.toString(), mapData );
 	}
 	
 	
 	public static Job add(	final JobType type,
 							final JobSet jobset,
 							final String[] arrResult,
-//							final Map<String,Object> mapData 
-							final TraceMap mapData 
-							) {
+							final TraceMap mapData ) {
 		final Map<String,String> mapResult = new HashMap<>();
 		for ( int i=1; i<arrResult.length; i=i+2 ) {
 			mapResult.put( arrResult[i-1], arrResult[i-0] );
@@ -297,14 +291,14 @@ public class Job extends TableBase {
 	private final static Gson GSON = new Gson();
 
 	
+
 	
 	public static Job add(	final Long seqDeviceTarget,
 							final JobType type,
 							final JobSet jobset,
+							final Integer iStep,
 							final String strResult,
-//							final Map<String,Object> mapData 
-							final TraceMap mapData 
-							) {
+							final TraceMap mapData ) {
 		final Long lSession = Session.getSessionSeq();
 		if ( null==lSession ) {
 			LOGGER.log( Level.SEVERE, 
@@ -326,7 +320,6 @@ public class Job extends TableBase {
 		LOGGER.info( "Adding job, dest alias: " + strDestination );
 		
 		if ( null!=jobset ) {
-//			job.iPartCount = jobset.getNextIndex();
 			job.iPartCount = jobset.getPartCount();
 			job.lPartSeq = jobset.getFirstSeq();
 		} else {
@@ -341,11 +334,12 @@ public class Job extends TableBase {
 		if ( null==seqDeviceTarget ) {
 			strInsert = 
 					"INSERT INTO job "
-					+ "( seq_session, state, request, data, "
+					+ "( seq_session, step, state, request, data, "
 										+ "part_count, seq_part, "
 										+ "request_time ) "
 					+ "VALUES ( " 
 							+ job.seqSession.longValue() + ", "
+							+ "?, " // step
 							+ "\"" + job.state.getChar() + "\", "
 							+ strFormatted + ", "
 							+ "?, " // + strJsonData + ", "
@@ -355,12 +349,13 @@ public class Job extends TableBase {
 		} else {
 			strInsert = 
 					"INSERT INTO job "
-					+ "( seq_session, state, request, "
+					+ "( seq_session, step, state, request, "
 										+ "part_count, seq_part, "
 										+ "request_time, "
 					+ "			seq_device_target ) "
 					+ "VALUES ( " 
 							+ job.seqSession.longValue() + ", "
+							+ "?, " // step
 							+ "\"" + job.state.getChar() + "\", "
 							+ strFormatted + ", " 
 							+ "?, " // + strJsonData + ", "
@@ -374,15 +369,15 @@ public class Job extends TableBase {
 			  final PreparedStatement ps = conn.prepareStatement( 
 							  strInsert, Statement.RETURN_GENERATED_KEYS ) ) {
 			
-			ps.setString( 1, strJsonData );
+			if ( null==iStep ) {
+				ps.setNull( 1, Types.INTEGER );
+			} else {
+				ps.setInt( 1, iStep );
+			}
+			ps.setString( 2, strJsonData );
 			ps.execute();
 			try ( final ResultSet rs = ps.getGeneratedKeys() ) {
 		
-//		try (	final Connection conn = ConnectionProvider.get().getConnection();
-//				final Statement stmt = conn.createStatement() ) {
-//			stmt.executeUpdate( strInsert, Statement.RETURN_GENERATED_KEYS );
-//			try ( final ResultSet rs = stmt.getGeneratedKeys() ) {
-				
 				if ( rs.next() ) {
 					final long lSeq = rs.getLong( 1 );
 					job.seqJob = lSeq;

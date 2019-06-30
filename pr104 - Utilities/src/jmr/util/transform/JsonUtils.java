@@ -120,7 +120,7 @@ public class JsonUtils {
 		for ( final String strKey : list ) {
 			final Object objValue = map.get( strKey );
 			
-			str += "\t" + strKey + "=\"" + report( objValue ) + "\"\n";
+			str += "\t" + strKey + "=" + report( objValue ) + "\n";
 		}
 		str += "]";
 		return str;

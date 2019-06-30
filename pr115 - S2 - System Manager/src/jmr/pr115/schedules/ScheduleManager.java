@@ -16,6 +16,7 @@ import jmr.pr120.EmailControl;
 import jmr.pr120.EmailEvent;
 import jmr.pr120.EmailEventListener;
 import jmr.s2db.Client;
+import jmr.s2db.Client.ClientType;
 import jmr.util.SUProperty;
 import jmr.util.SystemUtil;
 
@@ -89,7 +90,7 @@ public class ScheduleManager {
 	public static void main( final String[] args ) {
 		
 		final Client client = Client.get();
-		client.register( "test", ScheduleManager.class.getName() );
+		client.register( ClientType.TILE_GUI, "test", ScheduleManager.class.getName() );
 		
 		final ScheduleManager sm = new ScheduleManager();
 		
