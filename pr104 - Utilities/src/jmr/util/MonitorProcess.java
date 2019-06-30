@@ -38,7 +38,7 @@ public class MonitorProcess {
 	
 	private OutputStream os;
 	
-//	private long lStartTime = 0L;
+	private long lStartTime = 0L;
 	
 	private final boolean bDebug;
 
@@ -238,9 +238,9 @@ public class MonitorProcess {
 				    executor.setStreamHandler( psh );
 
 				    
-//				    lStartTime = System.currentTimeMillis();
+				    lStartTime = System.currentTimeMillis();
 
-//				    final int iExitValue = executor.execute( cmd );
+				    final int iExitValue = executor.execute( cmd );
 
 				    
 				    System.out.println( "External process "

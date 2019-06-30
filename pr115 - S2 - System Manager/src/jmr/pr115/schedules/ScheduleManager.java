@@ -90,7 +90,7 @@ public class ScheduleManager {
 	public static void main( final String[] args ) {
 		
 		final Client client = Client.get();
-		client.register( ClientType.TEST, "test", ScheduleManager.class.getName() );
+		client.register( ClientType.TILE_GUI, "test", ScheduleManager.class.getName() );
 		
 		final ScheduleManager sm = new ScheduleManager();
 		

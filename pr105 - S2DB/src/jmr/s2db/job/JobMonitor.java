@@ -145,7 +145,7 @@ public class JobMonitor {
 		
 		final List<Job> listingActive = manager.getJobListing( 
 //				"( job.request LIKE \"%\" )" );
-				"( job.state = \"R\" )", 100 );
+				"( job.state = \"R\" AND ISNULL( job.step ) )", 100 );
 		final boolean bQueryCompleted =
 				( listingActive.size() != iLastActiveCount )
 				|| ( iCompletedQuerySkipCount > iCompletedQuerySkipMax )
@@ -158,7 +158,7 @@ public class JobMonitor {
 			final List<Job> listingCompleted = manager.getJobListing( 
 	//				"( job.request LIKE \"%\" )" );
 					"( ( job.state = \"C\" ) OR ( job.state = \"F\" ) "
-					+ "OR ( job.state = \"W\" ) )", 8 );
+					+ "OR ( job.state = \"W\" ) ) AND ISNULL( job.step )", 8 );
 			synchronized ( listingLastCompleted ) {
 				listingLastCompleted.clear();
 				listingLastCompleted.addAll( listingCompleted );

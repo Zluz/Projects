@@ -110,7 +110,7 @@ public class EventMonitor {
 	}
 
 	public static EventMonitor get() {
-		return EventMonitor.get( null );
+		return EventMonitor.get( ClientType.TILE_GUI );
 	}
 
 
