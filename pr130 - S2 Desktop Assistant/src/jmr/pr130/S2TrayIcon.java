@@ -21,6 +21,8 @@ import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
+
 import jmr.SessionPath;
 import jmr.pr130.DeletionScheduleUI.Schedule;
 import jmr.s2db.Client;
@@ -64,7 +66,9 @@ public class S2TrayIcon {
 		bActive = true;
 		
 		this.trayitem = new TrayItem( tray, SWT.NONE );
-		trayitem.setToolTipText( "Desktop Assistant" );
+		trayitem.setToolTipText( "Desktop Assistant" + "\n" 
+							+ NetUtil.getMAC() + "\n" 
+							+ OSUtil.getProgramName() );
 		
 		
 		final Image image = getS2Icon();
@@ -82,7 +86,8 @@ public class S2TrayIcon {
 		final MenuItem miLaunchClient = new MenuItem( menu, SWT.PUSH );
 		new MenuItem( menu, SWT.SEPARATOR );
 		final MenuItem miShowMenu = new MenuItem( menu, SWT.RADIO );
-		final MenuItem miClipboard = new MenuItem( menu, SWT.RADIO );
+		final MenuItem miClipboardMulti = new MenuItem( menu, SWT.RADIO );
+		final MenuItem miClipboardLine = new MenuItem( menu, SWT.RADIO );
 		final MenuItem miPostEvent = new MenuItem( menu, SWT.RADIO );
 		new MenuItem( menu, SWT.SEPARATOR );
 		final MenuItem miClose = new MenuItem( menu, SWT.PUSH );
@@ -95,7 +100,8 @@ public class S2TrayIcon {
 		miLaunchClient.setText( "Launch S2 client" );
 		
 		miShowMenu.setText( "Show this pop-up menu" );
-		miClipboard.setText( "Clipboard to plain text" );
+		miClipboardMulti.setText( "Clipboard full to plain text" );
+		miClipboardLine.setText( "Clipboard line to plain text" );
 		miPostEvent.setText( "Post S2 status event" );
 		
 		miShowMenu.setSelection( true );
@@ -107,8 +113,10 @@ public class S2TrayIcon {
 			public void handleEvent( final Event e ) {
 				if ( miShowMenu.getSelection() ) {
 					menu.setVisible( true );
-				} else if ( miClipboard.getSelection() ) {
-					doSetClipboardToPlainText();
+				} else if ( miClipboardMulti.getSelection() ) {
+					doSetClipboardToPlainText( false );
+				} else if ( miClipboardLine.getSelection() ) {
+					doSetClipboardToPlainText( true );
 				} else if ( miPostEvent.getSelection() ) {
 					doPostStatusEvent();
 				}
@@ -170,24 +178,39 @@ public class S2TrayIcon {
 	}
 	
 	
-	public void doSetClipboardToPlainText() {
+	public void doSetClipboardToPlainText( final boolean bSingleLine ) {
 		System.out.println( "--- doSetClipboardToPlainText()" );
 		
 		final Clipboard clipboard = new Clipboard( display );
 		final TextTransfer transfer = TextTransfer.getInstance();
 		final Object objContents = clipboard.getContents( transfer );
+		if ( null==objContents ) {
+			System.out.println( "Clipboard is empty." );
+			return;
+		}
 		final String strContents = objContents.toString();
+		String strFormatted = strContents;
+		
+		if ( bSingleLine && strContents.contains( "\n" ) ) {
+			for ( String strLine : strContents.split( "\\n" ) ) {
+				strLine = strLine.trim();
+				if ( StringUtils.isNotEmpty( strLine ) ) {
+					strFormatted = strLine;
+					break;
+				}
+			}
+		}
 		
 		System.out.println( "Setting clipboard to:\n"
 								+ "---start---\n" 
-								+ strContents + "\n"
+								+ strFormatted + "\n"
 								+ "---end---" );
 		
-		clipboard.setContents( new String[] { strContents }, 
+		clipboard.setContents( new String[] { strFormatted }, 
 								new Transfer[] { transfer } );
 		clipboard.dispose();
 		
-		showMessage( "Clipboard contents set to plain text", strContents );
+		showMessage( "Clipboard contents set to plain text", strFormatted );
 	}
 	
 	
@@ -233,6 +256,8 @@ public class S2TrayIcon {
 		final DeletionScheduleUI scheduler = DeletionScheduleUI.get();
 		scheduler.start();
 		
+		//NOTE: keep jar_cache*.tmp (embedded jars extracted to tmp) 
+		
 		scheduler.addSchedule( new Schedule( 
 				SystemUtil.getTempDir(), ".webcam-lock-.*", 10 * 60 ) );
 		
@@ -247,7 +272,7 @@ public class S2TrayIcon {
 				SystemUtil.getTempDir(), "Capture_.*.jpg", 60 ) );
 
 		scheduler.addSchedule( new Schedule( 
-				SessionPath.getSessionDir(), "capture_vid.-t.*.jpg", 2 * 60 ) );
+				SessionPath.getSessionDir(), "capture_vid.-t.*.jpg", 5 * 60 ) );
 		scheduler.addSchedule( new Schedule( 
 				SessionPath.getSessionDir(), "capture_vid.-t.*.jpg_", 10 ) );
 		scheduler.addSchedule( new Schedule( 
@@ -286,9 +311,15 @@ public class S2TrayIcon {
 
 		initializeDeletionSchedule();
 
+		// UI loop seems to go busy until a shell is used
+		trayicon.showMessage( "Desktop Assistant", 
+						"Client registered, session " + seqSession );
+		
 	    while ( trayicon.isActive() 
-	    				&& ! display.isDisposed() 
-	    				&& null!=display ) {
+	    				&& null!=display
+						&& ! display.isDisposed() 
+						&& ! trayicon.shell.isDisposed() 
+	    				) {
 		      if ( display.readAndDispatch()) {
 		    	  display.sleep();
 		      }

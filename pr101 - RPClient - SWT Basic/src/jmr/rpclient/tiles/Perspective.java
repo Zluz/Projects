@@ -20,6 +20,7 @@ public enum Perspective {
 	GPIO( 4, 5, false, false ),
 	AUTO_HAT( 5, 3, false, false ),
 	PROC_IMAGE( 8, 3, false, false ),
+	WORKER_IMAGE( 8, 3, false, false ),
 	
 	TEST( 5, 3, false, false ),
 	;
@@ -84,6 +85,7 @@ public enum Perspective {
 				case GPIO: this.build_GPIO( mapOptions ); break;
 				case AUTO_HAT: this.build_AutoHAT( mapOptions ); break;
 				case PROC_IMAGE: this.build_ProcImage( mapOptions ); break;
+				case WORKER_IMAGE: this.build_ImageJobWorker( mapOptions ); break;
 				case DESKTOP: this.build_Desktop( mapOptions ); break;
 			}
 			validate();
@@ -381,6 +383,45 @@ public enum Perspective {
 //		list.add( new TileGeometry( new CalibrationTile(), 
 //						new Rectangle( 3, 2, 1, 1 ) ) ); 
 	}
+	
+
+	private void build_ImageJobWorker( final Map<String, String> mapOptions ) {
+		
+		list.add( new TileGeometry( new HistogramTile( "FILE_INTERVAL_1", true ), 
+						new Rectangle( 0, 0, 2, 1 ) ) );
+		list.add( new TileGeometry( new HistogramTile( "CHANGE_INTERVAL_1", true ), 
+						new Rectangle( 2, 0, 1, 1 ) ) );
+		list.add( new TileGeometry( new ImageJobWorkerTile( "1", mapOptions ), 
+						new Rectangle( 3, 0, 2, 1 ) ) );
+		list.add( new TileGeometry( new HistogramTile( "IMAGE_CHANGE_VALUE_1" ), 
+						new Rectangle( 5, 0, 3, 1 ) ) );
+
+//		list.add( new TileGeometry( new HistogramTile( "FILE_INTERVAL_2", true ), 
+//						new Rectangle( 0, 1, 2, 1 ) ) );
+//		list.add( new TileGeometry( new HistogramTile( "CHANGE_INTERVAL_2", true ), 
+//						new Rectangle( 2, 1, 1, 1 ) ) );
+//		list.add( new TileGeometry( new ImageJobWorkerTile( "2", mapOptions ), 
+//						new Rectangle( 3, 1, 2, 1 ) ) );
+//		list.add( new TileGeometry( new HistogramTile( "IMAGE_CHANGE_VALUE_2" ), 
+//						new Rectangle( 5, 1, 3, 1 ) ) );
+//
+//		list.add( new TileGeometry( new HistogramTile( "FILE_INTERVAL_3", true ), 
+//						new Rectangle( 0, 2, 2, 1 ) ) );
+//		list.add( new TileGeometry( new HistogramTile( "CHANGE_INTERVAL_3", true ), 
+//						new Rectangle( 2, 2, 1, 1 ) ) );
+//		list.add( new TileGeometry( new ImageJobWorkerTile( "3", mapOptions ), 
+//						new Rectangle( 3, 2, 2, 1 ) ) );
+//		list.add( new TileGeometry( new HistogramTile( "IMAGE_CHANGE_VALUE_3" ), 
+//						new Rectangle( 5, 2, 3, 1 ) ) );
+
+//		list.add( new TileGeometry( new SystemInfoTile(), 
+//						new Rectangle( 2, 2, 1, 1 ) ) );
+//		list.add( new TileGeometry( new PerformanceMonitorTile(), 
+//						new Rectangle( 3, 2, 1, 1 ) ) );
+//		list.add( new TileGeometry( new CalibrationTile(), 
+//						new Rectangle( 3, 2, 1, 1 ) ) ); 
+	}
+
 
 	private void build_Tesla( final Map<String, String> mapOptions ) {
 		list.add( new TileGeometry( new ClockTile(), 

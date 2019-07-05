@@ -19,7 +19,7 @@ import jmr.util.SystemUtil;
 
 public class ImageCapture {
 	
-	public final static long TIME_TIMEOUT = 10L; // 4 seconds per picture
+	public final static long TIME_TIMEOUT = 20L; // 4 seconds per picture
 
 
 	public static void capture( final String strName ) {

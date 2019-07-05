@@ -48,6 +48,7 @@ import jmr.s2db.tables.Job;
 import jmr.s2db.tables.Job.JobSet;
 import jmr.util.NetUtil;
 import jmr.util.OSUtil;
+import jmr.util.S2Utils;
 import jmr.util.SystemUtil;
 import jmr.util.report.TraceMap;
 import jmr.util.transform.TextUtils;
@@ -205,8 +206,12 @@ public class CameraSchedulerUI {
 		}
 
 		final String strTempDir = fileTempDir.getAbsolutePath().toString();
-		txtTempDir.setText( "Temp Dir:  " + Text.DELIMITER + strTempDir );
-		if ( strTempDir.contains( "C:\\Users" ) ) {
+		final String strEnvTemp = System.getenv( "TEMP" );
+		final String strEnvTmp = System.getenv( "TMP" );
+		txtTempDir.setText( "Temporary Dir:  " + strTempDir + Text.DELIMITER 
+						+ "Env var TEMP:  " + strEnvTemp + Text.DELIMITER
+						+ "Env var TMP:  " + strEnvTmp + Text.DELIMITER );
+		if ( strTempDir.contains( "Users" ) || strEnvTmp.contains( "Users" ) ) {
 			txtTempDir.setBackground( display.getSystemColor( SWT.COLOR_YELLOW ) );
 		}
 		
@@ -335,7 +340,11 @@ public class CameraSchedulerUI {
 		final String strFilenameBase = 
 						StringUtils.substringBeforeLast( 
 						fileTarget.getAbsolutePath(), "-t" );
-		
+
+		final String strFileWorkPath = 
+						StringUtils.substringBeforeLast( 
+						fileTarget.getAbsolutePath(), "." );
+
 		final File fileMask = new File( strFilenameBase + "-mask.jpg" );
 		final File fileConfig = new File( strFilenameBase + "-config.ini" );
 		final File fileLive = new File( strFilenameBase + "-live.ini" );
@@ -361,11 +370,12 @@ public class CameraSchedulerUI {
 		
 		mapData.putAllUnder( "01", Client.get().getDetails() );
 		
-		mapData.put( "image_current", fileTarget.getAbsoluteFile().toString() );
-		mapData.put( "image_previous", filePrevious.getAbsoluteFile().toString() );
-		mapData.put( "image_mask", fileMask.getAbsoluteFile().toString() );
-		mapData.put( "file_config", fileConfig.getAbsoluteFile().toString() );
-		mapData.put( "file_live", fileLive.getAbsoluteFile().toString() );
+		mapData.put( "image_current", S2Utils.strUnixPathOf( fileTarget ) );
+		mapData.put( "image_previous", S2Utils.strUnixPathOf( filePrevious ) );
+		mapData.put( "image_mask", S2Utils.strUnixPathOf( fileMask ) );
+		mapData.put( "file_config", S2Utils.strUnixPathOf( fileConfig ) );
+		mapData.put( "file_live", S2Utils.strUnixPathOf( fileLive ) );
+		mapData.put( "path_work", S2Utils.strUnixPathOf( strFileWorkPath ) );
 		
 		mapData.putAllUnder( "config", getConfigForCamera( fileConfig ) );
 
@@ -388,7 +398,7 @@ public class CameraSchedulerUI {
 
 		mapData.addFrame();
 
-		final String strResult = strFilenameBase;
+		final String strResult = S2Utils.strUnixPathOf( strFilenameBase );
 		final JobSet jobset = null;
 		final JobType type = JobType.PROCESSING_IMAGE_DIFF;
 		Job.add( type, jobset, 1, strResult, mapData );

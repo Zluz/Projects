@@ -93,6 +93,7 @@ public class Job extends TableBase {
 	private String strRequest = null;
 	private Long lRequestTime = null;
 	private Long lCompleteTime = null;
+	private String strData = null; // should be a map or json
 	
 	private Long lPartSeq = null;
 	private Integer iPartCount = null;
@@ -183,6 +184,8 @@ public class Job extends TableBase {
 					
 					job.strResult = rs.getString( "result" );
 					job.lLastRefresh = lQueryTime;
+					
+					job.strData = rs.getString( "data" );
 					
 					listJob.add( job );
 				}
@@ -420,6 +423,7 @@ public class Job extends TableBase {
 		return type;
 	}
 	
+	//FIXME: this is odd, should not be testing job.request
 	public Map<String,String> getJobDetails() {
 		if ( !this.strRequest.contains( ":" ) ) return Collections.emptyMap();
 		
@@ -428,7 +432,15 @@ public class Job extends TableBase {
 		final Map<String,String> map = JobType.getDetails( strDetails );
 		return map;
 	}
-	
+
+	public Map<String,Object> getJobData() {
+		if ( ! strData.contains( ":" ) ) return Collections.emptyMap();
+		
+		final Map<String, Object> 
+						map = JsonUtils.transformJsonToMap( this.strData );
+		return map;
+	}
+
 	public Long getDeviceTargetSeq() {
 		return this.seqDeviceTarget;
 	}
@@ -515,6 +527,9 @@ public class Job extends TableBase {
 	/**
 	 * This will add data in the given JsonObject to the existing data
 	 * string. This will NOT save it to the database.
+	 * 
+	 * _//FIXME this should go to "data", not job.result
+	 * 
 	 * @param jo
 	 * @return
 	 */
