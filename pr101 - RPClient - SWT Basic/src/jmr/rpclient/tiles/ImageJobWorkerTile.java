@@ -12,9 +12,11 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -43,11 +45,6 @@ import jmr.util.transform.JsonUtils;
 public class ImageJobWorkerTile extends TileBase {
 
 
-//	private static final float CHOKE_CLOSE_SLOW = 0.0001f;
-//	private static final float CHOKE_OPEN_SLOW  = 0.0100f;
-//	private static final float CHOKE_OPEN_FAST  = 0.5000f;
-
-
 	private static final Logger 
 			LOGGER = Logger.getLogger( ImageJobWorkerTile.class.getName() );
 
@@ -65,54 +62,37 @@ public class ImageJobWorkerTile extends TileBase {
 		;
 	}
 	
-//	private final static Set<String> MONITOR_FILES = new HashSet<>();
-	
 	
 	private RunProcess run;
 	
+	private static final Set<Long> setAcquiredJobs = new HashSet<>();
+	
 	private final Thread threadUpdater;
 
-//	private final String strName;
-//	private final String strSourceImage;
 	private final String strIndex;
 	private final String strExpectedObjects;
-//	private final float fThreshold;
-//	private final File fileSourcePath;
 	
 	private State state = State.IDLE;
-//	private float fChoke;
 	private int iCountTotal;
 	private int iCountCompleted;
 	private int iCountChanged;
 	private boolean bUsingMask;
 	private boolean bWarmup = true;
-//	private int iCyclesSinceLastChange = 10;
 	
 	String strData = "uninitialized";
 	
+	String strName = null;
+	String strFilename = null;
+	Job job = null;
 	
-//	public String getBaseFilename() {
-//		final int iPosSlash = this.strSourceImage.lastIndexOf( '/' );
-//		final String strNoPath = this.strSourceImage.substring( iPosSlash + 1 );
-//		final int iPosDot = strNoPath.lastIndexOf( '.' );
-//		final String strNoExt = strNoPath.substring( 0, iPosDot );
-////		final int iPosDash = strNoExt.lastIndexOf( '-' );
-////		final String strNoDash = strNoExt.substring( 0, iPosDash );
-//		return strNoExt;
-//	}
 	
 	
 	public ImageJobWorkerTile( final String strIndex,
 						  final Map<String, String> mapOptions ) {
 		if ( null==mapOptions || mapOptions.isEmpty() ) {
 			LOGGER.warning( "Missing configuration map" );
-//			strSourceImage = null;
 			threadUpdater = null;
 			this.strIndex = null;
-//			this.strName = null;
-//			this.fThreshold = 0.0f;
-//			this.fChoke = 0.0f;
-//			this.fileSourcePath = null;
 			this.strExpectedObjects = null;
 			return;
 		}
@@ -122,75 +102,79 @@ public class ImageJobWorkerTile extends TileBase {
 		
 		final String strPrefix = "proc_image." + strIndex;
 
-//		this.strSourceImage = mapOptions.get( strPrefix + ".file" );
-//		this.strName = mapOptions.get( strPrefix + ".name" );
 		final String strValue = mapOptions.get( strPrefix + ".expected.objects" );
 		if ( StringUtils.isNotBlank( strValue ) ) {
 			this.strExpectedObjects = strValue;
 		} else {
 			this.strExpectedObjects = "(not-specified)";
 		}
-//		final String strThreshold = mapOptions.get( strPrefix + ".threshold" );
-//		float fThresholdParsed = 10.0f; 
-//		try {
-//			fThresholdParsed = Float.parseFloat( strThreshold );
-//		} catch ( final Exception e ) {
-//			fThresholdParsed = 10.0f;
-//			LOGGER.warning( "Failed to parse threshold value: " + strThreshold );
-//		}
-//		this.fThreshold = fThresholdParsed;
-//		this.fChoke = 0.0f;
-		
-//		if ( StringUtils.isBlank( this.strSourceImage ) ) {
-//			this.state = State.INFO__DISABLED;
-//		} else if ( MONITOR_FILES.contains( this.strSourceImage ) ) {
-//			this.state = State.INFO__DISABLED;
-//		} else {
-//			MONITOR_FILES.add( this.strSourceImage );
-//			this.state = State.IDLE;
-//
-////			clearOldFiles();
-//		}
-		
-//		if ( State.IDLE.equals( this.state ) ) {
-//			final File fileSource = new File( this.strSourceImage );
-//			this.fileSourcePath = fileSource.getParentFile();
-//			
-//			if ( ! this.fileSourcePath.isDirectory() ) {
-//				this.state = State.WARNING__MISSING_SOURCE_DIR;
-//			} else if ( ! this.fileSourcePath.canWrite() ) {
-//				this.state = State.WARNING__SHARE_READONLY;
-//			}
-//		} else {
-//			this.fileSourcePath = null;
-//		}
 		
 		this.threadUpdater = createThread();
 		this.threadUpdater.start();
+		
+		synchronized ( ImageJobWorkerTile.threadJobList ) {
+			if ( ! ImageJobWorkerTile.threadJobList.isAlive() ) {
+				ImageJobWorkerTile.threadJobList.start();
+			}
+		}
 	}
+	
+	
+	private static List<Job> list = new LinkedList<Job>();
+	
+	public static Thread threadJobList = 
+						new Thread( "ImageJobWorker - Job List" ) {
+		public void run() {
+			
+			final JobManager manager = Client.get().getJobManager();
+
+			List<Job> list;
+			boolean bActive = true;
+
+			do {
+				try {
+					TimeUnit.SECONDS.sleep( 2 );
+				} catch ( final InterruptedException e ) {
+					//TODO handle interruption
+					e.printStackTrace();
+					bActive = false;
+				}
+
+				list = manager.getJobListing( 
+						"( ( job.state = \"R\" ) AND ( job.step = \"1\" ) )", 200 );
+				
+				synchronized ( ImageJobWorkerTile.list ) {
+					ImageJobWorkerTile.list.clear();
+					ImageJobWorkerTile.list.addAll( list );
+				}
+
+				System.out.println( "Query returned " + list.size() + " rows" );
+				
+			} while ( bActive );
+			
+		};
+	};
 	
 	
 	
 	private List<Job> getJobList() {
-		final JobManager manager = Client.get().getJobManager();
 
-		List<Job> list;
+		final List<Job> list = new LinkedList<>();
 		boolean bActive = true;
 
 		do {
 			try {
 				TimeUnit.SECONDS.sleep( 2 );
+				list.clear();
+				synchronized ( ImageJobWorkerTile.list ) {
+					list.addAll( ImageJobWorkerTile.list );
+				}
 			} catch ( final InterruptedException e ) {
 				//TODO handle interruption
 				e.printStackTrace();
 				bActive = false;
 			}
 
-			list = manager.getJobListing( 
-					"( ( job.state = \"R\" ) AND ( job.step = \"1\" ) )", 200 );
-
-			System.out.println( "Query returned " + list.size() + " rows" );
-			
 		} while ( bActive && list.isEmpty() );
 
 		System.out.println( "Non-empty list ready." );
@@ -212,8 +196,13 @@ public class ImageJobWorkerTile extends TileBase {
 	}
 
 	
-	private boolean acquireJob( final Job job ) {
+	private synchronized static boolean acquireJob( final Job job ) {
 
+		final long seqJob = job.getJobSeq();
+		if ( ImageJobWorkerTile.setAcquiredJobs.contains( seqJob ) ) {
+			return false;
+		}
+		
 		final long seqSession = Client.get().getSessionSeq();
 		
 		final String strUpdate = 
@@ -221,13 +210,13 @@ public class ImageJobWorkerTile extends TileBase {
 						+ "seq_session_working = " + seqSession 
 						+ ", state = 'W' "
 				+ "WHERE ( "
-						+ "seq = " + job.getJobSeq() 
+						+ "seq = " + seqJob 
 						+ " AND state = 'R' );";
 		
 		final String strQuery =
 				"SELECT seq_session_working "
 				+ "FROM job "
-				+ "WHERE seq = " + job.getJobSeq();
+				+ "WHERE seq = " + seqJob;
 		
 		try ( final Connection conn = ConnectionProvider.get().getConnection() ) {
 			if ( null==conn ) return false;
@@ -246,6 +235,9 @@ public class ImageJobWorkerTile extends TileBase {
 				final long seqWorking = rs.getLong( "seq_session_working" );
 				if ( seqWorking == seqSession ) {
 					System.out.println( "Job acquired: " + seqSession );
+					
+					ImageJobWorkerTile.setAcquiredJobs.add( seqJob );
+					
 					return true;
 				} else {
 					System.out.println( "Job NOT acquired, "
@@ -340,13 +332,6 @@ public class ImageJobWorkerTile extends TileBase {
 		return FILENAME_MASK + "_" + this.strIndex + ".jpg";
 	}
 
-//	private String getFilenameSourceMask() {
-//		final String strSourceMask = 
-//						this.strSourceImage.replace( ".", "-mask." );
-//		return strSourceMask;
-//	}
-
-
 	
 	/*
 	 * Get a numeric difference between the files.
@@ -372,7 +357,6 @@ public class ImageJobWorkerTile extends TileBase {
 		if ( null==iResult || iResult != 0 ) {
 			LOGGER.warning( strLogPrefix + "Non-zero result from process ("
 					+ "exit code = " + iResult + ")." ); // + "\n"
-//					+ "Full process output:\n" + strOut );
 			return null;
 		} else {
 
@@ -410,17 +394,19 @@ public class ImageJobWorkerTile extends TileBase {
 	}
 	
 	
+	
 	public boolean scan() {
 
 		this.iCountTotal++;
 		final String strPrefix = "[" + this.strIndex + "] ";
 
 		this.state = State.WAITING_FOR_FILE;
-//		boolean bReady = doWaitForFileToMove( strSourceImage );
-		final Job job = doPopNextJob();
+		this.job = doPopNextJob();
 		boolean bReady = ( null != job );
 		this.state = State.PREPARING_FILES;
 		final long lTimeNow = System.currentTimeMillis();
+		
+		final Long seqJob = null!=job ? job.getJobSeq() : null;
 		
 
 		lCycleCount++;
@@ -429,9 +415,8 @@ public class ImageJobWorkerTile extends TileBase {
 		
 		listTags.clear();
 		final TraceMap trace;
-//		final Map<String, Object> mapData;
 		
-		final String strName;
+//		final String strName;
 		final String strSourceImage;
 		final String strImagePrevious;
 		final String strImageMask;
@@ -459,8 +444,6 @@ public class ImageJobWorkerTile extends TileBase {
 
 		if ( bReady ) {
 
-//			trace = new TraceMap();
-
 			strSourceImage = trace.get( "image_current" ).toString();
 			strImagePrevious = trace.get( "image_previous" ).toString();
 			strImageMask = trace.get( "image_mask" ).toString();
@@ -474,8 +457,9 @@ public class ImageJobWorkerTile extends TileBase {
 			strImageMask = null;
 			strWorkDir = null;
 			strName = null;
-//			trace = null;
 		}
+		
+		this.strFilename = strSourceImage;
 
 		System.out.println( "--- scan() - 3.0 - bReady = " + bReady );
 
@@ -494,30 +478,16 @@ public class ImageJobWorkerTile extends TileBase {
 		if ( bReady ) {
 			
 			final Graph graph = 
-						HistogramTile.getGraph( "FILE_INTERVAL_" + strIndex );
+					HistogramTile.getGraph( "FILE_INTERVAL_" + strIndex );
 			
-			if ( null!=graph && ( lCycleCount > 1 ) && ( lElapsed > 0 ) ) {
+			if ( null!=graph && ( lCycleCount > 1 )
+					// only show on graph if recent
+					&& ( lElapsed < TimeUnit.MINUTES.toMillis( 4 ) )
+					&& ( lElapsed > 0 ) ) {
 				
 				graph.add( ( (float) lElapsed ) / 1000 );
 			}
 			
-//			try {
-//				
-//				final File filePrevious = new File( getFilenamePrevious() );
-//				if ( filePrevious.exists() ) {
-//					FileUtils.forceDelete( filePrevious );
-//				}
-//
-//				final File fileCurrent1 = new File( getFilenameCurrent() );
-//				if ( fileCurrent1.isFile() ) {
-//					fileCurrent1.renameTo( filePrevious );
-//				}
-//
-//			} catch ( final IOException e ) {
-//				this.state = State.FAULT;
-//				e.printStackTrace();
-//				bReady = false;
-//			}
 		} else {
 			this.state = State.FAULT;
 		}
@@ -584,130 +554,90 @@ public class ImageJobWorkerTile extends TileBase {
 
 		if ( bReady ) {
 			
-//			System.out.println( "003" );
-
 			final File filePrevious = new File( getFilenamePrevious() );
 			final File fileCurrent = new File( getFilenameCurrent() );
 			final File fileMask = new File( getFilenameMask() );
 			
 			this.state = State.EXECUTING_COMPARISON;
-			final Float fOutputDiff = getImageDifference( 
+			final Float fDiff = getImageDifference( 
 							filePrevious, fileCurrent, fileMask, strPrefix );
 			this.state = State.POST_COMPARISON;
 
-			trace.put( "diff-output", fOutputDiff );
-			
+			trace.put( "diff-value", fDiff );
+
 			this.iCountCompleted++;
 
 			System.out.println( "--- scan() - 5.1 - bReady = " + bReady );
 
-			if ( null != fOutputDiff ) {
+			if ( null != fDiff ) {
 				
-				final float fDiff = fOutputDiff * 100;
-
-				trace.put( "diff-value", fDiff );
-
 				System.out.println( strPrefix + "Comparison result: " + fDiff );
+
+				System.out.println( "--- scan() - 5.2 - bReady = " + bReady );
 				
-//				if ( ! this.bWarmup ) {
-
-					System.out.println( "--- scan() - 5.2 - bReady = " + bReady );
-					
-					final float fChoke;
-					long lDuration = TimeUnit.HOURS.toMillis( 2 );
-					try {
-						final Object objValue = trace.get( "live.time_last_change" );
-						if ( null!=objValue ) {
-							lLastChange = Long.parseLong( objValue.toString() );
-						}
-						lDuration = lTimeNow - lLastChange;
-					} catch ( final NumberFormatException e ) {
-						// ignore
+				final float fChoke;
+				long lDuration = TimeUnit.HOURS.toMillis( 2 );
+				try {
+					final Object objValue = trace.get( "live.time_last_change" );
+					if ( null!=objValue ) {
+						lLastChange = Long.parseLong( objValue.toString() );
 					}
-					fChoke = (float)lDuration / 1000000000;
+					lDuration = lTimeNow - lLastChange;
+				} catch ( final NumberFormatException e ) {
+					// ignore
+				}
+				fChoke = (float)lDuration / 1000000000;
+				
+
+				trace.put( "duration-to-last", lDuration );
+				trace.put( "duration-to-last-minutes", 
+						TimeUnit.MILLISECONDS.toMinutes( lDuration ) );
+				trace.put( "threshold-choke", fChoke );
+
+				final float fThresholdAdjusted = (float)fThreshold - fChoke;
+				
+				trace.put( "threshold-adjusted", fThresholdAdjusted );
+
+				{
+					final Graph graph = HistogramTile.getGraph( 
+									"IMAGE_CHANGE_VALUE_" + strIndex );
+					graph.add( fDiff );
+					graph.setThresholdMax( new Double( fThresholdAdjusted ) );
+				}
+
+				System.out.println( "--- scan() - 5.3 - bReady = " + bReady );
+				
+				if ( fDiff >= fThresholdAdjusted ) {
 					
-
-					trace.put( "duration-to-last", lDuration );
-					trace.put( "duration-to-last-minutes", 
-							TimeUnit.MILLISECONDS.toMinutes( lDuration ) );
-					trace.put( "threshold-choke", fChoke );
-
-					final float fThresholdAdjusted = (float)fThreshold - fChoke;
+					System.out.println( "Change above threshold.   "
+							+ String.format( 
+									"(diff) %.3f  >=  (threshold) %.3f", 
+									fDiff, fThresholdAdjusted ) );
 					
-					trace.put( "threshold-adjusted", fThresholdAdjusted );
-
-					{
-						final Graph graph = HistogramTile.getGraph( 
-										"IMAGE_CHANGE_VALUE_" + strIndex );
-						graph.add( fDiff );
-						graph.setThresholdMax( new Double( fThresholdAdjusted ) );
-					}
-
-					System.out.println( "--- scan() - 5.3 - bReady = " + bReady );
+					trace.put( "live.time_last_change", lTimeNow );
+					trace.put( "live.last-threshold-adjusted", fThresholdAdjusted );
 					
-					if ( fDiff >= fThresholdAdjusted ) {
-						
-						System.out.println( "Change above threshold.   "
-								+ String.format( 
-										"(diff) %.3f  >=  (threshold) %.3f", 
-										fDiff, fThresholdAdjusted ) );
-						
-						trace.put( "live.time_last_change", lTimeNow );
-						trace.put( "live.last-threshold-adjusted", fThresholdAdjusted );
-						
-						// image changed
-						
-//						if ( this.iCyclesSinceLastChange < 2 ) {
-//							this.fChoke = this.fChoke - CHOKE_OPEN_FAST;
-//							this.listTags.add( "{+change+}" );
-//						} else {
-//							this.fChoke = this.fChoke - CHOKE_OPEN_SLOW;
-//							this.listTags.add( "{change}" );
-//						}
-//						this.iCyclesSinceLastChange = 0;
-						
-						this.iCountChanged++;
+					// image changed
+					
+					this.iCountChanged++;
 //						final long lChangeElapsed = lTimeNow - lLastChange;
-						
-						System.out.println( "Change above threshold. Reporting.." );
-						this.reportChangeDetected( strName,
-									fileCurrent, filePrevious, strWorkDir,
-									lSourceFileTimestamp, 
-									fThreshold, fDiff, 
-									lTimeNow, trace );
-						
-						System.out.print( "lLastChange = " + lLastChange + ", "
-									+ "lTimeNow = " + lTimeNow );
-
-						if ( lLastChange > 0 ) {
-							final Graph graph = HistogramTile.getGraph( 
-											"CHANGE_INTERVAL_" + strIndex );
-							
-							System.out.print( ", graph: " + graph.hashCode() );
-							
-//							final float fChangeMinutes = 
-//											(float)lChangeElapsed / 1000 / 60;
-//
-//							System.out.print( ", fChangeMinutes: " + fChangeMinutes );
-//
-//							graph.add( fChangeMinutes );
-						}
-						lLastChange = lTimeNow;
-						
-//					} else {
-//						this.fChoke = this.fChoke + CHOKE_CLOSE_SLOW;
-//						this.iCyclesSinceLastChange++;
-					}
-
-//				} else {
-//					System.out.println( strPrefix + "(still in warmup)" );
-//					this.bWarmup = false;
-//				}
 					
+					System.out.println( "Change above threshold. Reporting.." );
+					this.reportChangeDetected( strName,
+								fileCurrent, filePrevious, strWorkDir,
+								lSourceFileTimestamp, 
+								fThreshold, fDiff, 
+								lTimeNow, trace );
+					
+					System.out.print( "lLastChange = " + lLastChange + ", "
+								+ "lTimeNow = " + lTimeNow );
+
+					lLastChange = lTimeNow;
+					
+				}
 					
 				System.out.println( JsonUtils.report( trace ) );
 
-					
 					
 				
 			} else {
@@ -721,6 +651,10 @@ public class ImageJobWorkerTile extends TileBase {
 
 		this.state = State.IDLE;
 
+		ImageJobWorkerTile.setAcquiredJobs.remove( seqJob );
+		
+		this.strFilename = null;
+		this.job = null;
 		return true;
 	}
 	
@@ -742,15 +676,7 @@ public class ImageJobWorkerTile extends TileBase {
 		final String strTimestamp = 
 				DateFormatting.getTimestamp( dateFile ).substring( 0, 15 );
 		
-//		final String strBaseFilename = getBaseFilename();
-//		final String strChangeDir = strTimestamp + "_" + strBaseFilename;
-		
-		final File fileChangeDir = 
-//						new File( this.fileSourcePath, ""+ lFileTimestamp );
-//						new File( "/tmp", strTimestamp );
-//						new File( this.fileSourcePath, ""+ lFileTimestamp );
-//						new File( this.fileSourcePath, strChangeDir );
-						new File( strWorkPath );
+		final File fileChangeDir = new File( strWorkPath );
 		
 		final String strChangePath = fileChangeDir.getAbsolutePath();
 
@@ -768,8 +694,6 @@ public class ImageJobWorkerTile extends TileBase {
 
 			sb.append( String.format( 
 					"Name: %s\n", strName ) );
-//			sb.append( String.format( 
-//					"Source image file: %s\n", this.strSourceImage ) );
 			sb.append( String.format( 
 					"Source image timestamp: %s\n", strTimestamp ) );
 			sb.append( String.format( 
@@ -779,8 +703,6 @@ public class ImageJobWorkerTile extends TileBase {
 					"Comparison value: %.6f\n", fDiffValue ) );
 			sb.append( String.format( 
 					"Comparison threshold base: %.6f\n", fThreshold ) );
-//			sb.append( String.format( 
-//					"Comparison threshold choke: %.6f\n", this.fChoke ) );
 			
 			sb.append( String.format( 
 					"Count, total: %d\n", this.iCountTotal ) );
@@ -790,10 +712,6 @@ public class ImageJobWorkerTile extends TileBase {
 					"Count, changed: %d\n", this.iCountChanged ) );
 
 			sb.append( "\nTrace" );
-//			for ( final Entry<String, Object> entry : map.entrySet() ) {
-//				sb.append( "\t\"" + entry.getKey() + "\" "
-//						+ "= " + entry.getValue() + "\n" );
-//			}
 			sb.append( JsonUtils.reportMap( map ) );
 			
 			sb.append( "\n\n" );
@@ -830,7 +748,6 @@ public class ImageJobWorkerTile extends TileBase {
 			
 			final Event event = Event.add( 
 					EventType.ENVIRONMENT, strSubject, strValue, 
-//					""+ ( this.fThreshold - this.fChoke ), 
 					""+  fThreshold, 
 					map, lTimeDetect, 
 					null, null, null ); 
@@ -849,10 +766,6 @@ public class ImageJobWorkerTile extends TileBase {
 		
 		final boolean bEnabled = ( ! this.state.name().contains( "__" ) );
 		
-//		if ( bEnabled && ! threadUpdater.isAlive() ) {
-//			threadUpdater.start();
-//		}
-		
 		
 		final GCTextUtils text = new GCTextUtils( gc );
 		text.setRect( gc.getClipping() );
@@ -866,14 +779,32 @@ public class ImageJobWorkerTile extends TileBase {
 		gc.setFont( Theme.get().getFont( 12 ) );
 
 		text.addSpace( 10 );
-		text.println( "<name>" );
+		final StringBuilder sbName = new StringBuilder();
+		if ( null != this.job ) {
+			sbName.append( ""+ this.job.getJobSeq() + ": " );
+			if ( null!=strName ) {
+				sbName.append( strName );
+			}
+		} else {
+			sbName.append( "<none>" );
+		}
+		text.println( sbName.toString() );
+		
+		gc.setFont( Theme.get().getFont( 8 ) );
+		final StringBuilder sbFile = new StringBuilder();
+		if ( null != this.strFilename ) {
+			sbFile.append( "../" + strFilename.substring( 16 ) );
+		} else {
+			sbFile.append( "<none>" );
+		}
+		text.println( sbFile.toString() );
 
 		gc.setFont( Theme.get().getFont( 8 ) );
 		
-		text.addSpace( 4 );
-//		text.println( "Source Image File:" );
-//		text.println( this.strSourceImage );
-		text.println( "Index: " + this.strIndex );
+//		text.addSpace( 4 );
+////		text.println( "Source Image File:" );
+////		text.println( this.strSourceImage );
+//		text.println( "Index: " + this.strIndex );
 		text.addSpace( 10 );
 
 		gc.setFont( Theme.get().getFont( 10 ) );
@@ -911,19 +842,11 @@ public class ImageJobWorkerTile extends TileBase {
 		text.println( "Total: " + this.iCountTotal + ",  "
 				+ "Completed: " + this.iCountCompleted + ",  "
 				+ "Changes: " + this.iCountChanged ); 
-//				+ "Fault: " + this.iCountFault ); 
 
 		text.addSpace( 4 );
 		
 		gc.setFont( Theme.get().getFont( 9 ) );
 		
-//		text.println( String.format( 
-////					"Threshold:   %1$.3f   -   %2$.3f   =   %3$.3f", 
-////							this.fThreshold, 
-////							this.fChoke, 
-////							this.fThreshold - this.fChoke ) );
-//					"Threshold:  %1$.3f", this.fThreshold ) );
-
 		
 		final StringBuilder sbEnabled = new StringBuilder();
 		final StringBuilder sbDisabled = new StringBuilder();
@@ -951,9 +874,6 @@ public class ImageJobWorkerTile extends TileBase {
 		gc.setFont( Theme.get().getFont( 8 ) );
 		text.setRightAligned( false );
 		text.println( "Expected objects: " + this.strExpectedObjects );
-
-//		text.println( "Source Data:" );
-//		text.println( this.strData );
 	}
 
 	
