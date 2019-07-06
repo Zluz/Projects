@@ -19,7 +19,8 @@ import jmr.util.SystemUtil;
 
 public class ImageCapture {
 	
-	public final static long TIME_TIMEOUT = 20L; // 4 seconds per picture
+	public final static long TIME_TIMEOUT_STARTUP = 60L;
+	public final static long TIME_TIMEOUT_CAPTURE = 20L;
 
 
 	public static void capture( final String strName ) {
@@ -144,7 +145,7 @@ public class ImageCapture {
 			System.out.println( "Running in a single pass." );
 		}
 
-		SelfDestruct.setTime( TIME_TIMEOUT, "Timeout while starting up." );
+		SelfDestruct.setTime( TIME_TIMEOUT_STARTUP, "Timeout while starting up." );
 
 //		com.github.sarxos.webcam.ds.buildin.natives.OpenIMAJGrabber.class.getName();
 //		new OpenIMAJGrabber();
@@ -182,7 +183,7 @@ public class ImageCapture {
 						"capture_vid" + i + "-t" + lTimeNow + ".jpg" );
 
 				final String strName = webcam.getName();
-				SelfDestruct.setTime( TIME_TIMEOUT, 
+				SelfDestruct.setTime( TIME_TIMEOUT_CAPTURE, 
 						"Timeout on still capture of \"" + strName + "\"." );
 				
 				capture( webcam, file );

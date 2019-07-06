@@ -41,6 +41,7 @@ import jmr.SessionPath;
 import jmr.pr124.ImageCapture;
 import jmr.pr125.PostStillsContinuous;
 import jmr.pr125.PostStillsContinuous.PostStillsListener;
+import jmr.pr130.DeletionScheduleUI.Schedule;
 import jmr.s2db.Client;
 import jmr.s2db.comm.ConnectionProvider;
 import jmr.s2db.job.JobType;
@@ -168,6 +169,7 @@ public class CameraSchedulerUI {
 				}
 				
 				text.setText( sb.toString() );
+				text.setSelection( sb.length() );
 			}
 		});
 	}
@@ -318,6 +320,53 @@ public class CameraSchedulerUI {
 	}
 	
 	
+	private void resetCapture() {
+		
+//		bActive = false;
+		
+		captureStop();
+		
+		try {
+			TimeUnit.SECONDS.sleep( 10 );
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		final Process process;
+		final String strCommand = "cmd.exe /c taskkill "
+				+ "/fi \"imagename eq werfault.exe\" /F";
+		try {
+			process = Runtime.getRuntime().exec( strCommand );
+			System.out.println( "Launched: " + strCommand );
+			process.waitFor( 6, TimeUnit.SECONDS );
+			if ( ! process.isAlive() ) {
+				final int iExitValue = process.exitValue();
+				System.out.println( 
+						"Process returned, exit value = " + iExitValue );
+			} else {
+				System.out.println( "WARNING: TASKKILL process "
+						+ "did not complete in expected time." );
+			}
+		} catch ( final IOException e ) {
+			e.printStackTrace();
+		} catch ( final InterruptedException e ) {
+			e.printStackTrace();
+		}
+
+		
+		
+		try {
+			TimeUnit.SECONDS.sleep( 10 );
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		captureStart();
+	}
+	
+	
 	private void processNewFile( final File file,
 								 final TraceMap mapData ) {
 		
@@ -335,6 +384,9 @@ public class CameraSchedulerUI {
 		} catch ( final IOException e ) {
 			log( "Failed to copy file, encountered " + e.toString() );
 			e.printStackTrace();
+			
+			resetCapture();
+			return;
 		}
 		
 		final String strFilenameBase = 
@@ -352,7 +404,15 @@ public class CameraSchedulerUI {
 		final char cCameraIndex = strFilenameBase.charAt( 
 										strFilenameBase.length() - 1 );
 		
-		mapBaseFilenames.put( cCameraIndex, strFilenameBase );
+		if ( ! mapBaseFilenames.containsKey( cCameraIndex ) ) {
+			mapBaseFilenames.put( cCameraIndex, strFilenameBase );
+			final DeletionScheduleUI scheduler = DeletionScheduleUI.get();
+
+			scheduler.addSchedule( new Schedule( 
+						SessionPath.getSessionDir(), 
+						"capture_vid" + cCameraIndex + "-t.............", 
+						24 * 3600 ) );
+		}
 		
 		if ( ! fileConfig.isFile() ) {
 			log( "ERROR - Missing configuration file: " 
@@ -493,6 +553,7 @@ public class CameraSchedulerUI {
 	
 	
 	public void captureStart() {
+		CameraSchedulerUI.log( "--- captureStart()" );
 		this.bActive = true;
 		if ( null!=this.post ) {
 			this.post.setListener( null );
@@ -504,8 +565,12 @@ public class CameraSchedulerUI {
 	}
 	
 	public void captureStop() {
-		this.bActive = false;
 		CameraSchedulerUI.log( "--- captureStop()" );
+		this.bActive = false;
+		if ( null!=this.post ) {
+			this.post.setListener( null );
+			this.post.stop();
+		}
 	}
 	
 	

@@ -156,6 +156,8 @@ public class PostStillsContinuous {
 					}
 					bRunning = false;
 					
+					kill_pr124Processes();
+					
 				} catch ( final IOException e ) {
 					e.printStackTrace();
 					bRunning = false;
@@ -177,6 +179,30 @@ public class PostStillsContinuous {
 	}
 	
 	
+	
+	protected void kill_pr124Processes() {
+		final String strCommand = "cmd.exe /c taskkill "
+				+ "/fi \"imagename eq java.exe\" "
+				+ "/fi \"memusage lt 80000\" /F";
+		try {
+			process = Runtime.getRuntime().exec( strCommand );
+			System.out.println( "Launched: " + strCommand );
+			process.waitFor( 6, TimeUnit.SECONDS );
+			if ( ! process.isAlive() ) {
+				final int iExitValue = process.exitValue();
+				System.out.println( 
+						"Process returned, exit value = " + iExitValue );
+			} else {
+				System.out.println( "WARNING: TASKKILL process "
+						+ "did not complete in expected time." );
+			}
+		} catch ( final IOException e ) {
+			e.printStackTrace();
+		} catch ( final InterruptedException e ) {
+			e.printStackTrace();
+		}
+	}
+
 	
 	public void stop() {
 		bForceStop = true;
