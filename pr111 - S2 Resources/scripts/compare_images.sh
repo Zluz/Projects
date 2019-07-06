@@ -7,22 +7,39 @@ export RHS=$2
 export MASK=$3
 
 # validate source image files
-# export LHS_CHECK=`/usr/bin/identify $LHS | grep JPEG | wc -l`
+
+export LHS_ZEROES=`hexdump $LHS | head -1100 | tail -1000 | grep ' 0000 0000 0000 ' | wc -l`
+if [ ! "$LHS_ZEROES" -eq "0" ]; then
+	echo ""
+	echo "Comparison aborted. Image file corrupt (zeroes): $LHS"
+	echo ""
+	exit 100
+fi
+
+export RHS_ZEROES=`hexdump $RHS | head -1100 | tail -1000 | grep ' 0000 0000 0000 ' | wc -l`
+if [ ! "$RHS_ZEROES" -eq "0" ]; then
+	echo ""
+	echo "Comparison aborted. Image file corrupt (zeroes): $RHS"
+	echo ""
+	exit 100
+fi
+
+
 export LHS_ERRORS=`/usr/bin/identify -verbose $LHS 2>&1`
 export LHS_CHECK=`echo $LHS_ERRORS | grep @ | wc -l`
 if [ ! "$LHS_CHECK" -eq "0" ]; then
 	echo ""
-	echo "Comparison aborted. Image file corrupt: $LHS"
+	echo "Comparison aborted. Image file corrupt (identify): $LHS"
 	echo ""
 	echo $LHS_ERRORS
 	exit 100
 fi
-# export RHS_CHECK=`/usr/bin/identify $RHS | grep JPEG | wc -l`
+
 export RHS_ERRORS=`/usr/bin/identify -verbose $RHS 2>&1`
 export RHS_CHECK=`echo $RHS_ERRORS | grep @ | wc -l`
 if [ ! "$RHS_CHECK" -eq "0" ]; then
 	echo ""
-	echo "Comparison aborted. Image file corrupt: $RHS"
+	echo "Comparison aborted. Image file corrupt (identify): $RHS"
 	echo ""
 	echo $RHS_ERRORS
 	exit 100
@@ -37,6 +54,11 @@ if [ "$#" -eq 3 ] && [ -f $MASK ]; then
 	/usr/bin/composite $1 $MASK $MASK $LHS
 	/usr/bin/composite $2 $MASK $MASK $RHS
 fi
+
+
+/usr/bin/convert $LHS -set colorspace Gray -separate -average -auto-gamma -auto-level $LHS
+/usr/bin/convert $RHS -set colorspace Gray -separate -average -auto-gamma -auto-level $RHS
+
 
 export CMD="/usr/bin/compare -verbose -metric MAE  $LHS $RHS null:"
 export OUT1=`$CMD 2>&1`
