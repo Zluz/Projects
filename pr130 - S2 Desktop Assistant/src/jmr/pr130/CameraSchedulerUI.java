@@ -79,7 +79,8 @@ public class CameraSchedulerUI {
 
 	
 	final Map<Character,File> mapPreviousFile = new HashMap<>();
-	final Map<String,Map<String,String>> mapConfig = new HashMap<>();
+	final Map<String,Map<String,String>> mapConfigMap = new HashMap<>();
+	final Map<String,Long> mapConfigTimestamp = new HashMap<>();
 	final Map<Character,String> mapBaseFilenames = new HashMap<>();
 	
 	boolean bActive;
@@ -231,7 +232,7 @@ public class CameraSchedulerUI {
 			}
 		});
 		
-		shell.setSize( 1100, 800 );
+		shell.setSize( 1090, 540 );
 		shell.layout();
 		
 		final Image image = S2TrayIcon.getS2Icon();
@@ -296,17 +297,26 @@ public class CameraSchedulerUI {
 	
 	final Map<String,String> getConfigForCamera( final File file ) {
 		if ( null==file ) return Collections.emptyMap();
-		
+
+		final long lTimestamp = file.lastModified();
+
 		final String strFilename = file.getAbsolutePath();
 		
-		if ( ! mapConfig.containsKey( strFilename ) ) {
+		boolean bReadFile = false;
+		bReadFile = bReadFile || ( ! mapConfigMap.containsKey( strFilename ) );
+		bReadFile = bReadFile 
+					|| ( lTimestamp != mapConfigTimestamp.get( strFilename ) );
+		
+		if ( bReadFile ) {
 			try {
+				log( "Loading config file: " + strFilename );
 				final String strConfig = FileUtils.readFileToString( 
 									file, Charset.defaultCharset() );
 				final Map<String,String> map = 
 									TextUtils.getMapFromIni( strConfig );
 				
-				mapConfig.put( strFilename, map );
+				mapConfigMap.put( strFilename, map );
+				mapConfigTimestamp.put( strFilename, lTimestamp );
 				return map;
 			} catch ( final IOException e ) {
 				log( "ERROR (" + e.toString() + ") - "
@@ -316,7 +326,7 @@ public class CameraSchedulerUI {
 			}
 
 		}
-		return mapConfig.get( strFilename );
+		return mapConfigMap.get( strFilename );
 	}
 	
 	

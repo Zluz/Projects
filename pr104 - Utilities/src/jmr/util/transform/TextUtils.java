@@ -1,6 +1,9 @@
 package jmr.util.transform;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +23,21 @@ public class TextUtils {
 			}
 		}
 		return map;
+	}
+	
+	public static String convertMapToString( final Map<String,String> map ) {
+		final StringBuilder sb = new StringBuilder();
+		if ( null!=map && ! map.isEmpty() ) {
+			final List<String> list = new LinkedList<>( map.keySet() );
+			Collections.sort( list );
+			for ( final String strKey : list ) {
+				sb.append( strKey );
+				sb.append( "=" );
+				sb.append( map.get( strKey ) );
+				sb.append( "\n" );
+			}
+		}
+		return sb.toString();
 	}
 	
 	public static void main( final String[] args ) {

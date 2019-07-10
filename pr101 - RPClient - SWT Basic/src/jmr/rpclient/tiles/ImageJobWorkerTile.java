@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -16,7 +17,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -85,6 +88,7 @@ public class ImageJobWorkerTile extends TileBase {
 	String strFilename = null;
 	Job job = null;
 	
+
 	
 	
 	public ImageJobWorkerTile( final String strIndex,
@@ -118,6 +122,7 @@ public class ImageJobWorkerTile extends TileBase {
 			}
 		}
 	}
+
 	
 	
 	private static List<Job> list = new LinkedList<Job>();
@@ -553,52 +558,70 @@ public class ImageJobWorkerTile extends TileBase {
 		System.out.println( "--- scan() - 5.0 - bReady = " + bReady );
 
 		if ( bReady ) {
-			
+
+			System.out.println( "--- scan() - 5.1 - bReady = " + bReady );
+
 			final File filePrevious = new File( getFilenamePrevious() );
 			final File fileCurrent = new File( getFilenameCurrent() );
 			final File fileMask = new File( getFilenameMask() );
-			
+
+			System.out.println( "--- scan() - 5.1.1" );
+
 			this.state = State.EXECUTING_COMPARISON;
 			final Float fDiff = getImageDifference( 
 							filePrevious, fileCurrent, fileMask, strPrefix );
 			this.state = State.POST_COMPARISON;
 
+			System.out.println( "--- scan() - 5.1.3 - fDiff = " + fDiff );
+
 			trace.put( "diff-value", fDiff );
 
 			this.iCountCompleted++;
 
-			System.out.println( "--- scan() - 5.1 - bReady = " + bReady );
+			System.out.println( "--- scan() - 5.1.6" );
 
 			if ( null != fDiff ) {
 				
-				System.out.println( strPrefix + "Comparison result: " + fDiff );
+//				System.out.println( strPrefix + "Comparison result: " + fDiff );
 
 				System.out.println( "--- scan() - 5.2 - bReady = " + bReady );
 				
-				final float fChoke;
-				long lDuration = TimeUnit.HOURS.toMillis( 2 );
-				try {
-					final Object objValue = trace.get( "live.time_last_change" );
-					if ( null!=objValue ) {
-						lLastChange = Long.parseLong( objValue.toString() );
-					}
-					lDuration = lTimeNow - lLastChange;
-				} catch ( final NumberFormatException e ) {
-					// ignore
-				}
-				fChoke = (float)lDuration / 1000000000;
-				
+//				final float fChoke;
+//				long lDuration = TimeUnit.HOURS.toMillis( 2 );
+//				try {
+//					final Object objValue = trace.get( "live.time_last_change" );
+//					if ( null!=objValue ) {
+//						lLastChange = Long.parseLong( objValue.toString() );
+//					}
+//					lDuration = lTimeNow - lLastChange;
+//				} catch ( final NumberFormatException e ) {
+//					// ignore
+//				}
+//				fChoke = (float)lDuration / 1000000;
+//				
+//
+//				trace.put( "duration-to-last", lDuration );
+//				trace.put( "duration-to-last-minutes", 
+//						TimeUnit.MILLISECONDS.toMinutes( lDuration ) );
+//				trace.put( "threshold-choke", fChoke );
 
-				trace.put( "duration-to-last", lDuration );
-				trace.put( "duration-to-last-minutes", 
-						TimeUnit.MILLISECONDS.toMinutes( lDuration ) );
-				trace.put( "threshold-choke", fChoke );
-
-				final float fThresholdAdjusted = (float)fThreshold - fChoke;
+//				final float fThresholdAdjusted = (float)fThreshold - fChoke;
+//				final float fThresholdAdjusted = fThreshold;
 				
+				final Double dRecentAverage = evaluateRecentAverage( trace );
+				
+				trace.put( "recent-average", dRecentAverage );
+				
+				final Double fThresholdAdjusted = 
+						null!=dRecentAverage ? ( dRecentAverage * 1.6 ) : null;
+				
+				System.out.println( strPrefix + "Comparison result : " + fDiff );
+				System.out.println( strPrefix + "Recent Average    : " + dRecentAverage );
+				System.out.println( strPrefix + "Threshold         : " + fThresholdAdjusted );
+
 				trace.put( "threshold-adjusted", fThresholdAdjusted );
 
-				{
+				if ( null!=fThresholdAdjusted ) {
 					final Graph graph = HistogramTile.getGraph( 
 									"IMAGE_CHANGE_VALUE_" + strIndex );
 					graph.add( fDiff );
@@ -607,7 +630,7 @@ public class ImageJobWorkerTile extends TileBase {
 
 				System.out.println( "--- scan() - 5.3 - bReady = " + bReady );
 				
-				if ( fDiff >= fThresholdAdjusted ) {
+				if ( null!=fThresholdAdjusted && fDiff >= fThresholdAdjusted ) {
 					
 					System.out.println( "Change above threshold.   "
 							+ String.format( 
@@ -622,7 +645,7 @@ public class ImageJobWorkerTile extends TileBase {
 					this.iCountChanged++;
 //						final long lChangeElapsed = lTimeNow - lLastChange;
 					
-					System.out.println( "Change above threshold. Reporting.." );
+					System.out.println( ">>>>> Change above threshold. Reporting.." );
 					this.reportChangeDetected( strName,
 								fileCurrent, filePrevious, strWorkDir,
 								lSourceFileTimestamp, 
@@ -638,7 +661,7 @@ public class ImageJobWorkerTile extends TileBase {
 					
 				System.out.println( JsonUtils.report( trace ) );
 
-					
+				saveLiveData( strSourceImage, fDiff, trace );
 				
 			} else {
 				System.out.println( strPrefix + "Comparison process failed." );
@@ -656,6 +679,113 @@ public class ImageJobWorkerTile extends TileBase {
 		this.strFilename = null;
 		this.job = null;
 		return true;
+	}
+	
+	
+	
+	private Double evaluateRecentAverage( final TraceMap trace ) {
+		if ( null==trace ) return null;
+		if ( trace.isEmpty() ) return null;
+		
+//		System.out.println( "--- evaluateRecentAverage()" );
+		
+		final TreeMap<String,Float> map = new TreeMap<>();
+		for ( final Entry<String, Object> entry : trace.entrySet() ) {
+			final String strKey = entry.getKey();
+			if ( strKey.startsWith( "live.t" ) ) {
+				String strValue = entry.getValue().toString();
+				
+//				System.out.println( "\tstrValue (1) = " + strValue );
+				
+//				strValue = StringUtils.substringBetween( strValue, "\"" );
+//
+//				System.out.println( "\tstrValue (2) = " + strValue );
+				
+				if ( StringUtils.isNotBlank( strValue ) ) {
+					try {
+						final Float fValue = Float.valueOf( strValue );
+						final String strNewKey = 
+								StringUtils.substringAfter( strKey, "t" );
+						map.put( strNewKey, fValue );
+					} catch ( final NumberFormatException e ) {
+						// just skip for now..
+//						System.out.println( "NFE: " + strValue );
+					}
+				} else {
+//					System.out.println( "Blank: " + strValue );
+				}
+			}
+		}
+
+//		System.out.println( "TreeMap size: " + map.size() );
+
+		double fSum = 0.0;
+		double fDiv = 0.0;
+		double fWeight = 1.0;
+		for ( final Entry<String, Float> entry : map.entrySet() ) {
+			final float fValue = entry.getValue();
+			fSum = fSum + ( fWeight * fValue );
+			fDiv = fDiv + fWeight;
+			fWeight = fWeight * 0.8;
+		}
+		
+		final double dAverage = fSum / fDiv;
+		System.out.println( "dAverage: " + dAverage );
+		return dAverage;
+	}
+
+
+	
+	
+	private void saveLiveData( final String strSourceImage,
+							   final float fDiff,
+							   final TraceMap trace ) {
+
+		final String strFilename = trace.get( "file_live" ).toString();
+//		final String strLastReport = trace.get( "live.last_report" ).toString(); 
+		
+//		final Map<String,String> mapLive = new HashMap<>();
+//		for ( final Entry<String, Object> entry : trace.entrySet() ) {
+//			final String strKey = entry.getKey();
+//			if ( strKey.startsWith( "live." ) ) {
+//				mapLive.put( strKey.substring( 5 ), entry.getValue().toString() );
+//			}
+//		}
+//		
+//		final String strContent = TextUtils.convertMapToString( mapLive );
+//		FileUtil.saveToFile( fileLive, strContent );
+
+//		final String strLine = "" + lNow + "=" + fDiff;
+
+		String strIndex = strSourceImage;
+		strIndex = StringUtils.substringAfterLast( strIndex, "-" );
+		strIndex = StringUtils.removeEnd( strIndex, ".jpg" );
+		final String strLine = strIndex + "=" + fDiff;
+		final long lMinLen = strLine.length();
+		
+		boolean bSaved = false;
+		do {
+			final File fileLive = new File( strFilename );
+			final long lModOriginal = fileLive.lastModified();
+			final String strOriginal = FileUtil.readFromFile( fileLive );
+			
+			final List<String> list = new LinkedList<>( 
+							Arrays.asList( strOriginal.split( "\\n" ) ) );
+			list.add( strLine );
+			Collections.sort( list );
+			while ( list.size() > 10 ) {
+				list.remove( 0 );
+			}
+			final String strUpdated = String.join( "\n", list );
+			
+			final long lModNow = new File( strFilename ).lastModified();
+			if ( lModOriginal == lModNow ) {
+				do {
+					bSaved = FileUtil.saveToFile( fileLive, strUpdated );
+				} while ( new File( strFilename ).length() < lMinLen );
+			}
+			
+		} while ( ! bSaved );
 	}
 	
 	
@@ -780,8 +910,9 @@ public class ImageJobWorkerTile extends TileBase {
 
 		text.addSpace( 10 );
 		final StringBuilder sbName = new StringBuilder();
-		if ( null != this.job ) {
-			sbName.append( ""+ this.job.getJobSeq() + ": " );
+		final Job jobLocal = this.job;
+		if ( null != jobLocal ) {
+			sbName.append( ""+ jobLocal.getJobSeq() + ": " );
 			if ( null!=strName ) {
 				sbName.append( strName );
 			}
@@ -792,8 +923,9 @@ public class ImageJobWorkerTile extends TileBase {
 		
 		gc.setFont( Theme.get().getFont( 8 ) );
 		final StringBuilder sbFile = new StringBuilder();
-		if ( null != this.strFilename ) {
-			sbFile.append( "../" + strFilename.substring( 16 ) );
+		final String strFilenameLocal = this.strFilename;
+		if ( null != strFilenameLocal ) {
+			sbFile.append( "../" + strFilenameLocal.substring( 16 ) );
 		} else {
 			sbFile.append( "<none>" );
 		}
