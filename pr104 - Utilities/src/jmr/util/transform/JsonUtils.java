@@ -30,7 +30,15 @@ public class JsonUtils {
 		return transformJsonToMap( element.getAsJsonObject() );
 	}
 		
-	final static private Gson GSON = new Gson();
+
+//	final static private Gson GSON = new Gson();
+	final static private Gson GSON;
+	
+	static {
+		final GsonBuilder gb = new GsonBuilder();
+		GSON = gb.serializeSpecialFloatingPointValues().create();
+	}
+	
 	
 
 	public static Map<String,Object> transformJsonToMap( 
@@ -108,8 +116,10 @@ public class JsonUtils {
 				// just fall back to object
 			}
 		}
-		final Gson gson = new Gson();
-		return gson.toJson( obj );
+//		final Gson gson = new Gson();
+//		final GsonBuilder gb = new GsonBuilder();
+//		final Gson gson = gb.serializeSpecialFloatingPointValues().create();
+		return GSON.toJson( obj );
 	}
 	
 	

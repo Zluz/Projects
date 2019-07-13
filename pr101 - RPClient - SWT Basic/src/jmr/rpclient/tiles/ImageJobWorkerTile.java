@@ -153,10 +153,7 @@ public class ImageJobWorkerTile extends TileBase {
 					ImageJobWorkerTile.list.addAll( list );
 				}
 
-				System.out.println( "Query returned " + list.size() + " rows" );
-				
 			} while ( bActive );
-			
 		};
 	};
 	
@@ -517,6 +514,7 @@ public class ImageJobWorkerTile extends TileBase {
 					FileUtils.copyFile( fileSource, fileTmpCurrent );
 					lSourceFileTimestamp = fileSource.lastModified();
 				} else {
+					System.out.println( "Source image file is missing." );
 					this.state = State.FAULT;
 					// file probably just moved
 					bReady = false;
@@ -527,6 +525,7 @@ public class ImageJobWorkerTile extends TileBase {
 				if ( filePrevious.exists() ) {
 					FileUtils.copyFile( filePrevious, fileTmpPrevious );
 				} else {
+					System.out.println( "Previous image file is missing." );
 					this.state = State.FAULT;
 					// file probably just moved
 					bReady = false;
@@ -585,6 +584,17 @@ public class ImageJobWorkerTile extends TileBase {
 //				System.out.println( strPrefix + "Comparison result: " + fDiff );
 
 				System.out.println( "--- scan() - 5.2 - bReady = " + bReady );
+
+				Double dAvgMultiplier = 1.8;
+				try {
+					final Object objValue = trace.get( 
+										"config.change_average_multiplier" );
+					if ( null!=objValue ) {
+						dAvgMultiplier = Double.parseDouble( objValue.toString() );
+					}
+				} catch ( final NumberFormatException e ) {
+					// ignore
+				}
 				
 //				final float fChoke;
 //				long lDuration = TimeUnit.HOURS.toMillis( 2 );
@@ -612,12 +622,14 @@ public class ImageJobWorkerTile extends TileBase {
 				
 				trace.put( "recent-average", dRecentAverage );
 				
-				final Double fThresholdAdjusted = 
-						null!=dRecentAverage ? ( dRecentAverage * 1.6 ) : null;
+				final Double fThresholdAdjusted = null!=dRecentAverage 
+										? ( dRecentAverage * dAvgMultiplier ) 
+										: null;
 				
-				System.out.println( strPrefix + "Comparison result : " + fDiff );
-				System.out.println( strPrefix + "Recent Average    : " + dRecentAverage );
+				System.out.println( strPrefix + "Recent Average    : " + dRecentAverage 
+									+ "   multiplier: " + dAvgMultiplier );
 				System.out.println( strPrefix + "Threshold         : " + fThresholdAdjusted );
+				System.out.println( strPrefix + "Comparison result : " + fDiff );
 
 				trace.put( "threshold-adjusted", fThresholdAdjusted );
 

@@ -878,7 +878,16 @@ public class Simple implements RulesConstants {
 			System.out.println( "Map does not contain 'file-changed'" );
 			return;
 		}
-		
+
+		final Object objCameraName = map.get( "config.name" );
+		final String strCameraName = null!=objCameraName 
+					? objCameraName.toString() : "<no name found>";
+					
+		// strName seems to match strCameraName
+					
+        System.out.println( "Camera: " + strCameraName );
+
+        
 		String strFileChanged = objFileChanged.toString();
 		strFileChanged = StringUtils.replace( 
 				strFileChanged, "\\Share\\Sessions\\", "S:\\Sessions\\" );
@@ -935,6 +944,28 @@ public class Simple implements RulesConstants {
 //				strReportArr[0] = vss.getAnalysisReport();
 //			}
 //		});
+		
+		
+		
+		
+		
+		final Object objVisionAnalysis = map.get( "config.vision_analysis" );
+		if ( objVisionAnalysis instanceof String ) {
+			final String strVisionAnalysis = objVisionAnalysis.toString();
+			if ( ! strVisionAnalysis.contains( "google" ) ) {
+				System.out.println( "Image analysis through "
+						+ "Google Vision disabled. Returning." );
+				return;
+			}
+		}
+		
+		
+		//abort
+//		if ( 1==1 ) return;
+		
+		
+		
+		
 		
 		final String[] strCommand = {
 				"java.exe",
