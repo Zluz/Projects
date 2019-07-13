@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.xml.ws.http.HTTPException;
+//import javax.xml.ws.http.HTTPException;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -91,7 +91,8 @@ public class ContentRetriever {
 		
 		final int iCode = conn.getResponseCode();
 		if ( iCode<200 || iCode>=300 ) {
-			throw new HTTPException( iCode ); 
+//			throw new HTTPException( iCode );
+			throw new RuntimeException( "Exception, HTTP " + iCode );
 			//( "HTTP code " + iCode + " received " + "for URL " + strURL );
 		}
 		

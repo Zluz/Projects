@@ -23,5 +23,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/pr104 - Utilities"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr125 - S2 Camera Capture"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr105 - S2DB"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr117 - S2 - System Tools"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
