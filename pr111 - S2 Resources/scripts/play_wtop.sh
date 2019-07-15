@@ -50,7 +50,8 @@ sleep 10s
 
 xdotool windowfocus $WID
 xdotool windowactivate $WID
-xdotool mousemove 972 474 click 1
+# xdotool mousemove 972 474 click 1
+xdotool mousemove 936 384 click 1
 
 echo "Sleeping for 12s.."
 sleep 12
@@ -66,7 +67,8 @@ do
 
 		xdotool windowfocus $WID
 		xdotool windowactivate $WID
-		xdotool mousemove 972 474 click 1
+		# xdotool mousemove 972 474 click 1
+		xdotool mousemove 936 384 click 1
 		sleep 3
 		echo "#JSON  {\"caption\":\"Checking playback\",\"status\":\"warning\"}"
 		sleep 1
