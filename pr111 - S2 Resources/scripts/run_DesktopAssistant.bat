@@ -11,7 +11,7 @@ if exist D:\TEMP set TEMP=D:\TEMP
 if exist D:\TEMP set TMP=D:\TEMP
 if exist D:\TEMP cd /d D:\TEMP
 
-set PR130_JAR=pr130_20190630_004.jar
+set PR130_JAR=pr130_20190706_002.jar
 
 if not exist D:\TEMP\%PR130_JAR% copy S:\Development\Export\%PR130_JAR% D:\TEMP
 
