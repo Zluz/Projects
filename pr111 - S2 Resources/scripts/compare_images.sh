@@ -78,8 +78,10 @@ fi
 # export LHS="$LHS_grey"
 # export RHS="$RHS_grey"
 
-/usr/bin/convert $LHS -canny 0x08+16%+55% -negate "$LHS"_edge
-/usr/bin/convert $RHS -canny 0x08+16%+55% -negate "$RHS"_edge
+#/usr/bin/convert $LHS -canny 0x08+16%+55% -negate "$LHS"_edge
+#/usr/bin/convert $RHS -canny 0x08+16%+55% -negate "$RHS"_edge
+/usr/bin/convert $LHS -canny 0x02+06%+55% -negate "$LHS"_edge
+/usr/bin/convert $RHS -canny 0x02+06%+55% -negate "$RHS"_edge
 #/usr/bin/convert $LHS -canny 0x06+16%+62% -negate $LHS
 #/usr/bin/convert $RHS -canny 0x06+16%+62% -negate $RHS
 export LHS="$LHS"_edge
@@ -123,4 +125,18 @@ echo $OUT1
 #echo $OUT3
 #echo $OUT2
 #echo $OUT1
+
+export LOG="/tmp/compare_images.out"
+echo "compare_images output" > $LOG
+echo >> $LOG
+echo "Command:" >> $LOG
+echo "$CMD" >> $LOG
+echo >> $LOG
+echo "Output:" >> $LOG
+echo "$OUT4" >> $LOG
+echo >> $LOG
+echo "Processing:" >> $LOG
+echo "$OUT1" >> $LOG
+
+
 
