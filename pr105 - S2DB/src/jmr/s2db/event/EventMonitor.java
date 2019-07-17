@@ -1,7 +1,6 @@
 package jmr.s2db.event;
 
 import java.lang.ref.WeakReference;
-import java.net.BindException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -11,11 +10,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import jmr.pr126.comm.http.HttpListener;
+import jmr.pr126.comm.http.HttpListener.Listener;
 import jmr.s2db.Client.ClientType;
 import jmr.s2db.comm.Notifier;
 import jmr.s2db.tables.Event;
-
-import static jmr.pr126.comm.http.HttpListener.Listener;
 
 
 /**
@@ -52,12 +50,12 @@ public class EventMonitor {
 	private static Listener listener = new Listener() {
 		@Override
 		public void received( final Map<String, Object> map ) {
-			System.out.println( "--- EventMonitor HttpListener.received()" );
+//			System.out.println( "--- EventMonitor HttpListener.received()" );
 			if ( Notifier.EVENT_TABLE_UPDATE.equals( map.get( "event" ) ) ) {
 				if ( "event".equals( map.get( "table" ) ) ) {
-					System.out.print( "\tScanning for new events..." );
+//					System.out.print( "\tScanning for new events..." );
 					scanNewEvents();
-					System.out.println( "Done." );
+//					System.out.println( "Done." );
 				}
 			}
 		}

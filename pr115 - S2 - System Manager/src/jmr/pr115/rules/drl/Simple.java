@@ -17,6 +17,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -208,8 +210,16 @@ public class Simple implements RulesConstants {
 				final String strPrettyCombined = JsonUtils.getPretty( jo );
 				strbuf.append( strPrettyCombined );
 				
-				SendMessage.send( MessageType.EMAIL, 
-						"Tesla Combined JSON", strbuf.toString() );
+				final String strSubject = "Tesla Combined JSON";
+				try {
+					SendMessage.send( MessageType.EMAIL, 
+											strSubject, strbuf.toString() );
+				} catch ( final Exception e ) {
+					LOGGER.warning( ()-> 
+							"Failed to send email \"" + strSubject + "\"." );
+				}
+				
+				System.out.println( "Saving Tesla data to GCS" );
 				
 				CloudUtilities.saveJson( "TESLA_Combined.json", 
 							strPrettyCombined, ContentType.APP_JSON, null );
@@ -850,19 +860,89 @@ public class Simple implements RulesConstants {
 		thread.start();
 	}
 	
+	
+	final static int MAX_VISION_ANALYSIS = 1;
+	
+	final static ThreadPoolExecutor executorImageProcessing = 
+					(ThreadPoolExecutor) Executors.newFixedThreadPool( 
+											MAX_VISION_ANALYSIS );
+	
+	final static List<Long> RECENT_VISION_REQUESTS = new LinkedList<>();
+	
+	final static long SAFE_INTERVAL = TimeUnit.MINUTES.toMillis( 10 );
+	final static long BLACKOUT_INTERVAL = TimeUnit.MINUTES.toMillis( 60 );
+	static long lBlackoutPeriod = 0L;
 
+	
 	public static void performObjectDetection( final Event event ) {
 		if ( null==event ) return;
+
+		final long lNow = System.currentTimeMillis();
+
+		if ( lNow < lBlackoutPeriod ) {
+			// still penalized
+			LOGGER.info( "Skipping vision analysis: still in blackout." );
+			return;
+		}
 		
-		final String strName = event.getValue();
+		RECENT_VISION_REQUESTS.add( lNow );
+		if ( RECENT_VISION_REQUESTS.size() > 3 ) {
+
+			while ( RECENT_VISION_REQUESTS.size() > 3 ) {
+				RECENT_VISION_REQUESTS.remove( 0 );
+			}
+
+			final long lOldest = RECENT_VISION_REQUESTS.get( 0 );
+			final long lElapsed = lNow - lOldest;
+			
+			
+			if ( lElapsed < SAFE_INTERVAL ) {
+				// bad
+				
+				final String strReason = "Too many vision requests. "
+						+ "Marking blackout period.";
+				
+				lBlackoutPeriod = lNow + BLACKOUT_INTERVAL;
+				LOGGER.severe( strReason );
+				
+				final String strValue = "" 
+							+ TimeUnit.MILLISECONDS.toMinutes( lElapsed ) 
+							+ " minutes";
+				
+				final Event eventBlackout = 
+						Event.add( EventType.SYSTEM, "VA_BLACKOUT", 
+						strValue, event.getThreshold(), 
+						(Map)null, // event.getDataAsMap(),
+						lNow, null, null, null );
+				System.out.println( "Blackout Event: " 
+								+ eventBlackout.getEventSeq()
+								+ ", value reported: " + strValue );
+				
+				return;
+			} else {
+				LOGGER.info( "Time since oldest VA request: " 
+							+ TimeUnit.MILLISECONDS.toMinutes( lElapsed ) 
+							+ " minutes." );
+			}
+		}
 		
-		final Thread thread = new Thread( "Processing Image: " + strName ) {
+//		final String strName = event.getValue();
+		
+//		final Thread thread = new Thread( "Processing Image: " + strName ) {
+		final Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
 				performObjectDetectionThreaded( event );
 			}
 		};
-		thread.start();
+//		thread.start();
+		
+		// dont even queue it just yet, just throw it away if already running
+		if ( executorImageProcessing.getActiveCount() < MAX_VISION_ANALYSIS ) {
+			executorImageProcessing.execute( runnable );
+		} else {
+			LOGGER.warning( "Vision analysis aborted; too many active." ); 
+		}
 	}
 	
 

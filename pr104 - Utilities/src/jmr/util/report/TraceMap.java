@@ -2,6 +2,7 @@ package jmr.util.report;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -91,6 +92,7 @@ public class TraceMap extends HashMap<String,Object> {
 		return stack[0];
 	}
 	
+	
 	public static TraceMap addFrame( final TraceMap map,
 						    		 final String strComment ) {
 		final long lNow = System.currentTimeMillis();
@@ -102,6 +104,29 @@ public class TraceMap extends HashMap<String,Object> {
 		}
 		
 		final String strPrefix = getNextFramePrefix( tm );
+		
+		Long lTimeInitial = null;
+		if ( ! "01".equals( strPrefix ) ) {
+			final Object objTimeInitial = tm.get( "01-time" );
+			if ( null!=objTimeInitial ) {
+				final String strTimeInitial = objTimeInitial.toString();
+				try {
+					lTimeInitial = Long.getLong( strTimeInitial );
+					tm.put( "no_elapsed", "lTimeInterval = " + lTimeInitial );
+				} catch ( final NumberFormatException e ) {
+					// just ignore
+					tm.put( "no_elapsed", e.toString() );
+				}
+			} else {
+				tm.put( "no_elapsed", "01-time not found" );
+			}
+		} else {
+			tm.put( "no_elapsed", "prefix is 01" );
+		}
+
+		tm.put( "keys", tm.keySet().stream()
+				.collect( Collectors.joining(",") ) );
+
 		
 		final StackTraceElement frame = getFrame();
 		
@@ -115,6 +140,10 @@ public class TraceMap extends HashMap<String,Object> {
 		tm.put( strPrefix + "-thread", Thread.currentThread().getName() );
 		if ( null!=strComment ) {
 			tm.put( strPrefix + "-comment", strComment );
+		}
+		if ( null!=lTimeInitial ) {
+			final long lElapsed = lNow - lTimeInitial;
+			tm.put( strPrefix + "-elapsed", lElapsed );
 		}
 		
 		return tm;

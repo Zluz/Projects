@@ -93,7 +93,7 @@ public class HttpListener implements HttpCommConstants {
 			@Override
 			public void received( final Map<String, Object> map ) {
 				
-				LOGGER.info( ()-> "HttpListener-Listener.received()" );
+//				LOGGER.info( ()-> "HttpListener-Listener.received()" );
 				
 				if ( null==map ) return;
 				if ( ! map.containsKey( KEY_EVENT_SUBJECT ) ) return;
@@ -187,7 +187,7 @@ public class HttpListener implements HttpCommConstants {
 		
 		if ( null!=map ) {
 			
-			LOGGER.info( ()-> "Processing data (" + map.size() + " entries)" );
+//			LOGGER.info( ()-> "Processing data (" + map.size() + " entries)" );
 			
 			for ( final Listener listener : LISTENERS ) {
 				listener.received( map );

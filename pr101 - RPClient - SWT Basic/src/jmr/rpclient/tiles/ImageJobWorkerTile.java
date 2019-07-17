@@ -595,6 +595,19 @@ public class ImageJobWorkerTile extends TileBase {
 				} catch ( final NumberFormatException e ) {
 					// ignore
 				}
+
+				Double dAvgOffset = 100.0;
+				try {
+					final Object objValue = trace.get( 
+										"config.change_average_offset" );
+					if ( null!=objValue ) {
+						dAvgOffset = Double.parseDouble( objValue.toString() );
+					}
+				} catch ( final NumberFormatException e ) {
+					// ignore
+				}
+				
+				final double dDiffAdjusted = dAvgOffset + fDiff;
 				
 //				final float fChoke;
 //				long lDuration = TimeUnit.HOURS.toMillis( 2 );
@@ -618,7 +631,8 @@ public class ImageJobWorkerTile extends TileBase {
 //				final float fThresholdAdjusted = (float)fThreshold - fChoke;
 //				final float fThresholdAdjusted = fThreshold;
 				
-				final Double dRecentAverage = evaluateRecentAverage( trace );
+				final Double dRecentAverage = 
+						evaluateRecentAverage( trace ) + dAvgOffset;
 				
 				trace.put( "recent-average", dRecentAverage );
 				
@@ -629,25 +643,25 @@ public class ImageJobWorkerTile extends TileBase {
 				System.out.println( strPrefix + "Recent Average    : " + dRecentAverage 
 									+ "   multiplier: " + dAvgMultiplier );
 				System.out.println( strPrefix + "Threshold         : " + fThresholdAdjusted );
-				System.out.println( strPrefix + "Comparison result : " + fDiff );
+				System.out.println( strPrefix + "Comparison result : " + dDiffAdjusted );
 
 				trace.put( "threshold-adjusted", fThresholdAdjusted );
 
 				if ( null!=fThresholdAdjusted ) {
 					final Graph graph = HistogramTile.getGraph( 
 									"IMAGE_CHANGE_VALUE_" + strIndex );
-					graph.add( fDiff );
+					graph.add( (float) dDiffAdjusted );
 					graph.setThresholdMax( new Double( fThresholdAdjusted ) );
 				}
 
 				System.out.println( "--- scan() - 5.3 - bReady = " + bReady );
 				
-				if ( null!=fThresholdAdjusted && fDiff >= fThresholdAdjusted ) {
+				if ( null!=fThresholdAdjusted && dDiffAdjusted >= fThresholdAdjusted ) {
 					
 					System.out.println( "Change above threshold.   "
 							+ String.format( 
 									"(diff) %.3f  >=  (threshold) %.3f", 
-									fDiff, fThresholdAdjusted ) );
+									dDiffAdjusted, fThresholdAdjusted ) );
 					
 					trace.put( "live.time_last_change", lTimeNow );
 					trace.put( "live.last-threshold-adjusted", fThresholdAdjusted );
@@ -731,14 +745,25 @@ public class ImageJobWorkerTile extends TileBase {
 
 //		System.out.println( "TreeMap size: " + map.size() );
 
+		// max and min are sanity limits
+		double fMax = 0;
+		for ( final Entry<String, Float> entry : map.entrySet() ) {
+			final float fValue = entry.getValue();
+			fMax = Math.max( fMax, fValue );
+		}
+		double fMin = fMax / 2;
+		
+		
 		double fSum = 0.0;
 		double fDiv = 0.0;
 		double fWeight = 1.0;
 		for ( final Entry<String, Float> entry : map.entrySet() ) {
 			final float fValue = entry.getValue();
-			fSum = fSum + ( fWeight * fValue );
-			fDiv = fDiv + fWeight;
-			fWeight = fWeight * 0.8;
+			if ( fValue > fMin ) {
+				fSum = fSum + ( fWeight * fValue );
+				fDiv = fDiv + fWeight;
+				fWeight = fWeight * 0.8;
+			}
 		}
 		
 		final double dAverage = fSum / fDiv;

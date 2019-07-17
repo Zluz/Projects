@@ -230,7 +230,13 @@ public class SWTBasic {
 //		s2db.register( 	NetUtil.getMAC(), strIP, 
 //	    				strSessionID, 
 //	    				strClass, now );
-		s2db.register( 	ClientType.TILE_GUI, strSessionID, strClass );
+		final Long seqSession = s2db.register( 
+							ClientType.TILE_GUI, strSessionID, strClass );
+		if ( null!=seqSession ) {
+			LOGGER.info( "Client session " + seqSession );
+		} else {
+			LOGGER.severe( "Failed to initialize client session." );
+		}
 		
 		final String strDeviceName = s2db.getThisDevice().getName();
 		final Map<String,String> 
@@ -266,9 +272,13 @@ public class SWTBasic {
 				strDeviceName, null, 
 				strData, lNow, null, null, null );
 
-		LOGGER.log( Level.INFO, "Session started. "
-				+ "IP:" + strIP + ", Session:" + strSessionID + ", "
-				+ "DEVICE_INFO Event:" + event.getEventSeq() );
+		if ( null==event ) {
+			LOGGER.severe( "Failed to create system event." );
+		} else {
+			LOGGER.log( Level.INFO, "Session started. "
+					+ "IP:" + strIP + ", Session:" + strSessionID + ", "
+					+ "DEVICE_INFO Event:" + event.getEventSeq() );
+		}
 		
 	    final TabTiles tTiles = 
 	    			new TabTiles( strDeviceName, mapOptionsNorm, false );

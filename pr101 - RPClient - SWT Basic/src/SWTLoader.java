@@ -185,6 +185,8 @@ public class SWTLoader {
 						+ strOSName + ", " + strOSArch + "." );
 			e.printStackTrace();
 			printLoadedClasses();
+			
+			Runtime.getRuntime().exit( 100 );
 		}
 	}
 	
