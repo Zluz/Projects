@@ -25,6 +25,12 @@ echo "Directory found."
 export mac_old=`/sbin/ifconfig | grep eth0 | awk '{print toupper($5)}' | sed 's/:/-/g'`
 export mac_new=`/sbin/ifconfig eth0 | grep ether | awk '{print toupper($2)}' | sed 's/:/-/g'`
 export mac=`echo $mac_old $mac_new`
+if [[ -z $mac ]]; then
+	export mac_old=`/sbin/ifconfig | grep wlan0 | awk '{print toupper($5)}' | sed 's/:/-/g'`
+	export mac_new=`/sbin/ifconfig wlan0 | grep ether | awk '{print toupper($2)}' | sed 's/:/-/g'`
+	export mac=`echo $mac_old $mac_new`
+fi
+
 echo "MAC Address: $mac"
 
 dirSession="/Share/Sessions/$mac"
