@@ -3,6 +3,7 @@ package jmr.rpclient.swt;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -19,6 +20,9 @@ import jmr.s2db.Client;
 import jmr.util.SystemUtil;
 
 public abstract class UI {
+
+	private final static Logger LOGGER = Logger.getLogger(UI.class.getName());
+
 
 	final public static Display display = new Display();
 
@@ -126,10 +130,11 @@ public abstract class UI {
 			}
 		}
     }
-    
+
     public static void emergencyShutdown( final String strReason ) {
     	System.out.println();
-		System.err.println( "Emergency shutdown" );
+    	LOGGER.severe( "Emergency shutdown" );
+//		System.err.println( "Emergency shutdown" );
 		System.err.println( strReason );
 		
 		new Thread( "Closing S2 client" ) {

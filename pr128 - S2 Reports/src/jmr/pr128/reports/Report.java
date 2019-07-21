@@ -2,37 +2,35 @@ package jmr.pr128.reports;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.IOUtils;
 
+import jmr.pr128.logical.IPDetails;
+import jmr.pr128.logical.LogicalFieldEvaluation;
+import jmr.pr128.logical.S2FSAge;
+import jmr.pr128.marking.RowMarker;
+import jmr.pr128.marking.CheckAge;
+
 public enum Report {
 
-
-//	final String strSQL = "SELECT max_start, d.name, ip_address, d.mac, "
-//			+ "class, options, comment FROM device d, "
-//			+ "( SELECT MAX( start ) max_start FROM session "
-//			+ "GROUP BY seq_device ) recent_session, session s "
-//			+ "WHERE TRUE AND ( recent_session.max_start = s.start ) "
-//			+ "AND ( s.seq_device = d.seq ) ORDER BY "
-//			+ "( recent_session.max_start ) DESC;";
-
-//	final String strSQL = "SELECT max_start, ip_address, class, d.name "
-//			+ "FROM device d, "
-//			+ "( SELECT MAX( start ) max_start FROM session "
-//			+ "GROUP BY seq_device ) recent_session, session s "
-//			+ "WHERE TRUE AND ( recent_session.max_start = s.start ) "
-//			+ "AND ( s.seq_device = d.seq ) ORDER BY "
-//			+ "( recent_session.max_start ) DESC;";
 	
 	DEVICES( 		"Devices",
 			 		"Devices_Report",
-			 		"/Device_Report.sql" ),
+			 		"/Device_Report.sql",
+			 		new LogicalFieldEvaluation[] { 
+			 					new IPDetails(),
+			 					new S2FSAge() },
+			 		new RowMarker[] {
+			 					new CheckAge() } ),
 	
 	RECENT_EVENTS( 	"Recent Events Report",
 			 		"Recent_Events",
-			 		"/Recent_Events.sql" ),
-
+			 		"/Recent_Events.sql",
+			 		null, null ),
 	;
 	
 
@@ -42,32 +40,24 @@ public enum Report {
 	
 	
 	private final String strTitle;
+	private final LogicalFieldEvaluation[] arrLFE;
+	private final RowMarker[] arrMarkers;
 	private final String strOutputFilename;
 	private final String strConfigFilename;
-//	private final String strSQL;
 	private String strSQL;
 	
 	private Report( final String strTitle,
 					final String strOutputFilename,
-					final String strConfigFilename ) {
+					final String strConfigFilename,
+					final LogicalFieldEvaluation[] arrLFE,
+					final RowMarker[] arrMarkers ) {
 		this.strTitle = strTitle;
 		this.strOutputFilename = strOutputFilename;
 		this.strConfigFilename = strConfigFilename;
 		
-//		final Charset cs = Charset.defaultCharset();
-//		String strContent;
-//		try {
-//			strContent = IOUtils.resourceToString( strConfigFilename, cs );
-//		} catch ( final IOException e ) {
-//			System.err.println( "Failed to load: " + strConfigFilename );
-//			strContent = null;
-//		}
-//		this.strSQL = strContent;
-		
-//		this.strSQL = null;
-		
 		this.strSQL = loadSQL( strConfigFilename );
-		
+		this.arrLFE = arrLFE;
+		this.arrMarkers = arrMarkers;
 	}
 	
 	
@@ -102,6 +92,28 @@ public enum Report {
 			LOGGER.severe( ()-> "Failed to load: " + strConfigFilename );
 		}
 		return this.strSQL;
+	}
+	
+	
+	public List<LogicalFieldEvaluation> getLogicalFieldEvaluations() {
+		final List<LogicalFieldEvaluation> list = new LinkedList<>();
+		if ( null!=this.arrLFE ) {
+			list.addAll( Arrays.asList( this.arrLFE ) );
+		}
+		return list;
+	}
+	
+//	public RowMarker[] getRowMarkers() {
+//		return this.arrMarkers;
+//	}
+	public RowMarker getRowMarker() {
+		if ( null==arrMarkers ) {
+			return null;
+		} else if ( arrMarkers.length > 0 ) {
+			return arrMarkers[0];
+		} else {
+			return null;
+		}
 	}
 	
 	

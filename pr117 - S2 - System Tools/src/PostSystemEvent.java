@@ -11,12 +11,13 @@ import jmr.s2db.event.EventType;
 import jmr.s2db.event.SystemEvent;
 import jmr.s2db.tables.Event;
 import jmr.util.NetUtil;
+import jmr.util.report.Reporting;
 
 public class PostSystemEvent {
 	
 	private static final boolean REGISTER_QUIET = true;
 	
-	public final static long MAX_PROCESS_TIME = TimeUnit.SECONDS.toMillis( 30 );
+	public final static long MAX_PROCESS_TIME = TimeUnit.SECONDS.toMillis( 120 );
 
 
 	public static void printHelp() {
@@ -43,6 +44,10 @@ public class PostSystemEvent {
 				try {
 					Thread.sleep( lTime );
 					System.out.println( "Process timeout elapsed. Exiting." );
+					
+					System.out.println( "Threads:" );
+					System.out.println( Reporting.reportAllThreads() );
+					
 //					Runtime.getRuntime().exit( 200 );
 					Runtime.getRuntime().halt( 200 );
 				} catch ( final InterruptedException e ) {
@@ -64,26 +69,46 @@ public class PostSystemEvent {
 		
 		startProcessTimeoutThread( MAX_PROCESS_TIME );
 		
-		final String strEvent = args[0].trim().toUpperCase();
+		final boolean bVerbose;
+		final SystemEvent se;
+		final String strParam = args[0].trim().toUpperCase();
+		if ( "VERBOSE".equalsIgnoreCase( strParam ) ) {
+			bVerbose = true;
+			se = SystemEvent.TEST_SYSTEM_EVENT;
+	    	System.out.println( "Enabled verbose output." );
+		} else {
+			bVerbose = false;
+			se = SystemEvent.getSystemEvent( strParam );
+		}
 		final long lStart = System.currentTimeMillis();
-//		final SystemEvent se = SystemEvent.valueOf( args[0] );
-		final SystemEvent se = SystemEvent.getSystemEvent( strEvent );
 		
 		if ( null==se ) {
-			System.out.println( "Invalid <SystemEvent>: " + strEvent );
+			System.out.println( "Invalid <SystemEvent>: " + strParam );
 			printHelp();
 			System.exit( 100 );
 		}
 		
+	    if ( bVerbose ) {
+	    	System.out.print( "Getting Client singleton..." );
+	    }
 		final Client client = Client.get();
+	    if ( bVerbose ) {
+	    	System.out.println( "Done." );
+	    }
 		try {
 		    final Map<String, String> mapNICs = NetUtil.getIPAddresses();
 		    final String strIP = NetUtil.getIPAddress();
 		    final String strMAC = NetUtil.getMAC();
 		    final String strClass = PostSystemEvent.class.getName();
 		    final String strSessionID = NetUtil.getSessionID();
+		    if ( bVerbose ) {
+		    	System.out.print( "Registering client..." );
+		    }
 			client.register( ClientType.TEST, strSessionID, 
 										strClass, REGISTER_QUIET );
+		    if ( bVerbose ) {
+		    	System.out.println( "Done." );
+		    }
 
 			final String strDeviceName = client.getThisDevice().getName();
 //			final Map<String,String> mapOptions = client.getThisDevice().getOptions();
@@ -101,8 +126,14 @@ public class PostSystemEvent {
 			
 			final String strData = jo.toString();
 			
+		    if ( bVerbose ) {
+		    	System.out.print( "Posting Event..." );
+		    }
 			final Event event = Event.add( EventType.SYSTEM, se.name(),
 					strMAC, "", strData, lStart, null, null, null );
+		    if ( bVerbose ) {
+		    	System.out.println( "Done." );
+		    }
 			
 			System.out.println( "Event generated" );
 			System.out.println( "\tseq\t" + event.getEventSeq() );

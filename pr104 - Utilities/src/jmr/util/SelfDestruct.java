@@ -1,8 +1,9 @@
 package jmr.util;
 
-import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+
+import jmr.util.report.Reporting;
 
 public class SelfDestruct {
 	
@@ -44,23 +45,15 @@ public class SelfDestruct {
 		threadCountDown.start();
 	};
 	
+	
+	
 	private static void shutdown( final String strMessage ) {
 		LOGGER.warning( ()-> "Ending process. " + strMessage );
 		
 		final StringBuilder sb = new StringBuilder();
 		sb.append( "Active threads:\n" );
-		for ( final Entry<Thread, StackTraceElement[]> 
-						entry : Thread.getAllStackTraces().entrySet() ) {
-			final Thread thread = entry.getKey();
-			final StackTraceElement[] stack = entry.getValue();
-//			sb.append( "\tThread: \"" + thread.getName() + "\"\n" );
-			sb.append( "\t\"" + thread.getName() + "\"\n" );
-			for ( final StackTraceElement frame : stack ) {
-				sb.append( "\t\t" + frame.getClassName() + "." 
-							+ frame.getMethodName() + "(): line " 
-							+ frame.getLineNumber() + "\n" );
-			}
-		}
+		sb.append( Reporting.reportAllThreads() );
+		
 //		LOGGER.info( ()-> sb.toString() );
 		System.out.print( sb.toString() );
 		

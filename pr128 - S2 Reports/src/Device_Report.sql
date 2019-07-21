@@ -3,9 +3,9 @@ SELECT
 	d.seq,
     d.mac,
     
-    CONCAT( TIMEDIFF( current_timestamp(), max_start ), "" ) as 'age',
-    ip_address, 
-    class, 
+    CONCAT( TIMEDIFF( current_timestamp(), max_start ), "" ) as 'age_db',
+    # ip_address, 
+    # class, 
     IF( LENGTH( d.name ) = 42, 
     			concat( substring(d.name,1,22), "\n", substring(d.name,23,100) ), 
     			d.name ) as 'name',
@@ -42,4 +42,6 @@ GROUP BY
 	d.seq
 
 ORDER BY 
-    d.mac ASC;
+    # d.mac ASC
+    d.seq ASC
+;

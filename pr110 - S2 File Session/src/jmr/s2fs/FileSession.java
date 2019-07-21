@@ -6,9 +6,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -334,6 +336,7 @@ lrwxrwxrwx 1 root root 12 Jun  1 20:55 usb-Generic_USB2.0_PC_CAMERA-video-index0
 		return getFileContents( SessionFile.IFCONFIG );
 	}
 	
+	
 	public String getIP() {
 		for ( final String line : getNetworkInterfaceInfo().split( "\n" ) ) {
 			if ( line.contains( "192.168." ) ) {
@@ -346,5 +349,42 @@ lrwxrwxrwx 1 root root 12 Jun  1 20:55 usb-Generic_USB2.0_PC_CAMERA-video-index0
 		return "(unknown)";
 	}
 	
+	
+	public Map<String,String> getIPs() {
+		String strInterface = null;
+		final Map<String,String> map = new HashMap<>();
+		for ( final String line : getNetworkInterfaceInfo().split( "\n" ) ) {
+			if ( 0==line.length() ) {
+				strInterface = null;
+			} else if ( Character.isAlphabetic( line.charAt( 0 ) ) ) {
+				final int iPosColon = line.indexOf( ":" );
+				final int iPosSpace = line.indexOf( " " );
+				final int iPos = Math.min( iPosColon, iPosSpace );
+				if ( iPos > 0 ) {
+					strInterface = line.substring( 0, iPos ).trim();
+				}
+			}
+			if ( line.contains( "192.168." ) ) {
+				String strIP = line.substring( 
+						line.indexOf( "192.168." ), line.length() );
+				strIP = strIP.substring( 0,13 ).trim();
+				map.put( strInterface, strIP );
+			}
+		}
+		return map;
+	}
+	
+	
+	public Long getUpdateTime() {
+		final File file = this.getFile( SessionFile.IFCONFIG );
+		if ( null==file ) {
+			return null;
+		} else if ( file.isFile() ) {
+			final long lModified = file.lastModified();
+			return lModified;
+		} else {
+			return null;
+		}
+	}
 	
 }

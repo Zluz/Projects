@@ -716,10 +716,11 @@ public class Simple implements RulesConstants {
 		
 		final Instant time = Instant.ofEpochMilli( System.currentTimeMillis() );
 
-		final String strSQL = report.getSQL();
+//		final String strSQL = report.getSQL();
 		final String strName = report.getOutputFilename() + ".html";
 		
-		final ReportTable table = new ReportTable( strName, strSQL );
+//		final ReportTable table = new ReportTable( strName, strSQL );
+		final ReportTable table = new ReportTable( report );
 		final StringBuilder sb = table.generateReport( Format.HTML );
 		final byte[] bytes = sb.toString().getBytes( UTF_8 );
 		
@@ -861,7 +862,7 @@ public class Simple implements RulesConstants {
 	}
 	
 	
-	final static int MAX_VISION_ANALYSIS = 1;
+	final static int MAX_VISION_ANALYSIS = 3;
 	
 	final static ThreadPoolExecutor executorImageProcessing = 
 					(ThreadPoolExecutor) Executors.newFixedThreadPool( 
@@ -869,8 +870,9 @@ public class Simple implements RulesConstants {
 	
 	final static List<Long> RECENT_VISION_REQUESTS = new LinkedList<>();
 	
-	final static long SAFE_INTERVAL = TimeUnit.MINUTES.toMillis( 10 );
-	final static long BLACKOUT_INTERVAL = TimeUnit.MINUTES.toMillis( 60 );
+	final static long SAFE_INTERVAL = TimeUnit.MINUTES.toMillis( 60 );
+	final static int SAFE_COUNT = 5;
+	final static long BLACKOUT_INTERVAL = TimeUnit.HOURS.toMillis( 2 );
 	static long lBlackoutPeriod = 0L;
 
 	
@@ -886,9 +888,9 @@ public class Simple implements RulesConstants {
 		}
 		
 		RECENT_VISION_REQUESTS.add( lNow );
-		if ( RECENT_VISION_REQUESTS.size() > 3 ) {
+		if ( RECENT_VISION_REQUESTS.size() > SAFE_COUNT ) {
 
-			while ( RECENT_VISION_REQUESTS.size() > 3 ) {
+			while ( RECENT_VISION_REQUESTS.size() > SAFE_COUNT ) {
 				RECENT_VISION_REQUESTS.remove( 0 );
 			}
 
@@ -937,7 +939,6 @@ public class Simple implements RulesConstants {
 		};
 //		thread.start();
 		
-		// dont even queue it just yet, just throw it away if already running
 		if ( executorImageProcessing.getActiveCount() < MAX_VISION_ANALYSIS ) {
 			executorImageProcessing.execute( runnable );
 		} else {

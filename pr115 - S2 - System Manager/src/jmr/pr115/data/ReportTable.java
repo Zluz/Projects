@@ -5,9 +5,19 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import jmr.pr128.logical.LogicalFieldEvaluation;
+import jmr.pr128.marking.Mark;
+import jmr.pr128.marking.RowMarker;
+import jmr.pr128.reports.Report;
+import jmr.pr128.reports.ReportColumn;
 import jmr.s2db.comm.ConnectionProvider;
 
 /**
@@ -23,16 +33,27 @@ public class ReportTable {
 
 	private final String strTitle;
 	
-	private final String strQuery;
+	private final String strFixedQuery;
+	private final Report report;
 	
 	public ReportTable( final String strTitle,
 						final String strQuery ) {
 		this.strTitle = strTitle;
-		this.strQuery = strQuery;
+		this.report = null;
+		this.strFixedQuery = strQuery;
 	}
-	
+
+	public ReportTable( final Report report ) {
+		this.strTitle = report.getTitle();
+		this.report = report;
+		this.strFixedQuery = null;
+	}
+
+
 	
 	public StringBuilder generateReport( Format format ) {
+		
+		LOGGER.info( "Generating report (format = " + format.toString() + ")" );
 		
 		final StringBuilder sb = new StringBuilder();
 		
@@ -112,6 +133,17 @@ public class ReportTable {
 				+ "<body>\n"
 				+ "<table class=\"table-blue\" width=\"100%\">\n" );
 		
+		final String strQuery;
+		final List<LogicalFieldEvaluation> listLFEs;
+		
+		if ( null!=report ) {
+			strQuery = report.getSQL();
+			listLFEs = report.getLogicalFieldEvaluations();
+		} else {
+			strQuery = strFixedQuery;
+			listLFEs = null;
+		}
+		
 		try ( final Connection conn = ConnectionProvider.get().getConnection();
 			  final Statement stmt = conn.createStatement();
 			  final ResultSet rs = stmt.executeQuery( strQuery ) ) {
@@ -120,26 +152,92 @@ public class ReportTable {
 			
 			sb.append( "<thead><tr>\n" );
 			final int iColCount = md.getColumnCount();
+			final List<String> listHeaders = new LinkedList<>();
 			for ( int i=1; i<=iColCount; i++ ) {
 				final String strLabel = md.getColumnLabel( i );
-				sb.append( "\t<th> " + strLabel + " </th>\n" );
+				listHeaders.add( strLabel );
+			}
+
+			final Map<String,LogicalFieldEvaluation> mapLFEs = new HashMap<>();
+			if ( null!=listLFEs ) {
+				Collections.reverse( listLFEs );
+				for ( int iHeader = listHeaders.size() - 1; iHeader > -1; iHeader-- ) {
+					final String strHeader = listHeaders.get( iHeader );
+
+					for ( final LogicalFieldEvaluation lfe : listLFEs ) {
+						final ReportColumn column = lfe.getLocationFollowing();
+						if ( column.match( strHeader ) ) {
+							
+							final String strLFETitle = lfe.getTitle();
+							listHeaders.add( iHeader, strLFETitle );
+							mapLFEs.put( strLFETitle, lfe );
+						}
+					}
+				}
+			}
+
+			for ( final String strHeader : listHeaders ) {
+				sb.append( "\t<th> " + strHeader + " </th>\n" );
 			}
 			sb.append( "</tr></thead>\n<tbody>\n" );
 			
 			while ( rs.next() ) {
-				sb.append( "<tr>\n" );
-				for ( int i=1; i<=iColCount; i++ ) {
-					sb.append( "\t<td> " );
-					final String strFieldRaw = rs.getString( i );
+
+//				final List<String> listFields = new LinkedList<>();
+				final Map<String,String> mapFields = new HashMap<>();
+				
+				for ( final String strHeader : listHeaders ) {
+					
+					final LogicalFieldEvaluation lfe = mapLFEs.get( strHeader );
+					if ( null!=lfe ) {
+						try {
+							final Object objValue = lfe.evaluateField( rs );
+							final String strValue;
+							if ( null!=objValue ) {
+								strValue = objValue.toString();
+							} else {
+								strValue = "<null>";
+							}
+//							listFields.add( strValue );
+							mapFields.put( strHeader, strValue );
+						} catch ( final Exception e ) {
+//							listFields.add( e.toString() );
+							mapFields.put( strHeader, e.toString() );
+							e.printStackTrace();
+						}
+					} else {
+						final String strFieldRaw = rs.getString( strHeader );
+//						listFields.add( strFieldRaw );
+						mapFields.put( strHeader, strFieldRaw );
+					}
+				}
+				
+				final Mark mark;
+				final RowMarker marker = report.getRowMarker();
+				if ( null!=marker ) {
+					mark = marker.evaluateMark( mapFields );
+				} else {
+					mark = Mark.NORMAL;
+				}
+				
+				sb.append( "<tr style=\"" + mark.getHtmlStyle() + "\">\n" );
+				
+				for ( final String strHeader : listHeaders ) {
+					final String strFieldRaw = mapFields.get( strHeader );
+//				for ( final String strFieldRaw : listFields ) {
+
 					String strFieldNorm = ( strFieldRaw != null ) 
-									? strFieldRaw.trim() : "<null>";
-//					strFieldNorm = StringUtils.replaceAll( 
-//										strFieldNorm, "\\\\n", "<BR>" );
+							? strFieldRaw.trim() : "<null>";
+					strFieldNorm = strFieldNorm.replaceAll( "<", "&lt;" );
+					strFieldNorm = strFieldNorm.replaceAll( ">", "&gt;" );
 					strFieldNorm = strFieldNorm.replaceAll( "\\n", "<BR>" );
+					
+					sb.append( "\t<td> " );
 					sb.append( strFieldNorm );
 					sb.append( " </td>\n" );
 				}
 				sb.append( "</tr>\n" );
+
 			}
 
 			sb.append( "</tbody>\n</table>\n" );
