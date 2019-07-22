@@ -27,4 +27,5 @@
    *    *   *  *  *  /Local/scripts/capture_still_now.sh
    0    *   *  *  *  /Local/scripts/post_heartbeat.sh > /tmp/heartbeat_hour.out
 05,25,45 *  *  *  *  /root/reboot_test.sh
+  50    *   *  *  *  /Local/scripts/device_examine.sh
 
