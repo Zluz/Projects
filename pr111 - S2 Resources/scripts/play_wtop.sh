@@ -34,12 +34,12 @@ echo "Chromium window: $WID"
 
 xdotool windowfocus $WID
 xdotool windowactivate $WID
-sleep 1
+sleep 0.5s
 # xdotool key ctrl+shift+p
 xdotool key alt+d
 sleep 1
 xdotool type "https://www.wtop.com/listen-live/"
-sleep 1
+sleep 0.5s
 xdotool key "Return"
 xdotool windowsize $WID 50% 70%
 xdotool windowmove $WID 900 40
@@ -51,6 +51,8 @@ sleep 10s
 xdotool windowfocus $WID
 xdotool windowactivate $WID
 # xdotool mousemove 972 474 click 1
+xdotool mousemove 1829 206 click 1
+sleep 0.5s
 xdotool mousemove 936 384 click 1
 
 echo "Sleeping for 12s.."
