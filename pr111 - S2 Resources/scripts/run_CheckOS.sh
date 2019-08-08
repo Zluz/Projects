@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export UPTIME_THIS=`uptime -s`
+export UPTIME_THIS=`uptime -s | cut -c 1-13`
 export UPTIME_LOG=`cat /tmp/reboot.log | head -1 2> /dev/null`
 
 export NEW_LOG=0
