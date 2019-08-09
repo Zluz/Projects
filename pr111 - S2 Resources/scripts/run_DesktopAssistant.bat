@@ -5,7 +5,8 @@ rem - and is run on S112 (and others?) from:
 rem - 		C:\Development\scripts
 
 
-if not exist S:\ net use S: \\192.168.1.200\Share /user:pi rpi
+rem - if not exist S:\ net use S: \\192.168.1.200\Share /user:pi rpi
+if not exist S:\ net use S: \\192.168.1.220\Share /user:pi s2pwd1
 
 if exist D:\TEMP set TEMP=D:\TEMP
 if exist D:\TEMP set TMP=D:\TEMP
