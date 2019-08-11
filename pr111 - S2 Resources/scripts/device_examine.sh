@@ -25,11 +25,15 @@ export OUT="$OUT os-name=$OS_NAME"
 export OS_UPTIME=`/usr/bin/uptime -p | tr ' ' '_'`
 export OUT="$OUT os-uptime=$OS_UPTIME"
 
+# export PID_PRANY=`ps -ef | grep java | tr '/' '\n' | grep jar | grep pr`
+
 export PID_PR101=`ps -ef | grep java | grep pr101_ | tr -s ' ' '-' | cut -d '-' -f 2`
 if [ -n "$PID_PR101" ]; then
 	export TIME_PR101=`ps -p $PID_PR101 -o etimes | tail -1 | awk '{$1=$1;print}'`
 	export OUT="$OUT proc-pr101-pid=$PID_PR101"
 	export OUT="$OUT proc-pr101-time=$TIME_PR101"
+else
+	export OUT="$OUT proc-pr101-pid=<none>"
 fi
 
 export PID_PR130=`ps -ef | grep java | grep pr130_ | tr -s ' ' '-' | cut -d '-' -f 2`
@@ -44,6 +48,8 @@ if [ -n "$PID_VNC" ]; then
 	export TIME_VNC=`ps -p $PID_VNC -o etimes | tail -1 | awk '{$1=$1;print}'`
 	export OUT="$OUT proc-vncserver-pid=$PID_VNC"
 	export OUT="$OUT proc-vncserver-time=$TIME_VNC"
+else
+	export OUT="$OUT proc-vncserver-pid=<none>"
 fi
 
 export CPU_HARDWARE=`cat /proc/cpuinfo | grep -i Hardware | cut -d ':' -f 2 | awk '{$1=$1;print}' | tr ' ' '_'`
