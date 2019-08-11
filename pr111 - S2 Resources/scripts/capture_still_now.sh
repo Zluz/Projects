@@ -1,7 +1,9 @@
 #!/bin/bash
 # see: https://www.raspberrypi.org/documentation/usage/camera/raspicam/raspistill.md
 
-vid_detected=$(/bin/ls -l /dev/video* 2> /dev/null | wc -l)
+# USB cameras no longer supported
+# vid_detected=$(/bin/ls -l /dev/video* 2> /dev/null | wc -l)
+vid_detected=0
 cam_detected=$(vcgencmd get_camera | grep "detected=1" | wc -l)
 
 if [[ "$vid_detected" == "0" && "$cam_detected" == "0" ]]
@@ -30,6 +32,13 @@ then
 fi
 
 
+if [[ -e "/tmp/session" ]]; then
+	# delete old files. see SO:13489398, SO:430106.
+	# find /tmp/session/ -mtime +1 -type f -delete -name "capture_cam-t15*.jpg"
+	find   /tmp/session/ -mmin +10 -type f -delete -name "capture_cam-t15*.jpg"
+fi
+
+
 echo "Time now: $(date)"
 DATE=$(date +"%Y%m%d_%H%M")
 # NOW=$(date +"%M")
@@ -47,6 +56,9 @@ echo "Looping during working minute: $NOW"
 while [[ "$NOW" == "$LAST" ]]
 do
 	echo "Capturing..."
+	TIMESTAMP=$( date +%s%3N )
+	export FILE_KEY="t"$TIMESTAMP
+	echo "Using file key: $FILE_KEY"
 
 	if [[ "$cam_detected" == "1" ]]
 	then
@@ -70,11 +82,11 @@ do
 				cp /tmp/capture_still_now.jpg /tmp/session/capture_cam-thumb._jpg
 
 				rm -rf /tmp/session/capture_cam.jpg
-				mv /tmp/session/capture_cam._jpg /tmp/session/capture_cam.jpg
+				mv /tmp/session/capture_cam._jpg /tmp/session/capture_cam-$FILE_KEY.jpg
 
 				mogrify -scale 300x -quality 50 /tmp/session/capture_cam-thumb._jpg
 				rm -rf /tmp/session/capture_cam-thumb.jpg
-				mv /tmp/session/capture_cam-thumb._jpg /tmp/session/capture_cam-thumb.jpg
+				mv /tmp/session/capture_cam-thumb._jpg /tmp/session/capture_cam-$FILE_KEY-thumb.jpg
 				
 				echo "Done."
 			else
