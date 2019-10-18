@@ -1,3 +1,13 @@
+
+[PROJECT SETUP]
+
+Requires external project:
+	(Git clone) https://github.com/sarxos/webcam-capture
+
+
+[past notes]
+
+
 C:\Development\Runtimes\Java JRE 1.8.0.202 64bit\bin\javaw.exe 
 	-Dfile.encoding=Cp1252 
 	-classpath 

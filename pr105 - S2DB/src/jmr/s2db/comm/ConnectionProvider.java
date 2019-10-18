@@ -27,7 +27,9 @@ public class ConnectionProvider {
 //							+ "?autoReconnect=true&useSSL=false";
 	
 	public final static String
-			MYSQL_DRIVER = "com.mysql.jdbc.Driver";
+//			MYSQL_DRIVER = "com.mysql.jdbc.Driver";
+			MYSQL_DRIVER = "com.mysql.cj.jdbc.Driver";
+	
 
 	private static final Logger 
 			LOGGER = Logger.getLogger( ConnectionProvider.class.getName() );
@@ -57,7 +59,6 @@ public class ConnectionProvider {
 	
 	private ConnectionProvider() throws SQLException, ClassNotFoundException {
 		Class.forName( MYSQL_DRIVER );
-
 
 		final char[] cUsername = SystemUtil.getProperty( 
 						SUProperty.S2DB_USERNAME ).toCharArray(); 
@@ -342,8 +343,9 @@ public class ConnectionProvider {
 		
 		System.out.println( "Connection URL:\n" + strURL );
 		
-		Class.forName("com.mysql.cj.jdbc.Driver");
-		Class.forName("com.mysql.jdbc.Driver");
+		Class.forName( MYSQL_DRIVER );
+//		Class.forName("com.mysql.cj.jdbc.Driver");
+//		Class.forName("com.mysql.jdbc.Driver");
 		
 		final Connection conn = DriverManager.getConnection(
 									strURL, strUsername, strPassword );
