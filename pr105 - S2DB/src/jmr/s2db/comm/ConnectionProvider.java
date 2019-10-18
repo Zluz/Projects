@@ -3,6 +3,7 @@ package jmr.s2db.comm;
 import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -82,6 +83,8 @@ public class ConnectionProvider {
 		bds.setRemoveAbandoned( true );
 //		bds.setLogAbandoned( true );
 		bds.setRemoveAbandonedTimeout( 60 );
+		
+		// test connection here ?
 		
 		Runtime.getRuntime().addShutdownHook( new Thread( 
 							"Shutdown Hook - ConnectionProvider.close()" ) {
@@ -327,7 +330,39 @@ public class ConnectionProvider {
 	}
 	
 	
-	public static void main( final String[] args ) throws Exception {
+	public static void testBasicConnection() 
+					throws SQLException, ClassNotFoundException {
+		
+		final String strUsername = SystemUtil.getProperty( 
+						SUProperty.S2DB_USERNAME ); 
+		final String strPassword = SystemUtil.getProperty( 
+						SUProperty.S2DB_PASSWORD ); 
+		final String strURL = SystemUtil.getProperty( 
+						SUProperty.S2DB_CONNECTION ); 
+		
+		System.out.println( "Connection URL:\n" + strURL );
+		
+		Class.forName("com.mysql.cj.jdbc.Driver");
+		Class.forName("com.mysql.jdbc.Driver");
+		
+		final Connection conn = DriverManager.getConnection(
+									strURL, strUsername, strPassword );
+		
+		System.out.println( "Connection established." );
+		
+//		final String strSQL = "SELECT * FROM Session LIMIT 5;";
+		final String strSQL = "SELECT NOW();";
+		System.out.println( "\tQuery: " + strSQL );
+		
+		final Statement stmt = conn.createStatement();
+		final ResultSet rs = stmt.executeQuery( strSQL );
+		while ( rs.next() ) {
+			System.out.println( "\tResult: " + rs.getString( 1 ) );
+		}
+		
+	}
+
+	public static void testAdvancedConnection() throws Exception {
 		
 		ConnectionProvider.get();
 		
@@ -362,5 +397,11 @@ public class ConnectionProvider {
 			stmt.close();
 		}
 	}
+
+	
+	public static void main( final String[] args ) throws Exception {
+		testBasicConnection();
+	}
+
 	
 }

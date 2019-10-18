@@ -1,5 +1,7 @@
 
 When exporting runnable JAR:
 
+	Export launch config using main class: jmr.swt.SWTLoader3
+
 	"Library handling" must be
 		"package required libraries into generated jar"
