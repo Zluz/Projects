@@ -408,15 +408,23 @@ public class Simple implements RulesConstants {
 							mapCap.put( DocMetadataKey.SENSOR_DESC, 
 									null!=strDescription ? strDescription : "" );
 							
+							final String strFilename = file.getName();
+							final String strReusedName = 
+									StringUtils.removePattern( 
+													strFilename, "[0-9]" );
+
+							mapCap.put( DocMetadataKey.FILENAME, 
+													strFilename );
+							
 							if ( STORE_TO_LOCAL_APP_ENGINE) {
 								final String strCommName = 
-											strKey + "/" + file.getName();
+											strKey + "/" + strReusedName;
 								comm.store( DocKey.DEVICE_STILL_CAPTURE, 
 											strCommName, file, mapCap );
 							}
 							
 							final String strGCSName = 
-									"CAPTURE_" + strKey + "_" + file.getName();
+									"CAPTURE_" + strKey + "_" + strReusedName;
 							CloudUtilities.saveImage( strGCSName, file, 
 									ContentType.IMAGE_JPEG, mapCap );
 						}
@@ -710,18 +718,20 @@ public class Simple implements RulesConstants {
 	}
 	
 	
-	public static void doGenerateReport( Report report ) {
+	public static void doGenerateReport( final Report report,
+										 final Event event,
+										 final String strReason ) {
 		
 		LOGGER.info( ()-> "Generating report: " + report.name() );
 		
-		final Instant time = Instant.ofEpochMilli( System.currentTimeMillis() );
+		final long lTime = System.currentTimeMillis();
+		final Instant time = Instant.ofEpochMilli( lTime );
 
-//		final String strSQL = report.getSQL();
 		final String strName = report.getOutputFilename() + ".html";
 		
-//		final ReportTable table = new ReportTable( strName, strSQL );
 		final ReportTable table = new ReportTable( report );
-		final StringBuilder sb = table.generateReport( Format.HTML );
+		final StringBuilder sb = table.generateReport( 
+									Format.HTML, event, strReason, lTime );
 		final byte[] bytes = sb.toString().getBytes( UTF_8 );
 		
 //		final CommGAE comm = new CommGAE();
@@ -743,13 +753,14 @@ public class Simple implements RulesConstants {
 
 	
 	//TODO remove this, should be unnecessary..
-	public static void doUpdateDevices() {
+	public static void doUpdateDevices( final Event event,
+										final String strReason ) {
 //		Event event;
 //		if ( EventType.event.getEventType()
 //		if ( SystemEvent.HEARTBEAT_HOUR.name() != event.getSubject() ) {
 //			doGenerateReport( Report.RECENT_EVENTS );
 //		}
-		doGenerateReport( Report.DEVICES );
+		doGenerateReport( Report.DEVICES, event, strReason );
 	}
 
 	

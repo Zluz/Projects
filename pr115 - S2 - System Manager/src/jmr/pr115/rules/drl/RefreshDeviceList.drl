@@ -21,7 +21,7 @@ rule "Refresh_DeviceList_on_CLIENT_REGISTERED"
 			)
 	then
 		// Simple.doUpdateDevices();
-		Simple.doGenerateReport( Report.DEVICES );
+		Simple.doGenerateReport( Report.DEVICES, e, "CLIENT_REGISTERED event" );
 end
 
 
@@ -30,5 +30,5 @@ rule "Refresh_DeviceList_on_TimeEvent"
 		h : Heartbeat( getTimeUnit() == TimeUnit.HOURS )
 	then
 		// Simple.doUpdateDevices();
-		Simple.doGenerateReport( Report.DEVICES );
+		Simple.doGenerateReport( Report.DEVICES, null, "Time event (hourly)" );
 end

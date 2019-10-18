@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,7 +42,10 @@ public class PostStills {
 		SelfDestruct.setTime( TIME_TIMEOUT, "PostStills overall class" );
 
 		this.capture = new ImageCaptureS2();
-		this.fileSession = SessionPath.getSessionDir();
+		final List<File> list = SessionPath.getSessionDirs();
+		if ( list.isEmpty() ) throw new IllegalStateException( 
+											"Session path not found." );
+		this.fileSession = list.get( 0 );
 		this.filePID = recordPIDFile();
 	}
 	

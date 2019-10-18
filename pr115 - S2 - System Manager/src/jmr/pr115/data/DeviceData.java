@@ -65,4 +65,10 @@ public class DeviceData {
 
 
 	
+	public static void main( final String[] args ) {
+		final String strFile = "capture_vid0-t1565756724066.jpg";
+		final String strRegex = "capture_vid[0-9]\\-t[0-9]+\\.jpg";
+		System.out.println( "match: " + strFile.matches( strRegex ) );
+	}
+	
 }

@@ -65,7 +65,10 @@ public class ImageCaptureS2 {
 	
 	public static File getLatest_pr124() {
 		
-		final File filePath = SessionPath.getPath_DevelopmentExport();
+		final List<File> list = SessionPath.getPath_DevelopmentExport();
+		if ( list.isEmpty() ) throw new IllegalStateException( 
+							"Development Export path not found." );
+		final File filePath = list.get( 0 );
 		
 		final FilenameFilter filter = new FilenameFilter() {
 			@Override

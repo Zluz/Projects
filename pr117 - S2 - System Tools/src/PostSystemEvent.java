@@ -135,17 +135,21 @@ public class PostSystemEvent {
 		    	System.out.println( "Done." );
 		    }
 			
-			System.out.println( "Event generated" );
-			System.out.println( "\tseq\t" + event.getEventSeq() );
-			System.out.println( "\tsubject\t" + event.getSubject() );
-			System.out.println( "\tvalue\t" + event.getValue() );
-			System.out.println( "\ttime\t" + event.getTime() );
-			System.out.println( "\tdata (JsonObject)" );
-			for ( final Entry<String, JsonElement> 
-							entry : jo.getAsJsonObject().entrySet() ) {
-				System.out.println( "\t\t" + entry.getKey() 
-							+ " = " + entry.getValue().toString() );
-			}
+		    if ( null!=event ) {
+				System.out.println( "Event generated" );
+				System.out.println( "\tseq\t" + event.getEventSeq() );
+				System.out.println( "\tsubject\t" + event.getSubject() );
+				System.out.println( "\tvalue\t" + event.getValue() );
+				System.out.println( "\ttime\t" + event.getTime() );
+				System.out.println( "\tdata (JsonObject)" );
+				for ( final Entry<String, JsonElement> 
+								entry : jo.getAsJsonObject().entrySet() ) {
+					System.out.println( "\t\t" + entry.getKey() 
+								+ " = " + entry.getValue().toString() );
+				}
+		    } else {
+		    	System.out.println( "Failed to create an event." );
+		    }
 			
 			System.exit( 0 );
 		} finally {

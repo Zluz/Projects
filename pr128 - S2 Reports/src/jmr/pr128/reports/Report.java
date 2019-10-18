@@ -12,6 +12,8 @@ import org.apache.commons.io.IOUtils;
 import jmr.pr128.logical.IPDetails;
 import jmr.pr128.logical.LogicalFieldEvaluation;
 import jmr.pr128.logical.S2FSAge;
+import jmr.pr128.logical.DeviceConfig;
+import jmr.pr128.logical.DeviceReport;
 import jmr.pr128.marking.RowMarker;
 import jmr.pr128.marking.CheckAge;
 
@@ -23,7 +25,9 @@ public enum Report {
 			 		"/Device_Report.sql",
 			 		new LogicalFieldEvaluation[] { 
 			 					new IPDetails(),
-			 					new S2FSAge() },
+			 					new S2FSAge(),
+			 					new DeviceConfig(),
+			 					new DeviceReport() },
 			 		new RowMarker[] {
 			 					new CheckAge() } ),
 	

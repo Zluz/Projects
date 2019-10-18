@@ -3,6 +3,7 @@ package jmr;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 @SuppressWarnings("serial")
@@ -29,20 +30,20 @@ public class S2Properties extends Properties {
 
 	
 	public Properties getProperties() {
-//		if ( null==properties ) {
 		if ( !this.bInitialized ) {
 			this.bInitialized = true;
 			final Properties properties = new Properties();
 			try {
-				final File fileSessionPath = SessionPath.getPath();
-				if ( null==fileSessionPath ) {
-					return null;
+				final List<File> paths = SessionPath.getPaths();
+				for ( final File path : paths ) {
+					final File fileBasePath = path.getParentFile();
+					final File file = new File( fileBasePath, "settings.ini" );
+					if ( file.isFile() ) {
+						properties.load( new FileInputStream( file ) );
+						this.putAll( properties );
+						return this;
+					}
 				}
-				final File fileBasePath = fileSessionPath.getParentFile();
-				final File file = new File( fileBasePath, "settings.ini" ); 
-				properties.load( new FileInputStream( file ) );
-				
-				this.putAll( properties );
 				
 			} catch ( final IOException e ) {
 				// TODO Auto-generated catch block
@@ -51,6 +52,7 @@ public class S2Properties extends Properties {
 		}
 		return this;
 	}
+	
 	
 	public String getValue( final SettingKey key ) {
 		

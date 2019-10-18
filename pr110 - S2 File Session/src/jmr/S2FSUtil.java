@@ -2,9 +2,19 @@ package jmr;
 
 public abstract class S2FSUtil {
 
+	private static String strLastNormInput = null;
+	private static String strLastNormOutput = null;
+	
 	public static String normalizeMAC( final String strInput ) {
 		if ( null==strInput ) return null;
+		
+		if ( strInput.equals( strLastNormInput ) ) {
+			return strLastNormOutput;
+		}
+		
 		final String strTrimmed = strInput.trim().toUpperCase();
+		
+		final String strOutput;
 		
 		if ( 17==strTrimmed.length() ) {
 			final String strExpanded = "" 
@@ -14,7 +24,7 @@ public abstract class S2FSUtil {
 					+ strTrimmed.substring( 9, 11 ) + "-"
 					+ strTrimmed.substring( 12, 14 ) + "-"
 					+ strTrimmed.substring( 15, 17 );
-			return strExpanded;
+			strOutput = strExpanded;
 		} else if ( 12==strTrimmed.length() ) {
 			final String strExpanded = "" 
 					+ strTrimmed.substring( 0, 2 ) + "-"
@@ -23,10 +33,15 @@ public abstract class S2FSUtil {
 					+ strTrimmed.substring( 6, 8 ) + "-"
 					+ strTrimmed.substring( 8, 10 ) + "-"
 					+ strTrimmed.substring( 10, 12 );
-			return strExpanded;
+			strOutput = strExpanded;
 		} else {
-			return null;
+			strOutput = null;
 		}
+		
+		strLastNormInput = strInput;
+		strLastNormOutput = strOutput;
+		
+		return strOutput;
 	}
 	
 	

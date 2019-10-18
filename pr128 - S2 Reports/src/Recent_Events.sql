@@ -12,7 +12,7 @@ SELECT
 		CONCAT( "= ", ROUND( data->'$."value-irl"', 1 ), " ", 
 				TRIM( BOTH '"' FROM data->'$."value-unit"' ) )
 	) as "value",
-    data
+    data as 'json_data'
 #    0, e.* 
 FROM 
 	s2db.event e 

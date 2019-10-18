@@ -5,9 +5,13 @@ public enum ReportColumn {
 	MAC,
 	AGE_DB,
 	IP_ADDRESS,
+	JSON_DATA( "Data" ),
+	OPTIONS( "Options" ),
 	
 	IP_ADDRESSES( "IP Addresses" ),
 	AGE_S2FS( "age (S2FS)" ),
+	DEVICE_CONFIG( "Device config" ),
+	DEVICE_REPORT( "Device report" ),
 	;
 	
 	final String strDisplayName;

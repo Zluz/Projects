@@ -2,9 +2,12 @@ package jmr.util.report;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+
+import jmr.util.NetUtil;
+import jmr.util.OSUtil;
+import jmr.util.transform.JsonUtils;
 
 public class TraceMap extends HashMap<String,Object> {
 
@@ -111,8 +114,7 @@ public class TraceMap extends HashMap<String,Object> {
 			if ( null!=objTimeInitial ) {
 				final String strTimeInitial = objTimeInitial.toString();
 				try {
-					lTimeInitial = Long.getLong( strTimeInitial );
-					tm.put( "no_elapsed", "lTimeInterval = " + lTimeInitial );
+					lTimeInitial = Long.parseLong( strTimeInitial );
 				} catch ( final NumberFormatException e ) {
 					// just ignore
 					tm.put( "no_elapsed", e.toString() );
@@ -120,12 +122,7 @@ public class TraceMap extends HashMap<String,Object> {
 			} else {
 				tm.put( "no_elapsed", "01-time not found" );
 			}
-		} else {
-			tm.put( "no_elapsed", "prefix is 01" );
 		}
-
-		tm.put( "keys", tm.keySet().stream()
-				.collect( Collectors.joining(",") ) );
 
 		
 		final StackTraceElement frame = getFrame();
@@ -136,8 +133,10 @@ public class TraceMap extends HashMap<String,Object> {
 				strClass + "." + strMethod + "():" + frame.getLineNumber();
 		
 		tm.put( strPrefix + "-time", lNow );
-		tm.put( strPrefix + "-source", strSource );
-		tm.put( strPrefix + "-thread", Thread.currentThread().getName() );
+		tm.putFrameData( strPrefix + "-source", strSource );
+		tm.putFrameData( strPrefix + "-thread", Thread.currentThread().getName() );
+		tm.putFrameData( strPrefix + "-program", OSUtil.getProgramName() );
+		tm.putFrameData( strPrefix + "-device", NetUtil.getMAC() );
 		if ( null!=strComment ) {
 			tm.put( strPrefix + "-comment", strComment );
 		}
@@ -150,6 +149,37 @@ public class TraceMap extends HashMap<String,Object> {
 	}
 
 
+	private String getPrevFrameData( final String strName,
+						  	  		 final int iIndex ) {
+		if ( iIndex < 1 ) return null;
+		
+		final String strKey = getPrefixFor( iIndex ) + "-" + strName;
+		if ( this.containsKey( strKey ) ) {
+			return this.get( strKey ).toString();
+		} else {
+			return getPrevFrameData( strName, iIndex - 1 );
+		}
+	}
+	
+	
+	private void putFrameData( final String strKey, 
+							   final String strValue ) {
+		final String strIndex = StringUtils.substring( strKey, 0, 2 );
+		final String strName = StringUtils.substring( strKey, 3 );
+		try {
+			final int iIndex = Integer.parseInt( strIndex );
+			
+			final String strPrevValue = getPrevFrameData( strName, iIndex - 1 );
+			
+			if ( ! strValue.equals( strPrevValue ) ) {
+				this.put( strKey, strValue );
+			}
+		} catch ( NumberFormatException e ) {
+			this.put( strKey, strValue );
+		}
+	}
+
+	
 	public static TraceMap addFrame( final TraceMap map ) {
 		return addFrame( map, null );
 	}
@@ -174,5 +204,17 @@ public class TraceMap extends HashMap<String,Object> {
 		}
 	}
 
+	
+	public static void main( final String[] args ) {
+		final TraceMap trace = new TraceMap();
+		trace.addFrame( "comment" );
+		
+		trace.putFrameData( "02-test", "one" );
+		trace.putFrameData( "03-test", "two" );
+		trace.putFrameData( "04-test", "two" );
+		trace.putFrameData( "05-test", "three" );
+
+		System.out.println( JsonUtils.report( trace ) );
+	}
 	
 }

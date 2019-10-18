@@ -6,6 +6,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,6 +20,8 @@ import jmr.pr128.marking.RowMarker;
 import jmr.pr128.reports.Report;
 import jmr.pr128.reports.ReportColumn;
 import jmr.s2db.comm.ConnectionProvider;
+import jmr.s2db.tables.Event;
+import jmr.util.transform.JsonUtils;
 
 /**
  * Database queries may be run periodically and uploaded to GCS.
@@ -51,7 +54,10 @@ public class ReportTable {
 
 
 	
-	public StringBuilder generateReport( Format format ) {
+	public StringBuilder generateReport( final Format format, 
+										 final Event event, 
+									 	 final String strReason, 
+										 final long lNow ) {
 		
 		LOGGER.info( "Generating report (format = " + format.toString() + ")" );
 		
@@ -126,13 +132,10 @@ public class ReportTable {
 				"  border-radius: 5px;\r\n" + 
 				"}\r\n" + 
 				"\r\n" + 
-				""
-				+ ""
-				+ ""
-				+ "\n\n\n</style></head>\n\n"
-				+ "<body>\n"
-				+ "<table class=\"table-blue\" width=\"100%\">\n" );
-		
+				"\n\n\n</style></head>\n\n" +
+				"<body>\n" +
+				"" );
+
 		final String strQuery;
 		final List<LogicalFieldEvaluation> listLFEs;
 		
@@ -143,6 +146,26 @@ public class ReportTable {
 			strQuery = strFixedQuery;
 			listLFEs = null;
 		}
+		
+		sb.append( "" 
+				+ "<table class=\"table-blue\" width=\"100%\">\n"
+				+ "<tr><th>Report</th><td>" + strTitle + "</td></tr>\r\n"
+				+ "<tr><th>Time</th><td>" + new Date( lNow ) + "</td></tr>\r\n" );
+		
+		if ( null!=event ) {
+			sb.append( "<tr><th>Event</th><td>" + event + "</td></tr>\r\n" );
+			sb.append( "<tr><th>Event map</th><td>" 
+					+ event.getDataAsMap()  + "</td></tr>\r\n" );
+		} else {
+			sb.append( "<tr><th>Event</th><td> &lt;null&gt; </td></tr>\r\n" );
+		}
+		sb.append( "" 
+				+ "<tr><th>Reason</th><td>" + strReason + "</td></tr>\r\n"
+				+ "</table>\n<br><br>\r\n"
+				);
+
+		sb.append( ""
+				+ "<table class=\"table-blue\" width=\"100%\">\n" );
 		
 		try ( final Connection conn = ConnectionProvider.get().getConnection();
 			  final Statement stmt = conn.createStatement();
@@ -213,21 +236,32 @@ public class ReportTable {
 				}
 				
 				final Mark mark;
-				final RowMarker marker = report.getRowMarker();
-				if ( null!=marker ) {
-					mark = marker.evaluateMark( mapFields );
-				} else {
+				final RowMarker marker;
+				if ( null==report ) {
 					mark = Mark.NORMAL;
+				} else {
+					marker = report.getRowMarker();
+					if ( null!=marker ) {
+						mark = marker.evaluateMark( mapFields );
+					} else {
+						mark = Mark.NORMAL;
+					}
 				}
 				
 				sb.append( "<tr style=\"" + mark.getHtmlStyle() + "\">\n" );
 				
 				for ( final String strHeader : listHeaders ) {
 					final String strFieldRaw = mapFields.get( strHeader );
-//				for ( final String strFieldRaw : listFields ) {
 
 					String strFieldNorm = ( strFieldRaw != null ) 
 							? strFieldRaw.trim() : "<null>";
+							
+					if ( strHeader.contains( "json" ) ) {
+						strFieldNorm = JsonUtils.getPretty( strFieldNorm );
+						strFieldNorm = LogicalFieldEvaluation
+												.formatJson( strFieldNorm );
+					}
+							
 					strFieldNorm = strFieldNorm.replaceAll( "<", "&lt;" );
 					strFieldNorm = strFieldNorm.replaceAll( ">", "&gt;" );
 					strFieldNorm = strFieldNorm.replaceAll( "\\n", "<BR>" );
@@ -262,7 +296,9 @@ public class ReportTable {
 		final ReportTable report = new ReportTable( 
 				ReportTable.class.getName() + " main",
 				"SELECT VERSION();" );
-		final StringBuilder sb = report.generateReport( Format.HTML );
+		final long lNow = System.currentTimeMillis();
+		final StringBuilder sb = report.generateReport( 
+										Format.HTML, null, "Reason", lNow );
 		System.out.println( sb.toString() );
 	}	
 	

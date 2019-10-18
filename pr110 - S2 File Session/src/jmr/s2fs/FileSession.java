@@ -1,6 +1,7 @@
 package jmr.s2fs;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,25 +15,36 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.google.gson.JsonObject;
+
 import jmr.util.FileUtil;
+import jmr.util.transform.JsonUtils;
 
 public class FileSession {
 
 	public enum SessionFile {
-		DEVICE_INFO( true, "conky-device_info.txt" ),
-		SYSTEM_INFO( true, "uname.out" ),
-		IFCONFIG( true, "ifconfig.out" ),
-		SCREENSHOT_FULL( false, "screenshot.png" ),
-		SCREENSHOT_THUMB( false, "screenshot-thumb.png" ),
-		CAPTURE_STILL( false, "capture_still_now.jpg" ),
-		CAPTURE_LIST( true, "capture_list.txt" ),
+		DEVICE_INFO( 	  true,  true,  "conky-device_info.txt" ),
+		DEVICE_CONFIG( 	  true,  false, "device_config.json" ),
+		DEVICE_REPORT( 	  true,  false, "device_report.json" ),
+		SYSTEM_INFO( 	  true,  true,  "uname.out" ),
+		IFCONFIG( 		  true,  false, "ifconfig.out" ),
+		SCREENSHOT_FULL(  false, false, "screenshot.png" ),
+		SCREENSHOT_THUMB( false, false, "screenshot-thumb.png" ),
+		CAPTURE_STILL( 	  false, false, "capture_still_now.jpg" ),
+		CAPTURE_LIST( 	  true,  false, "capture_list.txt" ),
 		;
 		
 		public final String strFilename;
 		public final boolean bText;
+		public final boolean bCache;
 		
-		SessionFile( final boolean bText, final String strFilename ) {
+		SessionFile( final boolean bText, 
+					 final boolean bCache, 
+					 final String strFilename ) {
 			this.bText = bText;
+			this.bCache = bCache;
 			this.strFilename = strFilename;
 		}
 	}
@@ -100,7 +112,12 @@ public class FileSession {
 			} else {
 				strContents = "";
 			}
-			mapFileContents.put( key, strContents );
+			
+			if ( key.bCache ) {
+				mapFileContents.put( key, strContents );
+			} else {
+				return strContents;
+			}
 		}
 		
 		return mapFileContents.get( key );
@@ -142,6 +159,29 @@ public class FileSession {
 	}
 	
 	
+	public File getLatestCaptureStillImageFile( final String strRegex ) {
+		final File[] files = this.dir.listFiles( new FileFilter() {
+			@Override
+			public boolean accept( final File file ) {
+				if ( file.isFile() && file.getName().matches( strRegex ) ) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+		});
+		long lLatest = Long.MIN_VALUE;
+		File fileLatest = null;
+		for ( final File file : files ) {
+			final long lLatestThisFile = file.lastModified();
+			if ( lLatestThisFile > lLatest ) {
+				fileLatest = file;
+				lLatest = lLatestThisFile;
+			}
+		}
+		return fileLatest;
+	}
+	
 	
 	public List<File> getCaptureStillImageFiles( 
 								final ImageLookupOptions... options ) {
@@ -173,17 +213,48 @@ public class FileSession {
 		}
 		
 		if ( bFull ) {
+			
 			final File fileCamFull = new File( this.dir, "capture_cam.jpg" );
 			if ( fileCamFull.exists() && fileCamFull.lastModified() > lRecent ) {
 				list.add( fileCamFull );
 			}
+			
+//			// ex:  capture_vid0-t1565756724066.jpg
+//			final File fileVid0 = getLatestCaptureStillImageFile( 
+//										"capture_vid[0-9]\\-t[0-9]+\\.jpg" );
+//			if ( null != fileVid0 ) {
+//				list.add( fileVid0 );
+//			}
+			
+			// ex:  capture_cam-t1565756231237.jpg
+			final File fileCam = getLatestCaptureStillImageFile( 
+										"capture_cam\\-t[0-9]+\\.jpg" );
+			if ( null != fileCam ) {
+				list.add( fileCam );
+			}
 		}
 		
 		if ( bThumb ) {
+			
 			final File fileCamThumb = new File( this.dir, "capture_cam-thumb.jpg" );
 			if ( fileCamThumb.exists() && fileCamThumb.lastModified() > lRecent ) {
 				list.add( fileCamThumb );
 			}
+
+//			// just give the full version for USB cameras for now
+//			// ex:  capture_vid0-t1565756724066.jpg
+//			final File fileVid0 = getLatestCaptureStillImageFile( 
+//										"capture_vid[0-9]\\-t[0-9]+\\.jpg" );
+//			if ( null != fileVid0 ) {
+//				list.add( fileVid0 );
+//			}
+			
+			// ex:  capture_cam-t1565756319807-thumb.jpg
+			final File fileCam = getLatestCaptureStillImageFile( 
+										"capture_cam\\-t[0-9]+\\-thumb\\.jpg" );
+			if ( null != fileCam ) {
+				list.add( fileCam );
+			}			
 		}
 		
 		final File[] files = this.dir.listFiles( new FilenameFilter() {
@@ -207,6 +278,13 @@ public class FileSession {
 			if ( file.lastModified() > lRecent ) {
 				list.add( file );
 			}
+		}
+		
+		// ex:  capture_vid0-t1565756724066.jpg
+		final File fileVid0 = getLatestCaptureStillImageFile( 
+									"capture_vid[0-9]\\-t[0-9]+\\.jpg" );
+		if ( null != fileVid0 ) {
+			list.add( fileVid0 );
 		}
 		
 //		if ( !setPastFiles.isEmpty() ) {
@@ -384,6 +462,27 @@ lrwxrwxrwx 1 root root 12 Jun  1 20:55 usb-Generic_USB2.0_PC_CAMERA-video-index0
 			return lModified;
 		} else {
 			return null;
+		}
+	}
+	
+	
+	public JsonObject getDeviceConfig() {
+		final String strJsonConfig = getFileContents( SessionFile.DEVICE_CONFIG );
+		if ( StringUtils.isNotEmpty( strJsonConfig ) ) {
+			final JsonObject json = JsonUtils.getJsonObjectFor( strJsonConfig );
+			return json;
+		} else {
+			return new JsonObject();
+		}
+	}
+
+	public JsonObject getDeviceReport() {
+		final String strJsonConfig = getFileContents( SessionFile.DEVICE_REPORT );
+		if ( StringUtils.isNotEmpty( strJsonConfig ) ) {
+			final JsonObject json = JsonUtils.getJsonObjectFor( strJsonConfig );
+			return json;
+		} else {
+			return new JsonObject();
 		}
 	}
 	

@@ -18,12 +18,20 @@ public abstract class SystemUtil {
 	private static final Logger 
 					LOGGER = Logger.getLogger( SystemUtil.class.getName() );
 
-	//	final String strPropertiesFile = "H:\\Share\\settings.ini";
-	final public static String SYSTEM_PROPERTIES_FILE_WIN = "S:\\settings.ini";
-	final public static String SYSTEM_PROPERTIES_FILE_UNIX = "/Share/settings.ini";
-	final public static String SYSTEM_PROPERTIES_FILE = OSUtil.isWin() 
-											? SYSTEM_PROPERTIES_FILE_WIN 
-											: SYSTEM_PROPERTIES_FILE_UNIX;
+	final public static String[] SYSTEM_PATH = {
+									"S:\\settings.ini",
+									"\\\\192.168.6.220\\Share\\settings.ini",
+									"/Share/settings.ini"
+	};
+	
+//	final public static String 
+//				SYSTEM_PROPERTIES_FILE_WIN_1 = "S:\\settings.ini";
+//	final public static String 
+//				SYSTEM_PROPERTIES_FILE_UNIX = "/Share/settings.ini";
+	
+//	final public static String SYSTEM_PROPERTIES_FILE = OSUtil.isWin() 
+//											? SYSTEM_PROPERTIES_FILE_WIN 
+//											: SYSTEM_PROPERTIES_FILE_UNIX;
 
 	final public static String PROCESS_KILL_SELF = 
 								"/bin/kill -9 `pgrep -f pr101_ -U 1000`";
@@ -34,11 +42,19 @@ public abstract class SystemUtil {
 
 	
 	
+	/* go to pr110:SessionPath instead */ 
 	public static Properties getProperties() {
 		if ( null==properties ) {
 			properties = new Properties();
 			try {
-				properties.load( new FileInputStream( SYSTEM_PROPERTIES_FILE ) );
+				for ( final String strPath : SYSTEM_PATH ) {
+					final File file = new File( strPath );
+					if ( file.isFile() ) {
+						properties.load( new FileInputStream( strPath ) );
+						return properties;
+					}
+				}
+//				properties.load( new FileInputStream( SYSTEM_PROPERTIES_FILE ) );
 			} catch ( final IOException e ) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

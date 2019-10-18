@@ -1,4 +1,11 @@
 
+[PROCEDURES]
+
+Unlocking database (too many attempts..)
+	>	mysqladmin flush-hosts -u s2_full --password=s2db
+
+
+
 [TO DO]
 
 Add "state" column to "page" table. 

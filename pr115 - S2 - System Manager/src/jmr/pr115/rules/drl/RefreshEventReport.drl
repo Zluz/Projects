@@ -19,6 +19,6 @@ rule "Refresh_RecentEvents"
 		e : Event()
 	then
 		if ( ! SystemEvent.HEARTBEAT_HOUR.name().equals( e.getSubject() ) ) {
-			Simple.doGenerateReport( Report.RECENT_EVENTS );
+			Simple.doGenerateReport( Report.RECENT_EVENTS, e, "HEARTBEAT_HOUR" );
 		}
 end

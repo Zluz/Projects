@@ -146,23 +146,27 @@ public class JsonUtils {
 		if ( je instanceof JsonObject ) {
 			final JsonObject jo = je.getAsJsonObject();
 			final StringBuilder sb = new StringBuilder();
-			sb.append( "{\n" );
-			final List<String> list = new LinkedList<>();
-			for ( final Entry<String, JsonElement> entry : jo.entrySet() ) {
-				list.add( entry.getKey() );
-			}
-			Collections.sort( list );
-			boolean bFirst = true;
-			for ( final String strKey : list ) {
-				if ( bFirst ) {
-					bFirst = false;
-				} else {
-					sb.append( ",\n" );
+			if ( 0==jo.size() ) {
+				sb.append( "{}" );
+			} else {
+				sb.append( "{\n" );
+				final List<String> list = new LinkedList<>();
+				for ( final Entry<String, JsonElement> entry : jo.entrySet() ) {
+					list.add( entry.getKey() );
 				}
-				sb.append( "  \"" + strKey + "\": " );
-				sb.append( GSON_PRETTY.toJson( jo.get( strKey ) ) );
+				Collections.sort( list );
+				boolean bFirst = true;
+				for ( final String strKey : list ) {
+					if ( bFirst ) {
+						bFirst = false;
+					} else {
+						sb.append( ",\n" );
+					}
+					sb.append( "  \"" + strKey + "\": " );
+					sb.append( GSON_PRETTY.toJson( jo.get( strKey ) ) );
+				}
+				sb.append( "\n}" );
 			}
-			sb.append( "\n}" );
 			return sb.toString();
 		} else {
 			try {
