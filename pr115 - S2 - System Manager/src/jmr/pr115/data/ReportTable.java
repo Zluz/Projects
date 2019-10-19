@@ -52,6 +52,17 @@ public class ReportTable {
 		this.strFixedQuery = null;
 	}
 
+	
+
+	// not used? 'mac' column does not appear
+	private String formatFirstLine( final String str ) {
+		if ( str.toUpperCase().matches( "[0-9A-F]{2}-[0-9A-F]{2}"
+				+ "-[0-9A-F]{2}-[0-9A-F]{2}-[0-9A-F]{2}" ) ) {
+			final String strResult = str.replaceAll( "\\-", "&#8209;" );
+			return strResult.toUpperCase();
+		}
+		return str;
+	}
 
 	
 	public StringBuilder generateReport( final Format format, 
@@ -132,7 +143,41 @@ public class ReportTable {
 				"  border-radius: 5px;\r\n" + 
 				"}\r\n" + 
 				"\r\n" + 
-				"\n\n\n</style></head>\n\n" +
+				"\n\n\n</style></head>\n\n"
+				+ ""
+				+ ""
+				+ "<script type=\"text/javascript\">"
+				+ "\r\n" + 
+				"function toggleRowExpansion( row ) {\r\n" + 
+				"	const strExpanded = row.dataset.expanded;\r\n" + 
+				"\r\n" + 
+				"	const cells = row.children;\r\n" + 
+				"	for ( var i=0; i<cells.length; i++ ) {\r\n" + 
+				"		const cell = cells[i];\r\n" + 
+				"		var strText;\r\n" + 
+				"		if ( '1' == strExpanded ) {\r\n" + 
+				"			strText = cell.dataset.summary;\r\n" + 
+				"		} else {\r\n" + 
+				"			strText = cell.dataset.detail;\r\n" + 
+				"		}\r\n" + 
+				"		if ( undefined === strText ) {\r\n" + 
+				"			// skip\r\n" + 
+				"		} else {\r\n" + 
+				"			cell.innerHTML = strText;\r\n" + 
+				"		}\r\n" + 
+				"	}\r\n" + 
+				"\r\n" + 
+				"	if ( '1' == strExpanded ) {\r\n" + 
+				"		row.dataset.expanded = '0';\r\n" + 
+				"	} else {\r\n" + 
+				"		row.dataset.expanded = '1';\r\n" + 
+				"	}\r\n" + 
+				"}\r\n" + 
+				"</script>"
+				+ ""
+				+ ""
+				+ ""
+				+ "" +
 				"<body>\n" +
 				"" );
 
@@ -248,26 +293,57 @@ public class ReportTable {
 					}
 				}
 				
-				sb.append( "<tr style=\"" + mark.getHtmlStyle() + "\">\n" );
+				sb.append( "<tr style='" + mark.getHtmlStyle() + "' "
+								+ "onClick='toggleRowExpansion( this );' "
+								+ "data-expanded='0' >\n" );
 				
 				for ( final String strHeader : listHeaders ) {
 					final String strFieldRaw = mapFields.get( strHeader );
 
-					String strFieldNorm = ( strFieldRaw != null ) 
-							? strFieldRaw.trim() : "<null>";
+					String strFieldNorm;
+					if ( strFieldRaw != null ) {
+						strFieldNorm = strFieldRaw.trim();
+						strFieldNorm = strFieldNorm.replaceAll( "<BR>", "\n" );
+						strFieldNorm = strFieldNorm.replaceAll( "<br>", "\n" );
+					} else {
+						strFieldNorm = "<null>";
+					}
 							
 					if ( strHeader.contains( "json" ) ) {
 						strFieldNorm = JsonUtils.getPretty( strFieldNorm );
 						strFieldNorm = LogicalFieldEvaluation
 												.formatJson( strFieldNorm );
 					}
-							
+
 					strFieldNorm = strFieldNorm.replaceAll( "<", "&lt;" );
 					strFieldNorm = strFieldNorm.replaceAll( ">", "&gt;" );
-					strFieldNorm = strFieldNorm.replaceAll( "\\n", "<BR>" );
-					
-					sb.append( "\t<td> " );
-					sb.append( strFieldNorm );
+
+					final String[] strLines = strFieldNorm.trim().split( "\\n" );
+					final int iLineCount = strLines.length;
+					final String strSummary;
+					if ( iLineCount > 1 ) {
+						
+						final String strFirstLine = 
+												formatFirstLine( strLines[0] );
+						
+//						strSummary = "<font color='silver' size='2'>[+" + iLineCount + "]</font>"
+						strSummary = "<small>[+" + iLineCount + "]</small>"
+										+ "&nbsp;&nbsp;" + strFirstLine;
+
+						strFieldNorm = strFieldNorm.replaceAll( "\\n", "<BR>" );
+
+						sb.append( "\t<td data-detail='" + strFieldNorm + "' "
+								+ "data-summary='" + strSummary + "'> " );
+						
+						sb.append( strSummary );
+					} else {
+
+						sb.append( "\t<td> " );
+						sb.append( strFieldNorm );
+					}
+
+//					sb.append( "\t<td> " );
+//					sb.append( strFieldNorm );
 					sb.append( " </td>\n" );
 				}
 				sb.append( "</tr>\n" );
@@ -295,7 +371,14 @@ public class ReportTable {
 	public static void main( final String[] args ) {
 		final ReportTable report = new ReportTable( 
 				ReportTable.class.getName() + " main",
-				"SELECT VERSION();" );
+//				"SELECT VERSION();"
+//				"SELECT VERSION(), 1,2,3,4, '' + NOW() + '\\n' + NOW();"
+				"SELECT "
+					+ "table_schema, "
+					+ "table_name, "
+					+ "REPLACE( table_name, '_', '\\n' ) "
+				+ "FROM sys.schema_table_statistics;"
+				);
 		final long lNow = System.currentTimeMillis();
 		final StringBuilder sb = report.generateReport( 
 										Format.HTML, null, "Reason", lNow );

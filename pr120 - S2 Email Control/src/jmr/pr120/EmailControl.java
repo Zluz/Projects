@@ -57,7 +57,7 @@ public class EmailControl {
 		try {
 			this.initializeInbox();
 		} catch ( final MessagingException | IOException e ) {
-			// TODO Auto-generated catch block
+			System.err.println( "WARNING: Failed to initialize inbox." );
 			e.printStackTrace();
 		}
 	}

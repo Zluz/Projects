@@ -1,4 +1,32 @@
 
+// <tr onClick="toggleRowExpansion( this );" data-expanded='1'> ..
+// <td data-detail='detail data' data-summary='summary data'> ..
+function toggleRowExpansion( row ) {
+	const strExpanded = row.dataset.expanded;
+
+	const cells = row.children;
+	for ( var i=0; i<cells.length; i++ ) {
+		const cell = cells[i];
+		var strText;
+		if ( '1' == strExpanded ) {
+			strText = cell.dataset.summary;
+		} else {
+			strText = cell.dataset.detail;
+		}
+		if ( undefined === strText ) {
+			// skip
+		} else {
+			cell.innerHTML = strText;
+		}
+	}
+
+	if ( '1' == strExpanded ) {
+		row.dataset.expanded = '0';
+	} else {
+		row.dataset.expanded = '1';
+	}
+}
+
 
 // https://stackoverflow.com/questions/247483/http-get-request-in-javascript
 function httpGetAsync(theUrl, callback)
