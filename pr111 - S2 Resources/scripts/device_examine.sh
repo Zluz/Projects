@@ -14,6 +14,11 @@ export OUT="time=$NOW "
 export THROTTLED=`/usr/bin/vcgencmd get_throttled`
 export THROTTLED=`echo $THROTTLED | cut -d '=' -f 2`
 export OUT="$OUT cpu-throttle=\"$THROTTLED\""
+if [ "$THROTTLED" == "0x0" ]; then
+	export OUT="$OUT _9_throttle=\"$THROTTLED\""
+else
+	export OUT="$OUT _3_throttle=\"$THROTTLED\""
+fi
 
 export CPU_TEMP=`/usr/bin/vcgencmd measure_temp`
 export CPU_TEMP=`echo $CPU_TEMP | tr "'" '=' | cut -d '=' -f 2`

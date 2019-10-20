@@ -1,0 +1,12 @@
+@lxpanel --profile LXDE-pi
+@pcmanfm --desktop --profile LXDE-pi
+@xscreensaver -no-splash
+point-rpi
+@xset s noblank
+@xset s off
+@xset -dpms
+@#
+@# see https://www.raspberrypi-spy.co.uk/2014/05/how-to-autostart-apps-in-rasbian-lxde-desktop/
+@# save this file as  /etc/xdg/lxsession/LXDE-pi/autostart
+@/usr/bin/conky
+
