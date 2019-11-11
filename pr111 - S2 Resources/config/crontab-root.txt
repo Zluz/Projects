@@ -21,11 +21,11 @@
 # 
 # min  hr dom mon dow command
 
-   *    *   *  *  *  /Local/scripts/run_CheckOS.sh
-00,20,40 *  *  *  *  /Local/scripts/beacon.sh > /tmp/beacon.log
+   *    *   *  *  *  /Local/scripts/run_CheckOS.sh > /tmp/run_CheckOS.out 2>&1
+00,20,40 *  *  *  *  /Local/scripts/beacon.sh > /tmp/beacon.log > 2>&1
 #  *    *   *  *  *  /Local/scripts/capture_still_cron.sh
-   *    *   *  *  *  /Local/scripts/capture_still_now.sh
-   0    *   *  *  *  /Local/scripts/post_heartbeat.sh > /tmp/heartbeat_hour.out
-05,25,45 *  *  *  *  /root/reboot_test.sh
-  50    *   *  *  *  /Local/scripts/device_examine.sh
+   *    *   *  *  *  /Local/scripts/capture_still_now.sh > /tmp/capture_still_now.out 2>&1
+   0    *   *  *  *  /Local/scripts/post_heartbeat.sh > /tmp/heartbeat_hour.out 2>&1
+05,25,45 *  *  *  *  /root/reboot_test.sh > /tmp/reboot_test.out 2>&1
+  50    *   *  *  *  /Local/scripts/device_examine.sh > /tmp/device_examine.out 2>&1
 
