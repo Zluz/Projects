@@ -2,7 +2,11 @@ package jmr.pr116.messaging;
 
 public enum EmailProvider {
 
-	GMAIL(	"smtp.gmail.com", "587" ),
+	GMAIL_API(	 "smtp.gmail.com", "587" ),
+	
+	@Deprecated
+	GMAIL_JAVAX( "smtp.gmail.com", "587" ),
+	
 	;
 	
 	private String strHost;

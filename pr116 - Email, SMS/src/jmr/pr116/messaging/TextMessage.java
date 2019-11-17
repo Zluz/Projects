@@ -47,7 +47,7 @@ public class TextMessage {
 		final Properties p = SystemUtil.getProperties();
 		
 		final EmailMessage email = new EmailMessage( 
-					EmailProvider.GMAIL, 
+					EmailProvider.GMAIL_JAVAX, 
 					p.getProperty( "email.sender.address" ),
 					p.getProperty( "email.sender.password" ).toCharArray() );
 		

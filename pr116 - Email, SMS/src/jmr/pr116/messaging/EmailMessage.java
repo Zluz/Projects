@@ -21,16 +21,14 @@ import javax.mail.internet.MimeMultipart;
 
 import jmr.util.SystemUtil;
 
-/*
-
-
- */
 
 public class EmailMessage {
 
+	
 	private final EmailProvider provider;
 	private final String strSender;
 	private final char[] cPassword;
+	
 	
 	public EmailMessage(	final EmailProvider provider,
 							final String strSender,
@@ -40,30 +38,14 @@ public class EmailMessage {
 		this.cPassword = cPassword;
 	}
 	
-	public void send(	final String strRecipient,
-						final String strSubject,
-						final String strBody,
-						final File[] fileAttachments ) {
-		
-		System.out.println( "Sending message:" );
-		System.out.println( "\tTo: " + strRecipient );
-		System.out.println( "\tSubject: " + strSubject );
-		if ( null!=strBody ) {
-			System.out.println( "\tBody: " + strBody.substring( 0, 
-										Math.min( 40, strBody.length() ) ) );
-		} else {
-			System.out.println( "\tBody: <null>" );
-		}
-		
-        final Properties props = System.getProperties();
-        props.put( "mail.smtp.starttls.enable", "true" );
-        props.put( "mail.smtp.host", provider.getHost() );
-        props.put( "mail.smtp.user", strSender );
-        props.put( "mail.smtp.password", new String( cPassword ) );
-        props.put( "mail.smtp.port", provider.getPort() );
-        props.put( "mail.smtp.auth", "true");
+	
+	private void sendJavaX( final Properties properties,
+							final String strRecipient,
+							final String strSubject,
+							final String strBody,
+							final File[] fileAttachments ) {
 
-        final Session session = Session.getDefaultInstance( props );
+        final Session session = Session.getDefaultInstance( properties );
         final MimeMessage message = new MimeMessage( session );
     	final Multipart mp = new MimeMultipart();
 
@@ -114,13 +96,43 @@ public class EmailMessage {
             	System.out.println( "Closing.." );
 	            transport.close();
             }
-        }
-        catch (AddressException ae) {
+        } catch (AddressException ae) {
             ae.printStackTrace();
-        }
-        catch (MessagingException me) {
+        } catch (MessagingException me) {
             me.printStackTrace();
         }
+		
+	}
+	
+	public void send(	final String strRecipient,
+						final String strSubject,
+						final String strBody,
+						final File[] fileAttachments ) {
+		
+		System.out.println( "Sending message:" );
+		System.out.println( "\tTo: " + strRecipient );
+		System.out.println( "\tSubject: " + strSubject );
+		if ( null!=strBody ) {
+			System.out.println( "\tBody: " + strBody.substring( 0, 
+										Math.min( 40, strBody.length() ) ) );
+		} else {
+			System.out.println( "\tBody: <null>" );
+		}
+		
+		if ( EmailProvider.GMAIL_API.equals( this.provider ) ) {
+			
+		} else {
+		
+	        final Properties props = System.getProperties();
+	        props.put( "mail.smtp.starttls.enable", "true" );
+	        props.put( "mail.smtp.host", provider.getHost() );
+	        props.put( "mail.smtp.user", strSender );
+	        props.put( "mail.smtp.password", new String( cPassword ) );
+	        props.put( "mail.smtp.port", provider.getPort() );
+	        props.put( "mail.smtp.auth", "true");
+	        
+	        sendJavaX( props, strRecipient, strSubject, strBody, fileAttachments );
+		}
 	}
 	
 	
@@ -131,7 +143,7 @@ public class EmailMessage {
 		final Properties p = SystemUtil.getProperties();
 		
 		final EmailMessage message = new EmailMessage( 
-					EmailProvider.GMAIL, 
+					EmailProvider.GMAIL_JAVAX, 
 					p.getProperty( "email.sender.address" ),
 					p.getProperty( "email.sender.password" ).toCharArray() );
 		
