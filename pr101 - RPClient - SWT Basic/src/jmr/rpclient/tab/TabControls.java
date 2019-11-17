@@ -15,6 +15,9 @@ import org.eclipse.swt.widgets.Scale;
 
 import jmr.rpclient.RPiTouchscreen;
 import jmr.rpclient.SWTBasic;
+import jmr.util.SelfDestruct;
+import jmr.util.report.Reporting;
+import jmr.util.transform.DateFormatting;
 
 @SuppressWarnings("unused")
 public class TabControls extends TabBase {
@@ -89,7 +92,7 @@ public class TabControls extends TabBase {
 		    tab.setText( section.strCaption );
 		    tab.setShowClose( false );
 		    final Composite compTab = new Composite( tabs, SWT.NONE );
-		    compTab.setLayout( new FillLayout() );
+		    compTab.setLayout( new FillLayout( SWT.VERTICAL ) );
 		    tab.setControl( compTab );
 		    
 		    buildUI( section, compTab );
@@ -136,11 +139,28 @@ public class TabControls extends TabBase {
 				break;
 		
 			case DEBUG:
+				
+				final Button btnThreads = new Button( comp, SWT.PUSH );
+				btnThreads.setText( "Print Thread Stacks" );
+				btnThreads.addSelectionListener( new SelectionAdapter() {
+					@Override
+					public void widgetSelected( final SelectionEvent event ) {
+						final String strReport = Reporting.reportAllThreads();
+						System.out.print( "Thread report on " 
+									+ DateFormatting.getTimestamp() + " - " );
+						System.out.println( strReport );
+					}
+				});
+				
 				final Button btnClose = new Button( comp, SWT.PUSH );
 				btnClose.setText( "Close Application" );
 				btnClose.addSelectionListener( new SelectionAdapter() {
 					@Override
 					public void widgetSelected( final SelectionEvent event ) {
+
+						SelfDestruct.getInstance().addTime( 
+								1000L, "Debug-Request" );
+						
 						SWTBasic.close();
 					}
 				});

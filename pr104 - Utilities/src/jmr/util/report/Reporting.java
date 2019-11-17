@@ -1,5 +1,9 @@
 package jmr.util.report;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -20,10 +24,20 @@ public abstract class Reporting {
 
 	public static String reportThreadStack( final StackTraceElement[] stack ) {
 		final StringBuilder sb = new StringBuilder();
-		for ( final StackTraceElement frame : stack ) {
-			sb.append( "\t" + frame.getClassName() + "." 
-						+ frame.getMethodName() + "(): line " 
-						+ frame.getLineNumber() + "\n" );
+		if ( stack.length > 0 ) {
+			for ( final StackTraceElement frame : stack ) {
+				final int iLine = frame.getLineNumber();
+				if ( iLine > 0 ) {
+					sb.append( "\t" + frame.getClassName() + "." 
+							+ frame.getMethodName() + "(): line " 
+							+ iLine + "\n" );
+				} else {
+					sb.append( "\t" + frame.getClassName() + "." 
+							+ frame.getMethodName() + "()\n" );
+				}
+			}
+		} else {
+			sb.append( "\t(no frames)\n" );
 		}
 		return sb.toString();
 	}
@@ -32,12 +46,25 @@ public abstract class Reporting {
 	public static String reportAllThreads() {
 		final StringBuilder sb = new StringBuilder();
 		sb.append( "Active threads:\n" );
-		for ( final Entry<Thread, StackTraceElement[]> 
-						entry : Thread.getAllStackTraces().entrySet() ) {
-			final Thread thread = entry.getKey();
-			final StackTraceElement[] stack = entry.getValue();
-			sb.append( "  \"" + thread.getName() + "\"\n" );
-			sb.append( reportThreadStack( stack ) );
+		final Map<Thread, StackTraceElement[]> map = Thread.getAllStackTraces();
+		final List<Thread> list = new LinkedList<>( map.keySet() );
+		Collections.sort( list, new Comparator<Thread>() {
+			@Override
+			public int compare( final Thread lhs, final Thread rhs ) {
+				return Long.compare( lhs.getId(), rhs.getId() );
+			}
+		});
+		for ( final Thread thread : list ) {
+			final StackTraceElement[] stack = map.get( thread );
+			if ( null!=stack ) {
+				sb.append( "  \"" + thread.getName() + "\"  ("
+						+ "state:" + thread.getState().name() + ", "
+						+ "id:" + thread.getId() + ", "
+						+ "priority:" + thread.getPriority() + ")\n" );
+				sb.append( reportThreadStack( stack ) );
+			} else {
+				sb.append( "  \"" + thread.getName() + "\"  (null)\n" );
+			}
 		}
 		return sb.toString();
 	}

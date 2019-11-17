@@ -77,7 +77,16 @@ public class Notifier {
 					+ "regarding update of table \"" + strTable + "\"" );
 		
 		final boolean bResult = sender.send( strAlias, map );
-		return bResult;
+		
+		if ( !bResult ) { // retry once
+			System.out.println( "Notification failed to send. Retrying.." );
+			final boolean bResult2 = sender.send( strAlias, map );
+			if ( !bResult2 ) {
+				System.err.println( "Failed twice to send notification." );
+				return false;
+			}
+		}
+		return true;
 	}
 
 	

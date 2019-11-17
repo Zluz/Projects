@@ -26,15 +26,20 @@ public abstract class TableBase {
 				+ "WHERE ( " + strWhere + " );";
 		
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
-				final Statement stmt = conn.createStatement() ) {
+				final Statement stmt = null!=conn ? conn.createStatement() : null ) {
 
-			try ( final ResultSet rs = stmt.executeQuery( strQuery ) ) {
-				if ( rs.next() && !rs.wasNull() ) {
-					final long lSeq = rs.getLong( 1 );
-					if ( lSeq > 0 ) {
-						return lSeq;
+			if ( null!=stmt ) {
+				try ( final ResultSet rs = stmt.executeQuery( strQuery ) ) {
+					if ( rs.next() && !rs.wasNull() ) {
+						final long lSeq = rs.getLong( 1 );
+						if ( lSeq > 0 ) {
+							return lSeq;
+						}
 					}
 				}
+			} else {
+				LOGGER.severe( ()-> "Failed to acquire a database connection." );
+				return null;
 			}
 			
 		} catch ( final SQLException e ) {

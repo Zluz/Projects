@@ -16,7 +16,9 @@ public class S2Utils {
 		strFilename = StringUtils.replace( strFilename, "\\\\", "/" );
 		strFilename = StringUtils.replace( strFilename, "\\", "/" );
 		strFilename = StringUtils.replaceIgnoreCase( 
-								strFilename, "S:/Sessions", "/Share/Sessions" );
+				strFilename, "S:/Sessions", "/Share/Sessions" );
+		strFilename = StringUtils.replaceIgnoreCase( 
+				strFilename, "/192.168.6.220/Share/Sessions", "/Share/Sessions" );
 		return strFilename;
 	}
 	

@@ -56,6 +56,14 @@ public class S2DBLogHandler extends Handler {
 	public void publish( final LogRecord record ) {
 		check();
 		
+		if ( ConnectionProvider.isInLockout() ) {
+			final String strMessage = 
+					"Database connections not available (lockout)";
+//			LOGGER.warning( strMessage );
+			System.out.print( "2" );
+			throw new IllegalStateException( strMessage );
+		}
+		
 		final Thread thread = new Thread() {
 			@Override
 			public void run() {

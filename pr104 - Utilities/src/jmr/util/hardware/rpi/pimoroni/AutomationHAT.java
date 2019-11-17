@@ -100,7 +100,10 @@ public class AutomationHAT {
 	private JsonElement jeLast = null;
 	
 	private final MonitorProcess mp;
+
+	private long lUpdateDataCount = 0; 
 	
+
 	
 	
 	private final static int POLLING_AVG_SAMPLES = 40;
@@ -241,7 +244,26 @@ public class AutomationHAT {
 		if ( null==jeLast ) return false;
 		return true;
 	}
+	
+	/**
+	 * Returns a string describing why this instance is not 'active', or
+	 * returns a null if the instance is active.
+	 * @return
+	 */
+	public String getWhyNotActive() {
+		if ( null==mp ) return "MonitorProcess is null";
+		if ( 0 == lUpdateDataCount ) return "Data never updated";
+		if ( null==jeLast ) return "Last JsonElement is null, "
+						+ "lUpdateDataCount = " + lUpdateDataCount;
+		return null;
+	}
 
+	
+	public long getUpdateDataCount() {
+		return this.lUpdateDataCount;
+	}
+	
+	
 	private void updateDigitalInput( 	final Port port,
 										final boolean bNewValue,
 										final TraceMap map,
@@ -749,6 +771,8 @@ System.out.println( " << POSTING EVENT - " + port.name() + " >> " );
 	private JsonElement updateData( final long lTime,
 									final String strLine ) {
 		if ( null==mp ) return null;
+		
+		lUpdateDataCount++;
 		
 		// [{"three": 0, "two": 0, "one": 0}, {"four": 0.53, "three": 0.03, "two": 0.03, "one": 0.03}]
 		

@@ -1,5 +1,12 @@
 package jmr.pr130;
 
+import java.io.InputStream;
+import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
+
+import javax.json.JsonException;
+
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -16,12 +23,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.swt.widgets.Tray;
 import org.eclipse.swt.widgets.TrayItem;
-
-import java.io.InputStream;
-import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang3.StringUtils;
 
 import jmr.SessionPath;
 import jmr.pr130.DeletionScheduleUI.Schedule;
@@ -297,6 +298,8 @@ public class S2TrayIcon {
 
 	public static void main( final String[] args ) {
 
+		final JsonException je = new JsonException( "test" );
+		
 		final Long seqSession = Client.get().register( ClientType.TRAY_GUI, 
 					"Desktop Assistant", S2TrayIcon.class.getSimpleName() );
 		

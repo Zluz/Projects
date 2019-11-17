@@ -32,6 +32,10 @@ public class DateFormatting {
 		return FORMAT_TIMESTAMP.format( date );
 	}
 	
+	public static String getTimestamp() {
+		return DateFormatting.getTimestamp( new Date() );
+	}
+	
 	public static String getSmallTime( final long ms ) {
 		final long lMinutes = TimeUnit.MILLISECONDS.toMinutes( ms );
 		if ( lMinutes < 2 ) {

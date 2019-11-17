@@ -151,12 +151,37 @@ public class ConnectionProvider {
 	
 	
 
+	public static boolean bLockOut = false;
+	public static int iSequentialFailed = 0;
 	
+	public static boolean isInLockout() {
+		return bLockOut;
+	}
+	
+	
+	/**
+	 * Attempt to retrieve a database connection.
+	 * May return null.
+	 * @return
+	 */
 	public Connection getConnection() {
+		
+		if ( iSequentialFailed > 8 ) {
+			bLockOut = true;
+			LOGGER.warning( ()-> "Too many failed connection attempts. "
+					+ "Going into lockout." );
+			throw new IllegalStateException( 
+					"Failed to acquire a database connection (in lockout)." );
+//			return null;
+		}
+		
+		if ( bLockOut ) {
+			// just stay here forever .. (for now)
+		}
+		
 		try {
 //			https://stackoverflow.com/questions/7592056/am-i-using-jdbc-connection-pooling
 				
-			
 			int i=10;
 			Connection conn = null;
 			do {
@@ -169,13 +194,15 @@ public class ConnectionProvider {
 			synchronized ( listConnections ) { 
 				listConnections.add( new ConnectionReference( conn ) );
 			}
+			iSequentialFailed = 0;
 			return conn;
 			
 		} catch ( final SQLException e ) {
+			iSequentialFailed++;
 			LOGGER.log( Level.WARNING, 
 					"Exception while getting a connection", e );
-			LOGGER.log( Level.WARNING, "BasicDataSource: " + bds.toString() ); 
-			LOGGER.log( Level.WARNING, "Database URL: " + bds.getUrl() ); 
+			LOGGER.warning( "BasicDataSource: " + bds.toString() ); 
+			LOGGER.warning( "Database URL: " + bds.getUrl() ); 
 			e.printStackTrace();
 		}
 

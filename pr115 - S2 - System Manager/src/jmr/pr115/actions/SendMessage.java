@@ -27,7 +27,7 @@ public class SendMessage {
 		final Properties p = S2Properties.get();
 
 		final EmailMessage email = new EmailMessage( 
-				EmailProvider.GMAIL, 
+				EmailProvider.GMAIL_API,
 				p.getProperty( "email.sender.address" ),
 				p.getProperty( "email.sender.password" ).toCharArray() );
 

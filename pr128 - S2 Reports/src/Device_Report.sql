@@ -5,10 +5,14 @@ SELECT
     
     CONCAT( TIMEDIFF( current_timestamp(), max_start ), "" ) as 'age_db',
     # ip_address, 
-    # class, 
-    IF( LENGTH( d.name ) = 42, 
-    			concat( substring(d.name,1,22), "\n", substring(d.name,23,100) ), 
-    			d.name ) as 'name',
+    # class,
+    
+    # IF( LENGTH( d.name ) = 42, 
+    #			concat( substring(d.name,1,22), "\n", substring(d.name,23,100) ), 
+    #			d.name ) as 'name',
+    
+    substring( d.name, 1, 3 ) as 'name',
+    
     replace( replace( replace( replace( replace( 
     			trim( trim( both '\n' from d.options ) ), 
     			"\n ", "\n" ), " \n", "\n" ), "\t", " " ), 

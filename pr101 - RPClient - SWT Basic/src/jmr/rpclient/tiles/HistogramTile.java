@@ -86,7 +86,10 @@ public class HistogramTile extends TileBase {
 			return iIndex;
 		}
 		
-		public float getValueForIndex( final int iX ) {
+		public Float getValueForIndex( final int iX ) {
+			if ( null == fMin ) return null;
+			if ( null == fWidth ) return null;
+			
 			final float fValue = 
 					( fWidth * ( (float)iX / ( iWidth - 1 ) ) ) + fMin;
 			return fValue;
