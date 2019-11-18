@@ -384,10 +384,16 @@ public class Event extends TableBase {
 	
 //	final private static JsonParser PARSER = new JsonParser(); 
 	
+	private Map<String, Object> mapData = null;
+	
 	public Map<String,Object> getDataAsMap() {
-		final Map<String, Object> map = 
-						JsonUtils.transformJsonToMap( this.strData );
-		return map;
+		if ( null==mapData ) {
+			final Map<String, Object> map = 
+							JsonUtils.transformJsonToMap( this.strData );
+			mapData = map;
+		}
+		return mapData;
+		
 //		final Map<String,Object> map = new HashMap<>();
 //		if ( StringUtils.isNotBlank( this.strData ) ) {
 //			try {

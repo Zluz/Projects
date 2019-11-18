@@ -11,9 +11,11 @@ import jmr.rpclient.SWTBasic;
 public class SWTLoader3 {
 
 
-	final static URLClassLoader classloader = 
-			(URLClassLoader) ClassLoader.getSystemClassLoader();
+//	final static URLClassLoader classloader = 
+//			(URLClassLoader) ClassLoader.getSystemClassLoader();
 	
+	final public static ClassLoader 
+			SYSTEM_CLASSLOADER = ClassLoader.getSystemClassLoader();
 	
 	
 	
@@ -59,9 +61,17 @@ public class SWTLoader3 {
 		
 		final File fileJar = new File( strFile );
 		if ( !fileJar.isFile() ) return false;
+
+		if ( SYSTEM_CLASSLOADER instanceof URLClassLoader ) {
+//			System.out.println( "System Classloader is URLClassLoader." );
+		} else {
+			System.out.println( "WARNING: "
+					+ "System Classloader is not a URLClassLoader." );
+		}
 		
+
 		try {
-//			System.out.println( "Loading external JAR: " + fileJar );
+			System.out.println( "Loading external JAR: " + fileJar );
 
 			final URL url = fileJar.toURI().toURL();
 			
@@ -71,7 +81,7 @@ public class SWTLoader3 {
 					"addURL", new Class<?>[] { URL.class });
 			
 			method.setAccessible(true);
-			method.invoke( classloader, new Object[] { url } );
+			method.invoke( SYSTEM_CLASSLOADER, new Object[] { url } );
 			
 			return true;
 			

@@ -163,11 +163,13 @@ public class FileSession {
 		final File[] files = this.dir.listFiles( new FileFilter() {
 			@Override
 			public boolean accept( final File file ) {
-				if ( file.isFile() && file.getName().matches( strRegex ) ) {
-					return true;
-				} else {
-					return false;
+				final String strFilename = file.getName();
+				if ( file.isFile() ) {
+					if ( strFilename.matches( strRegex ) ) {
+						return true;
+					}
 				}
+				return false;
 			}
 		});
 		long lLatest = Long.MIN_VALUE;
@@ -257,11 +259,22 @@ public class FileSession {
 			}			
 		}
 		
+		if ( this.dir.getAbsolutePath().contains( "94-C6-91-18-C8-33" ) ) {
+			System.out.println( "Checking 94-C6-91-18-C8-33.." );
+		}
+		
 		final File[] files = this.dir.listFiles( new FilenameFilter() {
 			@Override
 			public boolean accept(	final File dir, 
 									final String strName ) {
 				final String strTest = strName.toLowerCase();
+
+				
+				// for now, accept any as thumbnails
+				if ( strTest.matches( "capture_vid[0-9]+\\.jpg" ) ) return true;
+
+				
+				
 				if ( bThumb 
 						&& strTest.matches( "capture_vid[0-9]+\\-thumb\\.jpg" ) ) {
 					return true;

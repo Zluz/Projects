@@ -128,7 +128,7 @@ public class TestAlertsTile extends TileBase {
 					final Properties p = S2Properties.get();
 
 					final EmailMessage message = new EmailMessage( 
-								EmailProvider.GMAIL, 
+								EmailProvider.GMAIL_API, 
 								p.getProperty( "email.sender.address" ),
 								p.getProperty( "email.sender.password" ).toCharArray() );
 					
