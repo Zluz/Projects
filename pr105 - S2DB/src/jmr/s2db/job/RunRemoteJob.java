@@ -39,17 +39,18 @@ public class RunRemoteJob {
 
 		final String strRemoteDest = map.get( "remote" );
 		
-		System.out.println( "isIntendedHere() - strRemoteDest = " + strRemoteDest );
+//		System.out.println( "isIntendedHere() - strRemoteDest = " + strRemoteDest );
+		System.out.print( "Job " + job.getJobSeq() + " - "
+								+ "dest: " + strRemoteDest );
 		
 		final boolean bMatchIP = this.strIP.equals( strRemoteDest );
 		if ( bMatchIP ) return true;
 
-		System.out.println( "isIntendedHere() - this.strName = " + this.strName );
+//		System.out.println( "isIntendedHere() - this.strName = " + this.strName );
 
 		final boolean bMatchName = null!=this.strName 
 				&& this.strName.equals( strRemoteDest );
 		if ( bMatchName ) return true;
-		
 		
 		return false;
 	}

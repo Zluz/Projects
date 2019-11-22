@@ -70,7 +70,8 @@ public class JsonUtils {
 	public static String transformJsonToElement( final JsonElement element ) {
 
 		if ( element.isJsonObject() ) {
-			return element.getAsString();
+//			return element.getAsString();
+			return element.toString();
 
 		} else if ( element.isJsonArray() ) {
 			return element.getAsJsonArray().toString();

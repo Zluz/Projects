@@ -53,7 +53,10 @@ rule "PrepareTesla-ShowerTrigger"
 		    return;
 		}
 		
+		ActionExec.run( this, e );
+		
 		// bPrepareTeslaTriggered = true;
 		
-		Simple.doPrepareTesla( true, "water_trigger" );
+		// System.out.println( "Calling Simple.doPrepareTesla().." );
+		// Simple.doPrepareTesla( true, "water_trigger" );
 end

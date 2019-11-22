@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -309,10 +310,18 @@ System.out.println( "Map: " + jeMap.toString() );
 			
 		} else { // type = DISPLAY
 		
+			
+			drawActivityCheckerbox( gc, hat.getUpdateDataCount() );
+			
+			
+			
+			
 //			text.println( "Painting.." );
 	
-			if ( !hat.isActive() ) {
+			final String strNotActive = hat.getWhyNotActive();
+			if ( null != strNotActive ) {
 				text.println( "Automation HAT data not available" );
+				text.println( strNotActive );
 				return;
 			}
 	
@@ -487,6 +496,43 @@ System.out.println( "Map: " + jeMap.toString() );
 	}
 	
 	
+	public static void drawActivityCheckerbox( final GC gc, 
+											   final long lUpdateDataCount ) {
+//		final int iIndex = (int) (lUpdateDataCount % 4);
+//		final int iIxX = 1 - ( iIndex % 2 );
+//		final int iIxY = (iIndex / 2);
+
+		final int iIndex = (int) ( lUpdateDataCount % 8 );
+		final int iIxX, iIxY;
+		switch ( iIndex ) {
+			case 0 : iIxX = 0; iIxY = 0; break;
+			case 1 : iIxX = 1; iIxY = 0; break;
+			case 2 : iIxX = 2; iIxY = 0; break;
+			case 3 : iIxX = 2; iIxY = 1; break;
+			case 4 : iIxX = 2; iIxY = 2; break;
+			case 5 : iIxX = 1; iIxY = 2; break;
+			case 6 : iIxX = 0; iIxY = 2; break;
+			case 7 : iIxX = 0; iIxY = 1; break;
+			default : iIxX = 1; iIxY = 1; break;
+		}
+		
+		final Rectangle rectSize = gc.getClipping();
+		final int iYOffs = rectSize.height - 14;
+		final int iXOffs = 6;
+		
+		gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
+		gc.setBackground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
+
+		gc.drawRectangle( iXOffs - 1, iYOffs - 1, 13, 13 );
+		gc.fillRectangle( iIxX * 4 + iXOffs, iIxY * 4 + iYOffs, 4, 4 );
+		
+		gc.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
+		gc.drawText( "" + lUpdateDataCount, 16 + iXOffs, iYOffs - 2 );
+
+		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
+	}
+
+
 	public void setPortValue(	final Port port,
 								final boolean bValue,
 								final long lTime,
@@ -536,8 +582,13 @@ System.out.println( "Map: " + jeMap.toString() );
 //					EventType.USER, strSubject, strValue, strThreshold, 
 //					strData, lTime, null, null, null );
 
-			
-			System.out.println( "Event created: seq " + event.getEventSeq() );
+			if ( null!=event ) {
+				System.out.println( 
+								"Event created: seq " + event.getEventSeq() );
+			} else {
+				System.err.println( 
+								"Failed to create event for " + strSubject );
+			}
 		}
 	}
 	

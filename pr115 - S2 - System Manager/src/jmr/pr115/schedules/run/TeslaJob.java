@@ -78,7 +78,21 @@ public class TeslaJob extends JobWorker {
 				}
 			} else if ( bWrite ) {
 				final Command command = Command.getCommand( strSub );
-				final String strPost = null; //future: get this from the job
+
+				final String strPost;
+				
+				final Map<String, Object> map = job.getJobData();
+				if ( null!=map && ! map.isEmpty() ) {
+					final Object obj = map.get( "parameters" );
+					if ( null!=obj ) {
+						strPost = obj.toString();
+					} else {
+						strPost = null;
+					}
+				} else {
+					strPost = null;
+				}
+				
 				if ( null!=command ) {
 					mapCommand.put( command, strPost );
 				}

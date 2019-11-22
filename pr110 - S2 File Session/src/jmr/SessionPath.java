@@ -9,10 +9,10 @@ import jmr.util.NetUtil;
 public class SessionPath {
 
 	private final static String[] BASE_SESSION_PATHS =
-					{	"/Share/Sessions",
-						"\\\\192.168.6.220\\Share\\Sessions\\",
-						"S:\\Sessions\\",
-						"H:\\Share\\Sessions\\"
+					{	"/Share/",
+						"\\\\192.168.6.220\\Share\\",
+						"S:\\",
+						"H:\\Share\\"
 					};
 	final private static List<File> fileBaseSessionPath = new LinkedList<>();
 	
@@ -21,7 +21,7 @@ public class SessionPath {
 		
 		if ( fileBaseSessionPath.isEmpty() ) {
 			for ( final String strPath : BASE_SESSION_PATHS ) {
-				final File file = new File( strPath );
+				final File file = new File( strPath, "Sessions" );
 				if ( file.isDirectory() ) {
 					fileBaseSessionPath.add( file );
 				}
@@ -52,12 +52,12 @@ public class SessionPath {
 	
 	public static List<File> getPath_DevelopmentExport() {
 		final List<File> list = new LinkedList<>();
-		for ( final File file : SessionPath.getPaths() ) {
+		for ( final String strFile : BASE_SESSION_PATHS ) {
 			final File fileExport = 
-					new File( file, "Development/Export" );
-//			if ( fileExport.isDirectory() ) { // already tested
+					new File( strFile, "Development/Export" );
+			if ( fileExport.isDirectory() ) { 
 				list.add( fileExport );
-//			}
+			}
 		}
 		return list;
 	}

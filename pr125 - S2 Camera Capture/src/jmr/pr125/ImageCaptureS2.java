@@ -65,10 +65,12 @@ public class ImageCaptureS2 {
 	
 	public static File getLatest_pr124() {
 		
+		System.out.println( "Looking for the latest pr124 jar.." );
+		
 		final List<File> list = SessionPath.getPath_DevelopmentExport();
 		if ( list.isEmpty() ) throw new IllegalStateException( 
 							"Development Export path not found." );
-		final File filePath = list.get( 0 );
+//		final File filePath = list.get( 0 );
 		
 		final FilenameFilter filter = new FilenameFilter() {
 			@Override
@@ -78,11 +80,18 @@ public class ImageCaptureS2 {
 		};
 		long lLatest = 0;
 		File fileLatest = null;
-		for ( final File file : filePath.listFiles(filter) ) {
-			final long lTimestamp = file.lastModified();
-			if ( lTimestamp > lLatest ) {
-				lLatest = lTimestamp;
-				fileLatest = file;
+		for ( final File dir : list ) {
+			System.out.println( "\tChecking: " + dir.getAbsolutePath() );
+			final File[] files = dir.listFiles(filter);
+			if ( null!=files ) {
+				for ( final File file : files ) {
+					final long lTimestamp = file.lastModified();
+					if ( lTimestamp > lLatest ) {
+						System.out.println( "\t\tFound: " + file.getName() );
+						lLatest = lTimestamp;
+						fileLatest = file;
+					}
+				}
 			}
 		}
 		

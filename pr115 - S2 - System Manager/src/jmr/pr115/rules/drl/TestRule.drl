@@ -6,27 +6,32 @@ import jmr.s2db.event.*;
 import jmr.pr115.schedules.run.*;
 import jmr.util.hardware.*;
 import jmr.util.*;
+import jmr.pr115.rules.drl.*;
 
 // Cannot seem to actually use java.util.Map 
 // (Map may already be declared and explicitly referencing may not be working)
 
 rule "TestEvent"
-	//dialect "mvel" //NOTE: do not specify dialect here
 	when
-		e : Event( getEventType() == EventType.TIME )
+		h : Heartbeat( getTimeUnit() == TimeUnit.MINUTES )
 	then
-		System.out.println( "Test rule firing. Event: " + e.toString() );
+		// System.out.println( "Test rule firing." );
+		// ActionExec.run( this, h );
 end
+
 
 /*
 rule "TestJobWorker (any)"
+	//dialect "mvel" //NOTE: do not specify dialect here
 	dialect "mvel"
 	when
+		// e : Event( getEventType() == EventType.TIME )
 		j : JobWorker()
 	then
 		System.out.println( "Test rule firing. JobWorker: " + j.toString() );
 end
 */
+
 
 rule "TestJobWorker (RunTest)"
 	dialect "mvel"

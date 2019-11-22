@@ -15,6 +15,7 @@ import jmr.pr102.comm.TeslaVehicleID;
 import jmr.util.SUProperty;
 import jmr.util.SystemUtil;
 import jmr.util.http.ContentRetriever;
+import jmr.util.report.Reporting;
 import jmr.util.transform.JsonUtils;
 
 public class TeslaVehicleInterface implements TeslaConstants {
@@ -180,7 +181,13 @@ java.lang.Exception: HTTP code 408 received.
 		return strResponse;
 	}
 	
-	
+
+	/**
+	 * strPost should be used as payload, may be tested elsewhere
+	 * @param command
+	 * @param strPost
+	 * @return
+	 */
 	public Map<String,String> command(	final Command command, 
 										final String strPost ) {
 		if ( null==command ) throw new IllegalStateException( "Null command" );
@@ -191,8 +198,22 @@ java.lang.Exception: HTTP code 408 received.
 						+ "api/1/vehicles/" + strVID + "/" 
 						+ command.getUrlSuffix();
 		
-		final String strNonNullPost = null!=strPost ? strPost : ""; 
-		final String strResponse = getContent( strURL, strNonNullPost );
+		final String strNonNullPost = null!=strPost ? strPost : "";
+
+		final String strResponse;
+		if ( 1==1 ) { // testing
+			final String strURLTest;
+			if ( null!=strPost ) {
+				strURLTest = strURL + "?" + strPost;
+			} else {
+				strURLTest = strURL;
+			}
+			System.out.println( "Using URL: " + strURLTest );
+			strResponse = getContent( strURLTest, strNonNullPost );
+		} else {
+			strResponse = getContent( strURL, strNonNullPost );
+		}
+		
 		// {"response":{"reason":"","result":true}}
 		// {"response":{"reason":"could_not_wake_buses","result":false}}
 
@@ -259,9 +280,14 @@ java.lang.Exception: HTTP code 408 received.
 		
 		
 //		tvi.command( Command.FLASH_LIGHTS, "" );
+
+		final Map<String, String> 
+				response = tvi.command( Command.SET_CHARGE_LIMIT, "percent=80" );
+		final String strReport = Reporting.print( response );
+		System.out.println( strReport );
+
 		
-		
-		while ( true ) {
+//		while ( true ) {
 			
 			System.out.println( "------ ----------------------------------------------------------------" );
 			System.out.println( "Now: " + new Date().toString() );
@@ -269,18 +295,19 @@ java.lang.Exception: HTTP code 408 received.
 			
 			for ( final DataRequest request : DataRequest.values() ) {
 				
-//				if ( DataRequest.VEHICLE_STATE != request ) break;
+				if ( DataRequest.VEHICLE_STATE == request ) {
 				
-				System.out.println( "Requesting: " + request );
-				final Map<String, String> map = 
-						getMapFromJson( tvi.request( request ) );
-//				JsonUtils.print( map );
-				System.out.println( "\t" + map.size() + " entries" );
+					System.out.println( "Requesting: " + request );
+					final Map<String, String> map = 
+							getMapFromJson( tvi.request( request ) );
+	//				JsonUtils.print( map );
+					System.out.println( "\t" + map.size() + " entries" );
+				}
 			}
-
+			
 //			Thread.sleep( 10 * 60 * 1000 );1
-			Thread.sleep( TimeUnit.HOURS.toMillis( 1 ) );
-		}
+//			Thread.sleep( TimeUnit.HOURS.toMillis( 1 ) );
+//		}
 	}
 
 }

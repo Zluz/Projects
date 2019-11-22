@@ -228,8 +228,10 @@ public class TeslaTile extends TileBase {
 //				if ( null!=strError ) {
 //					strAlert = "(See Error)";
 //				}
-				if ( bHome && bLowBattery && !bCharging ) {
-					strAlert = "Not charging (" + strBatteryLevel + "%)";
+				
+//				if ( bHome && bLowBattery && !bCharging ) {
+				if ( bHome && bLowBattery && !bLatched ) {
+					strAlert = "Not latched, " + strBatteryLevel + "%";
 				}
 				
 				final boolean bAlert = ( null!=strError || null!=strAlert ); 
@@ -307,10 +309,10 @@ public class TeslaTile extends TileBase {
 						text.println( bRefreshRequest, "Refresh request" );
 						text.addSpace( 10 );
 						
-						text.println( null!=strError, "Error" 
+						text.println( null!=strError, "Err>" 
 								+ ( null!=strError ? ": " + strError : " -" ) );
-						text.println( null!=strAlert, "Alert" 
-								+ ( null!=strAlert ? ": " + strAlert : " -" ) );
+						text.println( null!=strAlert, "Alr> " 
+								+ ( null!=strAlert ? strAlert : " -" ) );
 					}
 					
 				} else {

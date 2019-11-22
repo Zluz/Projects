@@ -1,0 +1,31 @@
+package pr115.rules.drl;
+
+import jmr.s2db.tables.Event;
+import jmr.s2db.event.*;
+import jmr.pr115.schedules.run.*;
+import jmr.util.hardware.*;
+import jmr.util.*;
+import com.google.gson.JsonObject;
+
+import jmr.pr115.rules.drl.Simple;
+
+dialect "mvel"
+
+
+
+rule "WarnSumpLevel"
+	when
+		e : Event( // sump level check
+				getEventType() == EventType.INPUT, 
+				getSubject().equals( HardwareInput.SUMP_WATER_LEVEL.name() )
+				// getValue() < 4.0 
+			)
+		// eval( TimeUtil.isHourOfDay( 7,8,9 ) )
+		// eval( ! bPrepareTeslaTriggered )
+		// h : Heartbeat( getTimeUnit() == TimeUnit.MINUTES )
+		// eval( TimeUtil.isMinuteInHour( 8 ) )
+	then
+	
+	Simple.WarnSumpLevel_Action( e );
+	
+end

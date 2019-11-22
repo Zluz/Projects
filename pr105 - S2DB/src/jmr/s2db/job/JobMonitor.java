@@ -258,23 +258,29 @@ public class JobMonitor {
 		if ( null==jobs ) return;
 		if ( jobs.isEmpty() ) return;
 
-		System.out.println( "JobMonitor.doWorkJobs(), jobs.size: " + jobs.size() );
+//		System.out.println( "JobMonitor.doWorkJobs(), jobs.size: " + jobs.size() );
 		
 		final Thread threadWorkJobs = new Thread( "Work Jobs" ) {
 			@Override
 			public void run() {
 				
+				int i=0;
 				for ( final Job job : jobs ) {
+					i++;
 					final JobType type = job.getJobType();
 					
-					System.out.println( "JobMonitor Thread, jobs.size: " + jobs.size() );
+					System.out.print( "[" + System.currentTimeMillis() + "] " );
+					System.out.print( "JobMonitor: "
+							+ "(job " + i + " of " + jobs.size() + ") " );
 
-					if ( type.isRemoteType() 
-							&& runner.isIntendedHere( job ) ) {
+					if ( ! type.isRemoteType() ) {
+						System.out.println( "No remote." );
+					} else if ( runner.isIntendedHere( job ) ) {
 						
 						System.out.println( 
 								"Remote job identified to run here "
 								+ "(Job " + job.getJobSeq() + ")" );
+						
 						job.setState( JobState.WORKING );
 
 						// execute job?
@@ -288,6 +294,8 @@ public class JobMonitor {
 							runner.runGetCallStack( job );
 						}
 
+					} else {
+						System.out.println( "  Not intended here." );
 					}
 				}
 			}

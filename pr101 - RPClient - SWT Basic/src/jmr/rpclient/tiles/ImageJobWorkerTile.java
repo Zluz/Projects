@@ -805,15 +805,22 @@ public class ImageJobWorkerTile extends TileBase {
 			final File fileLive = new File( strFilename );
 			final long lModOriginal = fileLive.lastModified();
 			final String strOriginal = FileUtil.readFromFile( fileLive );
-			
-			final List<String> list = new LinkedList<>( 
+
+			final String strUpdated;
+
+			if ( null!=strOriginal ) {
+				final List<String> list;
+				list = new LinkedList<>( 
 							Arrays.asList( strOriginal.split( "\\n" ) ) );
-			list.add( strLine );
-			Collections.sort( list );
-			while ( list.size() > 10 ) {
-				list.remove( 0 );
+				list.add( strLine );
+				Collections.sort( list );
+				while ( list.size() > 10 ) {
+					list.remove( 0 );
+				}
+				strUpdated = String.join( "\n", list );
+			} else {
+				strUpdated = strLine;
 			}
-			final String strUpdated = String.join( "\n", list );
 			
 			final long lModNow = new File( strFilename ).lastModified();
 			if ( lModOriginal == lModNow ) {

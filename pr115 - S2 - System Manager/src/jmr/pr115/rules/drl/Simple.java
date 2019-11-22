@@ -62,6 +62,7 @@ import jmr.s2fs.FileSessionManager;
 import jmr.util.FileUtil;
 import jmr.util.RunProcess;
 import jmr.util.TimeUtil;
+import jmr.util.hardware.HardwareInput;
 import jmr.util.hardware.rpi.pimoroni.Port;
 import jmr.util.http.ContentType;
 import jmr.util.report.TraceMap;
@@ -238,11 +239,12 @@ public class Simple implements RulesConstants {
 			}
 			
 			
+			System.out.print( "Marking jobs complete: " );
 			for ( final Job job : jobs ) {
 				job.setState( JobState.COMPLETE );
+				System.out.print( job.getJobSeq() + " " ); 
 			}
-
-//			return jo;
+			System.out.println();
 		}
 	}
 	
@@ -645,8 +647,40 @@ public class Simple implements RulesConstants {
 			
 		} while ( ! bHVACStarted );
 		
+//		final Event event = Event.add( EventType.SYSTEM, "Tesla_Prepare_HVAC", 
 		final Event event = Event.add( EventType.SYSTEM, "Tesla_Prepare", 
 				strReason, null, map, lNow, null, null, null );
+		
+		LOGGER.info( "Tesla climate is on. "
+						+ "Posted Event " + event.getEventSeq() );
+	}
+	
+	
+	public static void setTeslaChargeTarget( final int iPercent,
+											 final String strReason ) {
+		
+		final long lNow = System.currentTimeMillis();
+
+		final TraceMap mapData = new TraceMap();
+		mapData.put( "reason", strReason );
+		
+		mapData.put( "parameters", "percent=" + iPercent );
+
+		LOGGER.info( "POSTing SET_CHARGE_LIMIT = " + iPercent );
+		final Job jobActivate = Job.add( JobType.TESLA_WRITE, null, null, 
+				jmr.pr102.Command.SET_CHARGE_LIMIT.name(), mapData );
+
+		try {
+			if ( ! waitForJob( jobActivate, 20 ) ) {
+				LOGGER.info( "Request to start Tesla HVAC timed-out.");
+			}
+		} catch ( final InterruptedException e ) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		final Event event = Event.add( EventType.SYSTEM, "Tesla_Prepare_Charge", 
+				strReason, null, mapData, lNow, null, null, null );
 		
 		LOGGER.info( "Tesla climate is on. "
 						+ "Posted Event " + event.getEventSeq() );
@@ -747,10 +781,76 @@ public class Simple implements RulesConstants {
 			e.printStackTrace();
 		}
 		
+//		final Event e; //TODO DELETE ME
+//		try {
+//			
+//			final long lValue = Long.parseLong( e.getValue() );
+//			if ( lValue < 4.0 ) {
+//				
+//				final long lNow = System.currentTimeMillis();
+//				
+//				final String strReason = "Level is " + strValue + " inches";
+//				
+//				final Event event = Event.add( EventType.SYSTEM, "Warn_Sump_Level", 
+//						strReason, null, null, lNow, null, null, null );
+//				
+//				System.out.println( "WARNING: " + strReason );
+//				System.out.println( "Event " + event.getEventSeq() + " posted." );
+//			}
+//		
+//		} catch ( final NumberFormatException exception ) {
+//			exception.printStackTrace();
+//		}	
+		
 		System.out.println( report.getOutputFilename() + ": " 
 							+ bytes.length + " bytes sent to GCS." );
 	}
 
+	
+	public static void WarnSumpLevel_Action( final Event e ) {
+		if ( null == e ) return;
+		if ( null == e.getSubject() ) return;
+		
+		if ( ! HardwareInput.SUMP_WATER_LEVEL.name().equals( e.getSubject() ) ) {
+			return; // mismatched event
+		}
+		
+		final Map<String, Object> map = e.getDataAsMap();
+		if ( null==map ) return;
+		if ( map.isEmpty() ) return;
+		
+		final Object objValue = map.get( "value-irl" );
+		if ( null==objValue ) return;
+		
+		
+//		final String strValue = e.getValue();
+		final String strValue = objValue.toString();
+
+		try {
+			final float fValue = Float.parseFloat( strValue );
+			if ( fValue < 4.5 ) {
+				
+				final long lNow = System.currentTimeMillis();
+				
+				final String strReason = "Level is " + strValue + " inches";
+				
+				map.put( "reason", strReason );
+				map.put( "value", strValue );
+				map.put( "source-event", e.getEventSeq() );
+				
+				final Event event = Event.add( 
+						EventType.SYSTEM, "Warn_Sump_Level", 
+						strReason, null, map, lNow, null, null, null );
+				
+				System.out.println( "WARNING: " + strReason );
+				System.out.println( "Event " + event.getEventSeq() + " posted." );
+			}
+		
+		} catch ( final NumberFormatException exception ) {
+			exception.printStackTrace();
+		}	
+	}
+	
 	
 	//TODO remove this, should be unnecessary..
 	public static void doUpdateDevices( final Event event,
