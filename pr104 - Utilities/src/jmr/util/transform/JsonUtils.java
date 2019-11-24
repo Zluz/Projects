@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -15,6 +17,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 
 public class JsonUtils {
 
@@ -139,6 +143,21 @@ public class JsonUtils {
 	
 	public static void print( final Object obj ) {
 		System.out.println( "\tReport: " + report( obj ) );
+	}
+	
+	
+	public static String getJsonValue( final String strInput, 
+									   final String strPath ) {
+		if ( StringUtils.isBlank( strInput ) ) return "";
+		if ( StringUtils.isBlank( strPath ) ) return "";
+		
+		final DocumentContext jc = JsonPath.parse( strInput );
+		final String strValue = jc.read( strPath );
+		if ( null!=strValue ) {
+			return strValue;
+		} else {
+			return "";
+		}
 	}
 	
 	

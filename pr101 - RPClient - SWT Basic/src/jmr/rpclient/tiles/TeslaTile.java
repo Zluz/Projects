@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -24,6 +25,7 @@ import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Job;
 import jmr.util.report.TraceMap;
 import jmr.util.transform.DateFormatting;
+import jmr.util.transform.JsonUtils;
 
 public class TeslaTile extends TileBase {
 
@@ -151,7 +153,6 @@ public class TeslaTile extends TileBase {
 		}
 
 		try {
-
 			String strError = null;
 			String strAlert = null;
 
@@ -170,7 +171,11 @@ public class TeslaTile extends TileBase {
 				final String strVersion = mapVehicle.get( "car_version" );
 //					final String strOdometer = mapVehicle.get( "odometer" );
 				final String strRange = mapCharge.get( "battery_range" );
-				final String strStatus = mapCharge.get( "+status" );
+//				final String strStatus = mapCharge.get( "+status" );
+				final String strChargeStatus = mapCharge.get( "charging_state" );
+				final String strSoftware = mapVehicle.get( "software_update" );
+				final String strUpdate = JsonUtils.getJsonValue( strSoftware, "status" );
+				
 //				final String strTimestampCharge = mapCharge.get( ".last_modified_uxt" );
 //				
 //				final int iTimestampCharge = Conversion.getIntFromString( 
@@ -230,8 +235,9 @@ public class TeslaTile extends TileBase {
 //				}
 				
 //				if ( bHome && bLowBattery && !bCharging ) {
-				if ( bHome && bLowBattery && !bLatched ) {
-					strAlert = "Not latched, " + strBatteryLevel + "%";
+//				if ( bHome && bLowBattery && !bLatched ) {
+				if ( bHome && bLowBattery && !bPortOpen ) {
+					strAlert = "Plug in! " + strBatteryLevel + "%";
 				}
 				
 				final boolean bAlert = ( null!=strError || null!=strAlert ); 
@@ -297,17 +303,17 @@ public class TeslaTile extends TileBase {
 						text.println( bHome, "Location: Home" );
 						text.println( bPortOpen, "Port open" );
 						text.println( bLatched, "   Port latched" );
-						text.addSpace( 4 );
-						text.println( bChargeComplete, "Charging complete" );
+						text.addSpace( 8 );
+						text.println( bChargeComplete, "Charge complete" );
 						text.println( bCharging, "   Charging" );
 						text.println( bLowBattery, "   Low battery: " + strBatteryLevel );
 						text.println( "        State: " + strChargeState );
 						text.println( "        Power: " + strChargerPower );
-						text.addSpace( 4 );
+						text.addSpace( 8 );
 						text.println( bClimateOn, "Climate On" );
 						text.println( bFanOn, "   Fan On" );
 						text.println( bRefreshRequest, "Refresh request" );
-						text.addSpace( 10 );
+						text.addSpace( 12 );
 						
 						text.println( null!=strError, "Err>" 
 								+ ( null!=strError ? ": " + strError : " -" ) );
@@ -329,12 +335,13 @@ public class TeslaTile extends TileBase {
 
 					gc.setFont( Theme.get().getFont( 16 ) );
 	//					gc.drawText( "Time to Charge:  " + strTime, 40, 112 );
+					
 					if ( null!=strError ) {
-						gc.drawText( strError, 30, 112 );
-					} else if ( null!=strStatus ) {
-						gc.drawText( strStatus, 30, 112 );
+						gc.drawText( "Error: " + strError, 10, 112 );
+					} else if ( StringUtils.isNotBlank( strUpdate ) ) {
+						gc.drawText( "Software: " + strUpdate, 10, 112 );
 					} else {
-						gc.drawText( "(null status)", 30, 112 );
+						gc.drawText( "Charge: " + strChargeStatus, 10, 112 );
 					}
 					
 					gc.setFont( Theme.get().getFont( 14 ) );
