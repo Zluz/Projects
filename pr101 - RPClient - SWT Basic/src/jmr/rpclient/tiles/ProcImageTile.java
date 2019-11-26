@@ -70,6 +70,7 @@ public class ProcImageTile extends TileBase {
 	private final float fThreshold;
 	private final File fileSourcePath;
 	
+	
 	private State state = State.IDLE;
 	private float fChoke;
 	private int iCountTotal;
@@ -145,7 +146,11 @@ public class ProcImageTile extends TileBase {
 		
 		if ( State.IDLE.equals( this.state ) ) {
 			final File fileSource = new File( this.strSourceImage );
-			this.fileSourcePath = fileSource.getParentFile();
+			if ( fileSource.isDirectory() ) {
+				this.fileSourcePath = fileSource;
+			} else {
+				this.fileSourcePath = fileSource.getParentFile();
+			}
 			
 			if ( ! this.fileSourcePath.isDirectory() ) {
 				this.state = State.WARNING__MISSING_SOURCE_DIR;

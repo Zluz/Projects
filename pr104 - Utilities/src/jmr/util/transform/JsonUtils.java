@@ -48,9 +48,13 @@ public class JsonUtils {
 	public static Map<String,Object> transformJsonToMap( 
 										final String strJson ) {
 		final Type type = new TypeToken<Map<String, String>>(){}.getType();
-		final Map<String, Object> map = GSON.fromJson( strJson, type);
-		
-		return map;
+//		try {
+			final Map<String, Object> map = GSON.fromJson( strJson, type);
+			return map;
+//		} catch ( final JsonSyntaxException e ) {
+//			final Map<String,Object> map = Collections.emptyMap();
+//			return map;
+//		}
 	}
 
 	

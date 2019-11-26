@@ -275,7 +275,15 @@ public abstract class NetUtil {
 
 		final String strUpper = " " + strInput.trim().toUpperCase() + " ";
 		
-		final int iPos = strUpper.indexOf( "B8:" );
+		final int iPos;
+		if ( strUpper.contains( "B8:" ) ) {
+			iPos = strUpper.indexOf( "B8:" ); // RPi 3 and past
+		} else if ( strUpper.contains( "DC:" ) ) {
+			iPos = strUpper.indexOf( "DC:" ); // RPi 4
+		} else {
+			throw new IllegalStateException( 
+						"MAC not found in \"" + strUpper + "\"." );
+		}
 		int iStart = iPos;
 		int iEnd = iPos;
 		while ( iStart > 0 && isMACChar( strUpper.charAt( iStart ) ) ) {

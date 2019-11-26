@@ -1,9 +1,7 @@
 package jmr.rpclient.tiles;
 
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -25,6 +23,10 @@ import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+
+import com.google.gson.JsonSyntaxException;
 
 import jmr.rpclient.swt.GCTextUtils;
 import jmr.rpclient.swt.S2Button;
@@ -36,8 +38,10 @@ import jmr.s2db.Client;
 import jmr.s2db.comm.ConnectionProvider;
 import jmr.s2db.event.EventType;
 import jmr.s2db.job.JobManager;
+import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Event;
 import jmr.s2db.tables.Job;
+import jmr.s2db.tables.Job.JobSet;
 import jmr.util.FileUtil;
 import jmr.util.NetUtil;
 import jmr.util.RunProcess;
@@ -51,6 +55,9 @@ public class ImageJobWorkerTile extends TileBase {
 	private static final Logger 
 			LOGGER = Logger.getLogger( ImageJobWorkerTile.class.getName() );
 
+	private static final long START_TIME = System.currentTimeMillis();
+	
+	
 
 	private static enum State {
 		IDLE,
@@ -64,6 +71,11 @@ public class ImageJobWorkerTile extends TileBase {
 		WARNING__MISSING_SOURCE_DIR,
 		;
 	}
+	
+	
+
+	final static private Map<String,Long> 
+					FILES_PROCESSED = new TreeMap<String,Long>();
 	
 	
 	private RunProcess run;
@@ -82,6 +94,14 @@ public class ImageJobWorkerTile extends TileBase {
 	private boolean bUsingMask;
 	private boolean bWarmup = true;
 	
+	private final String strTileName;
+	private final File fileMonitorPath;
+	
+	private final String strFileConfig;
+	private final Map<String,Object> mapConfig;
+	private final String strFileMask;
+	private final String strFileLive;
+	
 	String strData = "uninitialized";
 	
 	String strName = null;
@@ -98,6 +118,12 @@ public class ImageJobWorkerTile extends TileBase {
 			threadUpdater = null;
 			this.strIndex = null;
 			this.strExpectedObjects = null;
+			this.strTileName = null;
+			this.fileMonitorPath = null;
+			this.mapConfig = Collections.emptyMap();
+			this.strFileMask = null;
+			this.strFileConfig = null;
+			this.strFileLive = null;
 			return;
 		}
 		
@@ -112,7 +138,27 @@ public class ImageJobWorkerTile extends TileBase {
 		} else {
 			this.strExpectedObjects = "(not-specified)";
 		}
+
+		this.strTileName = mapOptions.get( strPrefix + ".name" );
+		final String strMonitorPath = mapOptions.get( strPrefix + ".monitor_path" );
+		if ( null!=strMonitorPath ) {
+			final File file = new File( strMonitorPath );
+			if ( file.isDirectory() ) {
+				this.fileMonitorPath = file;
+			} else {
+				this.fileMonitorPath = null;
+			}
+		} else {
+			this.fileMonitorPath = null;
+		}
 		
+		if ( null != this.fileMonitorPath ) {
+			this.strFileLive = 
+					this.fileMonitorPath.getAbsolutePath() + "/live.ini";
+		} else {
+			this.strFileLive = null;
+		}
+
 		this.threadUpdater = createThread();
 		this.threadUpdater.start();
 		
@@ -121,6 +167,37 @@ public class ImageJobWorkerTile extends TileBase {
 				ImageJobWorkerTile.threadJobList.start();
 			}
 		}
+
+		this.strFileConfig = mapOptions.get( strPrefix + ".file_config" );
+		Map<String,Object> map = Collections.emptyMap();
+		
+		if ( StringUtils.isNotBlank( strFileConfig ) ) {
+			final File file = new File( strFileConfig );
+			if ( file.isFile() ) {
+				try {
+					final String strContents = FileUtil.readFromFile( file );
+					map = JsonUtils.transformJsonToMap( strContents );
+				} catch ( final JsonSyntaxException e ) {
+					final String strMessage =  
+							"Failed to read config file: " + strFileConfig;
+					System.err.println( strMessage );
+					throw new IllegalStateException( strMessage, e );
+				}
+			}
+		}
+		this.mapConfig = map;
+		
+		if ( ! map.isEmpty() ) {
+			this.strFileMask = ""+ map.get( "image_mask" );
+		} else {
+			this.strFileMask = "";
+		}
+
+		if ( StringUtils.isNotBlank( this.strTileName ) ) {
+			System.out.println( "Image monitoring tile initialized: " 
+								+ this.strTileName );
+		}
+		
 	}
 
 	
@@ -255,8 +332,8 @@ public class ImageJobWorkerTile extends TileBase {
 	}
 	
 	
-	private Job doPopNextJob() {
-
+	
+	private Job doPopNextJob_FromDB() {
 		Job job = null;
 		do {
 			try {
@@ -285,6 +362,130 @@ public class ImageJobWorkerTile extends TileBase {
 	}
 	
 	
+	
+	private Job doPopNextJob_FromPath() {
+		if ( null==this.fileMonitorPath ) return null;
+		if ( ! this.fileMonitorPath.isDirectory() ) return null;
+		
+		final long lNow = System.currentTimeMillis();
+
+		final File[] files = this.fileMonitorPath.listFiles( 
+											new FileFilter() {
+			@Override
+			public boolean accept( final File file ) {
+				final String strShort = file.getName().toLowerCase();
+				if ( ! strShort.startsWith( "capture_cam") ) {
+					return false;
+				} else if ( strShort.contains( "thumb" ) ) {
+					return false;
+				} else if ( strShort.contains( "mask" ) ) {
+					return false;
+				} else if ( ! strShort.endsWith( ".jpg" ) ) {
+					return false;
+				} else if ( file.lastModified() < START_TIME ) {
+					return false;
+				} else if ( FILES_PROCESSED.containsKey( strShort ) ) {
+					return false;
+				} else {
+					return true;
+				}
+			}
+		} );
+				
+		final List<File> listFiles = new LinkedList<>( Arrays.asList( files ) );
+	
+		Collections.sort( listFiles, new Comparator<File>() {
+			public int compare( final File fileLHS, 
+								final File fileRHS ) {
+				return Long.compare( 
+							fileRHS.lastModified(), fileLHS.lastModified() );
+
+			};
+		});
+		
+		if ( listFiles.size() > 1 ) { // need 2
+			final File file = listFiles.get( 0 );
+			
+			if ( file.lastModified() > START_TIME ) {
+				System.out.println( "File detected." ); // ends running dots
+				System.out.println( 
+						"Candidate file: " + file.getAbsolutePath() );
+				
+				// process
+
+				final File filePrev = listFiles.get( 1 );
+
+				// much of this was taken from pr130:CameraSchedulerUI.java
+				
+				final TraceMap trace = new TraceMap();
+
+				trace.putAllUnder( "01", Client.get().getDetails() );
+				
+				final String strFileCurrent = file.getAbsoluteFile().toString();
+//				final String strWorkDir = StringUtils.removeEnd( strFileCurrent, ".jpg" ); 
+				final String strWorkDir = 
+									StringUtils.substringBeforeLast( 
+									file.getAbsolutePath(), "." );
+				
+				trace.put( "config.name", this.strTileName );
+				trace.put( "image_current", strFileCurrent );
+				trace.put( "image_previous", filePrev.getAbsoluteFile().toString() );
+				trace.put( "image_mask", this.strFileMask );
+				trace.put( "file_config", this.strFileConfig );
+				trace.put( "file_live", this.strFileLive );
+				trace.put( "path_work", strWorkDir );
+				trace.put( "config.threshold", this.mapConfig.get( "threshold" ) );
+				
+				
+//				trace.putAllUnder( "config", getConfigForCamera( fileConfig ) );
+
+//				final String strResult = S2Utils.strUnixPathOf( strFilenameBase );
+				final String strResult = file.getAbsolutePath();
+				final JobSet jobset = null;
+				final JobType type = JobType.PROCESSING_IMAGE_DIFF;
+				
+				Job.add( type, jobset, 1, strResult, trace );
+								
+			} else {
+				System.out.println( 
+						"File predates process: " + file.getAbsolutePath() );
+			}
+			
+			final String strFilename = file.getName().toLowerCase();
+			FILES_PROCESSED.put( strFilename, lNow );
+			
+		} else {
+//			System.out.println( "No files ready." );
+			System.out.print( "." );
+		}
+		
+		//TODO implement
+		return null;
+	}
+
+	
+	
+	private Job doPopNextJob() {
+		if ( null == this.fileMonitorPath ) {
+			return doPopNextJob_FromDB();
+		} else {
+			Job job = null;
+			while ( null==job ) {
+				job = doPopNextJob_FromPath();
+				if ( null == job ) {
+					try {
+						Thread.sleep( 200 );
+					} catch ( final InterruptedException e ) {
+						e.printStackTrace();
+						return null;
+					}
+				}
+			}
+			return job;
+		}
+	}
+
+
 	
 	private Thread createThread() {
 		
@@ -354,8 +555,16 @@ public class ImageJobWorkerTile extends TileBase {
 									  fileRHS.getAbsolutePath(),
 									  strFileMask };
 		
+		System.out.println( "Running command:" );
+		for ( final String strLine : strCommand ) {
+			System.out.println( "\t" + strLine );
+		}
+		
 		run = new RunProcess( strCommand );
 		final Integer iResult = run.run();
+		
+		System.out.println( "  Exit code: " + iResult );
+		
 		if ( null==iResult || iResult != 0 ) {
 			LOGGER.warning( strLogPrefix + "Non-zero result from process ("
 					+ "exit code = " + iResult + ")." ); // + "\n"
@@ -426,7 +635,24 @@ public class ImageJobWorkerTile extends TileBase {
 
 		System.out.println( "--- scan() - 1.0 - bReady = " + bReady );
 
-		trace = bReady ? new TraceMap( job.getJobData() ) : null;
+		if ( bReady ) {
+			Map<String, Object> map = null;
+			try {
+				map = job.getJobData();
+			} catch ( final Exception e ) {
+				System.err.println( "Failed to read JSON data for "
+						+ "Job " + job.getJobSeq() );
+				System.err.println( "Job will not be worked, "
+						+ "image will not be processed." );
+			}
+			if ( null!=map ) {
+				trace = new TraceMap( map );
+			} else {
+				trace = null;
+			}
+		} else {
+			trace = null;
+		}
 
 		if ( bReady ) {
 
@@ -950,9 +1176,13 @@ public class ImageJobWorkerTile extends TileBase {
 			gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
 		}
 
-		gc.setFont( Theme.get().getFont( 12 ) );
 
-		text.addSpace( 10 );
+		if ( null!=this.strTileName ) {
+			gc.setFont( Theme.get().getFont( 10 ) );
+			text.println( this.strTileName );
+		} else {
+			text.addSpace( 10 );
+		}
 		final StringBuilder sbName = new StringBuilder();
 		final Job jobLocal = this.job;
 		if ( null != jobLocal ) {
@@ -963,6 +1193,7 @@ public class ImageJobWorkerTile extends TileBase {
 		} else {
 			sbName.append( "<none>" );
 		}
+		gc.setFont( Theme.get().getFont( 12 ) );
 		text.println( sbName.toString() );
 		
 		gc.setFont( Theme.get().getFont( 8 ) );
@@ -970,8 +1201,11 @@ public class ImageJobWorkerTile extends TileBase {
 		final String strFilenameLocal = this.strFilename;
 		if ( null != strFilenameLocal ) {
 			sbFile.append( "../" + strFilenameLocal.substring( 16 ) );
+		} else if ( null!=fileMonitorPath ){
+//			sbFile.append( "<none>" );
+			sbFile.append( "Monitoring: " + this.fileMonitorPath.getName() );
 		} else {
-			sbFile.append( "<none>" );
+			sbFile.append( "<nothing>" );
 		}
 		text.println( sbFile.toString() );
 
