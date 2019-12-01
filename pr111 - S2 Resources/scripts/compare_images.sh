@@ -8,30 +8,32 @@ export MASK=$3
 
 # validate source image files
 
-export LHS_ZEROES=`hexdump $LHS | head -1100 | tail -1000 | grep ' 0000 0000 0000 ' | wc -l`
-if [ ! "$LHS_ZEROES" -eq "0" ]; then
+export ZEROS=' 0000 0000 0000 0000 0000 0000 '
+
+export LHS_ZEROES=`hexdump $LHS | head -1100 | tail -1000 | grep "$ZEROS" | wc -l`
+if [ "$LHS_ZEROES" -gt "5" ]; then
 	echo ""
 	echo "Comparison aborted. Image file corrupt (zeroes-head): $LHS"
 	echo ""
 	exit 100
 fi
-export LHS_ZEROES=`hexdump $LHS | tail -1100 | head -1000 | grep ' 0000 0000 0000 ' | wc -l`
-if [ ! "$LHS_ZEROES" -eq "0" ]; then
+export LHS_ZEROES=`hexdump $LHS | tail -1100 | head -1000 | grep "$ZEROS" | wc -l`
+if [ "$LHS_ZEROES" -gt "5" ]; then
 	echo ""
 	echo "Comparison aborted. Image file corrupt (zeroes-tail): $LHS"
 	echo ""
 	exit 100
 fi
 
-export RHS_ZEROES=`hexdump $RHS | head -1100 | tail -1000 | grep ' 0000 0000 0000 ' | wc -l`
-if [ ! "$RHS_ZEROES" -eq "0" ]; then
+export RHS_ZEROES=`hexdump $RHS | head -1100 | tail -1000 | grep "$ZEROS" | wc -l`
+if [ "$RHS_ZEROES" -gt "5" ]; then
 	echo ""
 	echo "Comparison aborted. Image file corrupt (zeroes-head): $RHS"
 	echo ""
 	exit 100
 fi
-export RHS_ZEROES=`hexdump $RHS | tail -1100 | head -1000 | grep ' 0000 0000 0000 ' | wc -l`
-if [ ! "$RHS_ZEROES" -eq "0" ]; then
+export RHS_ZEROES=`hexdump $RHS | tail -1100 | head -1000 | grep "$ZEROS" | wc -l`
+if [ "$RHS_ZEROES" -gt "5" ]; then
 	echo ""
 	echo "Comparison aborted. Image file corrupt (zeroes-tail): $RHS"
 	echo ""

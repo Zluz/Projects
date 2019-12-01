@@ -91,6 +91,11 @@ lxpanelctl restart
 
 
 
+# add Pimoroni/DHT support
+curl https://get.pimoroni.com/automationhat | bash
+curl https://get.pimoroni.com/explorerhat | bash
+pip install Adafruit_DHT 
+
 
 
 # disable screensaver

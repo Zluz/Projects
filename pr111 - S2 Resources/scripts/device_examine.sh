@@ -30,6 +30,11 @@ export OUT="$OUT os-name=$OS_NAME"
 export OS_UPTIME=`/usr/bin/uptime -p | tr ' ' '_'`
 export OUT="$OUT os-uptime=$OS_UPTIME"
 
+export VIDEO_NAME=`/usr/bin/tvservice -n | cut -d '=' -f 2 | tr ' ' '_'`
+export OUT="$OUT video_display_name=$VIDEO_NAME"
+export VIDEO_STATUS=`/usr/bin/tvservice -s | tr ' ' '_'`
+export OUT="$OUT video_status=$VIDEO_STATUS"
+
 # export PID_PRANY=`ps -ef | grep java | tr '/' '\n' | grep jar | grep pr`
 
 export PID_PR101=`ps -ef | grep java | grep pr101_ | tr -s ' ' '-' | cut -d '-' -f 2`
