@@ -140,6 +140,7 @@ public class SubmitJobs {
 					e.printStackTrace();
 					System.err.println( 
 							"Exception in 'Monitor Jobs' thread. Quitting." );
+					System.out.println( "SubmitJobs.startMonitor()" );
 					Runtime.getRuntime().exit( 100 );
 				}
 			}

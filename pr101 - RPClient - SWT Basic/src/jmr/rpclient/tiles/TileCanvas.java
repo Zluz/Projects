@@ -26,9 +26,12 @@ import jmr.rpclient.screen.TextScreen;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.rpclient.swt.UI;
+import jmr.s2db.Client;
+import jmr.s2db.tables.Session;
 import jmr.util.NetUtil;
 import jmr.util.OSUtil;
 import jmr.util.SystemUtil;
+import jmr.util.hardware.rpi.DeviceExamine;
 
 public class TileCanvas {
 
@@ -130,14 +133,27 @@ public class TileCanvas {
 		parent.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
 //		this.mapOptions.clear();
 //		this.mapOptions.putAll( mapOptions );
+		
+		final String strPerspectiveName = this.getPerspective().name();
+		final Long lDeviceSeq = Client.get().getDeviceSeq();
+		final String strDeviceId;
+		if ( null==lDeviceSeq ) {
+			strDeviceId = "<no-seq>";
+		} else {
+			strDeviceId = String.format( "D %03d", lDeviceSeq );
+		}
 
 		final String strPad = "         ";
 		final String strInfo = "  " 
 				+ "IP: " + NetUtil.getIPAddress() + strPad
 				+ "MAC: " + NetUtil.getMAC() + strPad
-				+ OSUtil.getProgramName() + strPad
+//				+ "D " + lDeviceSeq + strPad
+				+ strDeviceId + strPad
 				+ strDeviceDescription + strPad
+				+ OSUtil.getProgramName() + strPad
 //				+ "Process Name: " + NetUtil.getProcessName() + strPad
+				+ "Perspective: " + strPerspectiveName + strPad
+				+ strPad + DeviceExamine.get().getThrottleStatus();
 				;
 		
 		if ( null==this.canvas ) {

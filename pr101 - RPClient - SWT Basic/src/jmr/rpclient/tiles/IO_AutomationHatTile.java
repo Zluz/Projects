@@ -237,11 +237,18 @@ System.out.println( "Map: " + jeMap.toString() );
 			final String strSubject = input.name();
 			final String strData = jsonMap.toString();
 			
-			final Event event = Event.add(
-					EventType.INPUT, strSubject, strValue, strThreshold, 
-					strData, lTime, null, null, null );
+			new Thread() { 
+				public void run() {
+					final Event event = Event.add(
+							EventType.INPUT, strSubject, strValue, strThreshold, 
+							strData, lTime, null, null, null );
+					System.out.println( 
+							"Event created: seq " + event.getEventSeq() );
+				}
+			}.start();
 			
-			System.out.println( "Event created: seq " + event.getEventSeq() );
+//			System.out.println( "Event created: seq " + event.getEventSeq() );
+			System.out.println( "Event creation threaded." );
 		} else {
 			System.err.print( "Event NOT created" );
 //			if ( null==input ) {

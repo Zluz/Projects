@@ -12,6 +12,7 @@ import jmr.rpclient.swt.GCTextUtils;
 import jmr.rpclient.swt.S2Button;
 import jmr.util.NetUtil;
 import jmr.util.hardware.rpi.CPUMonitor;
+import jmr.util.hardware.rpi.DeviceExamine;
 
 public class SystemInfoTile extends TileBase {
 
@@ -43,6 +44,7 @@ public class SystemInfoTile extends TileBase {
 //		text.println( "MAC: " + NetUtil.getMAC() );
 //		final String strTemp = String.format( "%.1f", monitor.getTemperature() );
 //		text.println( "CPU temp: " + strTemp );
+		text.addSpace( 4 );
 		final JsonObject jo = monitor.updateData();
 		if ( null!=jo ) {
 			for ( final Entry<String, JsonElement> entry : jo.entrySet() ) {
@@ -53,6 +55,15 @@ public class SystemInfoTile extends TileBase {
 		} else {
 			text.println( "CPU Monitor data is null" );
 		}
+		text.addSpace( 8 );
+		final DeviceExamine examine = DeviceExamine.get();
+		text.println( DeviceExamine.Key.CPU_THROTTLE.strKey + ":  " 
+					+ examine.getValue( DeviceExamine.Key.CPU_THROTTLE ) );
+//		text.println( "DHT temp:  " 
+//				+ examine.getValue( DeviceExamine.Key.SENSOR_TEMPERATURE_VALUE ) );
+//		text.println( "DHT humid:  " 
+//				+ examine.getValue( DeviceExamine.Key.SENSOR_HUMIDITY_VALUE ) );
+		text.println( examine.getThrottleStatus() );
 	}
 
 	

@@ -48,11 +48,13 @@ public class PostSystemEvent {
 					System.out.println( "Threads:" );
 					System.out.println( Reporting.reportAllThreads() );
 					
+					System.out.println( "PostSystemEvent.startProcessTimeoutThread()" );
 //					Runtime.getRuntime().exit( 200 );
 					Runtime.getRuntime().halt( 200 );
 				} catch ( final InterruptedException e ) {
 					System.out.println( "Timeout thread interrupted. Exiting." );
 //					Runtime.getRuntime().exit( 210 );
+					System.out.println( "PostSystemEvent.startProcessTimeoutThread()" );
 					Runtime.getRuntime().halt( 210 );
 				}
 			}

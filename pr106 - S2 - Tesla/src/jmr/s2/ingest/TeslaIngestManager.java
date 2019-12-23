@@ -195,6 +195,7 @@ public class TeslaIngestManager {
 					e.printStackTrace();
 					System.err.println( 
 							"Exception in 'Monitor Jobs' thread. Quitting." );
+					System.out.println( "TeslaIngestManager.startMonitor()" );
 					Runtime.getRuntime().exit( 100 );
 				}
 			}

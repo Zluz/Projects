@@ -148,6 +148,26 @@ public class SWTBasic {
 				}
 			}
 		}.start();
+		
+		new Thread( "Application Abort" ) {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep( 3000 );
+					System.err.println(
+							"Timeout (3s) elapsed. "
+							+ "Application aborted." );
+					Runtime.getRuntime().exit( 100 );
+				} catch ( final InterruptedException e ) {
+					System.err.println( 
+							"Application Abort thread interrupted. "
+							+ "Application aborted." );
+					e.printStackTrace();
+					Runtime.getRuntime().exit( 100 );
+				}
+			}
+		}.start();
+		
 	}
 
 	public final static SelectionAdapter selClose = new SelectionAdapter() {

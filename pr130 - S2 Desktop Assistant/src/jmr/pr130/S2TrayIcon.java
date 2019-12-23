@@ -172,6 +172,7 @@ public class S2TrayIcon {
 						}
 					});
 				}
+				System.out.println( "S2TrayIcon.close()" );
 				Runtime.getRuntime().exit( 0 );
 			};
 		};

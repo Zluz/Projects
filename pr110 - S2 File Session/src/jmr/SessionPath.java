@@ -11,6 +11,7 @@ public class SessionPath {
 	private final static String[] BASE_SESSION_PATHS =
 					{	"/Share/",
 						"\\\\192.168.6.220\\Share\\",
+						"\\\\192.168.6.223\\Share\\",
 						"S:\\",
 						"H:\\Share\\"
 					};

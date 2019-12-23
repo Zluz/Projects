@@ -48,6 +48,7 @@ public class RulesProcessing {
 		}
 		
 		if ( rules.getResourcesAsText().isEmpty() ) {
+			System.out.println( "RulesProcessing.initialize()" );
 			Runtime.getRuntime().exit( 100 );
 		}
 		
