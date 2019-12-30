@@ -1,4 +1,7 @@
 
+
+
+
 setting up google app engine / cloud projects
 
 	install google cloud runtime
@@ -9,3 +12,201 @@ setting up google app engine / cloud projects
 	add env var
 		GOOGLE_APPLICATION_CREDENTIALS=S:\Resources\auth\pr121-s2gae-fd072fd78952.json
 
+install python
+	must install to simple path (? - may not be the case)
+		no spaces, special chars
+	add env var to python.exe
+		CLOUDSDK_PYTHON
+			ex:  CLOUDSDK_PYTHON=C:\Development\Runtimes\Python\python.exe
+			
+
+[final check]
+  (should be able to..)
+
+	deploy from eclipse
+	
+	deploy from the command line (? - probably should be able to..)
+		> gcloud app deploy
+
+		or ?
+		> gcloud app deploy --project pr131-s2ae-control 
+
+[trying to deploy pr131]
+
+---
+C:\Development\CM\Git_20190124.002\Projects__20190125\pr131 - S2 AE Control>gcloud deployment-manager deployments list
+API [deploymentmanager.googleapis.com] not enabled on project
+[425571868576]. Would you like to enable and retry (this will take a
+few minutes)? (y/N)?  y
+
+Enabling service [deploymentmanager.googleapis.com] on project [425571868576]...
+ERROR: (gcloud.deployment-manager.deployments.list) PERMISSION_DENIED: Service Usage API has not been used in project 425571868576 b
+efore or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/serviceusage.googleapis.com/overview?p
+roject=425571868576 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and
+retry.
+- '@type': type.googleapis.com/google.rpc.Help
+  links:
+  - description: Google developers console API activation
+    url: https://console.developers.google.com/apis/api/serviceusage.googleapis.com/overview?project=425571868576
+
+C:\Development\CM\Git_20190124.002\Projects__20190125\pr131 - S2 AE Control>
+---
+
+went to
+	https://console.developers.google.com/apis/api/serviceusage.googleapis.com/overview?project=425571868576 
+then went to
+	https://console.developers.google.com/apis/credentials/key?project=pr131-s2ae-control
+created an api key "pr131_api_key"
+	"use this key in your application by passing it with the  key=API_KEY  parameter"
+		xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx (text removed)
+
+---
+C:\Development\CM\Git_20190124.002\Projects__20190125\pr131 - S2 AE Control>gcloud app deploy
+ERROR: An app.yaml (or appengine-web.xml) file is required to deploy this directory as an App Engine application. Create an app.yaml
+ file using the directions at https://cloud.google.com/appengine/docs/flexible/python/configuring-your-app-with-app-yaml (App Engine
+ Flexible Environment) or https://cloud.google.com/appengine/docs/standard/python/config/appref (App Engine Standard Environment) un
+der the tab for your language.
+ERROR: (gcloud.app.deploy) [C:\Development\CM\Git_20190124.002\Projects__20190125\pr131 - S2 AE Control] could not be identified as
+a valid source directory or file.
+
+C:\Development\CM\Git_20190124.002\Projects__20190125\pr131 - S2 AE Control>
+---
+went to
+	https://cloud.google.com/appengine/docs/standard/python/config/appref
+	(not useful)
+---
+(tried to run deploy from project dir)
+	better results when run from webapp dir:
+
+		C:\Development\CM\Git_20190124.002\Projects__20190125\pr131 - S2 AE Control\src\main\webapp>gcloud app deploy
+		Services to deploy:
+
+		descriptor:      [C:\Development\CM\Git_20190124.002\Projects__20190125\pr131 - S2 AE Control\src\main\webapp\WEB-INF\appengine-web.
+		xml]
+		source:          [C:\Development\CM\Git_20190124.002\Projects__20190125\pr131 - S2 AE Control\src\main\webapp]
+		target project:  [pr121-s2gae]
+		target service:  [default]
+		target version:  [20191223t023034]
+		target url:      [https://pr121-s2gae.appspot.com]
+
+		Do you want to continue (Y/n)?  n
+
+	aborted because target project was incorrect.
+---
+(trying to generate a new JSON key, specified in env var)
+went to
+	https://console.developers.google.com/apis/credentials?project=pr131-s2ae-control
+new file created, installed:
+	S:\Resources\auth\pr131-s2ae-control-5e639882a255.json
+
+changing env var:
+	from
+		GOOGLE_APPLICATION_CREDENTIALS=S:\Resources\auth\pr121-s2gae-fd072fd78952.json
+	to
+		GOOGLE_APPLICATION_CREDENTIALS=S:\Resources\auth\pr131-s2ae-control-5e639882a255.json
+still no good.
+---
+running "gcloud init" to create a new config ("pr131") to manage/deploy pr131.
+...
+C:\Development\CM\Git_20190124.002\Projects__20190125\pr131 - S2 AE Control\src\main\webapp>gcloud app deploy
+ERROR: (gcloud.app.deploy) There was a problem refreshing your current auth tokens: invalid_grant: Bad Request
+Please run:
+
+  $ gcloud auth login
+
+to obtain new credentials, or if you have already logged in with a
+different account:
+
+  $ gcloud config set account ACCOUNT
+
+to select an already authenticated account to use.
+
+C:\Development\CM\Git_20190124.002\Projects__20190125\pr131 - S2 AE Control\src\main\webapp>gcloud auth login
+...
+
+WARNING: `gcloud auth login` no longer writes application default credentials.
+If you need to use ADC, see:
+  gcloud auth application-default --help
+
+You are now logged in as [jeff.rabenhorst@gmail.com].
+Your current project is [pr131].  You can change this setting by running:
+  $ gcloud config set project PROJECT_ID
+
+
+
+
+
+---------------
+An error occurred while retrieving projects: com.google.api.client.auth.oauth2.TokenResponseException: 400 Bad Request
+{
+  "error" : "invalid_grant",
+  "error_description" : "Bad Request"
+}
+com.google.api.client.auth.oauth2.TokenResponseException: 400 Bad Request
+{
+  "error" : "invalid_grant",
+  "error_description" : "Bad Request"
+}
+
+------------------
+
+
+
+
+[difficulty deploying]
+
+problem: deploy operation fails in eclipse
+solution:
+	still perform deploy operation in eclipse
+		make note of its working directory
+	deploy from the command line in that working directory
+
+example:
+	Attempt to deploy through Eclipse. Deploy fails.
+		"Process exited with error code 1"
+	Get deploy staging directory from Eclipse log
+		"Temporary staging for module default directory left in C:\Development\Workspaces\20190123_Eclipse\.metadata\.plugins\com.google.cloud.tools.eclipse.appengine.deploy\tmp\1577671526082\staging"
+		dir: C:\Development\Workspaces\20190123_Eclipse\.metadata\.plugins\com.google.cloud.tools.eclipse.appengine.deploy\tmp\1577671526082\staging
+	in a command prompt, go to that directory
+	run "gcloud app deploy"
+
+
+	console output:
+
+	C:>cd /d C:\Development\Workspaces\20190123_Eclipse\.metadata\.plugins\com.google.cloud.tools.eclipse.appengine.deploy\tmp\1577671526082\staging
+
+	C:\Development\Workspaces\20190123_Eclipse\.metadata\.plugins\com.google.cloud.tools.eclipse.appengine.deploy\tmp\1577671526082\staging>gcloud app deploy
+	Services to deploy:
+
+	descriptor:      [C:\Development\Workspaces\20190123_Eclipse\.metadata\.plugins\com.google.cloud.tools.eclipse.appengine.deploy\tmp\1577671526082\staging\app.yaml]
+	source:          [C:\Development\Workspaces\20190123_Eclipse\.metadata\.plugins\com.google.cloud.tools.eclipse.appengine.deploy\tmp\1577671526082\staging]
+	target project:  [pr131-s2ae-control]
+	target service:  [default]
+	target version:  [20191229t210723]
+	target url:      [https://pr131-s2ae-control.appspot.com]
+
+
+	Do you want to continue (Y/n)?  Y
+
+	Beginning deployment of service [default]...
+	+------------------------------------------------------------+
+	�- Uploading 142 files to Google Cloud Storage              -�
+	+------------------------------------------------------------+
+	File upload done.
+	Updating service [default]...done.
+	Setting traffic split for service [default]...done.
+	Deployed service [default] to [https://pr131-s2ae-control.appspot.com]
+
+	You can stream logs from the command line by running:
+	  $ gcloud app logs tail -s default
+
+	To view your application in the web browser run:
+	  $ gcloud app browse
+
+
+	Updates are available for some Cloud SDK components.  To install them,
+	please run:
+	  $ gcloud components update
+
+
+	C:\Development\Workspaces\20190123_Eclipse\.metadata\.plugins\com.google.cloud.tools.eclipse.appengine.deploy\tmp\1577671526082\staging>
