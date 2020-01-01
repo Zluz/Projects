@@ -35,6 +35,10 @@ public class ControlFileMonitor {
 							final List<Operation> events = handler.checkForNewWork();
 							
 							for ( final Operation op : events ) {
+								
+								System.out.println( 
+										"ControlFile operation: " + op.name() );
+								
 								listener.invoke( op );
 							}
 						}

@@ -13,7 +13,6 @@ import com.google.cloud.storage.Acl;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.BlobInfo.Builder;
 import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageException;
 
 import jmr.util.http.ContentType;
 

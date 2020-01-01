@@ -168,15 +168,24 @@ public class ConnectionProvider {
 		
 		if ( iSequentialFailed > 8 ) {
 			bLockOut = true;
-			LOGGER.warning( ()-> "Too many failed connection attempts. "
-					+ "Going into lockout." );
-			throw new IllegalStateException( 
-					"Failed to acquire a database connection (in lockout)." );
+//			LOGGER.warning( ()-> "Too many failed connection attempts. "
+//					+ "Going into lockout." );
+			LOGGER.severe( ()-> "Too many failed connection attempts. "
+					+ "Shutting down." );
+//			throw new IllegalStateException( 
+//					"Failed to acquire a database connection (in lockout)." );
+			SystemUtil.shutdown( 200, "Lost connection to the database." );
 //			return null;
 		}
 		
 		if ( bLockOut ) {
 			// just stay here forever .. (for now)
+		}
+
+		if ( bds.getNumActive() > 10 ) {
+			LOGGER.warning( ()-> "Too many active connections. "
+					+ "Denying further requests." );
+			throw new IllegalStateException( "Too many active connections." );
 		}
 		
 		try {

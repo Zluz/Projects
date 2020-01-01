@@ -281,10 +281,12 @@ java.lang.Exception: HTTP code 408 received.
 		
 //		tvi.command( Command.FLASH_LIGHTS, "" );
 
-		final Map<String, String> 
-				response = tvi.command( Command.SET_CHARGE_LIMIT, "percent=80" );
-		final String strReport = Reporting.print( response );
-		System.out.println( strReport );
+		
+		// cannot get this to work ..
+//		final Map<String, String> 
+//				response = tvi.command( Command.SET_CHARGE_LIMIT, "percent=80" );
+//		final String strReport = Reporting.print( response );
+//		System.out.println( strReport );
 
 		
 //		while ( true ) {
@@ -295,13 +297,14 @@ java.lang.Exception: HTTP code 408 received.
 			
 			for ( final DataRequest request : DataRequest.values() ) {
 				
-				if ( DataRequest.VEHICLE_STATE == request ) {
+//				if ( DataRequest.VEHICLE_STATE == request ) {
+				if ( DataRequest.CHARGE_STATE == request ) {
 				
 					System.out.println( "Requesting: " + request );
 					final Map<String, String> map = 
-							getMapFromJson( tvi.request( request ) );
-	//				JsonUtils.print( map );
-					System.out.println( "\t" + map.size() + " entries" );
+								getMapFromJson( tvi.request( request ) );
+					JsonUtils.print( map );
+//					System.out.println( "\t" + map.size() + " entries" );
 				}
 			}
 			

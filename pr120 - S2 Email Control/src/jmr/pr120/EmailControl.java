@@ -373,6 +373,19 @@ public class EmailControl {
 		final char[] cPassword = SystemUtil.getProperty( 
 						SUProperty.CONTROL_EMAIL_PASSWORD ).toCharArray(); 
 
+		
+
+		
+//		final GCSFactory factory = new GCSFactory( TestUtils.BUCKET_NAME );
+//		final File file = TestUtils.getFile();
+//		final GCSFileWriter gcsf = 
+//					factory.create( file.getName(), ContentType.IMAGE_JPEG );
+//		final String strResult = gcsf.upload( file );
+//		System.out.println( "File saved: " + strResult );
+
+		
+		
+		
 //		final Client client = Client.get();
 //		client.register( "test", EmailControl.class.getName() );
 

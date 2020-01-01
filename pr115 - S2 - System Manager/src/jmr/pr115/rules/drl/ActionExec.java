@@ -166,7 +166,7 @@ public class ActionExec {
 				final String strName = rule.getName();
 				if ( "PrepareTesla-ShowerTrigger".equals( strName ) ) {
 					Simple.doPrepareTesla( true, "water_trigger" );
-				} else if ( "PrepareTesla-FileControlTrigger".equals( strName ) ) {
+				} else if ( "PrepareTesla-ControlFileTrigger".equals( strName ) ) {
 					Simple.doPrepareTesla( true, "controlfile_trigger" );
 				} else if ( "Request data from Tesla".equals( strName )) {
 					Simple.doCheckTeslaState( job );

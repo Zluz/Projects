@@ -709,17 +709,20 @@ public class Simple implements RulesConstants {
 		mapData.put( "reason", strReason );
 //		mapData.put( "time-initiate", lNow );
 
-		while ( listRecentTriggers.size() > 0 
-				&& listRecentTriggers.get( 0 ) < lOldest ) {
-			listRecentTriggers.remove( 0 );
-		}
-		listRecentTriggers.add( listRecentTriggers.size(), lNow );
+		if ( "water_trigger".equals( strReason ) ) {
 		
-		if ( bPrepare ) {
-			if ( listRecentTriggers.size() < 10 ) {
-				LOGGER.info( ()-> 
-						"Aborting PrepareTesla (too few recent events)." );
-				return;
+			while ( listRecentTriggers.size() > 0 
+					&& listRecentTriggers.get( 0 ) < lOldest ) {
+				listRecentTriggers.remove( 0 );
+			}
+			listRecentTriggers.add( listRecentTriggers.size(), lNow );
+			
+			if ( bPrepare ) {
+				if ( listRecentTriggers.size() < 10 ) {
+					LOGGER.info( ()-> 
+							"Aborting PrepareTesla (too few recent events)." );
+					return;
+				}
 			}
 		}
 		
