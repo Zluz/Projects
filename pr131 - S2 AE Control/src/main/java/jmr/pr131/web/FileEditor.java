@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -33,6 +35,8 @@ public class FileEditor extends HttpServlet {
 	static {
 		Logger.info( "FileEditor class loaded." );
 	}
+	
+	final static List<String> BROWSERS = new LinkedList<>();
 	
 	
 //	final GCSFactory factory = new GCSFactory( Constants.BUCKET_NAME );
@@ -78,9 +82,11 @@ public class FileEditor extends HttpServlet {
 	
 	    
 	    sb.append( "\n"
-   	    		+ "<form action='/file/store' name='formSave' method='post'>\n"
+//   	    		+ "<form action='/file/store' name='formSave' method='post'>\n"
+   	    		+ "<form action='/file' name='formSave' method='post'>\n"
    	    		+ "<table width='100%' height='100%'><tr><td>\n"
    	    		
+//   	    		+ "<font size='+1'>\n"
 	    		+ "Bucket: "
 	    		+ "<input type='text' name='bucket' size='80' readonly "
 	    					+ "value='" + filecache.getBucketName() + "'><BR>\n"
@@ -96,6 +102,7 @@ public class FileEditor extends HttpServlet {
 	    					
 //	    		+ "<input type='text' name='text_1'>"
 	    					
+//	    		+ "</font>\n"
 	    		+ "</td><td>\n"
 	    		+ "<div id='controls' align='right'>\n" 
 //	    		+ "<input type='button' "
@@ -120,7 +127,14 @@ public class FileEditor extends HttpServlet {
 	    		+ "</td></tr>\n</table>\n"
 	    		+ "</form>\n"
 	    		+ "\n" );
+
+	    sb.append( "Past Browsers:<UL>\n" );
+	    for ( final String strLine : BROWSERS ) {
+		    sb.append( "<LI><TT>" + strLine + "</TT></LI>\n" );
+	    }
+	    sb.append( "</UL>\n" );
 	    
+	    sb.append( "Static Log:\n<BR>" );
 	    for ( final String strLine : Logger.getLines() ) {
 	    	sb.append( "<TT>" + strLine + "</TT><BR>\n" );
 	    }
@@ -208,7 +222,16 @@ public class FileEditor extends HttpServlet {
 		}
 		
 		final String strUserAgent = request.getHeader( "User-Agent" );
-		Logger.info( "User-Agent: " + strUserAgent );
+//		Logger.info( "User-Agent: " + strUserAgent );
+		
+		if ( ! BROWSERS.contains( strUserAgent ) ) {
+			BROWSERS.add( strUserAgent );
+			Logger.info( "New User-Agent: " + strUserAgent );
+		}
+		
+//		System.out.println( "getRemoteUser: " + request.getRemoteUser() );
+//		System.out.println( "getRemoteHost: " + request.getRemoteHost() );
+//		System.out.println( "getRemoteUser: " + request.getRemoteUser() );
 		
 		if ( strURI.startsWith( "/file/reload" ) ) {
 			doGetFileReload( request, response );

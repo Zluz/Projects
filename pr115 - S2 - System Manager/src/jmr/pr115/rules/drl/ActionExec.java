@@ -160,15 +160,21 @@ public class ActionExec {
 		
 		try {
 			
+			//TODO make an enum of these actions..
+			
 			if ( null!=rule ) {
 				final String strName = rule.getName();
 				if ( "PrepareTesla-ShowerTrigger".equals( strName ) ) {
 					Simple.doPrepareTesla( true, "water_trigger" );
+				} else if ( "PrepareTesla-FileControlTrigger".equals( strName ) ) {
+					Simple.doPrepareTesla( true, "controlfile_trigger" );
 				} else if ( "Request data from Tesla".equals( strName )) {
 					Simple.doCheckTeslaState( job );
 				} else if ( "Send command to Tesla".equals( strName )) {
 					Simple.doCheckTeslaState( job );
 				} else if ( "Refresh Tesla (scheduled)".equals( strName )) {
+					Simple.doCheckTeslaState( null );
+				} else if ( "RefreshTesla-ControlFileTrigger".equals( strName )) {
 					Simple.doCheckTeslaState( null );
 				} else {
 					System.err.println( "WARNING: "
