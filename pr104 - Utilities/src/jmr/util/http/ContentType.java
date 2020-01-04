@@ -25,6 +25,8 @@ public enum ContentType {
     BINARY( "application/octet-stream" ),
     ZIP( "application/zip" ),
     X7Z( "application/x-7z-compressed" ),
+    
+    POST_FORM( "application/x-www-form-urlencoded" ),
     ;
 	
 	private final String strMimeType;

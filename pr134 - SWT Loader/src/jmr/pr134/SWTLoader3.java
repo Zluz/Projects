@@ -1,6 +1,7 @@
 package jmr.pr134;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -143,33 +144,33 @@ public class SWTLoader3 {
 
 	
 	
-	public static void main( final String[] args ) {
+	public static void launch( final Class<?> classMain ) {
 		
-		boolean bConsole = false;
-		for ( final String arg : args ) {
-			if ( arg.toLowerCase().endsWith( "console" ) ) {
-				bConsole = true;
+		loadSWT();
+		
+		if ( null!=classMain ) {
+			try {
+				final Method[] methods = classMain.getMethods();
+				for ( final Method method : methods ) {
+					if ( "launch".equals( method.getName() ) 
+							&&  ( 0 == method.getParameterCount() ) ) {
+						method.invoke( 0 );
+					}
+				}
+			} catch ( final IllegalArgumentException 
+//						| InstantiationException 
+						| IllegalAccessException 
+						| InvocationTargetException e ) {
+				System.out.println( "Failed to invoke " 
+						+ classMain.getSimpleName() + ".launch(), "
+						+ "encountered " + e.toString() );
+				e.printStackTrace();
 			}
 		}
 		
-//		org.eclipse.ui/debug=true
-//		org.eclipse.ui/trace/graphics=true
-//		System.getenv().put( "org.eclipse.ui/debug", "true" );
-//		System.getenv().put( "org.eclipse.ui//debug", "true" );
-//		System.getenv().put( "org.eclipse.ui/trace/graphics", "true" );
-		if ( !bConsole ) {
-			loadSWT();
-		} else {
-			System.out.println( "Console mode. SWT libraries not loaded." );
-		}
 		
-		
-		
-		
-		TestSWT.main( args );
-//		SWTBasic.main( args );
-		
-		
+//		TestSWT.main( args );
+//		SWTBasic.main( args );	
 	}
 
 }

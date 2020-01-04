@@ -9,6 +9,7 @@ import java.util.List;
 import jmr.pr131.data.FileCache;
 import jmr.pr131.web.Constants;
 import jmr.util.http.ContentRetriever;
+import jmr.util.http.ContentType;
 
 public class Handler {
 
@@ -55,7 +56,7 @@ public class Handler {
 
 	public String loadControlFile() {
 		try {
-			final String strContent = crGet.getContent();
+			final String strContent = crGet.getContent( ContentType.TEXT_PLAIN );
 			if ( strContent.startsWith( "<!DOCTYPE html" ) ) {
 				System.err.println( "ERROR: Wrong content retrieved "
 							+ "from Control File service." );
@@ -74,7 +75,7 @@ public class Handler {
 		try {
 			crPost.addFormValue( "textarea", strContent );
 			crPost.addFormValue( "filename", "control.txt" );
-			crPost.addProperty( "textarea", strContent );
+			crPost.addPropertyEncoded( "textarea", strContent );
 			crPost.addProperty( "filename", "control.txt" );
 			crPost.postForm();
 			

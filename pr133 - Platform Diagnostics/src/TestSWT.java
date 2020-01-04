@@ -13,7 +13,9 @@ import org.eclipse.swt.widgets.TreeItem;
  * http://www.java2s.com/Code/Java/SWT-JFace-Eclipse/SWTTreeWithMulticolumns.htm
  */
 public class TestSWT {
+	
   public static void main(String[] args) {
+	  
     Display display = new Display();
     final Shell shell = new Shell(display);
     
