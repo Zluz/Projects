@@ -6,6 +6,8 @@ import jmr.pr115.schedules.run.*;
 import jmr.util.hardware.*;
 import jmr.util.*;
 import com.google.gson.JsonObject;
+import jmr.pr132.file.ControlFileMonitor;
+import jmr.pr132.file.Operation;
 
 import jmr.pr115.rules.drl.Simple;
 
@@ -60,3 +62,24 @@ rule "PrepareTesla-ShowerTrigger"
 		// System.out.println( "Calling Simple.doPrepareTesla().." );
 		// Simple.doPrepareTesla( true, "water_trigger" );
 end
+
+
+rule "PrepareTesla-ControlFileTrigger"
+	when
+		op : Operation( this == Operation.PREPARE_TESLA )
+	then
+		System.out.println( "PrepareTesla-ControlFileTrigger fired." );
+		
+		ActionExec.run( this, op );
+end
+
+
+rule "RefreshTesla-ControlFileTrigger"
+	when
+		op : Operation( this == Operation.TESLA_QUERY )
+	then
+		System.out.println( "RefreshTesla-ControlFileTrigger fired." );
+		
+		ActionExec.run( this, op );
+end
+

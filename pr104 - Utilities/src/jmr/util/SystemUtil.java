@@ -116,11 +116,14 @@ public abstract class SystemUtil {
 				@Override
 				public void run() {
 					try {
-						Thread.sleep( 3000 );
-						Runtime.getRuntime().halt( 1000 );
 						
 						System.out.println( "Running: " + PROCESS_KILL_SELF );
 						Runtime.getRuntime().exec( PROCESS_KILL_SELF );
+
+						Thread.sleep( 3000 );
+						System.out.println( "SystemUtil.shutdown()" );
+						Runtime.getRuntime().halt( 1000 );
+
 					} catch ( final IOException | InterruptedException e ) {
 						e.printStackTrace();
 					}

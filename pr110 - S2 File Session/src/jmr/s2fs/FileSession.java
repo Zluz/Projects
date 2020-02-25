@@ -259,9 +259,9 @@ public class FileSession {
 			}			
 		}
 		
-		if ( this.dir.getAbsolutePath().contains( "94-C6-91-18-C8-33" ) ) {
-			System.out.println( "Checking 94-C6-91-18-C8-33.." );
-		}
+//		if ( this.dir.getAbsolutePath().contains( "94-C6-91-18-C8-33" ) ) {
+//			System.out.println( "Checking 94-C6-91-18-C8-33.." );
+//		}
 		
 		final File[] files = this.dir.listFiles( new FilenameFilter() {
 			@Override

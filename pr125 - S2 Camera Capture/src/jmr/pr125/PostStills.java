@@ -108,6 +108,7 @@ public class PostStills {
 		final long lCount = cleanup.markForDeletion();
 		LOGGER.info( "Temporary files found to delete: " + lCount );
 		
+		System.out.println( "PostStills.exit()" );
 		Runtime.getRuntime().exit( iExitCode );
 	}
 	

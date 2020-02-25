@@ -1,0 +1,9 @@
+
+Project setup
+	Project requires a SWT User Library to run in debug / locally.
+
+classes
+	SWTLoader3 - main class for built executables
+		references the main UI class
+
+	TestSWT - demo UI class

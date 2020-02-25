@@ -15,6 +15,8 @@ import jmr.pr119.TimeEvent;
 import jmr.pr120.EmailControl;
 import jmr.pr120.EmailEvent;
 import jmr.pr120.EmailEventListener;
+import jmr.pr132.file.ControlFileMonitor;
+import jmr.pr132.file.Operation;
 import jmr.s2db.Client;
 import jmr.s2db.Client.ClientType;
 import jmr.util.SUProperty;
@@ -32,6 +34,8 @@ public class ScheduleManager {
 		
 		registerEmailListener();
 		
+		registerFileControlListener();
+		
 		try {
 			final String strLoadClass = IOUtils.resourceToString(
 					"/jmr/pr115/schedules/ScheduleManager.java", 
@@ -39,6 +43,21 @@ public class ScheduleManager {
 		} catch ( final IOException e ) {
 			System.err.println( "Problem loading resources." );
 		}
+	}
+	
+	
+	private void registerFileControlListener() {
+		
+		final ControlFileMonitor.Listener listener = new ControlFileMonitor.Listener() {
+			@Override
+			public void invoke( final Operation operation ) {
+				System.out.println( "Calling: RulesProcessing.get().process( <control file event> );");
+				RulesProcessing.get().process( operation );
+			}
+		};
+		
+		final ControlFileMonitor monitor = new ControlFileMonitor( listener );
+		monitor.start();
 	}
 	
 	
@@ -57,6 +76,33 @@ public class ScheduleManager {
 		final char[] cPassword = SystemUtil.getProperty( 
 						SUProperty.CONTROL_EMAIL_PASSWORD ).toCharArray(); 
 
+		
+		
+		
+		
+		//FIXME resolve this! email not working ..  
+		/*
+About to process item [Job] ...Done. Result: 0, Elapsed: 238ms, Item: jmr.s2db.tables.Job@3f4c73aa
+WARNING: Failed to initialize inbox.
+javax.mail.AuthenticationFailedException: [AUTHENTICATIONFAILED] Invalid credentials (Failure)
+	at com.sun.mail.imap.IMAPStore.protocolConnect(IMAPStore.java:732)
+	at javax.mail.Service.connect(Service.java:366)
+	at javax.mail.Service.connect(Service.java:246)
+	at jmr.pr120.EmailControl.initializeInbox(EmailControl.java:226)
+	at jmr.pr120.EmailControl.start(EmailControl.java:58)
+	at jmr.pr115.schedules.ScheduleManager.registerEmailListener(ScheduleManager.java:62)
+	at jmr.pr115.schedules.ScheduleManager.<init>(ScheduleManager.java:33)
+	at jmr.pr115.schedules.ScheduleManager.main(ScheduleManager.java:95)
+Problem loading resources.
+		 */
+		// exit for now
+		if ( 1==1 ) return;
+		
+		
+		
+		
+		
+		
 		final EmailControl 
 				control = new EmailControl( cUsername, cPassword, listener );
 		control.start();

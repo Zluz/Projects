@@ -17,6 +17,7 @@ public class GCSFileReader {
 		this.blob = blob;
 	}
 	
+	
 	public String getName() {
 		return this.blob.getName();
 	}
@@ -24,6 +25,19 @@ public class GCSFileReader {
 	public String getContentType() {
 		return this.blob.getContentType();
 	}
+	
+	public Long getUpdateTime() {
+		return this.blob.getUpdateTime();
+	}
+
+	public Long getGeneration() {
+		return this.blob.getGeneration();
+	}
+
+	public Long getCreateTime() {
+		return this.blob.getCreateTime();
+	}
+
 	
 	public byte[] getContent() {
 		if ( ! this.blob.isDirectory() ) {
@@ -69,6 +83,12 @@ public class GCSFileReader {
 		final String strKey = key.name();
 		final String strResult = map.get( strKey );
 		return strResult;
+	}
+	
+	
+
+	public static void main( final String[] args ) {
+		// see GCSFactory for read examples
 	}
 	
 }

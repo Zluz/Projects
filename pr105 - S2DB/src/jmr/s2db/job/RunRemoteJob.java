@@ -167,6 +167,8 @@ public class RunRemoteJob {
 		final String strResult = jsonResult.toString();
 		
 		job.setState( JobState.COMPLETE, strResult );
+		
+		System.out.println( "RunRemoteJob.runShutdown()" );
 		Runtime.getRuntime().exit( 100 );
 	}
 	

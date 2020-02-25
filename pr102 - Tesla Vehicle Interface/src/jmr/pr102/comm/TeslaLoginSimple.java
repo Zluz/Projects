@@ -10,6 +10,7 @@ import com.google.gson.JsonParser;
 
 import jmr.pr102.TeslaConstants;
 import jmr.util.http.ContentRetriever;
+import jmr.util.http.ContentType;
 import jmr.util.transform.JsonUtils;
 
 public class TeslaLoginSimple implements TeslaLogin, TeslaConstants {
@@ -80,7 +81,8 @@ public class TeslaLoginSimple implements TeslaLogin, TeslaConstants {
 		
 		
 //		final String strResponse = post.postContent( "" );
-		final String strResponse = retriever.postContent( "" );
+		final String strResponse = 
+						retriever.postContent( ContentType.TEXT_PLAIN, "" );
 		
 		this.bIsAuthenticating = false;
 //		

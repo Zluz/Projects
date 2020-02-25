@@ -20,7 +20,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/pr114 - S2 - Nest"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr113 - Nest Devices Interface"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr118 - Drools"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Drools 7.6.0.Final"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr107 - S2 - Imports"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr119 - CronTrigger"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr120 - S2 Email Control"/>
@@ -35,5 +34,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/SWT_Win64"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr128 - S2 Reports"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr129 - GCP Vision GUI"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Drools 7.7.0.Final"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr132 - S2 AE Control Listener"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

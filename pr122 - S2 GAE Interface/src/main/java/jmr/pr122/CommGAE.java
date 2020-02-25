@@ -27,6 +27,7 @@ import com.google.gson.JsonObject;
 import jmr.util.SUProperty;
 import jmr.util.SystemUtil;
 import jmr.util.http.ContentRetriever;
+import jmr.util.http.ContentType;
 
 
 /**
@@ -113,7 +114,7 @@ public class CommGAE {
 			
 			final String strURL = sbURL.toString(); 
 			final ContentRetriever retriever = new ContentRetriever( strURL );
-			retriever.postContent( data );
+			retriever.postContent( ContentType.TEXT_PLAIN, data ); // this ok?
 			
 		} catch ( final UnsupportedEncodingException e ) {
 			throw new IllegalStateException( e );
@@ -145,7 +146,7 @@ public class CommGAE {
 			
 			final String strURL = sbURL.toString(); 
 			final ContentRetriever retriever = new ContentRetriever( strURL );
-			retriever.postContent( strData );
+			retriever.postContent( ContentType.TEXT_PLAIN, strData );
 			
 		} catch ( final UnsupportedEncodingException e ) {
 			throw new IllegalStateException( e );

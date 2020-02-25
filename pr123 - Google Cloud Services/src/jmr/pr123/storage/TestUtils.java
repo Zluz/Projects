@@ -45,9 +45,8 @@ public class TestUtils {
 					factory.create( file.getName(), ContentType.IMAGE_JPEG );
 		
 		try {
-			gcsf.upload( file );
-			
-			return "File saved (?)";
+			final String strResult = gcsf.upload( file );
+			return "File saved: " + strResult;
 			
 		} catch ( final IOException e ) {
 			// TODO Auto-generated catch block

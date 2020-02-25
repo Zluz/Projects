@@ -131,6 +131,7 @@ public class DroolsSession {
 			System.err.println( "WARNING: "
 					+ "Error encountered during buildAll()." );
 			System.err.println( "Configuration may be invalid." );
+			System.out.println( "DroolsSession.createJar()" );
 			Runtime.getRuntime().exit( 100 );
 		}
 		
@@ -141,6 +142,7 @@ public class DroolsSession {
 			System.err.println( "WARNING: "
 					+ "Unable to initialize InternalKieModule." );
 			System.err.println( "Configuration may be invalid." );
+			System.out.println( "DroolsSession.createJar()" );
 			Runtime.getRuntime().exit( 100 );
 		}
 		

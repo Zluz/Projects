@@ -139,11 +139,23 @@ https://googlecloudplatform.github.io/google-cloud-java/google-cloud-clients/api
 		final Map<String, GCSFileReader> list = factory.getListing();
 		for ( final GCSFileReader file : list.values() ) {
 			
-			System.out.print( "\t" + file.getContentType() );
-			final byte[] data = file.getContent();
-			System.out.print( "\t" + data.length );
-			System.out.print( "\t" + file.getName() );
-			System.out.println();
+			if ( file.getName().toUpperCase().contains( "TESLA" ) ) {
+				System.out.print( "\t" + file.getContentType() );
+				final byte[] data = file.getContent();
+				System.out.print( "\t" + data.length );
+				System.out.print( "\t" + file.getName() );
+				System.out.println();
+				final String strContent = new String( data );
+				int i=0;
+				for ( final String strLine : strContent.split( "\\n" ) ) {
+					System.out.println( "\t\t" + strLine );
+					if ( i>10 ) {
+						break;
+					} else {
+						i++;
+					}
+				}
+			}
 		}
 	}
 	

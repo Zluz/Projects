@@ -1,5 +1,12 @@
 package jmr.pr102;
 
+
+/*
+ * good resource (but may be outdated)
+ * 
+ * https://tesla-api.timdorr.com/vehicle/commands/sunroof
+ * 
+ */
 public enum Command {
 
 	WAKE_UP( "wake_up" ), // WakeUpCar
@@ -19,7 +26,9 @@ public enum Command {
 	DOORS_UNLOCK( "command/door_unlock" ), // UnlockDoors
 	SUNROOF( "command/sun_roof_control" ), // MovePanoRoof
 
+	@Deprecated // maybe? https://tesla-api.timdorr.com/vehicle/commands/trunk
 	TRUNK_OPEN( "command/trunk_open" ), // OpenTrunk
+	ACTUATE_TRUNK( "command/actuate_trunk" ), // OpenTrunk
 	
 	CHARGE_PORT_DOOR( "command/charge_port_door_open" ), // OpenChargePort
 
