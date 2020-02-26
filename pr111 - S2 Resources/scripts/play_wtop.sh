@@ -38,40 +38,47 @@ sleep 0.5s
 # xdotool key ctrl+shift+p
 xdotool key alt+d
 sleep 1
-xdotool type "https://www.wtop.com/listen-live/"
+# xdotool type --delay 0 "https://www.wtop.com/listen-live/"
+xdotool type --delay 0 "https://live.wtop.com/listen/?autoplay=1"
 sleep 0.5s
 xdotool key "Return"
 xdotool windowsize $WID 50% 70%
 xdotool windowmove $WID 900 40
 
 echo "#JSON  {\"caption\":\"Activating playback\"}"
-echo "Sleeping for 10s.."
-sleep 10s
+# echo "Sleeping for 15s.."
+# sleep 15s
 
 xdotool windowfocus $WID
 xdotool windowactivate $WID
+
 # xdotool mousemove 972 474 click 1
-xdotool mousemove 1829 206 click 1
-sleep 0.5s
-xdotool mousemove 936 384 click 1
+# xdotool mousemove 1829 206 click 1
+# sleep 1.0s
+# xdotool mousemove 936 384 click 1
 
-echo "Sleeping for 12s.."
-sleep 12
+echo "Sleeping for 10s.."
+sleep 10s
 
 
-for i in 1 2 3 4 5
+for i in 1 2 3 4 5 6 7
 do
 	LSOF_TEST=`lsof /dev/snd/* 2>/dev/null | grep chromium`
 	if [[ "$LSOF_TEST" == "" ]]
 	then 
 		echo "#JSON  {\"caption\":\"Activating playback\",\"status\":\"warning\"}"
-		echo "No web audio detected yet, sending mouse click.."
+		echo "No web audio detected yet, retrying URL.."
 
 		xdotool windowfocus $WID
 		xdotool windowactivate $WID
-		# xdotool mousemove 972 474 click 1
-		xdotool mousemove 936 384 click 1
-		sleep 3
+
+		xdotool key alt+d
+		sleep 1
+		xdotool type --delay 0 "https://live.wtop.com/listen/?autoplay=1"
+		sleep 0.5s
+		xdotool key "Return"
+
+		sleep 4
 		echo "#JSON  {\"caption\":\"Checking playback\",\"status\":\"warning\"}"
 		sleep 1
 	else
@@ -79,9 +86,9 @@ do
 		echo "    $LSOF_TEST"
 		xdotool windowfocus $WID
 		echo "#JSON  {\"caption\":\"Audio detected..1\"}"
-		echo "Audio detected but waiting again (14s) to double-check.."
+		echo "Audio detected but waiting again (10s) to double-check.."
 
-		sleep 14
+		sleep 10
 		LSOF_TEST=`lsof /dev/snd/* 2>/dev/null | grep chromium`
 		if [[ "$LSOF_TEST" == "" ]]
 		then 
