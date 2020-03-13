@@ -1,0 +1,5 @@
+This project will contain ASN.1 decoding work.
+Some parsers to look into:
+    https://bellard.org/ffasn1/
+    https://github.com/eerimoq/asn1tools
+    https://github.com/vlm/asn1c
