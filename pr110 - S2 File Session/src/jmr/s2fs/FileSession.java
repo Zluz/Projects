@@ -174,11 +174,13 @@ public class FileSession {
 		});
 		long lLatest = Long.MIN_VALUE;
 		File fileLatest = null;
-		for ( final File file : files ) {
-			final long lLatestThisFile = file.lastModified();
-			if ( lLatestThisFile > lLatest ) {
-				fileLatest = file;
-				lLatest = lLatestThisFile;
+		if ( null!=files ) {
+			for ( final File file : files ) {
+				final long lLatestThisFile = file.lastModified();
+				if ( lLatestThisFile > lLatest ) {
+					fileLatest = file;
+					lLatest = lLatestThisFile;
+				}
 			}
 		}
 		return fileLatest;

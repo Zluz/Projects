@@ -19,14 +19,14 @@ SELECT
     			"    ", " " ), "  ", " " ) as 'options'
     # s.*
 FROM 
-	device d,
-    `session` s,
+	Device d,
+    `Session` s,
     
 	( 	SELECT 
 			MAX( start ) max_start,
             seq_Device
 		FROM 
-			session 
+			Session 
 		GROUP BY 
             seq_Device 
 	) recent_session

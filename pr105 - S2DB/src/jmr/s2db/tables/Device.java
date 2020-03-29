@@ -28,7 +28,7 @@ public class Device extends TableBase {
 
 	public Long get(	final String strMAC,
 						final String strName ) {
-		final Long lSeq = super.get(	"device", 
+		final Long lSeq = super.get(	"Device", 
 										"mac like '" + strMAC + "'", 
 										"mac, name", 
 										"'" + strMAC + "', '" + strName + "'" );

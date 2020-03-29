@@ -16,7 +16,7 @@ public class Session extends TableBase {
 		
 		final String strDate = DataFormatter.format( dateStart );
 		
-		final Long lSeq = super.get(	"session", 
+		final Long lSeq = super.get(	"Session", 
 				"seq_device = " + lDevice + " "
 						+ "AND start = " + strDate,
 				"seq_device, start, ip_address, class", 

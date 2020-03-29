@@ -356,7 +356,8 @@ public class ReportTable {
 			return sb;
 			
 		} catch ( final SQLException e ) {
-			final String strMessage = "Failed to generate report. "
+			final String strMessage = "Failed to generate report.\n"
+							+ "SQL: " + strQuery + "\n"
 							+ "Encountered " + e.toString();
 			LOGGER.log( Level.SEVERE, strMessage, e );
 			

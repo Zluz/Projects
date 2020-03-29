@@ -82,15 +82,15 @@ public class S2DBLogHandler extends Handler {
 					strSource = null;
 				}
 				
-				final String strInsert = "INSERT INTO log "
+				final String strInsert = "INSERT INTO Log "
 						+ "( seq_session, time, level, text, source ) "
 						+ "VALUES ( " 
-								+ Session.getSessionSeq() + ", " 
-								+ DataFormatter.format( time.getTime() ) + ", "
-								+ DataFormatter.format( strLevel ) + ", "
-								+ DataFormatter.format( record.getMessage() ) + ", " 
-								+ DataFormatter.format( strSource ) + " "
-								+ " );";
+							+ Session.getSessionSeq() + ", " 
+							+ DataFormatter.format( time.getTime() ) + ", "
+							+ DataFormatter.format( strLevel ) + ", "
+							+ DataFormatter.format( record.getMessage(), 255 ) + ", " 
+							+ DataFormatter.format( strSource ) + " "
+							+ " );";
 				
 				try (	final Connection 
 								conn = ConnectionProvider.get().getConnection();

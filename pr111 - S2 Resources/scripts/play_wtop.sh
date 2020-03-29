@@ -9,79 +9,85 @@
 #
 #-------------------------------------
 
+if [[ "1" == "1" ]]
+then
+	echo ">>> ok"
+else
+	echo ">>> problems"
+	exit 1
+fi
+
+
+PID_FILE="/tmp/.play_wtop.pid"
+if [ -f $PID_FILE ]; then
+	echo "Script appears to already be running (1). Exiting."
+	exit
+fi
+
+
+PIDS=`pidof -x play_wtop.sh`
+RAND=`openssl rand -hex 8`
+
+# KEY_HERE="$PIDS $RAND"
+# KEY_HERE=`echo $RAND | xargs`
+KEY_HERE=$RAND
+echo "$KEY_HERE" > $PID_FILE
+
+echo "KEY_HERE = [$KEY_HERE]"
+
+# sleep 1
+
+KEY_CHECK=`cat $PID_FILE | xargs`
+# if [[ "$KEY_HERE" == "$KEY_CHECK" ]]
+# if [[ $KEY_CHECK == *"$KEY_HERE"* ]]; then
+if [[ $KEY_CHECK =~ "$KEY_HERE" ]]; then
+	sleep 1
+	echo "Single execution confirmed.  [$KEY_HERE]  Proceeding."
+else
+	echo "Script appears to already be running (2): [$KEY_CHECK]  Exiting."
+	# echo "  [$KEY_HERE] != [$KEY_CHECK]"
+	exit
+fi
+
+
 echo "#JSON  {\"caption\":\"Stopping audio\"}"
 
-/Local/scripts/launch_web.sh
+/usr/bin/killall chromium-browser
+
+# /Local/scripts/launch_web.sh
 /Local/scripts/stop_all.sh
 
 echo "#JSON  {\"caption\":\"Activting browser\"}"
 
-WID=`xdotool search --name " Chromium"`
-if [[ "$WID" == "" ]]
-then
-	echo "Browser window not found .. retrying .."
-	sleep 2
-	WID=`xdotool search --name " Chromium"`
-fi
-
-if [[ "$WID" == "" ]]
-then
-	echo "#JSON  {\"caption\":\"Browser not found\",\"status\":\"error\",\"status\":\"done\"}"
-	exit 1
-fi
-
-echo "Chromium window: $WID"
-
-xdotool windowfocus $WID
-xdotool windowactivate $WID
-sleep 0.5s
-# xdotool key ctrl+shift+p
-xdotool key alt+d
-sleep 1
-xdotool type "https://www.wtop.com/listen-live/"
-sleep 0.5s
-xdotool key "Return"
-xdotool windowsize $WID 50% 70%
-xdotool windowmove $WID 900 40
+/usr/lib/chromium-browser/chromium-browser &
+sleep 8
 
 echo "#JSON  {\"caption\":\"Activating playback\"}"
-echo "Sleeping for 10s.."
-sleep 10s
+/usr/lib/chromium-browser/chromium-browser --kiosk "https://live.wtop.com/listen/?autoplay=1" &
 
-xdotool windowfocus $WID
-xdotool windowactivate $WID
-# xdotool mousemove 972 474 click 1
-xdotool mousemove 1829 206 click 1
-sleep 0.5s
-xdotool mousemove 936 384 click 1
+echo "Sleeping for 20s.."
+sleep 20
 
-echo "Sleeping for 12s.."
-sleep 12
-
-
-for i in 1 2 3 4 5
+for i in 1 2 3 4 5 6 7
 do
 	LSOF_TEST=`lsof /dev/snd/* 2>/dev/null | grep chromium`
 	if [[ "$LSOF_TEST" == "" ]]
 	then 
 		echo "#JSON  {\"caption\":\"Activating playback\",\"status\":\"warning\"}"
-		echo "No web audio detected yet, sending mouse click.."
+		echo "No web audio detected yet, retrying URL.."
 
-		xdotool windowfocus $WID
-		xdotool windowactivate $WID
-		# xdotool mousemove 972 474 click 1
-		xdotool mousemove 936 384 click 1
-		sleep 3
+		/usr/lib/chromium-browser/chromium-browser --kiosk "https://live.wtop.com/listen/?autoplay=1" &
+
+		sleep 20 
 		echo "#JSON  {\"caption\":\"Checking playback\",\"status\":\"warning\"}"
 		sleep 1
 	else
 		echo "Web audio detected:"
 		echo "    $LSOF_TEST"
-		xdotool windowfocus $WID
 		echo "#JSON  {\"caption\":\"Audio detected..1\"}"
-		echo "Audio detected but waiting again (14s) to double-check.."
+		echo "Audio detected but waiting again (20s) to double-check.."
 
-		sleep 14
+		sleep 20
 		LSOF_TEST=`lsof /dev/snd/* 2>/dev/null | grep chromium`
 		if [[ "$LSOF_TEST" == "" ]]
 		then 
@@ -91,12 +97,14 @@ do
 			echo "Web audio detected (final check):"
 			echo "    $LSOF_TEST"
 			echo "#JSON  {\"caption\":\"Audio detected..2\",\"status\":\"done\"}"
-			xdotool windowfocus $WID
-			xdotool mousemove 972 500
+
+			rm $PID_FILE
 			exit 0
 		fi
 	fi
 done
 echo "#JSON  {\"caption\":\"Audio not detected\",\"status\":\"error\"}"
 echo 1
+
+rm $PID_FILE
 

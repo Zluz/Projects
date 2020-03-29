@@ -59,7 +59,7 @@ public class Event extends TableBase {
 //	private Trigger() {};
 	
 	public static Event get( final long seqEvent ) {
-		final String strWhere = "event.seq = " + seqEvent;
+		final String strWhere = "Event.seq = " + seqEvent;
 		final List<Event> listEvent = Event.get( strWhere, 1 );
 		
 		if ( null==listEvent || listEvent.isEmpty() ) {
@@ -168,7 +168,7 @@ public class Event extends TableBase {
 
 		final String strQueryProperties = 
 						 "SELECT * "
-						 + " FROM event "
+						 + " FROM Event "
 						 + " WHERE " + strWhere + " "
 				 		 + " ORDER BY time DESC "
 				 		 + " LIMIT " + iLimit + ";";
@@ -319,7 +319,7 @@ public class Event extends TableBase {
 		final String strInsert;
 		
 		strInsert = 
-				"INSERT INTO event "
+				"INSERT INTO Event "
 				+ "( seq_session, seq_page, seq_trigger, seq_log, "
 									+ "time, type, subject, "
 									+ "value, threshold, data ) "

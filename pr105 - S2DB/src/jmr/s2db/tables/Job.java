@@ -138,7 +138,7 @@ public class Job extends TableBase {
 
 		final String strQueryProperties = 
 						 "SELECT * "
-						 + " FROM job "
+						 + " FROM Job "
 						 + " WHERE " + strWhere + " "
 				 		 + " ORDER BY request_time DESC "
 				 		 + " LIMIT " + iLimit + ";";

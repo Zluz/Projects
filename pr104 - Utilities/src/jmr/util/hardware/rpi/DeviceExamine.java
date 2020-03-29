@@ -5,6 +5,8 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.sound.midi.SysexMessage;
+
 import org.apache.commons.lang3.StringUtils;
 
 import jmr.util.FileUtil;
@@ -88,8 +90,14 @@ public class DeviceExamine {
 		return strValue;
 	}
 	
+	
 	public String getValue( final Key key ) {
-		return this.getValue( key.strKey );
+		final String strValue = this.getValue( key.strKey );
+		if ( null!=strValue ) {
+			return strValue.trim();
+		} else {
+			return "";
+		}
 	}
 	
 	
@@ -114,9 +122,21 @@ public class DeviceExamine {
 		final String strHex = getValue( Key.CPU_THROTTLE );
 		if ( StringUtils.isBlank( strHex ) ) return;
 		
-		final int iValue = Integer.parseInt( strHex.substring( 2 ), 16 );
+		final BigInteger bigint;
+		if ( strHex.contains( "x0\\" ) ) {
+			bigint = BigInteger.ZERO;
+		} else {
+			int iValue;
+			try {
+				iValue = Integer.parseInt( strHex.substring( 2 ), 16 );
+			} catch ( final NumberFormatException e ) {
+				System.err.println( "Failed to read CPU_THROTTLE: " + strHex ); 
+				iValue = 0;
+			}
+			bigint = BigInteger.valueOf( iValue );
+		}
 //		final String strBin = Integer.toBinaryString( iValue );
-		final BigInteger bigint = BigInteger.valueOf( iValue );
+//		final BigInteger bigint = BigInteger.valueOf( iValue );
 		
 		bUnderVoltageCurrently = bigint.testBit( 0 );
 		bArmFreqCappedCurrently = bigint.testBit( 1 );

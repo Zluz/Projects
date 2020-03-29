@@ -21,6 +21,13 @@ public abstract class TableBase {
 						final String strInsertValues ) {
 		if ( null==strTable ) return null;
 		if ( null==strWhere ) return null;
+		if ( strTable.isEmpty() ) {
+			throw new IllegalStateException( "Missing table name." );
+		}
+		if ( Character.isLowerCase( strTable.charAt( 0 ) ) ) {
+			throw new IllegalStateException( 
+							"Table name appears to be lower-case." );
+		}
 		
 		final String strQuery = "SELECT MAX(seq) FROM " + strTable + " "
 				+ "WHERE ( " + strWhere + " );";

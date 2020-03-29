@@ -421,7 +421,10 @@ public class ConnectionProvider {
 	//		final Statement stmt = conn.createStatement();
 			
 //			final String strSQL = "select * from s2db.device";
-			final String strSQL = "select host from information_schema.processlist WHERE ID=connection_id();";
+			final String strSQL = 
+								"SELECT host "
+								+ "from information_schema.processlist "
+								+ "WHERE ID=connection_id();";
 			final ResultSet rs = stmt.executeQuery( strSQL );
 			
 			if ( rs.first() ) {

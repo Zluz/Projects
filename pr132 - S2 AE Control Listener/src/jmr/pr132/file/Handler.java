@@ -145,7 +145,7 @@ public class Handler {
 					bEdited = true;
 				}
 			} else {
-				strWrite = strLine;
+				strWrite = strRaw;
 			}
 			
 			sb.append( strWrite );

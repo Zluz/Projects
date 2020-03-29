@@ -21,7 +21,7 @@ public class Path extends TableBase {
 	
 	
 	public Long get( final String strName ) {
-		final Long lSeq = super.get(	"path", 
+		final Long lSeq = super.get(	"Path", 
 										"name like '" + strName + "'", 
 										"name", 
 										"'" + strName + "'" );

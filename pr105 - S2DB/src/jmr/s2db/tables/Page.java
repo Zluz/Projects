@@ -94,7 +94,7 @@ public class Page extends TableBase {
 	
 	public Long getNoSession( final long seqPath ) {
 		
-		final Long lSeq = super.get(	"page", 
+		final Long lSeq = super.get(	"Page", 
 //					"seq_path = " + seqPath + " AND seq_session = " + lSession, 
 					"seq_path = " + seqPath, 
 					"seq_path", 
@@ -190,7 +190,7 @@ public class Page extends TableBase {
 		String strSQL = null;
 
 		
-		String strInsert = "INSERT INTO prop "
+		String strInsert = "INSERT INTO Prop "
 				+ "( seq_page, name, value ) "
 				+ "VALUES ";
 		
@@ -244,13 +244,13 @@ public class Page extends TableBase {
 		
 		final String strUpdate;
 		if ( null!=dateEffective ) {
-			strUpdate = "UPDATE page "
+			strUpdate = "UPDATE Page "
 					+ "SET last_modified=" 
 							+ DataFormatter.format( dateEffective ) + ", "
 							+ "state='" + cState + "' "
 					+ "WHERE seq=" + seqPage + ";";
 		} else {
-			strUpdate = "UPDATE page "
+			strUpdate = "UPDATE Page "
 					+ "SET state='" + cState + "' "
 					+ "WHERE seq=" + seqPage + ";";
 		}

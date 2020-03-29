@@ -3,6 +3,8 @@ package jmr.s2db;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.commons.lang3.StringUtils;
+
 public abstract class DataFormatter {
 
 	
@@ -11,7 +13,8 @@ public abstract class DataFormatter {
 
 
 
-	public static String format( final Object value ) {
+	public static String format( final Object value,
+								 final int iLength ) {
 //		if ( null==value ) return "''";
 		if ( null==value ) return "null";
 		if ( value instanceof String ) {
@@ -26,6 +29,7 @@ public abstract class DataFormatter {
 				str = str.replace( "\\", "\\\\" );
 				str = str.replace( "'", "\\'" );
 				str = str.replace( "\"", "\\\"" );
+				str = StringUtils.abbreviate( str, iLength );
 				return "'" + str + "'";
 			}
 		} else if ( value instanceof Number ) {
@@ -38,4 +42,9 @@ public abstract class DataFormatter {
 //		return "";
 	}
 
+	public static String format( final Object value ) {
+		return format( value, Integer.MAX_VALUE );
+	}
+
+	
 }
