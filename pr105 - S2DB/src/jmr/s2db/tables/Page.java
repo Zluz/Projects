@@ -54,7 +54,7 @@ public class Page extends TableBase {
 		final Long lSession = Client.get().getSessionSeq();
 		if ( null==lSession ) return null;
 
-		final String strInsert = "INSERT INTO page "
+		final String strInsert = "INSERT INTO Page "
 				+ "( seq_path, seq_session ) "
 				+ "VALUES ( " + seqPath + ", " + lSession + " );";
 		
@@ -83,9 +83,9 @@ public class Page extends TableBase {
 		final Long lSession = Client.get().getSessionSeq();
 		if ( null==lSession ) return null;
 		
-		final Long lSeq = super.get(	"page", 
+		final Long lSeq = super.get(	"Page", 
 //					"seq_path = " + seqPath + " AND seq_session = " + lSession, 
-					"seq_path = " + seqPath + " AND page.state = 'A'", 
+					"seq_path = " + seqPath + " AND Page.state = 'A'", 
 					"seq_path, seq_session", 
 					"" + seqPath + ", " + lSession );
 		return lSeq;
@@ -115,7 +115,7 @@ public class Page extends TableBase {
 		 "SELECT  "
 		 + "	* "
 		 + "FROM  "
-		 + "	prop "
+		 + "	Prop prop "
 		 + "WHERE "
 		 + "	prop.seq_page = " + seqPage + ";";
 		 
@@ -137,7 +137,7 @@ public class Page extends TableBase {
 					 "SELECT  "
 					 + "	* "
 					 + "FROM  "
-					 + "	page "
+					 + "	Page page "
 					 + "WHERE "
 					 + "	seq = " + seqPage + ";";
 					 
@@ -301,7 +301,7 @@ public class Page extends TableBase {
 		
 		if ( !listToExpire.isEmpty() ) {
 
-			String strUpdate = "UPDATE page "
+			String strUpdate = "UPDATE Page "
 					+ "SET state='E' "
 					+ "WHERE FALSE";
 			for ( final Long seq : listToExpire ) {

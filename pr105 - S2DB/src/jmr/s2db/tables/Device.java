@@ -77,7 +77,7 @@ public class Device extends TableBase {
 		 "SELECT  "
 		 + "	* "
 		 + "FROM  "
-		 + "	device "
+		 + "	Device "
 		 + "WHERE "
 		 + "	seq = " + seqDevice + ";";
 		 

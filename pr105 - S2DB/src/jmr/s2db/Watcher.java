@@ -73,8 +73,8 @@ public class Watcher {
 			 + "   max( page.seq ), " 
 			 + "   max( session.seq ) "
 			 + "FROM " 
-			 + "	page, " 
-			 + "    session;"; 
+			 + "	Page page, " 
+			 + "    Session session;"; 
 				
 		try (	final Connection conn = 
 							ConnectionProvider.get().getConnection();
