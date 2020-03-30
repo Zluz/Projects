@@ -336,7 +336,7 @@ public class Job extends TableBase {
 
 		if ( null==seqDeviceTarget ) {
 			strInsert = 
-					"INSERT INTO job "
+					"INSERT INTO Job "
 					+ "( seq_session, step, state, request, data, "
 										+ "part_count, seq_part, "
 										+ "request_time ) "
@@ -351,7 +351,7 @@ public class Job extends TableBase {
 							+ job.lRequestTime + " );";
 		} else {
 			strInsert = 
-					"INSERT INTO job "
+					"INSERT INTO Job "
 					+ "( seq_session, step, state, request, "
 										+ "part_count, seq_part, "
 										+ "request_time, "
@@ -492,7 +492,7 @@ public class Job extends TableBase {
 		}
 		
 		final String strUpdate;
-		strUpdate = "UPDATE job "
+		strUpdate = "UPDATE Job "
 				+ "SET "
 				+ "seq=" + this.seqJob
 				+ ( null!=state 
@@ -596,7 +596,7 @@ public class Job extends TableBase {
 	public boolean checkForUpdatedStatus() {
 
 		final String strQuery = "SELECT state, result "
-								+ "FROM job "
+								+ "FROM Job job "
 								+ "WHERE seq=" + this.seqJob;
 		
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
