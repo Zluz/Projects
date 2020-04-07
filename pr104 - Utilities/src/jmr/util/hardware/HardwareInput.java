@@ -51,6 +51,10 @@ public enum HardwareInput {
 	L_POWER_LAUNDY_WASHER,
 	L_POWER_LAUNDY_DRYER,
 	
+	L_TESLA_ACCY,
+	L_TESLA_ACTIVE,
+	L_TESLA_DRIVE,
+	
 	/*
 	 * format:
 	 *  <[<L|A>_]<type>>_<input>[_<state>]

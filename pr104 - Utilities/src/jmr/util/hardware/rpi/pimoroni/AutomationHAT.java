@@ -264,7 +264,7 @@ public class AutomationHAT {
 	}
 	
 	
-	private void updateDigitalInput( 	final Port port,
+	private boolean updateDigitalInput( final Port port,
 										final boolean bNewValue,
 										final TraceMap map,
 										final long lTime ) {
@@ -276,7 +276,7 @@ public class AutomationHAT {
 		} else {
 			LOGGER.severe( "Digital port cannot be updated: " 
 					+ port.name() + ", registered as " + pi );
-			return;
+			return false;
 		}
 		
 		final boolean bRunCheck;
@@ -303,6 +303,7 @@ public class AutomationHAT {
 			}
 			checkRunTrigger( port, tm, lTime );
 		}
+		return true;
 	}
 	
 
