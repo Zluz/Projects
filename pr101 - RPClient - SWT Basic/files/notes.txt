@@ -1,7 +1,9 @@
 
 When exporting runnable JAR:
 
-	Export launch config using main class: jmr.swt.SWTLoader3
+	Export launch config using main class in this project:
+			project:  pr101 
+			class:    jmr.swt.SWTLoader3
 
 	"Library handling" must be
 		"package required libraries into generated jar"

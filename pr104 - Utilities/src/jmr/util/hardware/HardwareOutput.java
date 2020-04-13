@@ -22,6 +22,9 @@ public enum HardwareOutput {
 	
 	AUDIO_BROADCAST_POWER_ENCODER,
 	
+	TESLA_BLACKVUE_POWER,
+	TESLA_SENSOR_RPI,
+	
 	;
 
 	public static HardwareOutput getValueFor( final String value ) {
