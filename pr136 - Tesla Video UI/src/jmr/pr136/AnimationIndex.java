@@ -1,7 +1,5 @@
 package jmr.pr136;
 
-import java.util.function.Consumer;
-
 public class AnimationIndex {
 
 	private final Long lStart;
