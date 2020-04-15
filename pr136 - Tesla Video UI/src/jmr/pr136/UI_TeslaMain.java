@@ -42,6 +42,8 @@ public class UI_TeslaMain {
 	public final static int FHD_Y = 1080;
 	public final static int HHD_X = FHD_X / 2;
 	public final static int HHD_Y = FHD_Y / 2;
+
+	public final static boolean ABORT_INACTIVE_UI = true;
 	
 	
 	
@@ -72,7 +74,6 @@ public class UI_TeslaMain {
 	private final GaugeHistory gaugeAutoHAT_12VBatt;
 	private final GaugeHistory gaugeAutoHAT_Accy;
 	
-	private final Thread threadUIWatchdog;
 	private long lLastUIUpdate = System.currentTimeMillis();
 
 	
@@ -167,7 +168,21 @@ public class UI_TeslaMain {
 				final long lTimeNow = System.currentTimeMillis();
 				String strInput;
 				switch ( event.keyCode ) {
-					case SWT.ARROW_UP 	: {
+					case SWT.ARROW_RIGHT : {
+//						if ( null == aiPMenu ) { ..
+						strInput = "Menu Right";
+						Menu.getRoot().getSelectedChild()
+										.changeSelectedChild( 1 );
+						break;
+					}
+					case SWT.ARROW_LEFT : {
+//						if ( null == aiPMenu ) { ..
+						strInput = "Menu Left";
+						Menu.getRoot().getSelectedChild()
+										.changeSelectedChild( -1 );
+						break;
+					}
+					case SWT.ARROW_UP : {
 						if ( null == aiPMenu ) {
 							strInput = "Menu Up";
 							final int iNewValue = iMenuSelection - 1;
@@ -273,35 +288,39 @@ public class UI_TeslaMain {
 			).run();
 		}
 		
-		new Thread( ()-> {
-			try {
-				
-				Thread.sleep( 3000 );
-				monitorAutoHAT.setRelayState( false );
-				Thread.sleep( 3000 );
-				monitorAutoHAT.setRelayState( true );
-				
-			} catch ( final Exception e ) {
-				e.printStackTrace();
-			}
-		} ).start();
-		
-		this.threadUIWatchdog = new Thread( ()-> {
-			try {
-				while ( ! shell.isDisposed() ) {
-					final long lNow = System.currentTimeMillis();
-					if ( lNow - lLastUIUpdate > 5000 ) {
-						System.err.println( "UI is not updating. Aborting." );
-						System.out.println( Reporting.reportAllThreads() );
-						Runtime.getRuntime().exit( 101 );
+//		new Thread( ()-> {
+//			try {
+//				
+//				Thread.sleep( 3000 );
+//				monitorAutoHAT.setRelayState( false );
+//				Thread.sleep( 3000 );
+//				monitorAutoHAT.setRelayState( true );
+//				
+//			} catch ( final Exception e ) {
+//				e.printStackTrace();
+//			}
+//		} ).start();
+//
+		if ( bFullscreen && ABORT_INACTIVE_UI ) {
+			final Thread threadUIWatchdog = new Thread( ()-> {
+				try {
+					while ( ! shell.isDisposed() ) {
+						final long lNow = System.currentTimeMillis();
+						if ( lNow - lLastUIUpdate > 5000 ) {
+							System.err.println( "UI is not updating. Aborting." );
+							System.out.println( Reporting.reportAllThreads() );
+							Runtime.getRuntime().exit( 101 );
+						}
+						Thread.sleep( 2000 );
 					}
-					Thread.sleep( 2000 );
+				} catch ( final InterruptedException e ) {
+					Runtime.getRuntime().exit( 102 );
 				}
-			} catch ( final InterruptedException e ) {
-				Runtime.getRuntime().exit( 102 );
-			}
-		} );
-		this.threadUIWatchdog.start();
+			} );
+			threadUIWatchdog.start();
+		}
+		
+		addMenuActions();
 	}
 	
 	
@@ -315,8 +334,11 @@ public class UI_TeslaMain {
 	
 	
 	Device display = null;
+	Font font10 = null;
 	Font font30 = null;
 	Font font50 = null;
+	Rectangle rectFull;
+	Rectangle rectOverhead;
 	
 	
 	private void paint( final Image image ) {
@@ -333,9 +355,17 @@ public class UI_TeslaMain {
 		if ( null == display ) {
 		
 			display = image.getDevice();
+			
+			rectFull = new Rectangle( 0, 0, 1920, 1080 );
+			rectOverhead = new Rectangle( 1500, 40, 340, 235 );
 	
 			final Font fontSystem = display.getSystemFont();
 		    
+			final FontData fd10 = fontSystem.getFontData()[0];
+		    fd10.setHeight( 20 );
+		    fd10.setStyle( SWT.BOLD );
+			font10 = new Font( display, fd10 );
+	
 			final FontData fd30 = fontSystem.getFontData()[0];
 		    fd30.setHeight( 26 );
 			font30 = new Font( display, fd30 );
@@ -347,8 +377,9 @@ public class UI_TeslaMain {
 		
 		
 		// draw overhead pic box
-		gc.setBackground( UI.getColor( SWT.COLOR_DARK_GREEN ) );
-		gc.fillRectangle( 1500, 40, 340, 235 );
+		gc.setBackground( UI.getColor( SWT.COLOR_BLACK ) );
+//		gc.fillRectangle( 1500, 40, 340, 235 );
+		gc.fillRectangle( rectOverhead );
 		
 		
 		gc.setForeground( UI.getColor( SWT.COLOR_CYAN ) );
@@ -381,17 +412,23 @@ public class UI_TeslaMain {
 		} else if ( iMenuSelection >= iSize ) {
 			iMenuSelection -= iSize;
 		}
+		
+		//TODO .. just testing..
+		gc.setAdvanced( false );
+		gc.setAntialias( SWT.OFF );
+
+		
 		for ( int i = iMenuSelection; i > 0; i-- ) {
 			final Item item = listItems.remove( 0 );
 			listItems.add( item );
 		}
-		gc.setFont( font50 );
+//		gc.setFont( font50 );
 		final boolean bLockedPMenu = null == this.aiPMenu;
 		boolean bFirst = bLockedPMenu;
 		if ( bLockedPMenu ) {
 			gc.setBackground( UI.getColor( SWT.COLOR_DARK_CYAN ) );
-			gc.setAdvanced( true );
-			gc.setAntialias( SWT.ON );
+//			gc.setAdvanced( true );
+//			gc.setAntialias( SWT.ON );
 		} else {
 			gc.setBackground( UI.getColor( SWT.COLOR_GRAY ) );
 			iY += aiPMenu.getIndex( lTimeNow );
@@ -401,28 +438,53 @@ public class UI_TeslaMain {
 		
 		for ( final Item item : listItems ) {
 			final String strText = item.getText();
+
+			gc.setClipping( rectOverhead );
+			gc.setFont( font10 );
+			final int iY_OH = ( iY - 340 ) / 3 + 46;
+			gc.setForeground( UI.getColor( SWT.COLOR_GRAY ) );
+			gc.setBackground( UI.getColor( SWT.COLOR_BLACK ) );
+			gc.drawText( strText, 1518, iY_OH );
+			gc.setClipping( rectFull );
+
+			gc.setForeground( UI.getColor( SWT.COLOR_BLACK ) );
+			gc.setBackground( UI.getColor( SWT.COLOR_DARK_CYAN ) );
 			gc.fillRectangle( 50, iY, 640, 74 );
+			gc.setFont( font50 );
 			gc.drawText( strText, 70, iY );
 			gc.setBackground( UI.getColor( SWT.COLOR_GRAY ) );
 			
 			if ( bFirst ) {
 				bFirst = false;
 				final List<Item> listChildren = item.getChildren();
+				final Item itemSelected = item.getSelectedChild();
 				final int iWidth = iTotalWidth / listChildren.size();
+				
+				if ( bLockedPMenu ) {
+					Menu.getRoot().setSelected( item );
+				}
 
 				if ( listChildren.size() < 5 ) {
 					gc.setFont( font50 );
 				} else {
 					gc.setFont( font30 );
 				}
-
+				
 				int iX = 740;
 				for ( final Item itemChild : listChildren ) {
+					
+					if ( itemChild == itemSelected ) {
+						gc.setBackground( UI.getColor( SWT.COLOR_DARK_CYAN ) );
+					} else {
+						gc.setBackground( UI.getColor( SWT.COLOR_GRAY ) );
+					}
+					
 					final String strCText = itemChild.getText();
 					gc.fillRectangle( iX, iY, iWidth - 40, 74 );
 					gc.drawText( strCText, iX + 20, iY );
 					iX += iWidth;
 				}
+				gc.setBackground( UI.getColor( SWT.COLOR_GRAY ) );
 				gc.setFont( font50 );
 			}
 			iY += 94;
@@ -490,10 +552,45 @@ public class UI_TeslaMain {
 	}
 	
 	
+	public void addMenuActions() {
+		
+		// also initialize hardware
+		monitorAutoHAT.setRelayState( Port.OUT_R_1, true );
+		monitorAutoHAT.setRelayState( Port.OUT_R_2, true );
+
+		// now setup menu actions
+		
+		Menu.addRunnable( "DASHCAM/ON", ()-> {
+			monitorAutoHAT.setRelayState( Port.OUT_R_1, true );
+		} );
+
+		Menu.addRunnable( "DASHCAM/OFF", ()-> {
+			monitorAutoHAT.setRelayState( Port.OUT_R_1, false );
+		} );
+
+		Menu.addRunnable( "NETWORK/ON", ()-> {
+			monitorAutoHAT.setRelayState( Port.OUT_R_2, true );
+		} );
+
+		Menu.addRunnable( "NETWORK/OFF", ()-> {
+			monitorAutoHAT.setRelayState( Port.OUT_R_2, false );
+		} );
+	}
+	
+	
 	public Shell getShell() {
 		return this.shell;
 	}
 
+	
+	public Image buildOverheadDisplayImage() {
+		final Image image = new Image( this.display, 240, 135 );
+		final GC gc = new GC( image );
+		//TODO paint overhead image .. ?
+		return image;
+	}
+	
+	
 	
 	public static void main( final String[] arrArguments ) {
 		

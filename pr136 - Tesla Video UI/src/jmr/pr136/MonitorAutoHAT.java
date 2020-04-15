@@ -82,8 +82,9 @@ public class MonitorAutoHAT {
 	}
 	
 	
-	public void setRelayState( final boolean bEnergized ) {
-		hat.setPortValue( Port.OUT_R_1, bEnergized );
+	public void setRelayState( 	final Port port,
+								final boolean bEnergized ) {
+		hat.setPortValue( port, bEnergized );
 	}
 	
 	

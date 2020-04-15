@@ -1,0 +1,53 @@
+
+[display]
+
+	dashcam (on/off)
+
+	12v accy voltage (variable, graph)
+
+   maybe?
+	approx gps location (geo)
+
+	connected/available networks (table data)
+
+	vehicle router power (on/off)
+	
+	rpi temp, etc
+
+	overhead thumbnail
+
+
+
+[inputs]
+	Overhead (2 buttons)
+		1: move cursor/selection
+		2: modify selection (on/off/other)
+
+	main (keypad?)
+		(arrows, enter, etc?)
+
+	
+[selectable controls]
+
+	dashcam
+		on
+		off
+		auto-geo
+
+	vehicle network
+		on
+		off
+		auto
+
+	ui theme
+		day
+		night
+		auto
+
+	overhead display
+		accy-voltage
+		nearby-networks
+		geo-location
+		device-ips
+
+
