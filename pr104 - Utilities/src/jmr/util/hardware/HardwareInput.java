@@ -9,6 +9,14 @@ public enum HardwareInput {
 	TEST_ANALOG_INPUT_1( true ),
 	TEST_ANALOG_INPUT_2( true ),
 	TEST_ANALOG_INPUT_3( true ),
+	
+	GENERIC_DIGITAL_IN_1,
+	GENERIC_DIGITAL_IN_2,
+	GENERIC_DIGITAL_IN_3,
+
+	GENERIC_ANALOG_IN_1( true ),
+	GENERIC_ANALOG_IN_2( true ),
+	GENERIC_ANALOG_IN_3( true ),
 
 	
 	VEH_SPACE_1_RANGE_DOWN( true ),

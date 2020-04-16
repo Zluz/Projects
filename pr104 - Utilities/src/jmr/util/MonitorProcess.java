@@ -305,6 +305,11 @@ public class MonitorProcess {
 						+ "external process \"" + this.strName + "\".." );
 			this.process.destroy();
 		}
+		if ( null != thread && thread.isAlive() ) {
+//			thread.destroy();
+			thread.interrupt();
+			//TODO kill this thing somehow
+		}
 	}
 	
 }

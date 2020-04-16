@@ -8,10 +8,12 @@ import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -34,8 +36,6 @@ import jmr.util.math.FunctionBase;
 import jmr.util.math.FunctionParameter;
 import jmr.util.math.NormalizedFloat;
 import jmr.util.report.TraceMap;
-
-import jmr.util.hardware.rpi.pimoroni.Port;
 
 public class AutomationHAT {
 
@@ -263,6 +263,7 @@ public class AutomationHAT {
 		return this.lUpdateDataCount;
 	}
 	
+	private final Set<Port> setErrorReported = new HashSet<>();
 	
 	private boolean updateDigitalInput( final Port port,
 										final boolean bNewValue,
@@ -271,11 +272,15 @@ public class AutomationHAT {
 		
 		final PortInterface<Port> pi = mapInterface.get( port );
 		final InputDigitalInterface<Port> input;
+		
 		if ( pi instanceof InputDigitalInterface ) {
 			input = (InputDigitalInterface<Port>)pi;
-		} else {
-			LOGGER.severe( "Digital port cannot be updated: " 
-					+ port.name() + ", registered as " + pi );
+		} else { // not sure when this happens
+			if ( ! setErrorReported.contains( port ) ) {
+				LOGGER.severe( "Digital port cannot be updated: " 
+						+ port.name() + ", registered as " + pi );
+				setErrorReported.add( port );
+			}
 			return false;
 		}
 		
@@ -413,12 +418,21 @@ System.out.println( "port parameters: " + strParameters );
 
 		final HardwareInput hw = this.getHardwareInputForPort( port );
 		if ( null==hw ) return;
-
+		
 		final PortInterface<Port> pi = mapInterface.get( port );
-		if ( ! ( pi instanceof InputAnalogInterface ) ) {
+		
+		final InputAnalogInterface<Port> input;
+		
+		if ( pi instanceof InputAnalogInterface ) {
+			input = ( InputAnalogInterface<Port> )pi;
+		} else { // not sure when this happens
+			if ( ! setErrorReported.contains( port ) ) {
+				LOGGER.severe( "Analog port cannot be updated: " 
+						+ port.name() + ", registered as " + pi );
+				setErrorReported.add( port );
+			}
 			return;
 		}
-		final InputAnalogInterface<Port> input = (InputAnalogInterface<Port>)pi;
 
 		
 		final NormalizedFloat nf = getAnalogInputData( port, true );
@@ -835,7 +849,9 @@ System.out.println( " << POSTING EVENT - " + port.name() + " >> " );
 	}
 
 	public void close() {
-		mp.close();
+		if ( null != mp ) {
+			mp.close();
+		}
 	}
 
 	
@@ -922,6 +938,7 @@ System.out.println( " << POSTING EVENT - " + port.name() + " >> " );
 	public void setPortValue(	final Port port,
 								final boolean bOn ) {
 		if ( null==port ) return;
+		if ( null==strCommFile ) return;
 		final char cCommPort = port.cCommIndex;
 		if ( 0==cCommPort ) return;
 		
