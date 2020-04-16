@@ -2,6 +2,8 @@ package jmr.pr136;
 
 import java.awt.Robot;
 import java.awt.event.InputEvent;
+import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -75,6 +77,12 @@ public class UI_TeslaMain {
 	private final GaugeHistory gaugeAutoHAT_Accy;
 	
 	private long lLastUIUpdate = System.currentTimeMillis();
+	
+	private Image imageOverhead;
+	
+	private final OverheadServer server;
+	
+	private final static List<String> listMessages = new LinkedList<>();
 
 	
 	public UI_TeslaMain() {
@@ -94,6 +102,7 @@ public class UI_TeslaMain {
 								new Rectangle( 1000, 460 + 180 + 180, 800, 160 ),
 								16 );
 		
+		this.server = new OverheadServer();
 		
 		
 		//NOTE: refresh flickering can be fixed by SWT.DOUBLE_BUFFERED 
@@ -157,10 +166,29 @@ public class UI_TeslaMain {
 									 HHD_X, HHD_Y 	// dest dimensions
 									 );
 				}
+				
+				// grab overhead image ( 240 x 135 )
+				if ( null != rectOverhead ) {
+					final Rectangle r = rectOverhead;
+					if ( null != imageOverhead ) {
+						imageOverhead.dispose();
+					}
+//					final GC gc = new GC( UI.display );
+//					imageOverhead = new Image( UI.display, r.width, r.height );
+					imageOverhead = new Image( UI.display, r.width, r.height );
+					final GC gc = new GC( imageOverhead );
+					gc.drawImage( imageBuffer, 			// buffer image 
+									 r.x, r.y, 			// source coordinates 
+									 r.width, r.height, // source dimensions
+									 0,0,				// dest coordinates
+									 r.width, r.height 	// dest dimensions
+									 );
+					server.prepareImage( imageOverhead );
+				}
 
 				imageBuffer.dispose();
 			}
-		});
+		} );
 
 		this.keylistener = new KeyAdapter() {
 			@Override
@@ -263,7 +291,8 @@ public class UI_TeslaMain {
 			
 			final Runtime runtime = Runtime.getRuntime();
 			
-			//TODO temporary .. testing ..
+			// difficulty focusing main window.. 
+			// also mouses out of the way w/o having to hide the pointer
 			new Thread( ()-> {
 					try {
 						Thread.sleep( 1000 );
@@ -287,20 +316,7 @@ public class UI_TeslaMain {
 				}
 			).run();
 		}
-		
-//		new Thread( ()-> {
-//			try {
-//				
-//				Thread.sleep( 3000 );
-//				monitorAutoHAT.setRelayState( false );
-//				Thread.sleep( 3000 );
-//				monitorAutoHAT.setRelayState( true );
-//				
-//			} catch ( final Exception e ) {
-//				e.printStackTrace();
-//			}
-//		} ).start();
-//
+
 		if ( bFullscreen && ABORT_INACTIVE_UI ) {
 			final Thread threadUIWatchdog = new Thread( ()-> {
 				try {
@@ -321,6 +337,8 @@ public class UI_TeslaMain {
 		}
 		
 		addMenuActions();
+		
+		log( "Started " + new Date().toString() );
 	}
 	
 	
@@ -335,6 +353,7 @@ public class UI_TeslaMain {
 	
 	Device display = null;
 	Font font10 = null;
+	Font font20 = null;
 	Font font30 = null;
 	Font font50 = null;
 	Rectangle rectFull;
@@ -357,21 +376,29 @@ public class UI_TeslaMain {
 			display = image.getDevice();
 			
 			rectFull = new Rectangle( 0, 0, 1920, 1080 );
-			rectOverhead = new Rectangle( 1500, 40, 340, 235 );
+//			rectOverhead = new Rectangle( 1500, 40, 340, 235 );
+			rectOverhead = new Rectangle( 1500, 40, 240, 135 );
 	
 			final Font fontSystem = display.getSystemFont();
 		    
 			final FontData fd10 = fontSystem.getFontData()[0];
-		    fd10.setHeight( 20 );
+		    fd10.setHeight( 15 );
 		    fd10.setStyle( SWT.BOLD );
 			font10 = new Font( display, fd10 );
-	
+			
+			final FontData fd20 = fontSystem.getFontData()[0];
+		    fd20.setHeight( 20 );
+//		    fd20.setStyle( SWT.BOLD );
+			font20 = new Font( display, fd20 );
+			
 			final FontData fd30 = fontSystem.getFontData()[0];
 		    fd30.setHeight( 26 );
+		    fd30.setStyle( SWT.BOLD );
 			font30 = new Font( display, fd30 );
 	
 			final FontData fd50 = fontSystem.getFontData()[0];
 		    fd50.setHeight( 36 );
+		    fd50.setStyle( SWT.BOLD );
 			font50 = new Font( display, fd50 );
 		}
 		
@@ -441,18 +468,24 @@ public class UI_TeslaMain {
 
 			gc.setClipping( rectOverhead );
 			gc.setFont( font10 );
-			final int iY_OH = ( iY - 340 ) / 3 + 46;
-			gc.setForeground( UI.getColor( SWT.COLOR_GRAY ) );
+			final int iY_OH = ( iY - 340 ) / 5 + 46;
+			if ( bFirst ) {
+				gc.setForeground( UI.getColor( SWT.COLOR_YELLOW ) );
+				gc.setBackground( UI.getColor( SWT.COLOR_YELLOW ) );
+				gc.fillRectangle( 1500, 80, 7, 20 );
+			} else {
+				gc.setForeground( UI.getColor( SWT.COLOR_GRAY ) );
+			}
 			gc.setBackground( UI.getColor( SWT.COLOR_BLACK ) );
-			gc.drawText( strText, 1518, iY_OH );
+			gc.drawText( item.getTextShort(), 1522, iY_OH, true );
 			gc.setClipping( rectFull );
 
 			gc.setForeground( UI.getColor( SWT.COLOR_BLACK ) );
 			gc.setBackground( UI.getColor( SWT.COLOR_DARK_CYAN ) );
 			gc.fillRectangle( 50, iY, 640, 74 );
 			gc.setFont( font50 );
-			gc.drawText( strText, 70, iY );
-			gc.setBackground( UI.getColor( SWT.COLOR_GRAY ) );
+			gc.drawText( strText, 70, iY, true );
+			gc.setBackground( UI.getColor( SWT.COLOR_GRAY )  );
 			
 			if ( bFirst ) {
 				bFirst = false;
@@ -508,7 +541,7 @@ public class UI_TeslaMain {
 		
 		gc.setBackground( UI.getColor( SWT.COLOR_DARK_YELLOW ) );
 		gc.setForeground( UI.getColor( SWT.COLOR_WHITE ) );
-		gc.fillRectangle( 960, 100, 520, 170 );
+		gc.fillRectangle( 940, 100, 540, 174 );
 		final Boolean bOutR1 = monitorAutoHAT.getDigitalValue( Port.OUT_R_1 );
 		final Boolean bOutR2 = monitorAutoHAT.getDigitalValue( Port.OUT_R_2 );
 		final Boolean bOutR3 = monitorAutoHAT.getDigitalValue( Port.OUT_R_3 );
@@ -518,27 +551,40 @@ public class UI_TeslaMain {
 		final Float fInA1 = monitorAutoHAT.getAnalogValue( Port.IN_A_1 );
 		final Float fInA2 = monitorAutoHAT.getAnalogValue( Port.IN_A_2 );
 		final Float fInA3 = monitorAutoHAT.getAnalogValue( Port.IN_A_3 );
-		int iX = 980;
-		final int iXStep = 150;
+		int iX = 960;
+		final int iXStep = 170;
 		final int iYStep = 40; 
 		iY = 100;
-		gc.drawText( "Relays", iX, iY ); iY += iYStep;
+		gc.drawText( "Relays", iX, iY ); iY += iYStep + 6;
 		gc.drawText( "R1: " + bOutR1, iX, iY ); iY += iYStep;
 		gc.drawText( "R2: " + bOutR2, iX, iY ); iY += iYStep;
 		gc.drawText( "R3: " + bOutR3, iX, iY ); iY += iYStep;
 		iY = 100; 
 		iX += iXStep;
-		gc.drawText( "Digital-In", iX, iY ); iY += iYStep;
+		gc.drawText( "Digital-In", iX, iY ); iY += iYStep + 6;
 		gc.drawText( "D1: " + bInD1, iX, iY ); iY += iYStep;
 		gc.drawText( "D2: " + bInD2, iX, iY ); iY += iYStep;
 		gc.drawText( "D3: " + bInD3, iX, iY ); iY += iYStep;
 		iY = 100; 
 		iX += iXStep;
-		gc.drawText( "Analog-In", iX, iY ); iY += iYStep;
-		gc.drawText( String.format( "A1: %.3f", fInA1 ), iX, iY ); iY += iYStep;
-		gc.drawText( String.format( "A2: %.3f", fInA2 ), iX, iY ); iY += iYStep;
-		gc.drawText( String.format( "A3: %.3f", fInA3 ), iX, iY ); iY += iYStep;
+		gc.drawText( "Analog-In", iX, iY ); iY += iYStep + 6;
+		gc.drawText( String.format( "A1: %.4f", fInA1 ), iX, iY ); iY += iYStep;
+		gc.drawText( String.format( "A2: %.4f", fInA2 ), iX, iY ); iY += iYStep;
+		gc.drawText( String.format( "A3: %.4f", fInA3 ), iX, iY ); iY += iYStep;
 
+		
+		gc.setFont( font20 );
+		gc.setBackground( UI.getColor( SWT.COLOR_DARK_GREEN ) );
+		gc.setForeground( UI.getColor( SWT.COLOR_WHITE ) );
+		gc.fillRectangle( 40, 100, 880, 190 );
+		iY = 250;
+		for ( int i = listMessages.size() - 1; i > 0 && iY > 100; i-- ) {
+			final String strLine = listMessages.get( i );
+			gc.drawText( strLine, 46, iY );
+			iY -= 36;
+		}
+		
+		
 		
 
 		this.gaugeRefreshRate.paint( lTimeNow, gc, image );
@@ -549,6 +595,9 @@ public class UI_TeslaMain {
 		// draw 'close' box
 		gc.setBackground( UI.getColor( SWT.COLOR_GRAY ) );
 		gc.fillRectangle( 28, 43, 130, 42 );
+		
+//		// grab the overhead image (do this in the paint handler)
+//		imageOverhead
 	}
 	
 	
@@ -562,18 +611,22 @@ public class UI_TeslaMain {
 		
 		Menu.addRunnable( "DASHCAM/ON", ()-> {
 			monitorAutoHAT.setRelayState( Port.OUT_R_1, true );
+			log( "Blackvue Dashcam ON" );
 		} );
 
 		Menu.addRunnable( "DASHCAM/OFF", ()-> {
 			monitorAutoHAT.setRelayState( Port.OUT_R_1, false );
+			log( "Blackvue Dashcam OFF" );
 		} );
 
 		Menu.addRunnable( "NETWORK/ON", ()-> {
 			monitorAutoHAT.setRelayState( Port.OUT_R_2, true );
+			log( "Vehicle Network ON" );
 		} );
 
 		Menu.addRunnable( "NETWORK/OFF", ()-> {
 			monitorAutoHAT.setRelayState( Port.OUT_R_2, false );
+			log( "Vehicle Network OFF" );
 		} );
 	}
 	
@@ -583,11 +636,8 @@ public class UI_TeslaMain {
 	}
 
 	
-	public Image buildOverheadDisplayImage() {
-		final Image image = new Image( this.display, 240, 135 );
-		final GC gc = new GC( image );
-		//TODO paint overhead image .. ?
-		return image;
+	public static void log( final String str ) {
+		listMessages.add( str );
 	}
 	
 	

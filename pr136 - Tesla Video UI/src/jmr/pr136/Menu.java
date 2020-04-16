@@ -13,7 +13,7 @@ public class Menu {
 		
 		final String strId;
 		final List<Item> listChildren = new LinkedList<>();
-		String strText;
+		String strText, strTextShort;
 		boolean bSelected;
 		Runnable runnable;
 		
@@ -26,6 +26,11 @@ public class Menu {
 		public void setText( final String strText ) {
 			if ( null == strText ) return;
 			this.strText = strText;
+		}
+		
+		public void setShortText( final String strTextShort ) {
+			if ( null == strTextShort ) return;
+			this.strTextShort = strTextShort;
 		}
 		
 		public void addItem( final Item item ) {
@@ -42,6 +47,14 @@ public class Menu {
 		
 		public String getText() {
 			return this.strText;
+		}
+		
+		public String getTextShort() {
+			if ( null != this.strTextShort ) {
+				return this.strTextShort;
+			} else {
+				return this.strText;
+			}
 		}
 		
 		public boolean isSelected() {
@@ -127,7 +140,51 @@ public class Menu {
 	}
 
 	
-	public final static String[] ITEMS = new String[] {
+	public enum MenuItem {
+		DASHCAM_ON( "DASHCAM:Blackvue Dashcam (R1)/ON" ),
+		DASHCAM_OFF( "DASHCAM/OFF", "Blackvue" ),
+		DASHCAM_AUTO_GEO( "DASHCAM/AUTO-GEO" ),
+			
+		NETWORK_ON( "NETWORK:Vehicle Network (R2)/ON" ),
+		NETWORK_OFF( "NETWORK/OFF", "V Network" ),
+		NETWORK_AUTO_LAN( "NETWORK/AUTO-LAN" ),
+			
+		UI_THEME_DAY( "UI-THEME:Day-Night Theme/DAY", "UI Theme" ),
+		UI_THEME_NIGHT( "UI-THEME/NIGHT" ),
+		UI_THEME_AUTO_TIME( "UI-THEME/AUTO-TIME" ),
+	
+		DISPLAY_MONITORS( "DISPLAY:MCU (this) Display/MONITORS:Gauges" ),
+		DISPLAY_GPS_MAP( "DISPLAY/GPS-MAP:Map", "Display" ),
+		DISPLAY_NEAR_WIFI( "DISPLAY/NEAR-WIFI:WiFi" ),
+		DISPLAY_DEBUG( "DISPLAY/DEBUG:Debug" ),
+		DISPLAY_DIAGNOSTIC( "DISPLAY/DIAGNOSTIC:Diag" ),
+	
+		OVERHEAD_VOLTAGE( "OVERHEAD:Overhead Display/VOLTAGE:Accy VDC" ),
+		OVERHEAD_NEAR_WIFI( "OVERHEAD/NEAR-WIFI:Near WiFi", "Overhead" ),
+		OVERHEAD_GEO_LOCATION( "OVERHEAD/GEO-LOCATION:GPS-Map" ),
+		OVERHEAD_DEVICE_IPS( "OVERHEAD/DEVICE-IPS:Device IPs" ),
+		OVERHEAD_POWER_OPTIONS( "OVERHEAD/POWER-OPTIONS:Power" ),
+			
+		AUX_POWER_1_ON( "AUX-POWER-1/ON", "Aux-1" ),
+		AUX_POWER_1_OFF( "AUX-POWER-1/OFF" ),
+		AUX_POWER_2_ON( "AUX-POWER-2/ON", "Aux-2" ),
+		AUX_POWER_2_OFF( "AUX-POWER-2/OFF" ),
+		;
+		final String strLine;
+		final String strParentShort;
+		
+		MenuItem( 	final String strLine,
+					final String strParentShort ) {
+			this.strParentShort = strParentShort;
+			this.strLine = strLine;
+		}
+		
+		MenuItem( final String strLine ) {
+			this( strLine, null );
+		}
+	};
+	
+	public final static String[] ITEMS_ = new String[] {
 			"DASHCAM:Blackvue Dashcam (R1)/ON",
 			"DASHCAM/OFF",
 			"DASHCAM/AUTO-GEO",
@@ -164,7 +221,10 @@ public class Menu {
 	private final static Menu instance = new Menu();
 	
 	private Menu() {
-		for ( final String strItem : ITEMS ) {
+//		for ( final String strItem : ITEMS ) {
+		for ( final MenuItem item : MenuItem.values() ) {
+			final String strItem = item.strLine;
+			final String strParentShort = item.strParentShort;
 			final String[] arrParts = strItem.split( "/" );
 //			final String strParent = arrParts[ 0 ];
 //			final String strChild = arrParts[ 1 ];
@@ -191,6 +251,7 @@ public class Menu {
 			final Item itemParent = findItem( arrParent[ 0 ] );
 			
 			itemParent.setText( arrParent[ 1 ] );
+			itemParent.setShortText( strParentShort );
 			
 			final Item itemChild = new Item( arrChild[ 0 ] );
 			itemChild.setText( arrChild[ 1 ] );
