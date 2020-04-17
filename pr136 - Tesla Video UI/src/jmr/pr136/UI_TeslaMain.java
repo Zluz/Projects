@@ -3,6 +3,7 @@ package jmr.pr136;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -63,7 +64,7 @@ public class UI_TeslaMain {
 	private AnimationIndex aiPMenu = null;
 	private AnimationIndex aiInput = null;
 	
-	private String strInput = null;
+//	private String strInput = null;
 	
 	private final KeyListener keylistener;
 	
@@ -89,20 +90,28 @@ public class UI_TeslaMain {
 
 		this.monitorRefreshRate = new Monitor( "UI Refresh Latency" );
 		this.gaugeRefreshRate = new GaugeHistory( monitorRefreshRate, 
-								new Rectangle( 1000, 460, 800, 160 ),
+								new Rectangle( 1070, 460, 800, 160 ),
 								400 );
 		
 		this.monitorAutoHAT = new MonitorAutoHAT();
 		this.gaugeAutoHAT_12VBatt = new GaugeHistory( 
 								monitorAutoHAT.getMonitor_1_12VBatt(), 
-								new Rectangle( 1000, 460 + 180, 800, 160 ), 
+								new Rectangle( 1070, 460 + 180, 800, 160 ), 
 								16 );
 		this.gaugeAutoHAT_Accy = new GaugeHistory( 
 								monitorAutoHAT.getMonitor_2_Accy(), 
-								new Rectangle( 1000, 460 + 180 + 180, 800, 160 ),
+								new Rectangle( 1070, 460 + 180 + 180, 800, 160 ),
 								16 );
 		
-		this.server = new OverheadServer();
+		this.server = new OverheadServer( new OverheadServer.Listener() {
+			@Override
+			public void emitRequestHandled( final String strURL,
+											final String strRemote,
+											final int iResponse ) {
+				UI_TeslaMain.log( "Request from: " + strRemote );
+				UI_TeslaMain.log( "URL: " + strURL );
+			}
+		} );
 		
 		
 		//NOTE: refresh flickering can be fixed by SWT.DOUBLE_BUFFERED 
@@ -119,7 +128,7 @@ public class UI_TeslaMain {
 			shell.setLocation( 0, 0 );
 //			shell.setMaximized( true );
 		} else {
-			shell.setSize( HHD_X, HHD_Y );
+			shell.setSize( HHD_X, HHD_Y + 20 ); // +20 for trim
 		}
 		shell.setText( "Tesla Main/Video UI" );
 		
@@ -250,15 +259,18 @@ public class UI_TeslaMain {
 					}
 				}
 				if ( null != strInput ) {
-					UI_TeslaMain.this.strInput = strInput;
+//					UI_TeslaMain.this.strInput = strInput;
+					mapStates.put( StateKey.SS_INPUT, strInput );
 					aiInput = new AnimationIndex( 
 							lTimeNow, 2000, 
 							255, 100, ()-> {
-								UI_TeslaMain.this.strInput = null;
+//								UI_TeslaMain.this.strInput = null;
+								mapStates.put( StateKey.SS_INPUT, null );
 								aiInput = null; 
 							} );
 				} else {
-					UI_TeslaMain.this.strInput = null;
+//					UI_TeslaMain.this.strInput = null;
+					mapStates.put( StateKey.SS_INPUT, null );
 				}
 			}
 		};
@@ -337,6 +349,9 @@ public class UI_TeslaMain {
 		}
 		
 		addMenuActions();
+		startAutoHatMonitor();
+		
+		mapStates.put( StateKey.SS_JAR, strJAR );
 		
 		log( "Started " + new Date().toString() );
 	}
@@ -351,6 +366,49 @@ public class UI_TeslaMain {
 	}
 	
 	
+	final private EnumMap< StateKey, Object > 
+							mapStates = new EnumMap<>( StateKey.class );
+	
+	
+	public void startAutoHatMonitor() {
+		final Thread thread = new Thread( "AutoHAT Monitor" ) {
+			@Override
+			public void run() {
+				try {
+					while ( ! shell.isDisposed() ) {
+						TimeUnit.MILLISECONDS.sleep( 100 );
+						
+						for ( final StateKey key : StateKey.values() ) {
+							final Port port = key.getPort();
+							if ( null != port ) {
+								final Object objValue;
+								if ( port.isAnalog() ) {
+									objValue = monitorAutoHAT
+												.getAnalogValue( port );
+								} else {
+									objValue = monitorAutoHAT
+												.getDigitalValue( port );
+								}
+								if ( null != objValue ) {
+									mapStates.put( key, objValue ); 
+								}
+							}
+						}
+
+					}
+				} catch ( final InterruptedException e ) {
+					return;
+				}
+			}
+		};
+		thread.start();
+	}
+	
+	
+	
+	
+	
+	
 	Device display = null;
 	Font font10 = null;
 	Font font20 = null;
@@ -358,6 +416,50 @@ public class UI_TeslaMain {
 	Font font50 = null;
 	Rectangle rectFull;
 	Rectangle rectOverhead;
+	
+	
+	
+	
+	private void paintStates( 	final Image image,
+								final GC gc,
+								final String strTypes,
+								final Rectangle r ) {
+		if ( null == image ) return;
+		if ( null == gc ) return;
+		if ( null == r ) return;
+		
+		final boolean bNarrowOnly = true;
+		
+		gc.setBackground( UI.getColor( SWT.COLOR_DARK_YELLOW ) );
+		gc.setForeground( UI.getColor( SWT.COLOR_WHITE ) );
+		gc.fillRectangle( r );
+		gc.setFont( font20 );
+		
+		final int iXStart = r.x + 8;
+		final int iYStep = gc.textExtent( "A" ).y;
+		final int iXLabel = gc.textExtent( "SS_HOME_NET -" ).x;
+		
+		int iX = iXStart;
+		int iY = r.y + 8;
+		
+		
+		for ( StateKey key : StateKey.values() ) {
+			if ( key.isVisible() 
+						&& bNarrowOnly 
+						&& ( strTypes.indexOf( key.getType() ) > -1 ) ) {
+				final Object objValue = mapStates.get( key );
+				final String strValue = key.asString( objValue );
+				
+				iX = iXStart;
+				gc.drawText( key.name(), iX, iY, true );
+				
+				iX += iXLabel;
+				gc.drawText( strValue, iX, iY, true );
+				
+				iY += iYStep;
+			}
+		}
+	}
 	
 	
 	private void paint( final Image image ) {
@@ -377,7 +479,8 @@ public class UI_TeslaMain {
 			
 			rectFull = new Rectangle( 0, 0, 1920, 1080 );
 //			rectOverhead = new Rectangle( 1500, 40, 340, 235 );
-			rectOverhead = new Rectangle( 1500, 40, 240, 135 );
+//			rectOverhead = new Rectangle( 1600, 40, 240, 135 );
+			rectOverhead = new Rectangle( 50, 140, 240, 135 );
 	
 			final Font fontSystem = display.getSystemFont();
 		    
@@ -410,7 +513,7 @@ public class UI_TeslaMain {
 		
 		
 		gc.setForeground( UI.getColor( SWT.COLOR_CYAN ) );
-		gc.drawLine( 0, 0, 1920, 1080 );
+		gc.drawLine( 1920 - 100, 1080 - 100, 1920, 1080 );
 
 		
 		gc.setForeground( UI.getColor( SWT.COLOR_RED ) );
@@ -420,9 +523,9 @@ public class UI_TeslaMain {
 		gc.setFont( font30 );
 //		final String strTime = new Date().toString();
 //		gc.drawText( strTime, 650, 10 );
-		gc.drawText( strJAR, 650, 10 );
+//		gc.drawText( strJAR, 650, 10 );
 		
-		gc.drawText( "Input: " + strInput, 190, 10 );
+//		gc.drawText( "Input: " + strInput, 190, 10 );
 
 		// draw menu
 		gc.setBackground( UI.getColor( SWT.COLOR_GRAY ) );
@@ -467,17 +570,19 @@ public class UI_TeslaMain {
 			final String strText = item.getText();
 
 			gc.setClipping( rectOverhead );
+			final Rectangle r = rectOverhead;
 			gc.setFont( font10 );
-			final int iY_OH = ( iY - 340 ) / 5 + 46;
+			final int iY_OH = ( iY - 340 ) / 5 + 6 + r.y;
 			if ( bFirst ) {
 				gc.setForeground( UI.getColor( SWT.COLOR_YELLOW ) );
 				gc.setBackground( UI.getColor( SWT.COLOR_YELLOW ) );
-				gc.fillRectangle( 1500, 80, 7, 20 );
+//				gc.fillRectangle( 1500, 80, 7, 20 );
+				gc.fillRectangle( r.x, r.y + 40, 7, 20 );
 			} else {
 				gc.setForeground( UI.getColor( SWT.COLOR_GRAY ) );
 			}
 			gc.setBackground( UI.getColor( SWT.COLOR_BLACK ) );
-			gc.drawText( item.getTextShort(), 1522, iY_OH, true );
+			gc.drawText( item.getTextShort(), r.x + 22, iY_OH, true );
 			gc.setClipping( rectFull );
 
 			gc.setForeground( UI.getColor( SWT.COLOR_BLACK ) );
@@ -524,63 +629,68 @@ public class UI_TeslaMain {
 		}
 		
 		gc.setFont( font30 );
-		gc.drawText( ""+ iMenuSelection, 580, 10 );
+//		gc.drawText( ""+ iMenuSelection, 580, 10 );
 		
 //		final long lElapsed = lTimeNow - lTimeStart;
 //		gc.drawText( ""+ lElapsed, 1300, 10 );
 		final Double dAvgRefresh = this.monitorRefreshRate.getAverageValue();
-		final String strFPS;
+//		final String strFPS;
 		if ( null != dAvgRefresh ) {
 			final double dFPS = 1000.0 / dAvgRefresh;
-			strFPS = String.format( "FPS: %05.2f", dFPS );
+//			strFPS = String.format( "FPS: %05.2f", dFPS );
+			mapStates.put( StateKey.SS_FPS, dFPS );
 		} else {
-			strFPS = "FPS: -";
+//			strFPS = "FPS: -";
 		}
-		gc.drawText( strFPS, 1300, 10 );
+//		gc.drawText( strFPS, 1300, 10 );
 
 		
-		gc.setBackground( UI.getColor( SWT.COLOR_DARK_YELLOW ) );
-		gc.setForeground( UI.getColor( SWT.COLOR_WHITE ) );
-		gc.fillRectangle( 940, 100, 540, 174 );
-		final Boolean bOutR1 = monitorAutoHAT.getDigitalValue( Port.OUT_R_1 );
-		final Boolean bOutR2 = monitorAutoHAT.getDigitalValue( Port.OUT_R_2 );
-		final Boolean bOutR3 = monitorAutoHAT.getDigitalValue( Port.OUT_R_3 );
-		final Boolean bInD1 = monitorAutoHAT.getDigitalValue( Port.IN_D_1 );
-		final Boolean bInD2 = monitorAutoHAT.getDigitalValue( Port.IN_D_2 );
-		final Boolean bInD3 = monitorAutoHAT.getDigitalValue( Port.IN_D_3 );
-		final Float fInA1 = monitorAutoHAT.getAnalogValue( Port.IN_A_1 );
-		final Float fInA2 = monitorAutoHAT.getAnalogValue( Port.IN_A_2 );
-		final Float fInA3 = monitorAutoHAT.getAnalogValue( Port.IN_A_3 );
-		int iX = 960;
-		final int iXStep = 170;
-		final int iYStep = 40; 
-		iY = 100;
-		gc.drawText( "Relays", iX, iY ); iY += iYStep + 6;
-		gc.drawText( "R1: " + bOutR1, iX, iY ); iY += iYStep;
-		gc.drawText( "R2: " + bOutR2, iX, iY ); iY += iYStep;
-		gc.drawText( "R3: " + bOutR3, iX, iY ); iY += iYStep;
-		iY = 100; 
-		iX += iXStep;
-		gc.drawText( "Digital-In", iX, iY ); iY += iYStep + 6;
-		gc.drawText( "D1: " + bInD1, iX, iY ); iY += iYStep;
-		gc.drawText( "D2: " + bInD2, iX, iY ); iY += iYStep;
-		gc.drawText( "D3: " + bInD3, iX, iY ); iY += iYStep;
-		iY = 100; 
-		iX += iXStep;
-		gc.drawText( "Analog-In", iX, iY ); iY += iYStep + 6;
-		gc.drawText( String.format( "A1: %.4f", fInA1 ), iX, iY ); iY += iYStep;
-		gc.drawText( String.format( "A2: %.4f", fInA2 ), iX, iY ); iY += iYStep;
-		gc.drawText( String.format( "A3: %.4f", fInA3 ), iX, iY ); iY += iYStep;
+//		paintStates( image, gc, new Rectangle( 940, 100, 540, 174 ) );
+		paintStates( image, gc, "ADCS", new Rectangle( 730, 460, 300, 520 ) );
+		paintStates( image, gc, "X", new Rectangle( 1280, 30, 570, 280 ) );
+		
+//		gc.setBackground( UI.getColor( SWT.COLOR_DARK_YELLOW ) );
+//		gc.setForeground( UI.getColor( SWT.COLOR_WHITE ) );
+//		gc.fillRectangle( 940, 100, 540, 174 );
+//		final Boolean bOutR1 = monitorAutoHAT.getDigitalValue( Port.OUT_R_1 );
+//		final Boolean bOutR2 = monitorAutoHAT.getDigitalValue( Port.OUT_R_2 );
+//		final Boolean bOutR3 = monitorAutoHAT.getDigitalValue( Port.OUT_R_3 );
+//		final Boolean bInD1 = monitorAutoHAT.getDigitalValue( Port.IN_D_1 );
+//		final Boolean bInD2 = monitorAutoHAT.getDigitalValue( Port.IN_D_2 );
+//		final Boolean bInD3 = monitorAutoHAT.getDigitalValue( Port.IN_D_3 );
+//		final Float fInA1 = monitorAutoHAT.getAnalogValue( Port.IN_A_1 );
+//		final Float fInA2 = monitorAutoHAT.getAnalogValue( Port.IN_A_2 );
+//		final Float fInA3 = monitorAutoHAT.getAnalogValue( Port.IN_A_3 );
+//		int iX = 960;
+//		final int iXStep = 170;
+//		final int iYStep = 40; 
+//		iY = 100;
+//		gc.drawText( "Relays", iX, iY ); iY += iYStep + 6;
+//		gc.drawText( "R1: " + bOutR1, iX, iY ); iY += iYStep;
+//		gc.drawText( "R2: " + bOutR2, iX, iY ); iY += iYStep;
+//		gc.drawText( "R3: " + bOutR3, iX, iY ); iY += iYStep;
+//		iY = 100; 
+//		iX += iXStep;
+//		gc.drawText( "Digital-In", iX, iY ); iY += iYStep + 6;
+//		gc.drawText( "D1: " + bInD1, iX, iY ); iY += iYStep;
+//		gc.drawText( "D2: " + bInD2, iX, iY ); iY += iYStep;
+//		gc.drawText( "D3: " + bInD3, iX, iY ); iY += iYStep;
+//		iY = 100; 
+//		iX += iXStep;
+//		gc.drawText( "Analog-In", iX, iY ); iY += iYStep + 6;
+//		gc.drawText( String.format( "A1: %.4f", fInA1 ), iX, iY ); iY += iYStep;
+//		gc.drawText( String.format( "A2: %.4f", fInA2 ), iX, iY ); iY += iYStep;
+//		gc.drawText( String.format( "A3: %.4f", fInA3 ), iX, iY ); iY += iYStep;
 
 		
 		gc.setFont( font20 );
 		gc.setBackground( UI.getColor( SWT.COLOR_DARK_GREEN ) );
 		gc.setForeground( UI.getColor( SWT.COLOR_WHITE ) );
-		gc.fillRectangle( 40, 100, 880, 190 );
-		iY = 250;
+		gc.fillRectangle( 360, 30, 880, 280 );
+		iY = 280 + 30 - 38;
 		for ( int i = listMessages.size() - 1; i > 0 && iY > 100; i-- ) {
 			final String strLine = listMessages.get( i );
-			gc.drawText( strLine, 46, iY );
+			gc.drawText( strLine, 366, iY );
 			iY -= 36;
 		}
 		

@@ -3,8 +3,10 @@ package jmr.pr136;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.net.URL;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
@@ -23,10 +25,22 @@ public class OverheadServer {
 	
 	public final static int PORT = 1080;
 	public final static String ENDPOINT = "/overhead"; 
+
+	private final Listener listener;
 	
+
+	public static interface Listener {
+		public void emitRequestHandled( final String strURL,
+										final String strRemote,
+										final int iResponse );
+	}
+
 	
-	public OverheadServer() {
+	public OverheadServer( final Listener listener ) {
 		final InetSocketAddress isa = new InetSocketAddress( PORT );
+		
+		this.listener = listener;
+		
 		HttpServer serverCand = null;
 		try {
 			serverCand = HttpServer.create( isa,  0 );
@@ -49,33 +63,43 @@ public class OverheadServer {
 	}
 	
 	
+	
+	
 	private class RequestHandler implements HttpHandler {
 		@Override
 		public void handle( final HttpExchange exchange ) throws IOException {
 			if ( null == exchange ) return;
 			
-//			final InetAddress addrRemote = exchange.getRemoteAddress().getAddress();
-			final URI uri = exchange.getRequestURI();
+			int iResponse;
+			
+
+			final InetAddress addrRemote = exchange.getRemoteAddress().getAddress();
 			final String strURI = exchange.getRequestURI().toString();
-			
-			final String strResponse = server.toString();
-			
+			final String strRemote = addrRemote.getHostAddress();
+
 			exchange.getResponseHeaders().set( "ContentType", "image/png" );
-			
+
 			try ( final OutputStream os = exchange.getResponseBody() ) {
 
 //				final byte[] bytes = strResponse.getBytes();
 				final byte[] bytes = arrImageBuffer;
 				exchange.sendResponseHeaders( 200, bytes.length );
+				iResponse = 200;
 
 				os.write( bytes );
 				os.close();
-
+				
 			} catch ( final IOException e ) {
 				// TODO handle this
 				// ignore for now
 //        		e.printStackTrace();
+
+				iResponse = -1;
+
+				UI_TeslaMain.log( e.toString() );
 			}
+
+			listener.emitRequestHandled( strURI, strRemote, iResponse );
 		}
 	}
 	
@@ -106,7 +130,7 @@ public class OverheadServer {
 
 	public static void main( final String[] args ) {
 //		final HttpListener server = new HttpListener(8090, "/test");
-		final OverheadServer server = new OverheadServer();
+		final OverheadServer server = new OverheadServer( null );
 		server.toString();
 		
 		System.out.println( "Hosted URL: " + server.getHostedURL() );
