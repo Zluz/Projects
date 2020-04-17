@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 
 import jmr.pr136.Menu.Item;
+import jmr.pr136.OverheadServer.Listener;
 import jmr.pr136.swt.CompositeRefresher;
 import jmr.pr136.swt.UI;
 import jmr.util.OSUtil;
@@ -103,15 +104,7 @@ public class UI_TeslaMain {
 								new Rectangle( 1070, 460 + 180 + 180, 800, 160 ),
 								16 );
 		
-		this.server = new OverheadServer( new OverheadServer.Listener() {
-			@Override
-			public void emitRequestHandled( final String strURL,
-											final String strRemote,
-											final int iResponse ) {
-				UI_TeslaMain.log( "Request from: " + strRemote );
-				UI_TeslaMain.log( "URL: " + strURL );
-			}
-		} );
+		this.server = new OverheadServer( createOverheadListener() );
 		
 		
 		//NOTE: refresh flickering can be fixed by SWT.DOUBLE_BUFFERED 
@@ -199,81 +192,7 @@ public class UI_TeslaMain {
 			}
 		} );
 
-		this.keylistener = new KeyAdapter() {
-			@Override
-			public void keyPressed( final KeyEvent event ) {
-				final long lTimeNow = System.currentTimeMillis();
-				String strInput;
-				switch ( event.keyCode ) {
-					case SWT.ARROW_RIGHT : {
-//						if ( null == aiPMenu ) { ..
-						strInput = "Menu Right";
-						Menu.getRoot().getSelectedChild()
-										.changeSelectedChild( 1 );
-						break;
-					}
-					case SWT.ARROW_LEFT : {
-//						if ( null == aiPMenu ) { ..
-						strInput = "Menu Left";
-						Menu.getRoot().getSelectedChild()
-										.changeSelectedChild( -1 );
-						break;
-					}
-					case SWT.ARROW_UP : {
-						if ( null == aiPMenu ) {
-							strInput = "Menu Up";
-							final int iNewValue = iMenuSelection - 1;
-//							iMenuSelection--;
-							aiPMenu = new AnimationIndex( 
-//									300L, 0, 94,
-									0, 94, 35,
-									()-> {
-											iMenuSelection = iNewValue;
-											aiPMenu = null;
-										} );
-						} else {
-							strInput = "(Menu Up)";
-						}
-						break;
-					}
-					case SWT.ARROW_DOWN : {
-						if ( null == aiPMenu ) {
-							strInput = "Menu Down";
-							iMenuSelection++;
-//							final int iNewValue = iMenuSelection + 1;
-							final int iNewValue = iMenuSelection;
-							aiPMenu = new AnimationIndex( 
-//									300, 94, 0,
-									94, 0, -35,
-									()-> {
-											iMenuSelection = iNewValue;
-											aiPMenu = null;
-										} );
-						} else {
-							strInput = "(Menu Down)";
-						}
-						break;
-					}
-					default: {
-						strInput = null;
-					}
-				}
-				if ( null != strInput ) {
-//					UI_TeslaMain.this.strInput = strInput;
-					mapStates.put( StateKey.SS_INPUT, strInput );
-					aiInput = new AnimationIndex( 
-							lTimeNow, 2000, 
-							255, 100, ()-> {
-//								UI_TeslaMain.this.strInput = null;
-								mapStates.put( StateKey.SS_INPUT, null );
-								aiInput = null; 
-							} );
-				} else {
-//					UI_TeslaMain.this.strInput = null;
-					mapStates.put( StateKey.SS_INPUT, null );
-				}
-			}
-		};
+		this.keylistener = createKeyListener();
 		
 		shell.addKeyListener( this.keylistener );
 
@@ -355,6 +274,121 @@ public class UI_TeslaMain {
 		
 		log( "Started " + new Date().toString() );
 	}
+	
+
+	private OverheadServer.Listener createOverheadListener() {
+
+		final Listener listener = new OverheadServer.Listener() {
+			@Override
+			public void emitRequestHandled( final String strURL,
+											final String strRemote,
+											final int iResponse ) {
+				
+				final long lTimeNow = System.currentTimeMillis();
+				
+				UI_TeslaMain.log( "Request from: " + strRemote );
+				UI_TeslaMain.log( "URL: " + strURL );
+				
+				if ( strURL.contains( "a=1" ) ) {
+					handleKey( SWT.ARROW_DOWN, lTimeNow );
+				} else if ( strURL.contains( "b=1" ) ) {
+					handleKey( SWT.ARROW_RIGHT, lTimeNow );
+				}
+			}
+		};
+		return listener;
+	}
+	
+	
+	private String handleKey( 	final int iKeyCode,
+								final long lTimeNow ) {
+		
+		String strInput;
+		switch ( iKeyCode ) {
+			case SWT.ARROW_RIGHT : {
+//				if ( null == aiPMenu ) { ..
+				strInput = "Menu Right";
+				Menu.getRoot().getSelectedChild().changeSelectedChild( 1 );
+				break;
+			}
+			case SWT.ARROW_LEFT : {
+//				if ( null == aiPMenu ) { ..
+				strInput = "Menu Left";
+				Menu.getRoot().getSelectedChild().changeSelectedChild( -1 );
+				break;
+			}
+			case SWT.ARROW_UP : {
+				if ( null == aiPMenu ) {
+					strInput = "Menu Up";
+					final int iNewValue = iMenuSelection - 1;
+//					iMenuSelection--;
+					aiPMenu = new AnimationIndex( 
+//							300L, 0, 94,
+							0, 94, 35,
+							()-> {
+									iMenuSelection = iNewValue;
+									aiPMenu = null;
+								} );
+				} else {
+					strInput = "(Menu Up)";
+				}
+				break;
+			}
+			case SWT.ARROW_DOWN : {
+				if ( null == aiPMenu ) {
+					strInput = "Menu Down";
+					iMenuSelection++;
+//					final int iNewValue = iMenuSelection + 1;
+					final int iNewValue = iMenuSelection;
+					aiPMenu = new AnimationIndex( 
+//							300, 94, 0,
+							94, 0, -35,
+							()-> {
+									iMenuSelection = iNewValue;
+									aiPMenu = null;
+								} );
+				} else {
+					strInput = "(Menu Down)";
+				}
+				break;
+			}
+			default: {
+				strInput = null;
+			}
+		}
+		return strInput;
+	}
+	
+	
+	private KeyListener createKeyListener() {
+		
+		final KeyListener listener = new KeyAdapter() {
+			@Override
+			public void keyPressed( final KeyEvent event ) {
+
+				final long lTimeNow = System.currentTimeMillis();
+				final String strInput = handleKey( event.keyCode, lTimeNow );
+				
+				if ( null != strInput ) {
+//					UI_TeslaMain.this.strInput = strInput;
+					mapStates.put( StateKey.SS_INPUT, strInput );
+					aiInput = new AnimationIndex( 
+							lTimeNow, 2000, 
+							255, 100, ()-> {
+//								UI_TeslaMain.this.strInput = null;
+								mapStates.put( StateKey.SS_INPUT, null );
+								aiInput = null; 
+							} );
+				} else {
+//					UI_TeslaMain.this.strInput = null;
+					mapStates.put( StateKey.SS_INPUT, null );
+				}
+			}
+		};
+
+		return listener;
+	}
+	
 	
 	
 	private void updateRefreshMonitor( final long lTimeNow ) {
