@@ -142,14 +142,15 @@ strIP = subprocess.check_output( cmd, shell=True ).decode( "utf-8" )
 strSub = strIP[0]
 
 if ( "6" == strSub ):
-        # strURL = 'http://192.168.6.231:1080/overhead?' + strParams;
-        strURL = 'http://192.168.6.211:1080/overhead?' + strParams;
+        # strURL = 'http://192.168.6.231:1080/overhead';
+        strURL = 'http://192.168.6.211:1080/overhead';
 if ( "7" == strSub ):
-        strURL = 'http://192.168.7.230:1080/overhead?' + strParams;
+        strURL = 'http://192.168.7.230:1080/overhead';
 
 
 
 
+strLastKey = "none"
 
 # loop, showing screen from server
 while True:
@@ -160,12 +161,19 @@ while True:
         # draw.rectangle((0, 0, width, height), outline=0, fill=0)
 
         try:
-                response = requests.get( strURL, stream = True )
+                resKey = requests.get( strURL + "/key?" + strParams, stream = True )
 
-                memfile = io.BytesIO( response.content )
+                strKey = resKey.content.decode( 'utf-8' );
+                print( "key: " + strKey )
 
-                image = Image.open( memfile )
-                draw = ImageDraw.Draw( image )
+                if ( strKey != strLastKey ):
+                        response = requests.get( strURL + "/image", stream = True )
+                        memfile = io.BytesIO( response.content )
+
+                        image = Image.open( memfile )
+                        draw = ImageDraw.Draw( image )
+
+                strLastKey = strKey
 
         # except requests.exceptions.RequestException as e:
         except Exception as e:
@@ -194,7 +202,6 @@ while True:
 
         # Display image.
         disp.image( image, rotation )
-        time.sleep( 0.1 )
-
+        time.sleep( 0.01 )
 
 
