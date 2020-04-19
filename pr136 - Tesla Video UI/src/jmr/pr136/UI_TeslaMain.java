@@ -42,12 +42,17 @@ public class UI_TeslaMain {
 				LOGGER = Logger.getLogger( UI_TeslaMain.class.getName() );
 
 	
+	public final static String DATA_STORE_PATH = "/media/pi/32GB";
+	
 	public final static int FHD_X = 1920;
 	public final static int FHD_Y = 1080;
 	public final static int HHD_X = FHD_X / 2;
 	public final static int HHD_Y = FHD_Y / 2;
 
 	public final static boolean ABORT_INACTIVE_UI = true;
+	
+	
+	
 	
 	
 	
@@ -280,20 +285,36 @@ public class UI_TeslaMain {
 
 		final Listener listener = new OverheadServer.Listener() {
 			@Override
-			public void emitRequestHandled( final String strURL,
-											final String strRemote,
-											final int iResponse ) {
-				
+			public void emitRequestImageHandled( 	final String strURL,
+													final String strRemote,
+													final int iResponse ) {
 				final long lTimeNow = System.currentTimeMillis();
 				
-				UI_TeslaMain.log( "Request from: " + strRemote );
-				UI_TeslaMain.log( "URL: " + strURL );
+//				UI_TeslaMain.log( "Request from: " + strRemote );
+//				UI_TeslaMain.log( "URL: " + strURL );
 				
 				if ( strURL.contains( "a=1" ) ) {
 					handleKey( SWT.ARROW_DOWN, lTimeNow );
 				} else if ( strURL.contains( "b=1" ) ) {
 					handleKey( SWT.ARROW_RIGHT, lTimeNow );
 				}
+				
+				mapStates.put( StateKey.SS_LAST_URL, strURL );
+				mapStates.put( StateKey.SO_IP, strRemote );
+
+				mapStates.put( StateKey.SO_IMG_LAST, lTimeNow );
+			}
+
+			@Override
+			public void emitRequestKeyHandled( 	final String strURL, 
+												final String strRemote,
+												final int iResponse ) {
+				final long lTimeNow = System.currentTimeMillis();
+				
+				mapStates.put( StateKey.SS_LAST_URL, strURL );
+				mapStates.put( StateKey.SO_IP, strRemote );
+
+				mapStates.put( StateKey.SO_KEY_LAST, lTimeNow );
 			}
 		};
 		return listener;
@@ -402,6 +423,16 @@ public class UI_TeslaMain {
 	
 	final private EnumMap< StateKey, Object > 
 							mapStates = new EnumMap<>( StateKey.class );
+	
+	
+	public String getOverheadDisplayKey( 	final int iMenuSelection,
+											final int iYOffs,
+											final int iSubSelection ) {
+		final String strKey = String.format( 
+				"%02d.%03d/%02d", iMenuSelection, iYOffs, iSubSelection );
+		this.mapStates.put( StateKey.SO_KEY_LAST, strKey );
+		return strKey;
+	}
 	
 	
 	public void startAutoHatMonitor() {
@@ -582,6 +613,8 @@ public class UI_TeslaMain {
 		gc.setAntialias( SWT.OFF );
 
 		
+		final int iYMenuOffset;
+		
 		for ( int i = iMenuSelection; i > 0; i-- ) {
 			final Item item = listItems.remove( 0 );
 			listItems.add( item );
@@ -593,30 +626,42 @@ public class UI_TeslaMain {
 			gc.setBackground( UI.getColor( SWT.COLOR_DARK_CYAN ) );
 //			gc.setAdvanced( true );
 //			gc.setAntialias( SWT.ON );
+			iYMenuOffset = 0;
 		} else {
 			gc.setBackground( UI.getColor( SWT.COLOR_GRAY ) );
-			iY += aiPMenu.getIndex( lTimeNow );
+			iYMenuOffset = aiPMenu.getIndex( lTimeNow );
+			iY += iYMenuOffset;
 			gc.setAdvanced( false );
 			gc.setAntialias( SWT.OFF );
 		}
-		
+
+		int iYMenu = 0;
+		final Rectangle rOH = rectOverhead;
+
 		for ( final Item item : listItems ) {
 			final String strText = item.getText();
 
 			gc.setClipping( rectOverhead );
-			final Rectangle r = rectOverhead;
 			gc.setFont( font10 );
-			final int iY_OH = ( iY - 340 ) / 5 + 6 + r.y;
+			final int iY_OH = ( iY - 340 ) / 5 + 6 + rOH.y;
 			if ( bFirst ) {
 				gc.setForeground( UI.getColor( SWT.COLOR_YELLOW ) );
 				gc.setBackground( UI.getColor( SWT.COLOR_YELLOW ) );
 //				gc.fillRectangle( 1500, 80, 7, 20 );
-				gc.fillRectangle( r.x, r.y + 40, 7, 20 );
+				gc.fillRectangle( rOH.x, rOH.y + 20, 7, 24 );
+
+				gc.setBackground( UI.getColor( SWT.COLOR_GREEN ) );
+				gc.fillRectangle( rOH.x, rOH.y + 97, 7, 24 );
+
+				// approx reserved region
+//				gc.setBackground( UI.getColor( SWT.COLOR_DARK_GRAY ) );
+//				gc.fillRectangle( r.x + 162, r.y + 108, 76, 26 );
+
 			} else {
 				gc.setForeground( UI.getColor( SWT.COLOR_GRAY ) );
 			}
 			gc.setBackground( UI.getColor( SWT.COLOR_BLACK ) );
-			gc.drawText( item.getTextShort(), r.x + 22, iY_OH, true );
+			gc.drawText( item.getTextShort(), rOH.x + 22, iY_OH, true );
 			gc.setClipping( rectFull );
 
 			gc.setForeground( UI.getColor( SWT.COLOR_BLACK ) );
@@ -636,22 +681,32 @@ public class UI_TeslaMain {
 					Menu.getRoot().setSelected( item );
 				}
 
-				if ( listChildren.size() < 5 ) {
-					gc.setFont( font50 );
-				} else {
-					gc.setFont( font30 );
-				}
 				
 				int iX = 740;
 				for ( final Item itemChild : listChildren ) {
+					final String strCText = itemChild.getText();
 					
 					if ( itemChild == itemSelected ) {
+						iYMenu = iX;
+
+						gc.setForeground( UI.getColor( SWT.COLOR_GREEN ) );
+						gc.setBackground( UI.getColor( SWT.COLOR_BLACK ) );
+
+						gc.setFont( font10 );
+						gc.drawText( strCText, rOH.x + 140, rOH.y + 7 );
+						
+						gc.setForeground( UI.getColor( SWT.COLOR_BLACK ) );
 						gc.setBackground( UI.getColor( SWT.COLOR_DARK_CYAN ) );
 					} else {
 						gc.setBackground( UI.getColor( SWT.COLOR_GRAY ) );
 					}
-					
-					final String strCText = itemChild.getText();
+
+					if ( listChildren.size() < 5 ) {
+						gc.setFont( font50 );
+					} else {
+						gc.setFont( font30 );
+					}
+
 					gc.fillRectangle( iX, iY, iWidth - 40, 74 );
 					gc.drawText( strCText, iX + 20, iY );
 					iX += iWidth;
@@ -661,6 +716,12 @@ public class UI_TeslaMain {
 			}
 			iY += 94;
 		}
+		
+		final String strKey = getOverheadDisplayKey( 
+									iMenuSelection, iYMenuOffset, iYMenu );
+		mapStates.put( StateKey.SO_IMG_KEY, strKey );
+		server.prepareKey( strKey );
+		
 		
 		gc.setFont( font30 );
 //		gc.drawText( ""+ iMenuSelection, 580, 10 );
@@ -681,50 +742,18 @@ public class UI_TeslaMain {
 		
 //		paintStates( image, gc, new Rectangle( 940, 100, 540, 174 ) );
 		paintStates( image, gc, "ADCS", new Rectangle( 730, 460, 300, 520 ) );
-		paintStates( image, gc, "X", new Rectangle( 1280, 30, 570, 280 ) );
-		
-//		gc.setBackground( UI.getColor( SWT.COLOR_DARK_YELLOW ) );
-//		gc.setForeground( UI.getColor( SWT.COLOR_WHITE ) );
-//		gc.fillRectangle( 940, 100, 540, 174 );
-//		final Boolean bOutR1 = monitorAutoHAT.getDigitalValue( Port.OUT_R_1 );
-//		final Boolean bOutR2 = monitorAutoHAT.getDigitalValue( Port.OUT_R_2 );
-//		final Boolean bOutR3 = monitorAutoHAT.getDigitalValue( Port.OUT_R_3 );
-//		final Boolean bInD1 = monitorAutoHAT.getDigitalValue( Port.IN_D_1 );
-//		final Boolean bInD2 = monitorAutoHAT.getDigitalValue( Port.IN_D_2 );
-//		final Boolean bInD3 = monitorAutoHAT.getDigitalValue( Port.IN_D_3 );
-//		final Float fInA1 = monitorAutoHAT.getAnalogValue( Port.IN_A_1 );
-//		final Float fInA2 = monitorAutoHAT.getAnalogValue( Port.IN_A_2 );
-//		final Float fInA3 = monitorAutoHAT.getAnalogValue( Port.IN_A_3 );
-//		int iX = 960;
-//		final int iXStep = 170;
-//		final int iYStep = 40; 
-//		iY = 100;
-//		gc.drawText( "Relays", iX, iY ); iY += iYStep + 6;
-//		gc.drawText( "R1: " + bOutR1, iX, iY ); iY += iYStep;
-//		gc.drawText( "R2: " + bOutR2, iX, iY ); iY += iYStep;
-//		gc.drawText( "R3: " + bOutR3, iX, iY ); iY += iYStep;
-//		iY = 100; 
-//		iX += iXStep;
-//		gc.drawText( "Digital-In", iX, iY ); iY += iYStep + 6;
-//		gc.drawText( "D1: " + bInD1, iX, iY ); iY += iYStep;
-//		gc.drawText( "D2: " + bInD2, iX, iY ); iY += iYStep;
-//		gc.drawText( "D3: " + bInD3, iX, iY ); iY += iYStep;
-//		iY = 100; 
-//		iX += iXStep;
-//		gc.drawText( "Analog-In", iX, iY ); iY += iYStep + 6;
-//		gc.drawText( String.format( "A1: %.4f", fInA1 ), iX, iY ); iY += iYStep;
-//		gc.drawText( String.format( "A2: %.4f", fInA2 ), iX, iY ); iY += iYStep;
-//		gc.drawText( String.format( "A3: %.4f", fInA3 ), iX, iY ); iY += iYStep;
+		paintStates( image, gc, "X", new Rectangle( 1260, 30, 580, 280 ) );
+
 
 		
 		gc.setFont( font20 );
 		gc.setBackground( UI.getColor( SWT.COLOR_DARK_GREEN ) );
 		gc.setForeground( UI.getColor( SWT.COLOR_WHITE ) );
-		gc.fillRectangle( 360, 30, 880, 280 );
+		gc.fillRectangle( 330, 30, 900, 280 );
 		iY = 280 + 30 - 38;
-		for ( int i = listMessages.size() - 1; i > 0 && iY > 100; i-- ) {
+		for ( int i = listMessages.size() - 1; i > 0 && iY > 30; i-- ) {
 			final String strLine = listMessages.get( i );
-			gc.drawText( strLine, 366, iY );
+			gc.drawText( strLine, 336, iY );
 			iY -= 36;
 		}
 		

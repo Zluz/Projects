@@ -31,9 +31,9 @@ public class MonitorAutoHAT {
 		
 		final Map<String,String> map = new HashMap<>();
 		//TODO default generic config 
-		map.put( "IN_A_1", "GENERIC_ANALOG_IN_1:20,0.0,1.0,3.0,volts" );
-		map.put( "IN_A_2", "GENERIC_ANALOG_IN_2:20,0.0,1.0,3.0,volts" );
-		map.put( "IN_A_3", "GENERIC_ANALOG_IN_3:20,0.0,1.0,3.0,volts" );
+		map.put( "IN_A_1", "GENERIC_ANALOG_IN_1:20,0.0,1.0,3.0,volts,opt-l" );
+		map.put( "IN_A_2", "GENERIC_ANALOG_IN_2:20,0.0,1.0,3.0,volts,opt-l" );
+		map.put( "IN_A_3", "GENERIC_ANALOG_IN_3:20,0.0,1.0,3.0,volts,opt-l" );
 		map.put( "IN_D_1", "GENERIC_DIGITAL_IN_1" );
 		map.put( "IN_D_2", "GENERIC_DIGITAL_IN_2" );
 		map.put( "IN_D_3", "GENERIC_DIGITAL_IN_3" );

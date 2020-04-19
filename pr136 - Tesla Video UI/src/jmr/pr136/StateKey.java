@@ -30,6 +30,7 @@ public enum StateKey {
 	
 	SS_IP_LAN( "VX" ),
 	SS_IP_WIFI( "VX" ),
+	SS_LAST_URL( "VX" ),
 	
 	SS_HOME_NET( "VD" ),
 	
@@ -38,6 +39,9 @@ public enum StateKey {
 	SO_IP( "VX" ),
 	SO_IN_1( "VD" ),
 	SO_IN_2( "VD" ),
+	
+	SO_KEY_RATE( "VA" ),
+	SO_IMG_RATE( "VA" ),
 	
 	SO_IMG_KEY( "VX" ),
 	SO_IMG_LAST( "VA" ),  // seconds since last image request
@@ -114,7 +118,12 @@ public enum StateKey {
 		if ( null == objValue ) {
 			return "-";
 		} else if ( 'A' == this.cType ) {
-			return String.format( "%06.3f", objValue );
+			try {
+				final String strValue = String.format( "%06.3f", objValue );
+				return strValue;
+			} catch ( final Exception e ) {
+				return objValue.toString();
+			}
 		} else {
 			//TODO expand on this..
 			return objValue.toString();

@@ -30,9 +30,14 @@ public class OverheadServer {
 	
 
 	public static interface Listener {
-		public void emitRequestHandled( final String strURL,
-										final String strRemote,
-										final int iResponse );
+		
+		public void emitRequestImageHandled(final String strURL,
+											final String strRemote,
+											final int iResponse );
+		public void emitRequestKeyHandled(	final String strURL,
+											final String strRemote,
+											final int iResponse );
+		
 	}
 
 	
@@ -40,6 +45,7 @@ public class OverheadServer {
 		final InetSocketAddress isa = new InetSocketAddress( PORT );
 		
 		this.listener = listener;
+		this.strKey = "not-ready";
 		
 		HttpServer serverCand = null;
 		try {
@@ -71,22 +77,35 @@ public class OverheadServer {
 			if ( null == exchange ) return;
 			
 			int iResponse;
-			
 
 			final InetAddress addrRemote = exchange.getRemoteAddress().getAddress();
 			final String strURI = exchange.getRequestURI().toString();
 			final String strRemote = addrRemote.getHostAddress();
+			
+			final boolean bKeyRequest;
+			final String strContentType;
+			final byte[] arrBytes;
 
-			exchange.getResponseHeaders().set( "ContentType", "image/png" );
+			if ( strURI.contains( "/key" ) ) {
+				bKeyRequest = true;
+				strContentType = "text/plain";
+				
+				arrBytes = strKey.getBytes();
+			} else {
+				bKeyRequest = false;
+				strContentType = "image/png";
+				arrBytes = arrImageBuffer;
+			}
+
+			exchange.getResponseHeaders().set( "ContentType", strContentType );
+
 
 			try ( final OutputStream os = exchange.getResponseBody() ) {
 
-//				final byte[] bytes = strResponse.getBytes();
-				final byte[] bytes = arrImageBuffer;
-				exchange.sendResponseHeaders( 200, bytes.length );
+				exchange.sendResponseHeaders( 200, arrBytes.length );
 				iResponse = 200;
 
-				os.write( bytes );
+				os.write( arrBytes );
 				os.close();
 				
 			} catch ( final IOException e ) {
@@ -99,12 +118,17 @@ public class OverheadServer {
 				UI_TeslaMain.log( e.toString() );
 			}
 
-			listener.emitRequestHandled( strURI, strRemote, iResponse );
+			if ( bKeyRequest ) {
+				listener.emitRequestKeyHandled( strURI, strRemote, iResponse );
+			} else {
+				listener.emitRequestImageHandled( strURI, strRemote, iResponse );
+			}
 		}
 	}
 	
 	
 	private byte[] arrImageBuffer;
+	private String strKey;
 	
 	public void prepareImage( final Image image ) {
 		if ( null == image ) return;
@@ -117,6 +141,10 @@ public class OverheadServer {
 		final ByteArrayOutputStream os = new ByteArrayOutputStream();
 		loader.save( os, SWT.IMAGE_PNG );
 		arrImageBuffer = os.toByteArray();
+	}
+	
+	public void prepareKey( final String strKey ) {
+		this.strKey = strKey;
 	}
 	
 
