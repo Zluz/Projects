@@ -21,31 +21,70 @@ BAUDRATE = 64000000
 # Setup SPI bus using hardware SPI:
 spi = board.SPI()
 
-# Create the ST7789 display:
-# disp = st7789.ST7789(spi, cs=cs_pin, dc=dc_pin, rst=reset_pin, baudrate=BAUDRATE,
-#                      width=135, height=240, x_offset=53, y_offset=40)
-disp = st7789.ST7789( spi, cs=cs_pin, dc=dc_pin, rst=reset_pin, baudrate=BAUDRATE,
-                     #width=240, height=120, x_offset=0, y_offset=0 )
-# works for micro    width=120, height=240, x_offset=50, y_offset=40 )
-                     width=135, height=240, 
-			x_offset=53, #          48 < 49..53 < 54
-			y_offset=40  #   (bad) 38 < (good) 40..44 < 46 (bad) 
-		)
+
+
+# strCmd = "echo $( ifconfig | grep ether )"
+strCmd = "ifconfig | grep ether"
+strMAC = subprocess.check_output( strCmd, shell=True ).decode( "utf-8" )
+
+
+# select one of these:
+
+bMicroTFT = False
+bMiniTFT = False
+bSimulatedMicroTFT = False
+
+if ( strMAC.find( "1a:00:46" ) > -1 ):
+	print( "Device: Test RPi3" )
+	bSimulatedMicroTFT = True
+
+if ( strMAC.find( "72:07:ce" ) > -1 ):
+	print( "Device: (RPiZ) Overhead Panel" )
+	bMicroTFT = True
+
+
+
+
+# Create the ST7789 display
+
+
+if ( bMicroTFT ):
+	disp = st7789.ST7789( spi, cs=cs_pin, dc=dc_pin, rst=reset_pin, baudrate=BAUDRATE,
+		width=135, height=240, x_offset=50, y_offset=40 )
+	rotation = 90
+
+if ( bMiniTFT ):
+	disp = st7789.ST7789( spi, cs=cs_pin, dc=dc_pin, rst=reset_pin, baudrate=BAUDRATE,
+		width=240, height=240, x_offset=0, y_offset=80 )
+	rotation = 180
+
+if ( bSimulatedMicroTFT ):
+	disp = st7789.ST7789( spi, cs=cs_pin, dc=dc_pin, rst=reset_pin, baudrate=BAUDRATE,
+		width=240, height=240, x_offset=0, y_offset=80 )
+	rotation = 180
+
+
+
+
+height = disp.width
+width = disp.height
+
 
 # Create blank image for drawing.
 # Make sure to create image with mode 'RGB' for full color.
-height = disp.width   # we swap height/width to rotate it to landscape!
-width = disp.height
-image = Image.new('RGB', (width, height))
-rotation = 90
+# height = disp.width   # we swap height/width to rotate it to landscape!
+# width = disp.height
+image = Image.new( 'RGB', (width, height) )
+# rotation = 90
 # rotation = 180
 
 # Get drawing object to draw on image.
 draw = ImageDraw.Draw(image)
 
 # Draw a black filled box to clear the image.
-draw.rectangle((0, 0, width, height), outline=0, fill=(0, 0, 0))
-disp.image(image, rotation)
+draw.rectangle( (0, 0, width, height), outline=0, fill=(0, 0, 0) )
+disp.image( image, rotation )
+
 # Draw some shapes.
 # First define some constants to allow easy resizing of shapes.
 padding = -2
@@ -98,18 +137,23 @@ btnBottom = digitalio.DigitalInOut( board.D24 )
 strParams = ""
 
 
+cmd = "hostname -I | cut -d\' \' -f1 | cut -d\'.\' -f3,4"
+strIP = subprocess.check_output( cmd, shell=True ).decode( "utf-8" )
+strSub = strIP[0]
+
+if ( "6" == strSub ):
+        # strURL = 'http://192.168.6.231:1080/overhead?' + strParams;
+        strURL = 'http://192.168.6.211:1080/overhead?' + strParams;
+if ( "7" == strSub ):
+        strURL = 'http://192.168.7.230:1080/overhead?' + strParams;
+
+
+
+
+
 # loop, showing screen from server
 while True:
 # if ( True ):
-
-        cmd = "hostname -I | cut -d\' \' -f1 | cut -d\'.\' -f3,4"
-        strIP = subprocess.check_output( cmd, shell=True ).decode( "utf-8" )
-        strSub = strIP[0]
-
-        if ( "6" == strSub ):
-                strURL = 'http://192.168.6.231:1080/overhead?' + strParams;
-        if ( "7" == strSub ):
-                strURL = 'http://192.168.7.230:1080/overhead?' + strParams;
 
 
         # Draw a black filled box to clear the image.
@@ -136,8 +180,9 @@ while True:
 
 
         draw.text( ( 170, 110 ), strIP, font=font, fill="#909090" )
+        # draw.text( ( 170, 110 ), strIP, font=font, fill="#FFFFFF" )
 
-        strParams = "?"
+        strParams = ""
         if ( not btnTop.value ):
                 draw.text( ( 180, 80 ), "A", font=font, fill="#FFFFFF" )
                 strParams = strParams + "a=1&"
