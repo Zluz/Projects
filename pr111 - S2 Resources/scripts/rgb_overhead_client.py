@@ -9,6 +9,10 @@ from PIL import Image, ImageDraw, ImageFont
 import adafruit_rgb_display.st7789 as st7789
 import io
 
+print()
+print( "Starting overhead display script.." )
+
+print( "Initializing I/O.." )
 
 # Configuration for CS and DC pins (these are FeatherWing defaults on M0/M4):
 cs_pin = digitalio.DigitalInOut(board.CE0)
@@ -21,11 +25,24 @@ BAUDRATE = 64000000
 # Setup SPI bus using hardware SPI:
 spi = board.SPI()
 
+print( "Configuring session.." )
 
-
-# strCmd = "echo $( ifconfig | grep ether )"
-strCmd = "ifconfig | grep ether"
+strCmd = "echo $( ifconfig | grep ether )"
+# strCmd = "ifconfig | grep ether"
 strMAC = subprocess.check_output( strCmd, shell=True ).decode( "utf-8" )
+
+strCmd = "echo $( hostname -I | cut -d\' \' -f1 | cut -d\'.\' -f3,4 )"
+strIPShort = subprocess.check_output( strCmd, shell=True ).decode( "utf-8" )
+strSub = strIPShort[0]
+
+print( "Test MAC string: " + strMAC )
+print( "Test IP (short) string: " + strIPShort )
+
+if ( "6" == strSub ):
+        # strURL = 'http://192.168.6.231:1080/overhead'
+        strURL = 'http://192.168.6.211:1080/overhead'
+if ( "7" == strSub ):
+        strURL = 'http://192.168.7.230:1080/overhead'
 
 
 # select one of these:
@@ -36,13 +53,24 @@ bSimulatedMicroTFT = False
 
 if ( strMAC.find( "1a:00:46" ) > -1 ):
 	print( "Device: Test RPi3" )
+
 	bSimulatedMicroTFT = True
+
 
 if ( strMAC.find( "72:07:ce" ) > -1 ):
 	print( "Device: (RPiZ) Overhead Panel" )
+
 	bMicroTFT = True
+	if ( "6" == strSub ):
+	        strURL = 'http://192.168.6.231:1080/overhead'
+	if ( "7" == strSub ):
+	        strURL = 'http://192.168.7.230:1080/overhead'
+
+	# point to dev machine for now..
+	strURL = 'http://192.168.6.211:1080/overhead'
 
 
+print( "Host URL: " + strURL )
 
 
 # Create the ST7789 display
@@ -50,7 +78,7 @@ if ( strMAC.find( "72:07:ce" ) > -1 ):
 
 if ( bMicroTFT ):
 	disp = st7789.ST7789( spi, cs=cs_pin, dc=dc_pin, rst=reset_pin, baudrate=BAUDRATE,
-		width=135, height=240, x_offset=50, y_offset=40 )
+		width=135, height=240, x_offset=53, y_offset=40 )
 	rotation = 90
 
 if ( bMiniTFT ):
@@ -111,6 +139,7 @@ backlight.value = True
 # backlight.value = False
 
 
+print( "Showing startup screen.." )
 
 # show startup screen
 if ( True ):
@@ -122,8 +151,8 @@ if ( True ):
         draw.text( ( 0, 0 ), strMessage, font=font, fill="#F0F0F0" )
 
         cmd = "hostname -I | cut -d\' \' -f1"
-        strIP = subprocess.check_output( cmd, shell=True ).decode( "utf-8" )
-        draw.text( ( 0, 90 ), "IP: " + strIP, font=font, fill="#90FF90" )
+        strIPFull = subprocess.check_output( cmd, shell=True ).decode( "utf-8" )
+        draw.text( ( 0, 90 ), "IP: " + strIPFull, font=font, fill="#90FF90" )
 
         # Display image.
         disp.image( image, rotation )
@@ -137,20 +166,10 @@ btnBottom = digitalio.DigitalInOut( board.D24 )
 strParams = ""
 
 
-cmd = "hostname -I | cut -d\' \' -f1 | cut -d\'.\' -f3,4"
-strIP = subprocess.check_output( cmd, shell=True ).decode( "utf-8" )
-strSub = strIP[0]
-
-if ( "6" == strSub ):
-        # strURL = 'http://192.168.6.231:1080/overhead';
-        strURL = 'http://192.168.6.211:1080/overhead';
-if ( "7" == strSub ):
-        strURL = 'http://192.168.7.230:1080/overhead';
-
-
-
+print( "Running main loop.." )
 
 strLastKey = "none"
+iTicker = 0;
 
 # loop, showing screen from server
 while True:
@@ -164,7 +183,7 @@ while True:
                 resKey = requests.get( strURL + "/key?" + strParams, stream = True )
 
                 strKey = resKey.content.decode( 'utf-8' );
-                print( "key: " + strKey )
+                # print( "key: " + strKey )
 
                 if ( strKey != strLastKey ):
                         response = requests.get( strURL + "/image", stream = True )
@@ -187,8 +206,14 @@ while True:
                 draw.text( ( 0, 30 ), strMessage, font=font, fill="#FF9090" )
 
 
-        draw.text( ( 170, 110 ), strIP, font=font, fill="#909090" )
+        draw.rectangle( (  170, 80, 240, 135 ), outline=1, fill=0 )
+
+
+        draw.text( ( 170, 110 ), strIPShort, font=font, fill="#909090" )
         # draw.text( ( 170, 110 ), strIP, font=font, fill="#FFFFFF" )
+
+        # draw.text( ( 160, 80 ), strLastKey, font=fontS, fill="#909090" )
+
 
         strParams = ""
         if ( not btnTop.value ):
@@ -199,9 +224,16 @@ while True:
                 strParams = strParams + "b=1&"
         strParams = strParams + "c=0"
 
+        iY = 104
+        draw.rectangle( (  170 + iTicker, iY, 
+                           176 + iTicker, iY + 6 ), outline=1, fill="#A0A0FF" )
 
         # Display image.
         disp.image( image, rotation )
-        time.sleep( 0.01 )
 
+        iTicker = iTicker + 2
+        if ( 50 == iTicker ):
+                iTicker = 0
+
+        time.sleep( 0.01 )
 
