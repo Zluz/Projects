@@ -27,12 +27,13 @@ spi = board.SPI()
 
 print( "Configuring session.." )
 
-strCmd = "echo $( ifconfig | grep ether )"
-# strCmd = "ifconfig | grep ether"
+strCmd = "ifconfig | grep ether"
 strMAC = subprocess.check_output( strCmd, shell=True ).decode( "utf-8" )
+strMAC = strMAC.strip()
 
-strCmd = "echo $( hostname -I | cut -d\' \' -f1 | cut -d\'.\' -f3,4 )"
+strCmd = "hostname -I | cut -d\' \' -f1 | cut -d\'.\' -f3,4"
 strIPShort = subprocess.check_output( strCmd, shell=True ).decode( "utf-8" )
+strIPShort = strIPShort.strip()
 strSub = strIPShort[0]
 
 print( "Test MAC string: " + strMAC )
@@ -66,8 +67,8 @@ if ( strMAC.find( "72:07:ce" ) > -1 ):
 	if ( "7" == strSub ):
 	        strURL = 'http://192.168.7.230:1080/overhead'
 
-	# point to dev machine for now..
-	strURL = 'http://192.168.6.211:1080/overhead'
+	# override; point to dev machine regardless
+	# strURL = 'http://192.168.6.211:1080/overhead'
 
 
 print( "Host URL: " + strURL )
@@ -81,16 +82,18 @@ if ( bMicroTFT ):
 		width=135, height=240, x_offset=53, y_offset=40 )
 	rotation = 90
 
-if ( bMiniTFT ):
+elif ( bMiniTFT ):
 	disp = st7789.ST7789( spi, cs=cs_pin, dc=dc_pin, rst=reset_pin, baudrate=BAUDRATE,
 		width=240, height=240, x_offset=0, y_offset=80 )
 	rotation = 180
 
-if ( bSimulatedMicroTFT ):
+elif ( bSimulatedMicroTFT ):
 	disp = st7789.ST7789( spi, cs=cs_pin, dc=dc_pin, rst=reset_pin, baudrate=BAUDRATE,
 		width=240, height=240, x_offset=0, y_offset=80 )
 	rotation = 180
 
+else:
+	print( "WARNING: Display not resolved." )
 
 
 
@@ -170,6 +173,8 @@ print( "Running main loop.." )
 
 strLastKey = "none"
 iTicker = 0;
+strTickColor = "#A0A0FF"
+
 
 # loop, showing screen from server
 while True:
@@ -191,6 +196,10 @@ while True:
 
                         image = Image.open( memfile )
                         draw = ImageDraw.Draw( image )
+
+                        strTickColor = "#FFFFB0"
+                else:
+                        strTickColor = "#A0A0FF"
 
                 strLastKey = strKey
 
@@ -222,11 +231,21 @@ while True:
         if ( not btnBottom.value ):
                 draw.text( ( 210, 80 ), "B", font=font, fill="#FFFFFF" )
                 strParams = strParams + "b=1&"
-        strParams = strParams + "c=0"
+        # strParams = strParams + "c=0"
+
+        if ( "" == strParams ):
+                strCmd = "/usr/bin/vcgencmd get_throttled | cut -d'x' -f2"
+                strThrottle = subprocess.check_output( strCmd, shell=True ).decode( "utf-8" )
+                strThrottle = strThrottle.strip()
+                if ( "0" == strThrottle ):
+                        draw.text( ( 180, 80 ), "ok", font=font, fill="#808080" )
+                if ( not "0" == strThrottle ):
+                        draw.text( ( 170, 80 ), strThrottle, font=font, fill="#FFE0E0" )
+
 
         iY = 104
         draw.rectangle( (  170 + iTicker, iY, 
-                           176 + iTicker, iY + 6 ), outline=1, fill="#A0A0FF" )
+                           176 + iTicker, iY + 6 ), outline=1, fill=strTickColor )
 
         # Display image.
         disp.image( image, rotation )
