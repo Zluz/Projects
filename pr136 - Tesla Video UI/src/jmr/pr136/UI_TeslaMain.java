@@ -190,6 +190,10 @@ public class UI_TeslaMain {
 									 0,0,				// dest coordinates
 									 r.width, r.height 	// dest dimensions
 									 );
+
+					final String strKey = 
+							mapStates.get( StateKey.SO_IMG_KEY ).toString();
+					server.prepareKey( strKey );
 					server.prepareImage( imageOverhead );
 				}
 
@@ -293,16 +297,15 @@ public class UI_TeslaMain {
 //				UI_TeslaMain.log( "Request from: " + strRemote );
 //				UI_TeslaMain.log( "URL: " + strURL );
 				
+				mapStates.put( StateKey.SS_LAST_URL, strURL );
+				mapStates.put( StateKey.SO_IP, strRemote );
+				mapStates.put( StateKey.SO_IMG_LAST, lTimeNow );
+
 				if ( strURL.contains( "a=1" ) ) {
 					handleKey( SWT.ARROW_DOWN, lTimeNow );
 				} else if ( strURL.contains( "b=1" ) ) {
 					handleKey( SWT.ARROW_RIGHT, lTimeNow );
 				}
-				
-				mapStates.put( StateKey.SS_LAST_URL, strURL );
-				mapStates.put( StateKey.SO_IP, strRemote );
-
-				mapStates.put( StateKey.SO_IMG_LAST, lTimeNow );
 			}
 
 			@Override
@@ -310,11 +313,16 @@ public class UI_TeslaMain {
 												final String strRemote,
 												final int iResponse ) {
 				final long lTimeNow = System.currentTimeMillis();
-				
+
 				mapStates.put( StateKey.SS_LAST_URL, strURL );
 				mapStates.put( StateKey.SO_IP, strRemote );
-
 				mapStates.put( StateKey.SO_KEY_LAST, lTimeNow );
+
+				if ( strURL.contains( "a=1" ) ) {
+					handleKey( SWT.ARROW_DOWN, lTimeNow );
+				} else if ( strURL.contains( "b=1" ) ) {
+					handleKey( SWT.ARROW_RIGHT, lTimeNow );
+				}
 			}
 		};
 		return listener;
@@ -626,7 +634,7 @@ public class UI_TeslaMain {
 			gc.setBackground( UI.getColor( SWT.COLOR_DARK_CYAN ) );
 //			gc.setAdvanced( true );
 //			gc.setAntialias( SWT.ON );
-			iYMenuOffset = 0;
+			iYMenuOffset = -1;
 		} else {
 			gc.setBackground( UI.getColor( SWT.COLOR_GRAY ) );
 			iYMenuOffset = aiPMenu.getIndex( lTimeNow );
@@ -643,15 +651,18 @@ public class UI_TeslaMain {
 
 			gc.setClipping( rectOverhead );
 			gc.setFont( font10 );
-			final int iY_OH = ( iY - 340 ) / 5 + 6 + rOH.y;
+			int iY_OH = ( iY - 340 ) / 5 + 10 + rOH.y;
 			if ( bFirst ) {
+				
+				iY_OH = iY_OH - 4;
+				
 				gc.setForeground( UI.getColor( SWT.COLOR_YELLOW ) );
 				gc.setBackground( UI.getColor( SWT.COLOR_YELLOW ) );
 //				gc.fillRectangle( 1500, 80, 7, 20 );
-				gc.fillRectangle( rOH.x, rOH.y + 20, 7, 24 );
+				gc.fillRectangle( rOH.x, rOH.y + 12, 7, 24 );
 
 				gc.setBackground( UI.getColor( SWT.COLOR_GREEN ) );
-				gc.fillRectangle( rOH.x, rOH.y + 97, 7, 24 );
+				gc.fillRectangle( rOH.x, rOH.y + 96, 7, 24 );
 
 				// approx reserved region
 //				gc.setBackground( UI.getColor( SWT.COLOR_DARK_GRAY ) );
@@ -720,7 +731,7 @@ public class UI_TeslaMain {
 		final String strKey = getOverheadDisplayKey( 
 									iMenuSelection, iYMenuOffset, iYMenu );
 		mapStates.put( StateKey.SO_IMG_KEY, strKey );
-		server.prepareKey( strKey );
+//		server.prepareKey( strKey );
 		
 		
 		gc.setFont( font30 );

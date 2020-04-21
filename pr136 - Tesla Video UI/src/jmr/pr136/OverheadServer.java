@@ -13,6 +13,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
 
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -97,8 +98,9 @@ public class OverheadServer {
 				arrBytes = arrImageBuffer;
 			}
 
-			exchange.getResponseHeaders().set( "ContentType", strContentType );
-
+			final Headers headers = exchange.getResponseHeaders();
+			headers.set( "ContentType", strContentType );
+			headers.set( "ImageKey", strKey );
 
 			try ( final OutputStream os = exchange.getResponseBody() ) {
 

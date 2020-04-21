@@ -171,9 +171,10 @@ strParams = ""
 
 print( "Running main loop.." )
 
-strLastKey = "none"
+# strLastKey = "none"
 iTicker = 0;
 strTickColor = "#A0A0FF"
+# bLastUpdated = True
 
 
 # loop, showing screen from server
@@ -185,23 +186,31 @@ while True:
         # draw.rectangle((0, 0, width, height), outline=0, fill=0)
 
         try:
-                resKey = requests.get( strURL + "/key?" + strParams, stream = True )
+                # if ( not bLastUpdated ):
+                #         resKey = requests.get( strURL + "/key?" + strParams, stream = True )
+                #         strKey = resKey.content.decode( 'utf-8' );
+                # else:
+                #         strKey = iTicker
 
-                strKey = resKey.content.decode( 'utf-8' );
-                # print( "key: " + strKey )
+                # if ( strKey != strLastKey ):
+                if ( True ):  # seems no faster .. just pull & paint every time
 
-                if ( strKey != strLastKey ):
-                        response = requests.get( strURL + "/image", stream = True )
+                        response = requests.get( strURL + "/image?" + strParams, stream = True )
                         memfile = io.BytesIO( response.content )
 
                         image = Image.open( memfile )
                         draw = ImageDraw.Draw( image )
 
-                        strTickColor = "#FFFFB0"
-                else:
-                        strTickColor = "#A0A0FF"
+                        # strKey = response.headers[ "ImageKey" ]
+                        bLastUpdated = True
 
-                strLastKey = strKey
+                        # strTickColor = "#FFFFB0"
+                        strTickColor = "#A0A0FF"
+                # else:
+                #         bLastUpdated = False
+                #         strTickColor = "#A0A0FF"
+
+                # strLastKey = strKey
 
         # except requests.exceptions.RequestException as e:
         except Exception as e:
