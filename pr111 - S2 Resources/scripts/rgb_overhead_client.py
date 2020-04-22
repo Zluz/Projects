@@ -9,8 +9,10 @@ from PIL import Image, ImageDraw, ImageFont
 import adafruit_rgb_display.st7789 as st7789
 import io
 
+
 print()
 print( "Starting overhead display script.." )
+
 
 print( "Initializing I/O.." )
 
@@ -25,13 +27,14 @@ BAUDRATE = 64000000
 # Setup SPI bus using hardware SPI:
 spi = board.SPI()
 
+
 print( "Configuring session.." )
 
-strCmd = "ifconfig | grep ether"
+strCmd = "/sbin/ifconfig | /bin/grep ether"
 strMAC = subprocess.check_output( strCmd, shell=True ).decode( "utf-8" )
 strMAC = strMAC.strip()
 
-strCmd = "hostname -I | cut -d\' \' -f1 | cut -d\'.\' -f3,4"
+strCmd = "/bin/hostname -I | cut -d\' \' -f1 | cut -d\'.\' -f3,4"
 strIPShort = subprocess.check_output( strCmd, shell=True ).decode( "utf-8" )
 strIPShort = strIPShort.strip()
 strSub = strIPShort[0]
