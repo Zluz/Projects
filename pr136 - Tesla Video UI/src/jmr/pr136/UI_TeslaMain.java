@@ -91,6 +91,10 @@ public class UI_TeslaMain {
 	
 	private final static List<String> listMessages = new LinkedList<>();
 
+	private boolean bOverheadKeyA_PrevState = false;
+	private boolean bOverheadKeyB_PrevState = false;
+
+	
 	
 	public UI_TeslaMain() {
 
@@ -283,6 +287,27 @@ public class UI_TeslaMain {
 		
 		log( "Started " + new Date().toString() );
 	}
+
+	
+	private void handleOverheadInput(	final String strURL,
+										final long lTimeNow ) {
+		
+		final boolean bOverheadKeyA_ThisState = strURL.contains( "a=1" ); 
+		final boolean bOverheadKeyB_ThisState = strURL.contains( "b=1" ); 
+		
+		if ( bOverheadKeyA_ThisState ) {
+			if ( ! bOverheadKeyA_PrevState ) {
+				handleKey( SWT.ARROW_DOWN, lTimeNow );
+			}
+		} else if ( bOverheadKeyB_ThisState ) {
+			if ( ! bOverheadKeyB_PrevState ) {
+				handleKey( SWT.ARROW_RIGHT, lTimeNow );
+			}
+		}
+		
+		this.bOverheadKeyA_PrevState = bOverheadKeyA_ThisState;
+		this.bOverheadKeyB_PrevState = bOverheadKeyB_ThisState;
+	}
 	
 
 	private OverheadServer.Listener createOverheadListener() {
@@ -300,12 +325,8 @@ public class UI_TeslaMain {
 				mapStates.put( StateKey.SS_LAST_URL, strURL );
 				mapStates.put( StateKey.SO_IP, strRemote );
 				mapStates.put( StateKey.SO_IMG_LAST, lTimeNow );
-
-				if ( strURL.contains( "a=1" ) ) {
-					handleKey( SWT.ARROW_DOWN, lTimeNow );
-				} else if ( strURL.contains( "b=1" ) ) {
-					handleKey( SWT.ARROW_RIGHT, lTimeNow );
-				}
+				
+				handleOverheadInput( strURL, lTimeNow );
 			}
 
 			@Override
@@ -318,11 +339,7 @@ public class UI_TeslaMain {
 				mapStates.put( StateKey.SO_IP, strRemote );
 				mapStates.put( StateKey.SO_KEY_LAST, lTimeNow );
 
-				if ( strURL.contains( "a=1" ) ) {
-					handleKey( SWT.ARROW_DOWN, lTimeNow );
-				} else if ( strURL.contains( "b=1" ) ) {
-					handleKey( SWT.ARROW_RIGHT, lTimeNow );
-				}
+				handleOverheadInput( strURL, lTimeNow );
 			}
 		};
 		return listener;
@@ -534,6 +551,61 @@ public class UI_TeslaMain {
 		}
 	}
 	
+
+//	public final static String FONT_FILE = "CabinCondensed-Regular.ttf";
+//	public final static String FONT_NAME = "Cabin Condensed";
+//	public final static String FONT_FILE = "RobotoCondensed-Regular.ttf";
+//	public final static String FONT_NAME = "Roboto Condensed";
+//	public final static String FONT_FILE = "RobotoCondensed-Light.ttf";
+//	public final static String FONT_NAME = "Roboto Condensed Light";
+//	public final static String FONT_FILE = "BarlowCondensed-Medium.ttf";
+//	public final static String FONT_NAME = "Barlow Condensed Medium";
+//	public final static String FONT_FILE = "MILF____.ttf";
+//	public final static String FONT_NAME = "Milford";
+//	public final static String FONT_FILE = "ArchivoNarrow-Regular.ttf";
+//	public final static String FONT_NAME = "Archivo Narrow";
+	// messy in small fonts 
+//	public final static String FONT_FILE = "gnuolane free.ttf";
+//	public final static String FONT_NAME = "Gnuolane Free";
+//	public final static String FONT_FILE = "MerriweatherSans-Regular.ttf";
+//	public final static String FONT_NAME = "Merriweather Sans";
+
+	
+//	public final static String FONT_PATH_WIN = 
+//						"T:\\Resources\\fonts\\truetype\\" + FONT_FILE;
+//	public final static String FONT_PATH_LNX = 
+//						"/Share/Resources/fonts/truetype/" + FONT_FILE;
+//	
+//	private Font getBaseFont() {
+		
+//		final boolean bLoaded = display.loadFont( FONT_PATH_WIN );
+//		
+//		final FontData[] arrFonts = display.getFontList( null, true );
+//		System.out.println( "Available fonts (" + arrFonts.length + "):" );
+//		for ( final FontData fd : arrFonts ) {
+//			System.out.println( "\t" + fd.getName() );
+//		}
+//		
+//		if ( bLoaded ) {
+//			final Font font = new Font( display, FONT_NAME, 12, SWT.NORMAL );
+//			return font;
+//		}
+		
+//		final Font fontSystem = display.getSystemFont();
+//		return fontSystem;
+//	}
+	
+	private FontProvider fontprovider = null;
+	
+	private Font getBaseFont() {
+		if ( null == fontprovider ) {
+			fontprovider = new FontProvider();
+		}
+		final Font font = fontprovider.get( display, 
+								FontProvider.FontResource.CABIN_CONDENSED );
+		return font;
+	}
+
 	
 	private void paint( final Image image ) {
 
@@ -555,7 +627,7 @@ public class UI_TeslaMain {
 //			rectOverhead = new Rectangle( 1600, 40, 240, 135 );
 			rectOverhead = new Rectangle( 50, 140, 240, 135 );
 	
-			final Font fontSystem = display.getSystemFont();
+			final Font fontSystem = getBaseFont();
 		    
 			final FontData fd10 = fontSystem.getFontData()[0];
 		    fd10.setHeight( 15 );
