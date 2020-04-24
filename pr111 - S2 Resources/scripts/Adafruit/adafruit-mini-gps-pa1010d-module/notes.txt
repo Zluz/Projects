@@ -1,0 +1,2 @@
+https://learn.adafruit.com/adafruit-mini-gps-pa1010d-module/circuitpython-python-i2c-usage
+
