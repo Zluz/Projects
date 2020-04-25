@@ -20,5 +20,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/pr116 - Email, SMS"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr109 - Audio"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/SWT_Win64"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr134 - SWT Loader"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

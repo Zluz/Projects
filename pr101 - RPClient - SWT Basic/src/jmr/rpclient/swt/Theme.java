@@ -11,6 +11,9 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 
+import jmr.pr134.fonts.FontProvider;
+import jmr.pr134.fonts.FontProvider.FontResource;
+
 public class Theme {
 	
 	public enum Colors {
@@ -37,6 +40,8 @@ public class Theme {
 	
 	private Display display;
 	
+	private final FontProvider fontprovider;
+	
 	private Theme() {
 		this.display = Display.getCurrent();
 		for ( final Colors c : Colors.values() ) {
@@ -44,6 +49,7 @@ public class Theme {
 //			final Color color = new Color( display, c.rgb );
 			COLORMAP.put( c, color );
 		}
+		fontprovider = new FontProvider( display );
 	}
 	
 	private final Map<Integer,Font> mapFontNormal = new HashMap<Integer,Font>();
@@ -91,13 +97,33 @@ public class Theme {
 	 */
 	public Font getFont( final int iSize ) {
 		if ( !mapFontNormal.containsKey( iSize ) ) {
-		    final FontData fd = display.getSystemFont().getFontData()[0];
-		    fd.setHeight( iSize );
-			final Font font = new Font( display, fd );
+//		    final FontData fd = display.getSystemFont().getFontData()[0];
+			final FontResource fr;
+			if ( iSize < 10 ) {
+				fr = FONT_TINY;
+			} else if ( iSize > 14 ){
+				fr = FONT_LARGE;
+			} else {
+				fr = FONT_NORMAL;
+			}
+//			final Font fontSource = fontprovider.get( fr );
+//			final FontData fd = fontSource.getFontData()[ 0 ];
+//		    fd.setHeight( iSize );
+//			final Font font = new Font( display, fd );
+			final Font font = fontprovider.get( fr, iSize, SWT.NORMAL );
 			mapFontNormal.put( iSize, font );
 		}
 		return mapFontNormal.get( iSize );
 	}
+	
+	public final static FontResource 
+					FONT_TINY = FontResource.CABIN_CONDENSED; 
+	public final static FontResource 
+					FONT_NORMAL = FontResource.ARCHIVO_NARROW; 
+	public final static FontResource 
+					FONT_LARGE = FontResource.BARLOW_CONDENSED_MEDIUM; 
+	
+	
 	
 	public Font getBoldFont( final int iSize ) {
 		if ( !mapFontBold.containsKey( iSize ) ) {

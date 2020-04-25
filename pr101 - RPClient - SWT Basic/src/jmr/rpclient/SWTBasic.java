@@ -61,6 +61,7 @@ import jmr.s2db.Client.ClientType;
 import jmr.s2db.event.EventType;
 import jmr.s2db.event.SystemEvent;
 import jmr.s2db.job.JobManager;
+import jmr.s2db.job.JobMonitor;
 import jmr.s2db.tables.Event;
 import jmr.util.Logging;
 import jmr.util.NetUtil;
@@ -241,6 +242,10 @@ public class SWTBasic {
     
     
 	public Shell buildUI() {
+		
+		if ( DEBUG ) {
+			System.out.println( "SWTBasic running in DEBUG mode." );
+		}
 		
 	    /* S2DB stuff */
 	    final long lNow = System.currentTimeMillis();
@@ -686,6 +691,10 @@ public class SWTBasic {
 //			}
 //		});
 	    
+	    if ( DEBUG ) {
+	    	JobMonitor.get().setDebug( true );
+	    }
+	    
 	    return shell;
 	}
 
@@ -710,8 +719,14 @@ public class SWTBasic {
 	}
 	
 
+
 	public static void main( final String[] args ) {
-		DEBUG = true;
+		/*
+		 * pass launch parameter "DEBUG" to enable debug mode.
+		 */
+		if ( args.length > 0 && args[0].equalsIgnoreCase( "DEBUG" ) ) {
+			DEBUG = true;
+		}
 		
 		boolean bConsole = false;
 		for ( final String arg : args ) {

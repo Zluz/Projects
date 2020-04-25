@@ -7,6 +7,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 
+import jmr.rpclient.SWTBasic;
 import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
@@ -21,7 +22,9 @@ public class JobListingTile extends TileBase {
 	
 	
 	public JobListingTile(  final Map<String, String> mapOptions  ) {
-		JobMonitor.get().initialize( mapOptions );
+		if ( ! SWTBasic.DEBUG ) {
+			JobMonitor.get().initialize( mapOptions );
+		}
 	}
 	
 
