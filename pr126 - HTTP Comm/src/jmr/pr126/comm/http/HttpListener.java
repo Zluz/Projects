@@ -46,7 +46,7 @@ public class HttpListener implements HttpCommConstants {
 	private static HttpListener instance;
 	
 
-	private HttpServer server;
+	private final HttpServer server;
 	private String strIP;
 	private final int iPort;
 	private final String strEndpoint;
@@ -58,15 +58,16 @@ public class HttpListener implements HttpCommConstants {
 			              final boolean bQuiet ) {
 		this.iPort = iPort;
 		this.strEndpoint = strEndpoint;
+		HttpServer serverCand = null;
 		try {
 			System.out.println( "Hosting port " + iPort );
 			final InetSocketAddress port = new InetSocketAddress(iPort);
-			server = HttpServer.create(port, 0);
+			serverCand = HttpServer.create(port, 0);
 
 			final com.sun.net.httpserver.HttpContext context = 
-					server.createContext( strEndpoint, new MessageHandler() );
-			server.setExecutor( null ); // creates a default executor
-			server.start();
+					serverCand.createContext( strEndpoint, new MessageHandler() );
+			serverCand.setExecutor( null ); // creates a default executor
+			serverCand.start();
 			
 			System.out.println( "getPath(): " + context.getPath() );
 			final HttpHandler handler = context.getHandler();
@@ -75,11 +76,18 @@ public class HttpListener implements HttpCommConstants {
 			this.addHostRegistryListener();
 			
 		} catch ( final IOException e ) {
-			server = null;
-			if ( ! bQuiet ) {
+			
+			// if ( ! bQuiet ) // ? 
+			if ( e.toString().contains( "already in use: bind" ) ) {
+				System.err.println( "Port " + iPort + " appears to already "
+						+ "in use. Cannot attach listener." );
+			} else {
 				e.printStackTrace();
 			}
+			
+			serverCand = null;
 		}
+		this.server = serverCand;
 	}
 	
 	
@@ -132,7 +140,7 @@ public class HttpListener implements HttpCommConstants {
 
 
 	private HttpListener( final int iPort ) {
-		this( iPort, ENDPOINT, true );
+		this( iPort, ENDPOINT, false );
 	}
 	
 	
@@ -216,15 +224,15 @@ public class HttpListener implements HttpCommConstants {
 			final String strResponse = Integer
 					.toString(strURI.getBytes().length) + " byte(s) received.";
 
-			try (final OutputStream os = exchange.getResponseBody()) {
+			try ( final OutputStream os = exchange.getResponseBody() ) {
 
 				final byte[] bytes = strResponse.getBytes();
 				exchange.sendResponseHeaders( 200, bytes.length );
 
-				os.write(bytes);
+				os.write( bytes );
 				os.close();
 
-			} catch (final IOException e) {
+			} catch ( final IOException e ) {
 				// TODO handle this
 				// ignore for now
 //        		e.printStackTrace();

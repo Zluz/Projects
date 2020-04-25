@@ -8,6 +8,11 @@ import java.util.List;
 
 import jmr.rpclient.SWTBasic;
 
+/**
+ * Copied between pr101, pr136 //TODO try again to make this shared code
+ * @author usr111
+ *
+ */
 public class SWTLoader3 {
 
 

@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Display;
 import jmr.s2db.Client;
 import jmr.util.SystemUtil;
 
+//TODO this should be extracted into shared code, with SWTLoader*, etc
 public abstract class UI {
 
 	private final static Logger LOGGER = Logger.getLogger(UI.class.getName());

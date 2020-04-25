@@ -74,6 +74,8 @@ import jmr.util.SystemUtil;
  */
 public class SWTBasic {
 
+
+	public static boolean DEBUG = false;
 	
 	private static final Logger 
 			LOGGER = Logger.getLogger( SWTBasic.class.getName() );
@@ -550,8 +552,20 @@ public class SWTBasic {
 	    mapSessionPage.put( "executable", OSUtil.getProgramName() );
 	    mapSessionPage.put( "device.name", strDeviceName );
 	    final String strSessionPath = "/Sessions/" + NetUtil.getSessionID();
-		final long seqSessionPage = s2db.savePage( strSessionPath, mapSessionPage );
-	    s2db.setSessionPage( seqSessionPage );
+	    try {
+			final long seqSessionPage = s2db.savePage( 
+										strSessionPath, mapSessionPage );
+		    s2db.setSessionPage( seqSessionPage );
+	    } catch ( final IllegalStateException e ) { 
+	    	if ( DEBUG ) { // no session in debug; ignore
+	    		LOGGER.info( "Ignoring IllegalStateException while in debug." );
+	    		LOGGER.info( "(Port bind error is expected while "
+	    				+ "another S2 program is running locally.);" ); 
+	    	} else {
+	    		e.printStackTrace();
+	    		Runtime.getRuntime().exit( 100 );
+	    	}
+	    }
 
 //	    final TabControls tControls = new TabControls( server );
 	    final TabControls tControls = new TabControls();
@@ -697,7 +711,8 @@ public class SWTBasic {
 	
 
 	public static void main( final String[] args ) {
-
+		DEBUG = true;
+		
 		boolean bConsole = false;
 		for ( final String arg : args ) {
 			if ( arg.toLowerCase().endsWith( "console" ) ) {
@@ -709,8 +724,8 @@ public class SWTBasic {
 	    
 		UI.runUIWatchdog();
 		UI.runUIRefresh();
-	    while (!ui.shell.isDisposed()) {
-	      if (!UI.display.readAndDispatch()) {
+	    while ( ! ui.shell.isDisposed() ) {
+	      if ( ! UI.display.readAndDispatch() ) {
 	    	  UI.notifyUIIdle();
 	    	  UI.display.sleep();
 	      }

@@ -95,6 +95,7 @@ public class Client {
 	    
     	final EventMonitor monitor = EventMonitor.get( type );
     	if ( null==monitor ) {
+    		LOGGER.warning( ()-> "Failed to initialize EventMonitor." );
     		return null;
     	}
 	    
