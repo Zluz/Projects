@@ -49,6 +49,10 @@ public class JobMonitor {
 	
 	public void check() {
 		
+		if ( Client.get().isDebugEnabled() ) {
+			return;
+		}
+		
 		if ( null==this.runner ) {
 			LOGGER.warning( "JobMonitor not correctly initialized." );
 			this.runner = new RunRemoteJob( "<JobMonitor_not_initialized>" );
@@ -101,8 +105,13 @@ public class JobMonitor {
 	
 	public void initializeJobMonitorThread() {
 		
-		HttpListener.getInstance( ClientType.TILE_GUI.getPort() )
-											.registerListener( listener );
+		final HttpListener httplistener = 
+				HttpListener.getInstance( ClientType.TILE_GUI.getPort() );
+		// in a debug mode this may not have been set up
+		if ( null == httplistener ) { 
+			return;
+		}
+		httplistener.registerListener( listener );
 		
 		if ( null!=threadUpdater ) return;
 		
@@ -302,10 +311,6 @@ public class JobMonitor {
 		};
 		threadWorkJobs.start();
 	}
-	
-	
-
-	
 	
 	
 	

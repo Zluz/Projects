@@ -114,7 +114,7 @@ public class S2DBLogHandler extends Handler {
 		
 	}
 
-	
+
 //	public static void registerLoggers() {
 //		final S2DBLogHandler handler = new S2DBLogHandler();
 //		

@@ -62,6 +62,9 @@ public class Client {
 	private Long seqDevice;
 	private Long seqSession;
 	
+	// allow other instances of the program.
+	// this means do not fail if ports cannot be reserved
+	private boolean bDebug = false;
 	
 	
 	
@@ -72,6 +75,14 @@ public class Client {
 			instance = new Client();
 		}
 		return instance;
+	}
+	
+	public void setDebug( final boolean bDebug ) {
+		this.bDebug = bDebug;
+	}
+	
+	public boolean isDebugEnabled() {
+		return this.bDebug;
 	}
 	
 
@@ -241,6 +252,13 @@ public class Client {
 		final Path tPath = ( (Path)Tables.PATH.get() );
 		final Long lPath = tPath.get( strPath );
 		if ( null==lPath ) return Collections.emptyMap();
+		
+		// can get this exception if in debug:
+		// 		java.lang.IllegalStateException: Client not registered. 
+		// 			Call Client.get().register(*) first.
+		if ( bDebug ) {
+			return Collections.emptyMap();
+		}
 		
 		final Page tPage = ( (Page)Tables.PAGE.get() );
 		final Long lPage = tPage.get( lPath );

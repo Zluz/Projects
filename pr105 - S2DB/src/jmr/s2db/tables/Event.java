@@ -109,7 +109,7 @@ public class Event extends TableBase {
 	
 	public static Event getLatestEventFor( final String strSubject ) {
 
-		final String strQuery = "SELECT seq FROM event "
+		final String strQuery = "SELECT seq FROM Event "
 				+ "WHERE subject = \"" + strSubject + "\" "
 				+ "ORDER BY time DESC "
 				+ "LIMIT 1;";
@@ -137,7 +137,7 @@ public class Event extends TableBase {
 	
 	public static List<String> getSubjects() {
 
-		final String strQuery = "SELECT DISTINCT( subject ) FROM event;";
+		final String strQuery = "SELECT DISTINCT( subject ) FROM Event;";
 		 
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
 				final Statement stmt = conn.createStatement() ) {
