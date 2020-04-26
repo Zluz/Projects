@@ -43,6 +43,7 @@ import org.eclipse.swt.widgets.Text;
 
 import com.google.gson.Gson;
 
+import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.UI;
 import jmr.rpclient.tab.TabBase;
 import jmr.rpclient.tab.TabControls;
@@ -353,7 +354,12 @@ public class SWTBasic {
 //		    shell.setSize( 810, 520 );
 	    	final int iX = perspective.getColCount() * 150 + 60;
 	    	final int iY = perspective.getRowCount() * 150 + 66;
-	    	shell.setSize( iX, iY );
+	    	
+	    	if ( OSUtil.isWin() ) {
+	    		shell.setSize( iX + 20, iY + 20 ); // window trim
+	    	} else {
+	    		shell.setSize( iX, iY );
+	    	}
 	    	
 	    	if ( 1920 == rectArea.width && 1080 == rectArea.height ) { 
 		    	LOGGER.info( "FHD screen, probably headless display. "
@@ -442,15 +448,21 @@ public class SWTBasic {
 				}
 
 				gc.setForeground( UI.COLOR_BLACK );
-
+				
 				iY = 3 * iH - 8;
 				int iXO = -3;
+				gc.setFont( Theme.get().getFont( 11 ) );
 				gc.drawText( "Top", 16+iXO, iY + 30 ); iY += iH;
-				gc.drawText( "Tiles", 15+iXO, iY + 30 ); iY += iH;
+				gc.drawText( "Tiles", 14+iXO, iY + 30 ); iY += iH;
+				iY += iH; iY += iH;
+				gc.drawText( "EXIT",  14+iXO, iY + 30 ); iY += iH;
+
+				iY = 3 * iH - 8;
+				gc.setFont( Theme.get().getFont( 10 ) );
+				iY += iH; iY += iH;
 				gc.drawText( "S2DB",  13+iXO, iY + 30 ); iY += iH;
 //				gc.drawText( "Calib", 005+iXO, iY + 30 ); iY += iH;
-				gc.drawText( "Device", 8+iXO, iY + 30 ); iY += iH;
-				gc.drawText( "EXIT",  15+iXO, iY + 30 ); iY += iH;
+				gc.drawText( "Device",11+iXO, iY + 30 ); iY += iH;
 			}
 		});
 	    
@@ -692,7 +704,8 @@ public class SWTBasic {
 //		});
 	    
 	    if ( DEBUG ) {
-	    	JobMonitor.get().setDebug( true );
+//	    	JobMonitor.get().setDebug( true );
+	    	Client.get().setDebug( true );
 	    }
 	    
 	    return shell;

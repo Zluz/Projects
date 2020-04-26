@@ -364,7 +364,7 @@ public class TeslaTile extends TileBase {
 								DateFormatting.getSmallTime( super.iNowPaint - lTimestampLatest );
 						
 						gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
-						gc.setFont( Theme.get().getFont( 6 ) );
+						gc.setFont( Theme.get().getFont( 7 ) );
 						gc.drawText( strElapsed, 265, 10 );
 					}
 				}

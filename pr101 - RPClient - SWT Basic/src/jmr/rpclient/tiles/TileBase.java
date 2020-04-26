@@ -165,7 +165,7 @@ public abstract class TileBase implements Tile {
 		final Point ptExtent = gc.textExtent( strText );
 		
 		final int iX = iXC - ( ptExtent.x / 2 );
-		gc.drawText( strText, iX, iY );
+		gc.drawText( strText, iX, iY, true );
 	}
 
 	protected void drawTextCentered(	final String strText,

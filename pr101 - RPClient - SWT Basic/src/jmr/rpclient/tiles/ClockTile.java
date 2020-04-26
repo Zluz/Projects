@@ -74,72 +74,52 @@ public class ClockTile extends TileBase {
 	@Override
 	public void paint( 	final GC gc, 
 						final Image image ) {
-//		final Date now = new Date();
-//		
-////		final String strTime = FORMATTER_SHORT.format( now );
-////		drawTextCentered( strTime, 10 );
-//		
-//		
-//
-//		final String[] strTimes = new String[ TIME_FORMATS.length ];
-////		for ( final SimpleDateFormat formatter : FORMATTERS ) {
-//		for ( int i=0; i<TIME_FORMATS.length; i++ ) {
-//			strTimes[i] = FORMATTERS[i].format( now );
-//		}
-//		
-//		gc.fillRectangle( rect );
+
+		final String[] strTimes = getTimeStrings();
+
+
+		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 
 		if ( gc.getClipping().width > 300 ) { // 3 tiles wide
-			
-			final String[] strTimes = getTimeStrings();
 	
-			gc.setFont( Theme.get().getFont( 25 ) );
-			gc.drawText( strTimes[1], 385, 25 );
+			gc.setFont( Theme.get().getFont( 25 ) ); 
+			gc.drawText( strTimes[1], 295, 20 ); // AM/PM
+
+			gc.setFont( Theme.get().getNFont( 15 ) );
+			gc.drawText( "." + strTimes[4], 286, 60 ); // milliseconds
+
+			gc.setFont( Theme.get().getFont( 25 ) ); 
+			drawTextCentered( strTimes[3], 100, 24, 30 ); // long date
 	
-			gc.setFont( Theme.get().getFont( 25 ) );
-			drawTextCentered( strTimes[3], 100, 24, 30 );
-	
-			gc.setFont( Theme.get().getFont( 15 ) );
-			gc.drawText( "." + strTimes[4], 380, 65 );
-	
-			
-			String strTimeSec = strTimes[0];
-			if ( strTimeSec.charAt( 1 ) == ':' ) {
-				strTimeSec = " " + strTimeSec;
-			}
-			gc.setFont( Theme.get().getFont( 66 ) );
-			gc.drawText( strTimeSec, 31, 0 );
-			
-			String strTimeMin = strTimeSec.substring( 0, 5 );
-	//		if ( strTime.charAt( 4 ) == ':' ) {
-	//			strTime = strTime.substring( 0, 4 );
-	//		}
-	//		if ( strTime.charAt(0) == '0' ) {
-	//			strTime = "0" + strTime.substring( 1 );
-	//		}
-			gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
-			gc.drawText( strTimeMin, 31, 0 );
 		} else {
 
-			final String[] strTimes = getTimeStrings();
-
-			final String strTimeMin = strTimes[5];
-			final String strTimePadded;
-			if ( 1==strTimeMin.indexOf( ':' ) ) {
-				strTimePadded = " " + strTimeMin;
-			} else {
-				strTimePadded = strTimeMin;
-			}
-//			final String strTimeMin = strTimeSec.substring( 0, 5 );
-			gc.setFont( Theme.get().getFont( 72 ) );
-			gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
-			gc.drawText( strTimePadded, 36, 0 );
-
-			gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
-
-//			gc.setFont( Theme.get().getFont( 10 ) );
 			drawTextCentered( strTimes[3], 100, 24, 30 );
 		}
+
+		
+		
+		String strTimeFull = strTimes[0]; // normal time w/seconds
+		if ( strTimeFull.charAt( 1 ) == ':' ) {
+			strTimeFull = " " + strTimeFull;
+		}
+		final String strTimeMin = strTimeFull.substring( 0, 5 );
+		final String strTimeSec = strTimeFull.substring( 5 );
+
+
+		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
+		
+		gc.setFont( Theme.get().getNFont( 66 ) );
+		
+		gc.drawText( strTimeMin, 22, 1, true );
+		
+		gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
+		gc.drawText( strTimeMin, 21, 0, true );
+		final int iWidth = gc.textExtent( strTimeMin ).x;
+
+		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
+
+		gc.setFont( Theme.get().getNFont( 50 ) );
+		gc.drawText( strTimeSec, 26 + iWidth, 14, true );
 
 	}
 	

@@ -22,6 +22,7 @@ import jmr.rpclient.swt.S2Button.ButtonState;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.s2db.tables.Job;
+import jmr.util.OSUtil;
 
 public class IO_GPIOTile extends TileBase {
 
@@ -192,11 +193,13 @@ public class IO_GPIOTile extends TileBase {
 	final static GpioController gpio;
 	static {
 		GpioController instance = null;
-		try {
-			instance = GpioFactory.getInstance();
-		} catch ( final Throwable e ) {
-			System.err.println( "Unable to initialize the Pi4J singleton. "
-					+ "GPIO services will not be available.");
+		if ( ! OSUtil.isWin() ) {
+			try {
+				instance = GpioFactory.getInstance();
+			} catch ( final Throwable e ) {
+				System.err.println( "Unable to initialize the Pi4J singleton. "
+						+ "GPIO services will not be available.");
+			}
 		}
 		gpio = instance;
 	}

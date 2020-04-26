@@ -95,42 +95,45 @@ public class Theme {
 	 * @param iSize
 	 * @return
 	 */
-	public Font getFont( final int iSize ) {
+	public Font getFont(	final int iSize,
+							final boolean bNumberCompat ) {
 		if ( !mapFontNormal.containsKey( iSize ) ) {
-//		    final FontData fd = display.getSystemFont().getFontData()[0];
 			final FontResource fr;
-			if ( iSize < 10 ) {
-				fr = FONT_TINY;
+			if ( iSize < 6 ) {
+				fr = FontResource.CABIN_CONDENSED;
 			} else if ( iSize > 14 ){
-				fr = FONT_LARGE;
+				if ( bNumberCompat ) {
+					fr = FontResource.ROBOTO_CONDENSED;
+				} else {
+					fr = FontResource.BARLOW_CONDENSED_MEDIUM;
+				}
 			} else {
-				fr = FONT_NORMAL;
+				fr = FontResource.ARCHIVO_NARROW;
 			}
-//			final Font fontSource = fontprovider.get( fr );
-//			final FontData fd = fontSource.getFontData()[ 0 ];
-//		    fd.setHeight( iSize );
-//			final Font font = new Font( display, fd );
 			final Font font = fontprovider.get( fr, iSize, SWT.NORMAL );
 			mapFontNormal.put( iSize, font );
 		}
 		return mapFontNormal.get( iSize );
 	}
-	
-	public final static FontResource 
-					FONT_TINY = FontResource.CABIN_CONDENSED; 
-	public final static FontResource 
-					FONT_NORMAL = FontResource.ARCHIVO_NARROW; 
-	public final static FontResource 
-					FONT_LARGE = FontResource.BARLOW_CONDENSED_MEDIUM; 
-	
+
+	public Font getFont( final int iSize ) {
+		return getFont( iSize, false );
+	}
+
+	public Font getNFont( final int iSize ) {
+		return getFont( iSize, true );
+	}
+
 	
 	
 	public Font getBoldFont( final int iSize ) {
 		if ( !mapFontBold.containsKey( iSize ) ) {
-		    final FontData fd = display.getSystemFont().getFontData()[0];
-		    fd.setHeight( iSize );
-		    fd.setStyle( SWT.BOLD );
-			final Font font = new Font( display, fd );
+//		    final FontData fd = display.getSystemFont().getFontData()[0];
+//		    fd.setHeight( iSize );
+//		    fd.setStyle( SWT.BOLD );
+//			final Font font = new Font( display, fd );
+			final Font font = fontprovider.get(
+							FontResource.ROBOTO_CONDENSED, iSize, SWT.BOLD );
 			mapFontBold.put( iSize, font );
 		}
 		return mapFontBold.get( iSize );

@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
 
 import jmr.rpclient.swt.GCTextUtils;
 import jmr.rpclient.swt.S2Button;
+import jmr.rpclient.swt.Theme;
 import jmr.util.NetUtil;
 import jmr.util.hardware.rpi.CPUMonitor;
 import jmr.util.hardware.rpi.DeviceExamine;
@@ -38,6 +39,7 @@ public class SystemInfoTile extends TileBase {
 		
 		final GCTextUtils text = new GCTextUtils( gc );
 		text.setRect( gc.getClipping() );
+		gc.setFont( Theme.get().getFont( 10 ) );
 		
 		text.println( "Process: " + NetUtil.getProcessName() );
 //		text.println( "IP: " + NetUtil.getIPAddress() );

@@ -185,7 +185,7 @@ public class WeatherForecastTile extends TileBase {
 			}
 			
 			if ( null!=strWeatherImport && null!=pages[ iNumberOfDays ] ) {
-				gc.setFont( Theme.get().getFont( 6 ) );
+				gc.setFont( Theme.get().getFont( 7 ) );
 				
 				final PageData pagedata = pages[ iNumberOfDays ];
 				final String strTitle = pagedata.get( "title" );

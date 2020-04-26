@@ -111,7 +111,8 @@ public class TileCanvas {
 					while ( !ConsoleClient.get().isShuttingDown() ) {
 						Thread.sleep( 100 );
 						
-						final TextScreen screen = TextCanvas.getInstance().getScreen();
+						final TextScreen screen = 
+										TextCanvas.getInstance().getScreen();
 					
 						for ( final TileGeometry geo : 
 											TileCanvas.this.getTiles() ) {
@@ -255,6 +256,8 @@ public class TileCanvas {
 		return new PaintListener() {
 			@Override
 			public void paintControl( final PaintEvent e ) {
+				
+				e.gc.setFont( Theme.get().getFont( 10 ) );
 
 //				lPaintCount++;
 				final long lNowPaint = System.currentTimeMillis();
@@ -275,13 +278,13 @@ public class TileCanvas {
 				e.gc.fillRectangle( 0,0, 800, TRIM_Y );
 //				final String strHeaderInfo = strInfo + "Frame " + lPaintCount;
 				final String strHeaderInfo = strInfo;
-				if ( RPiTouchscreen.getInstance().isEnabled() ) {
-					e.gc.setFont( Theme.get().getFont( 6 ) );
-					e.gc.drawText( strHeaderInfo, 10, 0 );
-				} else {
+//				if ( RPiTouchscreen.getInstance().isEnabled() ) {
+//					e.gc.setFont( Theme.get().getFont( 6 ) );
+//					e.gc.drawText( strHeaderInfo, 10, 0 );
+//				} else {
 					e.gc.setFont( Theme.get().getFont( 7 ) );
 					e.gc.drawText( strHeaderInfo, 10, -2 );
-				}
+//				}
 
 				for ( final TileGeometry geo : TileCanvas.this.getTiles() ) {
 					
