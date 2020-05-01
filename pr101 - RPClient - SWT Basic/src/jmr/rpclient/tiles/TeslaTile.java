@@ -147,10 +147,11 @@ public class TeslaTile extends TileBase {
 		
 		final boolean bSingleCell = 150 == gc.getClipping().width;
 
-		if ( !bSingleCell ) {
-			gc.setFont( Theme.get().getFont( 25 ) );
-			gc.drawText( "Tesla", 10, 10 );
-		}
+//		if ( !bSingleCell ) {
+////			gc.setFont( Theme.get().getFont( 25 ) );
+//			gc.setFont( Theme.ThFont._25_SSCM_V.getFont() );
+//			gc.drawText( "Tesla", 10, 10 );
+//		}
 
 		try {
 			String strError = null;
@@ -271,7 +272,8 @@ public class TeslaTile extends TileBase {
 					
 					if ( this.bClimateControl ) {
 
-						gc.setFont( Theme.get().getFont( 11 ) );
+//						gc.setFont( Theme.get().getFont( 11 ) );
+						gc.setFont( Theme.ThFont._11_SSCM_V.getFont() );
 
 						String strInsideTempF = "<?>";
 						try {
@@ -298,8 +300,10 @@ public class TeslaTile extends TileBase {
 					} else {
 
 						gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
-						gc.setFont( Theme.get().getFont( 11 ) );
-						
+//						gc.setFont( Theme.get().getFont( 11 ) );
+						gc.setFont( Theme.ThFont._11_SSCM_V.getFont() );
+
+						text.setSpacingAdjust( -5 );
 						text.println( bHome, "Location: Home" );
 						text.println( bPortOpen, "Port open" );
 						text.println( bLatched, "   Port latched" );
@@ -323,17 +327,20 @@ public class TeslaTile extends TileBase {
 					
 				} else {
 	
-					gc.setFont( Theme.get().getFont( 25 ) );
+//					gc.setFont( Theme.get().getFont( 25 ) );
+					gc.setFont( Theme.ThFont._25_SSCM_V.getFont() );
 					gc.drawText( "Tesla", 10, 10 );
-					gc.setFont( Theme.get().getFont( 10 ) );
+//					gc.setFont( Theme.get().getFont( 10 ) );
+					gc.setFont( Theme.ThFont._10_SSCM_V.getFont() );
 					
 					gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
 					gc.drawText( strVersion, 10, 50 );
-					gc.drawText( "API  " + strAPIVersion, 10, 64 );
+					gc.drawText( "API  " + strAPIVersion, 10, 68 );
 	
 					gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 
-					gc.setFont( Theme.get().getFont( 16 ) );
+//					gc.setFont( Theme.get().getFont( 16 ) );
+					gc.setFont( Theme.ThFont._16_SSCM_V.getFont() );
 	//					gc.drawText( "Time to Charge:  " + strTime, 40, 112 );
 					
 					if ( null!=strError ) {
@@ -344,19 +351,24 @@ public class TeslaTile extends TileBase {
 						gc.drawText( "Charge: " + strChargeStatus, 10, 112 );
 					}
 					
-					gc.setFont( Theme.get().getFont( 14 ) );
-					gc.drawText( "Range:", 40, 86 );
+//					gc.setFont( Theme.get().getFont( 14 ) );
+					gc.setFont( Theme.ThFont._16_SSCM_V.getFont() );
+					gc.drawText( "Range:", 50, 84 );
 	
 	
-					gc.setFont( Theme.get().getFont( 12 ) );
+//					gc.setFont( Theme.get().getFont( 12 ) );
+					gc.setFont( Theme.ThFont._11_SSCM_V.getFont() );
 	//					gc.drawText( "Odometer" +Text.DELIMITER 
 	//									+ strOdometer + " mi", 160, 26 );
-					gc.drawText( "Location" + Text.DELIMITER 
-							+ ( bHome ? "Home" : "Away" ), 160, 26 );
+//					gc.drawText( "Location" + Text.DELIMITER 
+//							+ ( bHome ? "Home" : "Away" ), 160, 26 );
+					gc.drawText( "Location", 200, 26 );
+					gc.drawText( ( bHome ? "Home" : "Away" ), 200, 46 );
 	
 					gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
-					gc.setFont( Theme.get().getFont( 28 ) );
-					gc.drawText( strRange + " mi", 110, 70 );
+//					gc.setFont( Theme.get().getFont( 28 ) );
+					gc.setFont( Theme.ThFont._25_PR.getFont() );
+					gc.drawText( strRange + " mi", 120, 80 );
 	
 					if ( null!=lTimestampLatest ) {
 						final String strElapsed = 
@@ -364,7 +376,8 @@ public class TeslaTile extends TileBase {
 								DateFormatting.getSmallTime( super.iNowPaint - lTimestampLatest );
 						
 						gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
-						gc.setFont( Theme.get().getFont( 7 ) );
+//						gc.setFont( Theme.get().getFont( 7 ) );
+						gc.setFont( Theme.ThFont._7_O_V.getFont() );
 						gc.drawText( strElapsed, 265, 10 );
 					}
 				}

@@ -76,27 +76,13 @@ public class ClockTile extends TileBase {
 						final Image image ) {
 
 		final String[] strTimes = getTimeStrings();
+		final int iWidth = gc.getClipping().width;
 
 
 		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 
-		if ( gc.getClipping().width > 300 ) { // 3 tiles wide
-	
-			gc.setFont( Theme.get().getFont( 25 ) ); 
-			gc.drawText( strTimes[1], 295, 20 ); // AM/PM
-
-			gc.setFont( Theme.get().getNFont( 15 ) );
-			gc.drawText( "." + strTimes[4], 286, 60 ); // milliseconds
-
-			gc.setFont( Theme.get().getFont( 25 ) ); 
-			drawTextCentered( strTimes[3], 100, 24, 30 ); // long date
-	
-		} else {
-
-			drawTextCentered( strTimes[3], 100, 24, 30 );
-		}
-
 		
+
 		
 		String strTimeFull = strTimes[0]; // normal time w/seconds
 		if ( strTimeFull.charAt( 1 ) == ':' ) {
@@ -108,20 +94,41 @@ public class ClockTile extends TileBase {
 
 		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 		
-		gc.setFont( Theme.get().getNFont( 66 ) );
+//		gc.setFont( Theme.get().getNFont( 66 ) );
+		gc.setFont( Theme.ThFont._66_RC.getFont() );
 		
 		gc.drawText( strTimeMin, 22, 1, true );
 		
 		gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
 		gc.drawText( strTimeMin, 21, 0, true );
-		final int iWidth = gc.textExtent( strTimeMin ).x;
+		final int iMinutesWidth = gc.textExtent( strTimeMin ).x;
 
 		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 
-		gc.setFont( Theme.get().getNFont( 50 ) );
-		gc.drawText( strTimeSec, 26 + iWidth, 14, true );
+//		gc.setFont( Theme.get().getNFont( 50 ) );
+		gc.setFont( Theme.ThFont._50_RC.getFont() );
+		
+		gc.drawText( strTimeSec, 26 + iMinutesWidth, 14, true );
 
+		
+		if ( iWidth > 300 ) { // 3 tiles wide
+	
+//			gc.setFont( Theme.get().getFont( 25 ) ); 
+			gc.setFont( Theme.ThFont._25_SSCM_V.getFont() );
+			gc.drawText( strTimes[1], iMinutesWidth + 126, 20 ); // AM/PM
+
+//			gc.setFont( Theme.get().getNFont( 15 ) );
+			gc.setFont( Theme.ThFont._15_RC.getFont() );
+			gc.drawText( "." + strTimes[4], iMinutesWidth + 114, 60 ); // ms
+		}
+
+		gc.setFont( Theme.ThFont._25_SSCM_V.getFont() );
+		if ( gc.textExtent( strTimes[3] ).x > iWidth ) {
+			gc.setFont( Theme.ThFont._25_BCM_V.getFont() );
+		}
+		drawTextCentered( strTimes[3], 100, 24, 30 ); // long date
 	}
+
 	
 	@Override
 	protected void activateButton( final S2Button button ) {}

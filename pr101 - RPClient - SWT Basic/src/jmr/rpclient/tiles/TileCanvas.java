@@ -282,7 +282,8 @@ public class TileCanvas {
 //					e.gc.setFont( Theme.get().getFont( 6 ) );
 //					e.gc.drawText( strHeaderInfo, 10, 0 );
 //				} else {
-					e.gc.setFont( Theme.get().getFont( 7 ) );
+//					e.gc.setFont( Theme.get().getFont( 7 ) );
+					e.gc.setFont( Theme.ThFont._7_O_V.getFont() );
 					e.gc.drawText( strHeaderInfo, 10, -2 );
 //				}
 

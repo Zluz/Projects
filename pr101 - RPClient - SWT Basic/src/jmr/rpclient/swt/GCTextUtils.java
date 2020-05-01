@@ -17,6 +17,7 @@ public class GCTextUtils {
 	private Rectangle rect = null;
 	private int iY = 2;
 	private int iX = 2;
+	private int iSpacingAdjust = 0;
 	
 	public GCTextUtils( final GC gc ) {
 		this.gc = gc;
@@ -36,19 +37,30 @@ public class GCTextUtils {
 		if ( gc.isDisposed() ) return;
 		
 		final Point ptSize = gc.stringExtent( strText );
+		final int iHeight = gc.stringExtent( "Aj" ).y;
 		
+//		final boolean bTransparent = iSpacingAdjust < 0;
+		final boolean bTransparent = false;
+		final int iTextX;
 		if ( bRightAligned ) {
-			gc.drawText( strText, rect.width - ptSize.x, rect.y + iY );
+//			gc.drawText( strText, rect.width - ptSize.x, rect.y + iY );
+			iTextX = rect.width - ptSize.x;
 		} else {
-			gc.drawText( strText, rect.x + iX, rect.y + iY );
+//			gc.drawText( strText, rect.x + iX, rect.y + iY );
+			iTextX = rect.x + iX;
 		}
-		iY = iY + ptSize.y;
+		gc.drawText( strText, iTextX, rect.y + iY, bTransparent );
+		iY = iY + iHeight + iSpacingAdjust;
 	}
 	
 	public void println(	final boolean bValue,
 							final String strText ) {
 		final String strValue = bValue ? "[X]" : "[_]";
 		println( strValue + " " + strText );
+	}
+	
+	public void setSpacingAdjust( final int iSpacingAdjust ) {
+		this.iSpacingAdjust = iSpacingAdjust;
 	}
 	
 	public void addSpace( final int iAdvanceY ) {
@@ -83,7 +95,7 @@ public class GCTextUtils {
 			}
 		}
 		gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
-		gc.setFont( Theme.get().getFont( 6 ) );
+		gc.setFont( Theme.get().getFont( 7 ) );
 		final Rectangle rect = gc.getClipping();
 		final int iX = rect.x + rect.width - gc.textExtent( strAge ).x - 1;
 		if ( bTop ) {

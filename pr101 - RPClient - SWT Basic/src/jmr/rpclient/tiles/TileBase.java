@@ -147,7 +147,7 @@ public abstract class TileBase implements Tile {
 			Point ptTest;
 			do {
 				iSize = iSize - 1;
-				gc.setFont( Theme.get().getFont( iSize ) );
+//				gc.setFont( Theme.get().getFont( iSize ) );
 				ptTest = gc.textExtent( strText );
 			} while ( ( iWidth < ptTest.x ) && ( iSize >= iMin ) );
 			iSize = Math.max( iSize, iMin );
@@ -161,7 +161,7 @@ public abstract class TileBase implements Tile {
 		}
 		
 		
-		gc.setFont( Theme.get().getFont( iSize ) );
+//		gc.setFont( Theme.get().getFont( iSize ) );
 		final Point ptExtent = gc.textExtent( strText );
 		
 		final int iX = iXC - ( ptExtent.x / 2 );
@@ -307,14 +307,25 @@ public abstract class TileBase implements Tile {
 
 		final int iTextYNext;
 		{
-			gc.setFont( Theme.get().getBoldFont( 11 ) );
-	
+//			gc.setFont( Theme.get().getBoldFont( 11 ) );
+//			gc.setFont( Theme.ThFont._11_SSCM_V_B.getFont() );
+			gc.setFont( Theme.ThFont._14_SSCSB_V.getFont() ); // works
+//			gc.setFont( Theme.ThFont._12_BCM_V.getFont() ); // works
+//			gc.setFont( Theme.ThFont._12_M_B.getFont() ); // ..
+			//TODO figure out why this does not seem to work
+//			gc.setFont( Theme.ThFont._12_RCB.getFont() ); // no good!  ????
+
+			if ( gc.textExtent( strText ).x + 10 > iW ) {
+				gc.setFont( Theme.ThFont._12_SSCSB_V.getFont() );
+			}
+			
 			final Point ptSize = gc.textExtent( strText );
 			
 			final int iTextX = iX + (int)((float)iW/2 - (float)ptSize.x/2);
 			final int iTextY = iY + (int)((float)iH/2 - (float)ptSize.y/2) 
-												- ( bCaption ? 4 : 2 );
-			iTextYNext = iY + (int)((float)iH/2 + (float)ptSize.y/2) - 2; 
+												- ( bCaption ? 6 : 2 );
+//			iTextYNext = iY + (int)((float)iH/2 + (float)ptSize.y/2) - 2; 
+			iTextYNext = iTextY + 26;
 			
 			gc.setForeground( ColorCache.getGray( iBrightBase + 50 ) );
 			gc.drawText( strText, iTextX+1, iTextY+1, true );
@@ -323,7 +334,9 @@ public abstract class TileBase implements Tile {
 		}
 
 		if ( bCaption ) {
-			gc.setFont( Theme.get().getBoldFont( 9 ) );
+//			gc.setFont( Theme.get().getBoldFont( 9 ) );
+//			gc.setFont( Theme.ThFont._9_SSCM_V.getFont() );
+			gc.setFont( Theme.ThFont._9_SSCSB_V.getFont() );
 	
 			final Point ptSize = gc.textExtent( strCaption );
 			

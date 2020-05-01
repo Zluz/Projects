@@ -107,33 +107,46 @@ public class NestTile extends TileBase {
 //		gc.setFont( Theme.get().getFont( 11 ) );
 //		text.println( "              Limit - High:    " + getTemperature( "target_temperature_high" ) );
 		gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
-		gc.setFont( Theme.get().getFont( 18 ) );
+//		gc.setFont( Theme.get().getFont( 18 ) );
+		gc.setFont( Theme.ThFont._18_SSCM_V.getFont() );
 		text.println( "Temperature:  " + getTemperature( "current_temperature" ) );
-		gc.setFont( Theme.get().getFont( 11 ) );
+//		gc.setFont( Theme.get().getFont( 11 ) );
+		gc.setFont( Theme.ThFont._11_SSCM_V.getFont() );
 //		text.println( "              Limit - Low:    " + getTemperature( "target_temperature_low" ) );
 
 		gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
-		text.println( "                    Range:   " 
-					+ getTemperature( "target_temperature_low", false ) 
-					+ " - " + getTemperature( "target_temperature_high" ) );
-		gc.setFont( Theme.get().getFont( 16 ) );
+		gc.drawText( "Range:", r.x + 230, r.y + 6 );
+		final String strTempRange = 
+						getTemperature( "target_temperature_low", false ) 
+						+ " - " + getTemperature( "target_temperature_high" );
+		gc.drawText( strTempRange, r.x + 220, r.y + 24 );
+		
+//		text.println( "                    Range:   " 
+//					+ getTemperature( "target_temperature_low", false ) 
+//					+ " - " + getTemperature( "target_temperature_high" ) );
+//		gc.setFont( Theme.get().getFont( 16 ) );
+		gc.setFont( Theme.ThFont._16_SSCM_V.getFont() );
 
 		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
+		text.addSpace( -6 );
 		text.println( "        Humidity:  " + map.get( "current_humidity" ) + "%" );
 		
 		gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
-		gc.setFont( Theme.get().getFont( 9 ) );
-		text.addSpace( 6 );
-		text.println( "target_temperature_type: " + map.get( "target_temperature_type" ) );
-		text.println( "temperature_lock: " + map.get( "temperature_lock" ) );
-		text.println( "hvac_fan_state: " + map.get( "hvac_fan_state" ) );
-		text.println( "fan_current_speed: " + map.get( "fan_current_speed" ) );
+//		gc.setFont( Theme.get().getFont( 11 ) );
+		gc.setFont( Theme.ThFont._11_SSCM_V.getFont() );
+		text.setSpacingAdjust( -5 );
+//		text.addSpace( 4 );
+		text.println( "  target_temperature_type:  " + map.get( "target_temperature_type" ) );
+		text.println( "  temperature_lock:  " + map.get( "temperature_lock" ) );
+		text.println( "  hvac_fan_state:  " + map.get( "hvac_fan_state" ) );
+		text.println( "  fan_current_speed:  " + map.get( "fan_current_speed" ) );
 		
 		final GCTextUtils text2 = new GCTextUtils( gc );
-		text2.setRect( new Rectangle( 164, 94, 150, 80 ) );
+		text2.setRect( new Rectangle( 164, 92, 150, 80 ) );
+		text2.setSpacingAdjust( -5 );
 
-		text2.println( "auto_away: " + map.get( "auto_away" ) );
-		text2.println( "auto_away_enable: " + map.get( "auto_away_enable" ) );
+		text2.println( "auto_away:  " + map.get( "auto_away" ) );
+		text2.println( "auto_away_enable:  " + map.get( "auto_away_enable" ) );
 		
 		
 //		gc.drawLine( 0,0, r.width, r.height );

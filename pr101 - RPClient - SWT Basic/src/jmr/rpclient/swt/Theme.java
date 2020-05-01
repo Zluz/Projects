@@ -7,7 +7,6 @@ import java.util.Map;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 
@@ -19,11 +18,11 @@ public class Theme {
 	public enum Colors {
 		BACKGROUND( 0,0,0 ),
 		LINE_FAINT( 0,0,70 ),
-		LINE_BOLD( 255, 255, 255 ),
-		TEXT( 180, 180, 180 ),
-		TEXT_LIGHT( 100,100,100 ),
-		TEXT_BOLD( 255, 255, 255 ),
-		BACK_ALERT( 160, 0, 0 ),
+		LINE_BOLD( 255, 253, 250 ),
+		TEXT( 190, 190, 190 ),
+		TEXT_LIGHT( 140,140,140 ),
+		TEXT_BOLD( 255, 253, 250 ),
+		BACK_ALERT( 120, 0, 0 ),
 		;
 		
 		final RGB rgb;
@@ -32,7 +31,91 @@ public class Theme {
 			this.rgb = new RGB( r,g,b );
 		}
 	}
+	
+	
+	public enum ThFont {
+		// general purpose large fonts (fixed digits)
+		_66_RC( FontResource.ROBOTO_CONDENSED_REGULAR ),
+		_50_RC( FontResource.ROBOTO_CONDENSED_REGULAR ),
+		_15_RC( FontResource.ROBOTO_CONDENSED_REGULAR ),
+//		_12_RCB( FontResource.ROBOTO_CONDENSED_BOLD, SWT.BOLD ),
+		_12_RCB( FontResource.ROBOTO_CONDENSED_BOLD ),
 
+		// good general purpose font (fixed digits)
+		_25_PR( FontResource.PLAY_REGULAR ),
+
+		// good general purpose font (fixed digits)
+		_12_M_B( FontResource.MILFORD, SWT.BOLD ),
+		
+		// narrow font, but variable digits
+		// 			not great below 9
+		_9_SSCM_V( FontResource.SAIRA_SEMI_CONDENSED_MEDIUM ),
+		_10_SSCM_V( FontResource.SAIRA_SEMI_CONDENSED_MEDIUM ),
+		_11_SSCM_V( FontResource.SAIRA_SEMI_CONDENSED_MEDIUM ),
+		_16_SSCM_V( FontResource.SAIRA_SEMI_CONDENSED_MEDIUM ),
+		_18_SSCM_V( FontResource.SAIRA_SEMI_CONDENSED_MEDIUM ),
+		_25_SSCM_V( FontResource.SAIRA_SEMI_CONDENSED_MEDIUM ),
+		
+		_11_SSCM_V_B( FontResource.SAIRA_SEMI_CONDENSED_MEDIUM, SWT.BOLD ),
+
+		_9_SSCSB_V( FontResource.SAIRA_SEMI_CONDENSED_SEMIBOLD ),
+		_18_SSCSB_V( FontResource.SAIRA_SEMI_CONDENSED_SEMIBOLD ),
+		_12_SSCSB_V( FontResource.SAIRA_SEMI_CONDENSED_SEMIBOLD ),
+		_14_SSCSB_V( FontResource.SAIRA_SEMI_CONDENSED_SEMIBOLD ),
+		
+		// very narrow font, but variable digits 
+		_12_BCM_V( FontResource.BARLOW_CONDENSED_MEDIUM ),
+		_25_BCM_V( FontResource.BARLOW_CONDENSED_MEDIUM ),
+		
+		// seems good with small sizes
+		_7_O_V( FontResource.OVERPASS_REGULAR ),
+
+		;
+		
+		
+		final FontResource fr;
+		final int iSize;
+		final int iStyle;
+		
+		static FontProvider provider;
+		
+		
+		ThFont( final FontResource fr,
+				final int iStyle ) {
+			this.fr = fr;
+			this.iStyle = iStyle;
+			final int iPos = this.name().indexOf( '_', 1 );
+			final String strSize = this.name().substring( 1, iPos );
+			try {
+				this.iSize = Integer.valueOf( strSize );
+			} catch ( final NumberFormatException e ) {
+				throw new IllegalStateException( 
+								"Bad ThFont name: " + this.name() );
+			}
+		}
+
+		ThFont(	final FontResource fr ) {
+			this( fr, SWT.NORMAL );
+		}
+		
+		public FontResource getFontResource() {
+			return this.fr;
+		}
+		
+		public int getSize() {
+			return this.iSize;
+		}
+		
+		public static void initialize( final FontProvider provider ) {
+			ThFont.provider = provider;
+		}
+		
+		public Font getFont() {
+			return provider.get( getFontResource(), getSize(), this.iStyle );
+		}
+	}
+
+	
 	private static Theme instance;
 	
 	private final static EnumMap< Colors, Color > 
@@ -50,6 +133,7 @@ public class Theme {
 			COLORMAP.put( c, color );
 		}
 		fontprovider = new FontProvider( display );
+		ThFont.initialize( fontprovider );
 	}
 	
 	private final Map<Integer,Font> mapFontNormal = new HashMap<Integer,Font>();
@@ -103,7 +187,7 @@ public class Theme {
 				fr = FontResource.CABIN_CONDENSED;
 			} else if ( iSize > 14 ){
 				if ( bNumberCompat ) {
-					fr = FontResource.ROBOTO_CONDENSED;
+					fr = FontResource.ROBOTO_CONDENSED_BOLD;
 				} else {
 					fr = FontResource.BARLOW_CONDENSED_MEDIUM;
 				}
@@ -123,23 +207,24 @@ public class Theme {
 	public Font getNFont( final int iSize ) {
 		return getFont( iSize, true );
 	}
+	
+	public Font getFont( final ThFont font ) {
+		return fontprovider.get( 
+						font.getFontResource(), 
+						font.getSize(),
+						SWT.NONE );
+	}
 
 	
 	
 	public Font getBoldFont( final int iSize ) {
 		if ( !mapFontBold.containsKey( iSize ) ) {
-//		    final FontData fd = display.getSystemFont().getFontData()[0];
-//		    fd.setHeight( iSize );
-//		    fd.setStyle( SWT.BOLD );
-//			final Font font = new Font( display, fd );
 			final Font font = fontprovider.get(
-							FontResource.ROBOTO_CONDENSED, iSize, SWT.BOLD );
+							FontResource.ROBOTO_CONDENSED_BOLD, iSize, SWT.BOLD );
 			mapFontBold.put( iSize, font );
 		}
 		return mapFontBold.get( iSize );
 	}
-	
-	
 	
 	
 }
