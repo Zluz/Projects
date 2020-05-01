@@ -66,6 +66,8 @@ public class Client {
 	// this means do not fail if ports cannot be reserved
 	private boolean bDebug = false;
 	
+	private EventMonitor monitor = null;
+	
 	
 	
 	
@@ -104,7 +106,7 @@ public class Client {
 	    final Map<String, String> mapNICs = NetUtil.getIPAddresses();
 	    final String strIP = NetUtil.getIPAddress();
 	    
-    	final EventMonitor monitor = EventMonitor.get( type );
+    	this.monitor = EventMonitor.get( type );
     	if ( null==monitor ) {
     		LOGGER.warning( ()-> "Failed to initialize EventMonitor." );
     		return null;
@@ -187,6 +189,9 @@ public class Client {
 			new Page().setState( seqSessionPage, now, 'E' );
 		}
 		ConnectionProvider.get().close();
+		if ( null != this.monitor ) {
+			this.monitor.close();
+		}
 	}
 	
 	

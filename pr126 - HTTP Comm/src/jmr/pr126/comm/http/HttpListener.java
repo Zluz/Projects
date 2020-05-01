@@ -265,6 +265,12 @@ public class HttpListener implements HttpCommConstants {
 		return this.strIP;
 	}
 	
+	public void close() {
+		if ( null != server ) {
+			this.server.stop( 0 );
+		}
+	}
+	
 	
 
 	public static void main( final String[] args ) {

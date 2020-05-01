@@ -92,7 +92,18 @@ public class ConnectionProvider {
 			@Override
 			public void run() {
 				bShutdown = true;
-				close();
+				final Thread threadShutdown = new Thread() {
+					@Override
+					public void run() {
+						close();
+					}
+				};
+				threadShutdown.start();
+				try {
+					threadShutdown.join( 1000L );
+				} catch ( final InterruptedException e ) {
+					// just quit
+				}
 			}
 		});
 		
@@ -323,6 +334,13 @@ public class ConnectionProvider {
 				System.out.println( "\t" + line );
 			}
 			System.out.println();
+		}
+		
+		
+		try {
+			this.bds.close();
+		} catch ( final SQLException e ) {
+			// ignore ..?
 		}
 		
 //		System.out.print( "Closing lingering connections..." );

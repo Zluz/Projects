@@ -81,6 +81,12 @@ public class WebImport {
 		return seq;
 	}
 						
+
+
+	public String getResponse() {
+		return this.strJSON;
+	}
+		
 	
 	
 
@@ -104,23 +110,21 @@ public class WebImport {
 		final String strSession = NetUtil.getSessionID();
 		final String strClass = WebImport.class.getName();
 		Client.get().register( ClientType.TEST, strSession, strClass );
+		Client.get().setDebug( true );
 		
 		
 		final String strURL = 
-				"https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22glenelg%2C%20md%22)&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys";
+//				"https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22glenelg%2C%20md%22)&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys";
+//				"https://www.weather.gov/documentation/services-web-api";
+				"https://api.weather.gov/";
 
 		final WebImport wi = new WebImport( "Test_Import", strURL );
 		final Long seq = wi.save();
 		
 		System.out.println( "Result: seq = " + seq );
+		Client.get().close();
 	}
 
-
-	public String getResponse() {
-		return this.strJSON;
-	}
-		
-	
 	
 
 }

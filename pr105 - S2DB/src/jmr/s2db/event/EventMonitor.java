@@ -81,9 +81,11 @@ public class EventMonitor {
 	private ClientType type;
 	private boolean bListening;
 	
+	final private HttpListener hl;
+	
 	private EventMonitor( ClientType type ) {
 		if ( null!=type ) {
-			final HttpListener hl = HttpListener.getInstance( type.getPort() );
+			this.hl = HttpListener.getInstance( type.getPort() );
 			if ( null != hl ) {
 				hl.registerListener( listener );
 				bListening = true;
@@ -92,6 +94,7 @@ public class EventMonitor {
 			}
 		} else {
 			bListening = false;
+			this.hl = null;
 		}
 	};
 	
@@ -260,5 +263,11 @@ public class EventMonitor {
 		System.out.println( "EventListener registered: " + listener.toString() );
 	}
 
+	
+	public void close() {
+		if ( null != this.hl ) {
+			this.hl.close();
+		}
+	}
 	
 }
