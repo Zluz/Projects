@@ -201,8 +201,12 @@ public class Client {
 	
 	public Long getSessionSeq() {
 		if ( null==this.seqSession ) {
-			throw new IllegalStateException( "Client not registered. "
-					+ "Call Client.get().register(*) first." );
+			if ( this.bDebug ) { 
+				return -1L;
+			} else {
+				throw new IllegalStateException( "Client not registered. "
+						+ "Call Client.get().register(*) first." );
+			}
 		}
 		return this.seqSession;
 	}

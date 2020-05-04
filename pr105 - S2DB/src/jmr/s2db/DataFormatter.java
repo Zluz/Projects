@@ -5,6 +5,8 @@ import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.gson.JsonElement;
+
 public abstract class DataFormatter {
 
 	
@@ -17,7 +19,10 @@ public abstract class DataFormatter {
 								 final int iLength ) {
 //		if ( null==value ) return "''";
 		if ( null==value ) return "null";
-		if ( value instanceof String ) {
+		if ( value instanceof JsonElement ) {
+			final String strJson = value.toString();
+			return format( strJson );
+		} else if ( value instanceof String ) {
 			String str = value.toString();;
 			if ( str.length()<1 ) {
 				return "''";

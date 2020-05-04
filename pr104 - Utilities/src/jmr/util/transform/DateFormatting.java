@@ -28,6 +28,11 @@ public class DateFormatting {
 		return FORMAT_DATETIME.format( date );
 	}
 	
+	public static String getDateTime( final long lTime ) {
+		final Date date = new Date( lTime );
+		return getDateTime( date );
+	}
+	
 	public static String getTimestamp( final Date date ) {
 		return FORMAT_TIMESTAMP.format( date );
 	}

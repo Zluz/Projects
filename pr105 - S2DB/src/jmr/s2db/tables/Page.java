@@ -13,6 +13,8 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.gson.JsonElement;
+
 import jmr.s2db.Client;
 import jmr.s2db.Client.ClientType;
 import jmr.s2db.DataFormatter;
@@ -29,6 +31,7 @@ public class Page extends TableBase {
 	public static final String ATTR_SEQ_SESSION = ".seq_session";
 	public static final String ATTR_SEQ_PATH = ".seq_path";
 	public static final String ATTR_SEQ_PAGE = ".seq_page";
+//	public static final String ATTR_RAW_JSON = ".raw_json";
 
 
 
@@ -48,15 +51,38 @@ public class Page extends TableBase {
 			LOGGER = Logger.getLogger( Page.class.getName() );
 
 		
-	
+
 	public Long create( final long seqPath ) {
+		return create( seqPath, null );
+	}
+
+	public Long create( final long seqPath,
+						final JsonElement je ) {
 
 		final Long lSession = Client.get().getSessionSeq();
 		if ( null==lSession ) return null;
 
-		final String strInsert = "INSERT INTO Page "
+		final String strInsert;
+		if ( null == je ) {
+			strInsert = "INSERT INTO Page "
 				+ "( seq_path, seq_session ) "
 				+ "VALUES ( " + seqPath + ", " + lSession + " );";
+		} else {
+			final String strField = DataFormatter.format( je.toString() );
+			final String strFieldChecked;
+			if ( strField.length() < 64 * 1024 ) {
+				strFieldChecked = strField;
+			} else {
+				strFieldChecked = "{ \"error\": \"json too long: " 
+							+ strField.length() + " chars.\" }";
+			}
+			strInsert = "INSERT INTO Page "
+					+ "( seq_path, seq_session, json ) "
+					+ "VALUES ( " 
+							+ seqPath + ", " 
+							+ lSession + ", " 
+							+ strFieldChecked + " );";
+		}
 		
 		try (	final Connection conn = ConnectionProvider.get().getConnection();
 				final Statement stmt = conn.createStatement() ) {
@@ -180,12 +206,20 @@ public class Page extends TableBase {
 		return null;
 	}
 	
+//	public void addMap(	final Long seqPage,
+//						final Map<String,String> map,
+//						final boolean bActivate ) {
+//		this.addMap( seqPage, null, map, bActivate ); 
+//	}
+
 	
 	public void addMap(	final Long seqPage,
+//						final JsonElement jeRaw,
 						final Map<String,String> map,
 						final boolean bActivate ) {
 		if ( null==seqPage ) return;
 		if ( null==map ) return;
+		if ( map.isEmpty() ) return;
 
 		String strSQL = null;
 

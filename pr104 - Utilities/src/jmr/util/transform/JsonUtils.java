@@ -14,6 +14,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
@@ -230,6 +231,19 @@ public class JsonUtils {
 		}
 		
 		return new JsonObject();
+	}
+
+	
+	public static JsonElement getJsonElementFor( final String strResult ) {
+		if ( null!=strResult ) {
+			try {
+				final JsonElement je = PARSER.parse( strResult );
+				return je;
+			} catch ( final Exception e ) {
+				// just return a blank JsonObject, below
+			}
+		}
+		return JsonNull.INSTANCE;
 	}
 	
 	

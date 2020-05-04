@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.google.gson.JsonElement;
+
 public class SummaryRegistry {
 
 	public final static String PREFIX_SUMMARY = "+";
@@ -53,5 +55,34 @@ public class SummaryRegistry {
 		
 		return bApplied;
 	}
+	
+
+	public boolean summarize(	final String strNodePath,
+								final JsonElement je,
+								final Map<String,String> mapOutput ) {
+		if ( null==strNodePath ) return false;
+		if ( null==je ) return false;
+		if ( null==mapOutput ) return false;
+
+		boolean bApplied = false;
+		for ( final Summarizer summarizer : SUMMARIZERS ) {
+			if ( summarizer.isMatch( strNodePath ) ) {
+				final Map<String, String> 
+							mapSummary = summarizer.summarize( je );
+				if ( null!=mapSummary && !mapSummary.isEmpty() ) {
+					bApplied = true;
+					for ( final Entry<String, String> 
+											entry : mapSummary.entrySet() ) {
+						final String strKey = PREFIX_SUMMARY + entry.getKey();
+						final String strValue = entry.getValue();
+						mapOutput.put( strKey, strValue );
+					}
+				}
+			}
+		}
+		
+		return bApplied;
+	}
+
 
 }

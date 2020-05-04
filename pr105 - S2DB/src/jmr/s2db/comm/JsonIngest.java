@@ -37,16 +37,38 @@ public class JsonIngest {
 	
 	
 
+	/**
+	 * Save JSON to the database.
+	 * @param strNodePath
+	 * @param strJson
+	 * @param bRaw - save single string JSON (not pre-processed)
+	 * @return
+	 */
 	public Long saveJson(	final String strNodePath, 
-							final String strJson ) {
+							final String strJson,
+							final boolean bRaw ) {
 		final Date now = new Date();
 		final JsonElement element = new JsonParser().parse( strJson );
-		final ProcessedJson result = processJsonElement( 
-								strNodePath, element.getAsJsonObject() );
-		activatePages( now );
-		return result.seq;
-	}
 		
+		final Long lSeq;
+		
+		if ( bRaw ) {
+			lSeq = saveJsonRaw( strNodePath, element );
+		} else {
+			final ProcessedJson result = processJsonElement( 
+									strNodePath, element.getAsJsonObject() );
+			activatePages( now );
+			lSeq = result.seq;
+		}
+		return lSeq;
+	}
+
+
+	public Long saveJson(	final String strNodePath, 
+							final String strJson ) {
+		return saveJson( strNodePath, strJson, false );
+	}
+
 	
 	private Long savePage(	final String strNodePath,
 							final Map<String,String> map ) {
@@ -177,6 +199,35 @@ public class JsonIngest {
 		}
 	}
 	
+	
+	public Long saveJsonRaw( 	final String strNodePath,
+								final JsonElement je ) {
+		if ( null==strNodePath ) throw new IllegalStateException( "null parameter" );
+		if ( null==je ) throw new IllegalStateException( "null parameter" );
+		
+		final Map<String,String> mapSave = new HashMap<>();
+		
+		SummaryRegistry.get().summarize( strNodePath, je, mapSave );
+		
+//		mapSave.put( Page.ATTR_RAW_JSON, je.toString() );
+
+		if ( ECHO ) {
+			System.out.println( "Node: " + strNodePath );
+			System.out.println( Reporting.print( mapSave ) );
+		}
+
+		final Long seqPath = path.get( strNodePath );
+		if ( null!=seqPath ) {
+			final Long seqPage = page.create( seqPath, je );
+			page.addMap( seqPage, mapSave, false );
+			listPagesToActivate.add( seqPage );
+		
+			return seqPage;
+		} else {
+			return null;
+		}
+	}
+	
 
 	public Long saveJsonArray(	final String strNodePath,
 								final JsonArray array ) {
@@ -281,10 +332,5 @@ public class JsonIngest {
 		
 		System.out.println( "Result: seq = " + seq );
 	}
-	
-	
-	
-	
-	
 	
 }

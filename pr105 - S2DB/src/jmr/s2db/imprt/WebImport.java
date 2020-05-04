@@ -2,12 +2,18 @@ package jmr.s2db.imprt;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.google.gson.JsonElement;
 
 import jmr.s2db.Client;
 import jmr.s2db.Client.ClientType;
 import jmr.s2db.comm.JsonIngest;
 import jmr.util.NetUtil;
 import jmr.util.http.ContentRetriever;
+import jmr.util.transform.JsonUtils;
+import jmr.util.transform.TextUtils;
 
 public class WebImport {
 	
@@ -65,20 +71,27 @@ public class WebImport {
 //				return null;
 //			}
 		}
-		
-		PageSaver saver = new PageSaver( strPath );
-		saver.put( "timestamp", Long.toString( now.getTime() ) );
-		saver.put( "URL", strURL );
-		saver.put( "title", this.strTitle );
-		final Long seq = saver.save();
 
 		final JsonIngest ingest = new JsonIngest();
-		/*final Long seqData =*/ ingest.saveJson( strPath + "/data", strJSON );
-
-		saver.activate( now );
+		final Long seqData = ingest.saveJson( strPath + "/data", strJSON, true );
+		final Long seqSaver;
 		
-//		System.out.println( "Result: seq = " + seq );
-		return seq;
+		if ( null != seqData ) {
+			PageSaver saver = new PageSaver( strPath );
+			saver.put( "timestamp", Long.toString( now.getTime() ) );
+			saver.put( "URL", strURL );
+			saver.put( "title", this.strTitle );
+			saver.put( "seq_data", ""+ seqData );
+			seqSaver = saver.save();
+	
+			saver.activate( now );
+		} else {
+			seqSaver = null;
+		}
+		
+		System.out.println( "Result: seqData = " + seqData );
+		System.out.println( "Result: seqSaver = " + seqSaver );
+		return seqSaver;
 	}
 						
 
@@ -89,9 +102,43 @@ public class WebImport {
 		
 	
 	
+	final static String JSON_TEST = ""
+			+ "{\r\n" + 
+			"  \"properties\": {\r\n" + 
+			"    \"updated\": \"2020-05-04T05:33:44+00:00\",\r\n" + 
+			"    \"elevation\": {\r\n" + 
+			"      \"value\": 181.96560000000002,\r\n" + 
+			"      \"unitCode\": \"unit:m\"\r\n" + 
+			"    },\r\n" + 
+			"    \"periods\": [\r\n" + 
+			"      {\r\n" + 
+			"        \"number\": 1,\r\n" + 
+			"        \"name\": \"Overnight\",\r\n" + 
+			"        \"startTime\": \"2020-05-04T04:00:00-04:00\",\r\n" + 
+			"        \"isDaytime\": false,\r\n" + 
+			"        \"temperature\": 53,\r\n" + 
+			"        \"temperatureUnit\": \"F\",\r\n" + 
+			"        \"shortForecast\": \"Slight Chance Rain Showers\"\r\n" + 
+			"      },\r\n" + 
+			"      {\r\n" + 
+			"        \"number\": 2,\r\n" + 
+			"        \"name\": \"Monday\",\r\n" + 
+			"        \"startTime\": \"2020-05-04T06:00:00-04:00\",\r\n" + 
+			"        \"isDaytime\": true,\r\n" + 
+			"        \"temperature\": 65,\r\n" + 
+			"        \"temperatureUnit\": \"F\",\r\n" + 
+			"        \"shortForecast\": \"Sunny\"\r\n" + 
+			"      }\r\n" + 
+			"    ]\r\n" + 
+			"  }\r\n" + 
+			"}\r\n" + 
+			"";
+	
+	
 
 
 	public static void main( final String[] args ) throws Exception {
+
 		
 		//--- JSON from file ------------------
 		
@@ -106,25 +153,85 @@ public class WebImport {
 		
 		//--- JSON from URL --------------------
 
+		
+		final Summarizer summarizer = new SummarizerBase() {
+
+			@Override
+			public boolean isMatch( final String strNodePath ) {
+				return true;
+			}
+			
+			@Override
+			public Map<String, String> getJsonPaths() {
+				final Map<String,String> map = new HashMap<>();
+//				map.put( "current.forecast.detailed", "$." );
+				
+				map.put( "elevation", 
+								"$['properties'].['elevation'].['value']" );
+				
+				map.put( "period_1.name", 
+					"$['properties'].['periods'].[?(@.number == 1)].['name']" );
+
+				map.put( "period_1.temperature", 
+					"$['properties'].['periods'].[?(@.number == 1)].['temperature']" );
+				
+				map.put( "period_1.forecast", 
+					"$['properties'].['periods'].[?(@.number == 1)].['shortForecast']" );
+
+				map.put( "period_2.name", 
+					"$['properties'].['periods'].[?(@.number == 2)].['name']" );
+
+				map.put( "period_2.temperature", 
+					"$['properties'].['periods'].[?(@.number == 2)].['temperature']" );
+				
+				map.put( "period_2.forecast", 
+					"$['properties'].['periods'].[?(@.number == 2)].['shortForecast']" );
+
+				return map;
+			}
+		};
+
+		
+		final JsonElement je = JsonUtils.getJsonElementFor( JSON_TEST );
+		if ( je.isJsonNull() ) System.err.println( "Invalid JSON" );
+		
+		final Map<String, String> map = summarizer.summarize( je );
+		
+		System.out.println( "Summarizer output:\n" + 
+					TextUtils.convertMapToString( map ) );
+		
+		
+		
+		
+		
+//		if ( 1==1 ) return;
+		
+
 
 		final String strSession = NetUtil.getSessionID();
 		final String strClass = WebImport.class.getName();
 		Client.get().register( ClientType.TEST, strSession, strClass );
 		Client.get().setDebug( true );
+
+		SummaryRegistry.get().add( summarizer );
 		
+
 		
 		final String strURL = 
-//				"https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22glenelg%2C%20md%22)&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys";
-//				"https://www.weather.gov/documentation/services-web-api";
-				"https://api.weather.gov/";
+					"https://api.weather.gov/gridpoints/LWX/95,87/forecast";
 
 		final WebImport wi = new WebImport( "Test_Import", strURL );
 		final Long seq = wi.save();
+
+		
+		System.out.println( "--- JSON Response --- START ---" );
+		final String strJson = wi.getResponse();
+		System.out.println( JsonUtils.getPretty( strJson ) );
+		System.out.println( "--- JSON Response --- END ---" );
+		
 		
 		System.out.println( "Result: seq = " + seq );
 		Client.get().close();
 	}
-
-	
 
 }
