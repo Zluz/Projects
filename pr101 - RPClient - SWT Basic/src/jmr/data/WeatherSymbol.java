@@ -1,6 +1,10 @@
 package jmr.data;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
@@ -12,11 +16,12 @@ import jmr.rpclient.S2Resource;
 public enum WeatherSymbol {
 
 	CHANCE_FLURRIES( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chanceflurries.png" ) ),
-	CHANCE_RAIN( "scatteredshowers", 
+	CHANCE_RAIN( "scattered showers", "chance rain showers", 
+			"occasional light rain", "$slight chance rain .*",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancerain.png" ) ),
 	CHANCE_SLEET( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancesleet.png" ) ),
 	CHANCE_SNOW( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/snow.png" ) ),
-	CHANCE_TSTORMS(	"chancetstorms", "scatteredthunderstorms",
+	CHANCE_TSTORMS(	"chance tstorms", "scattered thunderstorms",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancetstorms.png" ) ),
 	
 	CLEAR( 	"breezy", "mostlyclear", 
@@ -32,14 +37,14 @@ public enum WeatherSymbol {
 	PARTLYCLOUDY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/partlycloudy.png" ) ),
 					
 	PARTLYSUNNY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/partlysunny.png" ) ),
-	RAIN( 	"showers", "heavyrain", 
+	RAIN( 	"showers", "heavy rain", "rain showers",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/rain.png" ) ),
 	
 	SLEET( 	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sleet.png" ) ),
-	SNOW( 	"snowshowers", "rainandsnow", 
+	SNOW( 	"snow showers", "rain and snow", 
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/snow.png" ) ),
 	
-	SUNNY(	"mostlysunny", 
+	SUNNY(	"mostly sunny", 
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sunny.png" ) ),
 	
 	TSTORMS( "thunderstorms", 
@@ -70,27 +75,50 @@ public enum WeatherSymbol {
 	;
 	
 	final String[] arrAliases;
+	final List<String> listMatches;
 	
 	private WeatherSymbol( final String... aliases ) {
 		this.arrAliases = aliases;
+		listMatches = new ArrayList<>();
+		
+		String strName = this.name().toLowerCase();
+		strName = strName.replaceAll( "_", "" );
+		listMatches.add( strName );
+		for ( String strAlias : aliases ) {
+			if ( ! strAlias.startsWith( "$" ) ) {
+				strAlias = strAlias.trim().toLowerCase();
+				strAlias = strAlias.replaceAll( " ", "" );
+				strAlias = strAlias.replaceAll( "_", "" );
+			}
+			listMatches.add( strAlias );
+		}
 	}
 	
 	
 	public static WeatherSymbol getSymbol( final String strText ) {
 		if ( null==strText ) return WeatherSymbol.UNKNOWN;
-		String strNormal = strText.trim().toUpperCase();
+
+		final String strTrimmed = strText.trim().toLowerCase();
+		String strNormal = strTrimmed;
 		strNormal = strNormal.replaceAll( " ", "" );
 		strNormal = strNormal.replaceAll( "_", "" );
+
 		for ( final WeatherSymbol symbol : WeatherSymbol.values() ) {
-			String strSymbolText = symbol.name();
-			strSymbolText = strSymbolText.replaceAll( "_", "" );
-			if ( strNormal.equals( strSymbolText ) ) {
-				return symbol;
+			for ( final String strMatch : symbol.listMatches ) {
+				if ( ! strMatch.startsWith( "$" ) ) {
+					if ( strNormal.equals( strMatch ) ) {
+						return symbol;
+					}
+				}
 			}
-			for ( final String strAlias : symbol.arrAliases ) {
-				String strANorm = strAlias.trim().toUpperCase();
-				if ( strANorm.equals( strNormal ) ) {
-					return symbol;
+		}
+		for ( final WeatherSymbol symbol : WeatherSymbol.values() ) {
+			for ( String strMatch : symbol.listMatches ) {
+				if ( strMatch.startsWith( "$" ) ) {
+					strMatch = strMatch.substring( 1 ); // why?
+					if ( strTrimmed.matches( strMatch ) ) {
+						return symbol;
+					}
 				}
 			}
 		}
@@ -142,15 +170,28 @@ public enum WeatherSymbol {
 	private Image imageIcon = null;
 	
 	
+	private final static Set<String> setNotFound = new HashSet<>();
+	
+	
 	public Image getIcon() {
 		if ( null==imageIcon ) {
 			try {
 				for ( final String strAlias : this.arrAliases ) {
-					final File filePNG = new File( strAlias );
-					if ( filePNG.isFile() ) {
-				        imageIcon = new Image( Display.getCurrent(), 
-				        				filePNG.getAbsolutePath() );
-				        return imageIcon;
+					if ( setNotFound.contains( strAlias ) ) {
+						// already determined to not exist
+					} else if ( strAlias.contains( ".png" ) ) {
+						final File filePNG = new File( strAlias );
+						if ( filePNG.isFile() ) {
+					        imageIcon = new Image( Display.getCurrent(), 
+					        				filePNG.getAbsolutePath() );
+					        return imageIcon;
+						} else {
+							setNotFound.add( strAlias );
+							System.out.println( "Weather symbol alias "
+									+ "image not found: " + strAlias );
+						}
+					} else {
+						setNotFound.add( strAlias );
 					}
 				}
 			} catch ( final Exception e ) {

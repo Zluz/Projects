@@ -62,7 +62,6 @@ import jmr.s2db.Client.ClientType;
 import jmr.s2db.event.EventType;
 import jmr.s2db.event.SystemEvent;
 import jmr.s2db.job.JobManager;
-import jmr.s2db.job.JobMonitor;
 import jmr.s2db.tables.Event;
 import jmr.util.Logging;
 import jmr.util.NetUtil;
