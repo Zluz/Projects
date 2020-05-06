@@ -25,10 +25,17 @@ public class TeslaSummarizers {
 
 			@Override
 			public boolean isMatch( final String strNodePath ) {
-				return "/External/Ingest/Tesla - CHARGE_STATE/data/response".
-								equals( strNodePath );
+//				return "/External/Ingest/Tesla - CHARGE_STATE/data/response".
+//								equals( strNodePath );
+				final String strMatch = "/External/Ingest/Tesla - CHARGE_STATE";
+				return strNodePath.contains( strMatch );
 			}
 
+			public Map<String,String> summarize( Object objData ) {
+				// not implemented.
+				return null;
+			};
+			
 			@Override
 			public Map<String, String> summarize( 
 										final Map<String, String> input ) {

@@ -1,12 +1,18 @@
 package jmr.s2db.imprt;
 
+import java.util.AbstractCollection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.sound.midi.SysexMessage;
+
 import com.google.gson.JsonElement;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
+
+import net.minidev.json.JSONArray;
 
 public abstract class SummarizerBase implements Summarizer {
 
@@ -42,12 +48,48 @@ public abstract class SummarizerBase implements Summarizer {
 			for ( final Entry<String,String> entry : mapPaths.entrySet() ) {
 				final String strPath = entry.getValue();
 				
-				final Object objValue = doc.read( strPath );
-				
-				if ( objValue != null ) {
-					final String strValue = objValue.toString();
-					final String strName = entry.getKey();
-					map.put( strName, strValue );
+				try {
+					final Object objValue = doc.read( strPath );
+					
+					boolean bSave = ( objValue != null );
+					
+//					if ( bSave ) {
+//						if ( objValue instanceof AbstractCollection ) {
+//							if ( ((AbstractCollection<?>)objValue).isEmpty() ) {
+//								bSave = false;
+//							}
+//						}
+//					}
+					
+					if ( bSave ) {
+
+						final String strValue;
+
+						if ( objValue instanceof AbstractCollection ) {
+							
+							final AbstractCollection<?> ac = 
+											(AbstractCollection<?>)objValue;
+							
+							if ( 0 == ac.size() ) {
+								strValue = null;
+							} else if ( 1 == ac.size() ) {
+								strValue = ac.iterator().next().toString();
+							} else {
+								strValue = objValue.toString();
+							}
+						} else {
+							strValue = objValue.toString();
+						}
+							
+						if ( null != strValue ) {
+							final String strName = entry.getKey();
+							map.put( strName, strValue );
+						}
+					}
+					
+				} catch ( final PathNotFoundException e ) {
+					System.err.println( "Json Path not found: " + strPath );
+					e.printStackTrace();
 				}
 			}
 		}

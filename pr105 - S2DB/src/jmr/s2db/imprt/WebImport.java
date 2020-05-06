@@ -166,6 +166,11 @@ public class WebImport {
 				final Map<String,String> map = new HashMap<>();
 //				map.put( "current.forecast.detailed", "$." );
 				
+				map.put( "update_time", 
+								"$['properties'].['updated']" );
+				map.put( "coordinates", 
+								"$['geometry'].['geometries']"
+								+ ".[?(@.type == 'Point')].['coordinates']" );
 				map.put( "elevation", 
 								"$['properties'].['elevation'].['value']" );
 				
@@ -192,13 +197,13 @@ public class WebImport {
 		};
 
 		
-		final JsonElement je = JsonUtils.getJsonElementFor( JSON_TEST );
-		if ( je.isJsonNull() ) System.err.println( "Invalid JSON" );
-		
-		final Map<String, String> map = summarizer.summarize( je );
-		
-		System.out.println( "Summarizer output:\n" + 
-					TextUtils.convertMapToString( map ) );
+//		final JsonElement je = JsonUtils.getJsonElementFor( JSON_TEST );
+//		if ( je.isJsonNull() ) System.err.println( "Invalid JSON" );
+//		
+//		final Map<String, String> map = summarizer.summarize( je );
+//		
+//		System.out.println( "Summarizer output:\n" + 
+//					TextUtils.convertMapToString( map ) );
 		
 		
 		
@@ -213,21 +218,24 @@ public class WebImport {
 		Client.get().register( ClientType.TEST, strSession, strClass );
 		Client.get().setDebug( true );
 
-		SummaryRegistry.get().add( summarizer );
+//		SummaryRegistry.get().add( summarizer );
+		SummaryRegistry.get().add( new Import_WeatherGov() );
 		
 
 		
 		final String strURL = 
 					"https://api.weather.gov/gridpoints/LWX/95,87/forecast";
 
-		final WebImport wi = new WebImport( "Test_Import", strURL );
+//		final WebImport wi = new WebImport( "Test_Import", strURL );
+		final WebImport wi = new WebImport( 
+							"/External/Ingest/Import_WeatherGov", strURL );
 		final Long seq = wi.save();
 
 		
-		System.out.println( "--- JSON Response --- START ---" );
-		final String strJson = wi.getResponse();
-		System.out.println( JsonUtils.getPretty( strJson ) );
-		System.out.println( "--- JSON Response --- END ---" );
+//		System.out.println( "--- JSON Response --- START ---" );
+//		final String strJson = wi.getResponse();
+//		System.out.println( JsonUtils.getPretty( strJson ) );
+//		System.out.println( "--- JSON Response --- END ---" );
 		
 		
 		System.out.println( "Result: seq = " + seq );
