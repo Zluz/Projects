@@ -82,7 +82,10 @@ public class JobManager {
 //	System.out.println( "JobManager - First Job: " + job.getJobSeq() + ", " + job.getJobType() );
 //}
 			
-			listing.listJob.addAll( listingNew );
+			// something can be null (noticed on exit)
+			if ( null != listingNew && null != listing.listJob ) {
+				listing.listJob.addAll( listingNew );
+			}
 		}
 		
 		return listing.listJob;

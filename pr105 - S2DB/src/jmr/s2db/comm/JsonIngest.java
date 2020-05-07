@@ -50,6 +50,8 @@ public class JsonIngest {
 		final Date now = new Date();
 		final JsonElement element = new JsonParser().parse( strJson );
 		
+		final Map<String,String> mapSummary = new HashMap<>();
+		
 		final Long lSeq;
 		
 		if ( bRaw ) {
@@ -57,9 +59,11 @@ public class JsonIngest {
 		} else {
 			final ProcessedJson result = processJsonElement( 
 									strNodePath, element.getAsJsonObject() );
-			activatePages( now );
+//			activatePages( now );
 			lSeq = result.seq;
 		}
+		activatePages( now );
+
 		return lSeq;
 	}
 

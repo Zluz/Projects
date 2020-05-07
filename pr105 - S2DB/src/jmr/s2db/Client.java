@@ -279,7 +279,7 @@ public class Client {
 		final Map<String, String> map = tPage.getMap( lPage );
 		return map;
 	}
-
+	
 
 	public Device getThisDevice() {
 		final Device tDevice = ( (Device)Tables.DEVICE.get() );

@@ -1,5 +1,6 @@
 package jmr.util.transform;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -16,6 +17,7 @@ public class DateFormatting {
 
 	final public static TimeZone 
 				TIMEZONE = TimeZone.getTimeZone( "US/Eastern" );
+	
 
 	static {
 		FORMAT_DATETIME = new SimpleDateFormat( DATETIME );
@@ -39,6 +41,19 @@ public class DateFormatting {
 	
 	public static String getTimestamp() {
 		return DateFormatting.getTimestamp( new Date() );
+	}
+	
+	public static Long getDateTime( final String strDate ) {
+		if ( null == strDate ) return null;
+		try {
+			String strNorm = strDate.trim();
+			strNorm = strNorm.substring( 0, 20 );
+			strNorm = strNorm.replace( 'T', ' ' );
+			final Date date = FORMAT_DATETIME.parse( strNorm );
+			return date.getTime();
+		} catch ( final ParseException e ) {
+			return null;
+		}
 	}
 	
 	public static String getSmallTime( final long ms ) {
@@ -70,6 +85,37 @@ public class DateFormatting {
 			return strElapsed;
 		} catch ( final NumberFormatException e ) {
 			return "ex:fmt";
+		}
+	}
+	
+	
+	public static String getShortDayOfWeek( final String strLongName ) {
+		if ( null == strLongName ) return "";
+		
+		final String strFormatted = strLongName.trim().toUpperCase();
+		
+		if ( strFormatted.startsWith( "SUN" ) ) {
+			return "Sun";
+		} else if ( strFormatted.startsWith( "MON" ) ) {
+			return "Mon";
+		} else if ( strFormatted.startsWith( "TUE" ) ) {
+			return "Tue";
+		} else if ( strFormatted.startsWith( "WED" ) ) {
+			return "Wed";
+		} else if ( strFormatted.startsWith( "THU" ) ) {
+			return "Thu";
+		} else if ( strFormatted.startsWith( "FRI" ) ) {
+			return "Fri";
+		} else if ( strFormatted.startsWith( "SAT" ) ) {
+			return "Sat";
+
+		} else if ( strFormatted.startsWith( "TODAY" ) ) {
+			return "Today";
+		} else if ( strFormatted.startsWith( "THIS AFTERNOON" ) ) {
+			return "Afternoon";
+			
+		} else {
+			return "";
 		}
 	}
 	

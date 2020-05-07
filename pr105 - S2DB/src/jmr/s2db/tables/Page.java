@@ -104,6 +104,7 @@ public class Page extends TableBase {
 
 	}
 	
+	
 	public Long get( final long seqPath ) {
 		
 		final Long lSession = Client.get().getSessionSeq();

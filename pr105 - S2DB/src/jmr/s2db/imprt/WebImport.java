@@ -228,7 +228,7 @@ public class WebImport {
 
 //		final WebImport wi = new WebImport( "Test_Import", strURL );
 		final WebImport wi = new WebImport( 
-							"/External/Ingest/Import_WeatherGov", strURL );
+							"Import_WeatherGov", strURL );
 		final Long seq = wi.save();
 
 		

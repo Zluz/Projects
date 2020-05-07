@@ -33,10 +33,19 @@ public class Import_WeatherGov extends ImportBase {
 									strPathPrefix + ".['name']" );
 			map.put( strNamePrefix + ".daytime", 
 									strPathPrefix + ".['isDaytime']" );
+			map.put( strNamePrefix + ".time_start", 
+									strPathPrefix + ".['startTime']" );
+			map.put( strNamePrefix + ".time_end", 
+									strPathPrefix + ".['endTime']" );
+			
 			map.put( strNamePrefix + ".temperature", 
 									strPathPrefix + ".['temperature']" );
+			
 			map.put( strNamePrefix + ".wind_speed", 
 									strPathPrefix + ".['windSpeed']" );
+			map.put( strNamePrefix + ".wind_direction", 
+									strPathPrefix + ".['windDirection']" );
+			
 			map.put( strNamePrefix + ".icon", 
 									strPathPrefix + ".['icon']" );
 			map.put( strNamePrefix + ".forecast_short", 

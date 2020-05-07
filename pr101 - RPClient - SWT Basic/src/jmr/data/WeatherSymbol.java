@@ -16,8 +16,9 @@ import jmr.rpclient.S2Resource;
 public enum WeatherSymbol {
 
 	CHANCE_FLURRIES( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chanceflurries.png" ) ),
-	CHANCE_RAIN( "scattered showers", "chance rain showers", 
-			"occasional light rain", "$slight chance rain .*",
+	CHANCE_RAIN( "scattered showers", //"chance rain showers", 
+			"$slight chance rain.*", "$chance rain showers.*", 
+			"occasional light rain", "$occasional light rain.*", "$occasional rain.*",  
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancerain.png" ) ),
 	CHANCE_SLEET( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancesleet.png" ) ),
 	CHANCE_SNOW( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/snow.png" ) ),
@@ -38,6 +39,7 @@ public enum WeatherSymbol {
 					
 	PARTLYSUNNY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/partlysunny.png" ) ),
 	RAIN( 	"showers", "heavy rain", "rain showers",
+			"$rain showers likely.*",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/rain.png" ) ),
 	
 	SLEET( 	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sleet.png" ) ),
@@ -173,31 +175,49 @@ public enum WeatherSymbol {
 	private final static Set<String> setNotFound = new HashSet<>();
 	
 	
+	public static Image getIconUnknown() {
+		if ( null == WeatherSymbol.UNKNOWN.imageIcon ) {
+			final File filePNG = new File( WeatherSymbol.UNKNOWN.arrAliases[0] );
+			WeatherSymbol.UNKNOWN.imageIcon = 
+									new Image( Display.getCurrent(), 
+				    				filePNG.getAbsolutePath() );
+		}
+		return WeatherSymbol.UNKNOWN.imageIcon;
+	}
+	
 	public Image getIcon() {
 		if ( null==imageIcon ) {
-			try {
-				for ( final String strAlias : this.arrAliases ) {
-					if ( setNotFound.contains( strAlias ) ) {
-						// already determined to not exist
-					} else if ( strAlias.contains( ".png" ) ) {
-						final File filePNG = new File( strAlias );
-						if ( filePNG.isFile() ) {
-					        imageIcon = new Image( Display.getCurrent(), 
-					        				filePNG.getAbsolutePath() );
-					        return imageIcon;
-						} else {
-							setNotFound.add( strAlias );
-							System.out.println( "Weather symbol alias "
-									+ "image not found: " + strAlias );
+			
+			final Thread threadLoadIcon = new Thread() {
+				public void run() {
+					
+					try {
+						for ( final String strAlias : arrAliases ) {
+							if ( setNotFound.contains( strAlias ) ) {
+								// already determined to not exist
+							} else if ( strAlias.contains( ".png" ) ) {
+								final File filePNG = new File( strAlias );
+								if ( filePNG.isFile() ) {
+							        imageIcon = new Image( Display.getCurrent(), 
+							        				filePNG.getAbsolutePath() );
+//							        return imageIcon;
+								} else {
+									setNotFound.add( strAlias );
+									System.out.println( "Weather symbol alias "
+											+ "image not found: " + strAlias );
+								}
+							} else {
+								setNotFound.add( strAlias );
+							}
 						}
-					} else {
-						setNotFound.add( strAlias );
+					} catch ( final Exception e ) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-				}
-			} catch ( final Exception e ) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+				};
+			};
+			threadLoadIcon.start();
+			return getIconUnknown();
 		}
 		return imageIcon;
 	}
