@@ -51,6 +51,8 @@ import jmr.pr128.reports.Report;
 import jmr.s2.ingest.Import;
 import jmr.s2db.Client;
 import jmr.s2db.event.EventType;
+import jmr.s2db.imprt.Summarizer;
+import jmr.s2db.imprt.SummaryRegistry;
 import jmr.s2db.imprt.WebImport;
 import jmr.s2db.job.JobType;
 import jmr.s2db.tables.Event;
@@ -113,10 +115,16 @@ public class Simple implements RulesConstants {
 		LOGGER.info( ()-> "--- doRefreshWeather(), "
 					+ "time is " + LocalDateTime.now().toString() );
 		try {
-			final Import source = Import.WEATHER_FORECAST__YAHOO;
+//			final Import source = Import.WEATHER_FORECAST__YAHOO;
+			final Import source = Import.WEATHER_FORECAST__WEATHER_GOV;
 			
 			final String strURL = source.getURL();
 			final String strTitle = source.getTitle();
+			final Summarizer summarizer = source.getSummarizer();
+			
+			if ( null != summarizer ) {
+				SummaryRegistry.get().add( summarizer );
+			}
 	
 			final WebImport wi = new WebImport( strTitle, strURL );
 			final Long seq = wi.save();
@@ -317,7 +325,7 @@ public class Simple implements RulesConstants {
 	
 	public static void updateDeviceThumbnails() {
 		final ImageLookupOptions[] options = { 
-						FileSession.ImageLookupOptions.ONLY_THUMB,
+//						FileSession.ImageLookupOptions.ONLY_THUMB,
 						FileSession.ImageLookupOptions.SINCE_PAST_HOUR };
 		LOGGER.info( ()-> "About to send device files.." );
 		sendDeviceFiles( false, true, false, options );

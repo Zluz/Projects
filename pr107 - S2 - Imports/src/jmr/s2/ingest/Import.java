@@ -7,6 +7,8 @@ import java.util.concurrent.TimeUnit;
 import jmr.s2db.Client;
 import jmr.s2db.Client.ClientType;
 import jmr.s2db.comm.ConnectionProvider;
+import jmr.s2db.imprt.Import_WeatherGov;
+import jmr.s2db.imprt.Summarizer;
 import jmr.s2db.imprt.WebImport;
 import jmr.util.NetUtil;
 
@@ -21,7 +23,16 @@ public enum Import {
 			"https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22glenelg%2C%20md%22)&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys",
 //https%3A%2F%2Fquery.yahooapis.com%2Fv1%2Fpublic%2Fyql%3Fq%3Dselect%2520*%2520from%2520weather.forecast%2520where%2520woeid%2520in%2520%28select%2520woeid%2520from%2520geo.places%281%29%2520where%2520text%253D%2522glenelg%252C%2520md%2522%29%26format%3Djson%26env%3Dstore%253A%252F%252Fdatatables.org%252Falltableswithkeys
 			TimeUnit.HOURS.toMillis( 1 ) ),
+
+
+	/** @see https://www.weather.gov/documentation/services-web-api */
+	WEATHER_FORECAST__WEATHER_GOV(
+			"Import_WeatherGov",
+			"https://api.weather.gov/gridpoints/LWX/95,87/forecast",
+			new Import_WeatherGov(),
+			TimeUnit.HOURS.toMillis( 1 ) ),
 	
+
 	
 	/*=== NEWS ===*/
 	/*
@@ -52,24 +63,39 @@ public enum Import {
 	
 	private final String strURL;
 	
+	private final Summarizer summarizer;
+	
 	private final long lInterval;
+	
+	
 	
 	
 	private Import( final String strTitle,
 					final String strURL,
+					final Summarizer summarizer,
 					final long lInterval ) {
 		this.strTitle = strTitle;
 		this.strURL = strURL;
+		this.summarizer = summarizer;
 		this.lInterval = lInterval;
-		;
 	}
-	
+
+	private Import( final String strTitle,
+					final String strURL,
+					final long lInterval ) {
+		this( strTitle, strURL, null, lInterval );
+	}
+
 	public String getTitle() {
 		return this.strTitle;
 	}
 	
 	public String getURL() {
 		return this.strURL;
+	}
+	
+	public Summarizer getSummarizer() {
+		return this.summarizer;
 	}
 	
 	public long getInterval() {
