@@ -1,22 +1,17 @@
 package jmr.pr136;
 
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Device;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 
+import jmr.pr134.fonts.ThFont;
 import jmr.pr136.swt.UI;
 
 public class GaugeHistory extends GaugeBase {
 
-	private Font font = null;
 	
 	private final double dVMax; // max limit for data value
 	
@@ -40,16 +35,6 @@ public class GaugeHistory extends GaugeBase {
 		
 		gc.setClipping( rect );
 		
-		if ( null == font ) {
-			final Device device = image.getDevice();
-
-			final Font fontSystem = device.getSystemFont();
-		    
-			final FontData fd = fontSystem.getFontData()[0];
-		    fd.setHeight( 24 );
-			font = new Font( device, fd );
-		}
-
 		final int iXRange = super.rect.width - 40;
 		final int iYRange = super.rect.height;
 		final int iXLeft = super.rect.x;
@@ -116,8 +101,8 @@ public class GaugeHistory extends GaugeBase {
 
 		gc.setForeground( UI.getColor( SWT.COLOR_GREEN ) );
 
-		gc.setFont( font );
-		final int iY = iYTop + iYRange - 44;
+		gc.setFont( ThFont._20_PR.getFont() );
+		final int iY = iYTop + iYRange - 36;
 		gc.drawText( monitor.getTitle(), iXLeft + 10, iY );
 
 		gc.setForeground( UI.getColor( SWT.COLOR_YELLOW ) );

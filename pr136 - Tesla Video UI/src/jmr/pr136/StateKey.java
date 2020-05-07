@@ -45,7 +45,7 @@ public enum StateKey {
 	
 	SO_IMG_KEY( "VX" ),
 	SO_IMG_LAST( "VA" ),  // seconds since last image request
-	SO_KEY_LAST( "VA" ),  // seconds since last key request
+	SO_KEY_LAST( "VX" ),  // seconds since last key request
 	
 	;
 	

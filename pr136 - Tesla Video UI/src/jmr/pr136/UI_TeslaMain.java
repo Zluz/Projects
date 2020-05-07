@@ -19,7 +19,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
@@ -28,6 +27,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 
+import jmr.pr134.fonts.FontProvider;
+import jmr.pr134.fonts.ThFont;
 import jmr.pr136.Menu.Item;
 import jmr.pr136.OverheadServer.Listener;
 import jmr.pr136.swt.CompositeRefresher;
@@ -501,7 +502,7 @@ public class UI_TeslaMain {
 	
 	Device display = null;
 	Font font10 = null;
-	Font font20 = null;
+//	Font font20 = null;
 	Font font30 = null;
 	Font font50 = null;
 	Rectangle rectFull;
@@ -523,10 +524,15 @@ public class UI_TeslaMain {
 		gc.setBackground( UI.getColor( SWT.COLOR_DARK_YELLOW ) );
 		gc.setForeground( UI.getColor( SWT.COLOR_WHITE ) );
 		gc.fillRectangle( r );
-		gc.setFont( font20 );
+//		gc.setFont( font20 );
+//		gc.setFont( ThFont._18_SSCM_V.getFont() );
+		gc.setFont( ThFont._20_PR.getFont() );
+//		gc.setFont( ThFont._18_M_B.getFont() );
+//		gc.setFont( ThFont._20_AN_B.getFont() );
+		
 		
 		final int iXStart = r.x + 8;
-		final int iYStep = gc.textExtent( "A" ).y;
+		final int iYStep = gc.textExtent( "A" ).y - 2;
 		final int iXLabel = gc.textExtent( "SS_HOME_NET -" ).x;
 		
 		int iX = iXStart;
@@ -552,57 +558,16 @@ public class UI_TeslaMain {
 	}
 	
 
-//	public final static String FONT_FILE = "CabinCondensed-Regular.ttf";
-//	public final static String FONT_NAME = "Cabin Condensed";
-//	public final static String FONT_FILE = "RobotoCondensed-Regular.ttf";
-//	public final static String FONT_NAME = "Roboto Condensed";
-//	public final static String FONT_FILE = "RobotoCondensed-Light.ttf";
-//	public final static String FONT_NAME = "Roboto Condensed Light";
-//	public final static String FONT_FILE = "BarlowCondensed-Medium.ttf";
-//	public final static String FONT_NAME = "Barlow Condensed Medium";
-//	public final static String FONT_FILE = "MILF____.ttf";
-//	public final static String FONT_NAME = "Milford";
-//	public final static String FONT_FILE = "ArchivoNarrow-Regular.ttf";
-//	public final static String FONT_NAME = "Archivo Narrow";
-	// messy in small fonts 
-//	public final static String FONT_FILE = "gnuolane free.ttf";
-//	public final static String FONT_NAME = "Gnuolane Free";
-//	public final static String FONT_FILE = "MerriweatherSans-Regular.ttf";
-//	public final static String FONT_NAME = "Merriweather Sans";
 
-	
-//	public final static String FONT_PATH_WIN = 
-//						"T:\\Resources\\fonts\\truetype\\" + FONT_FILE;
-//	public final static String FONT_PATH_LNX = 
-//						"/Share/Resources/fonts/truetype/" + FONT_FILE;
-//	
-//	private Font getBaseFont() {
-		
-//		final boolean bLoaded = display.loadFont( FONT_PATH_WIN );
-//		
-//		final FontData[] arrFonts = display.getFontList( null, true );
-//		System.out.println( "Available fonts (" + arrFonts.length + "):" );
-//		for ( final FontData fd : arrFonts ) {
-//			System.out.println( "\t" + fd.getName() );
-//		}
-//		
-//		if ( bLoaded ) {
-//			final Font font = new Font( display, FONT_NAME, 12, SWT.NORMAL );
-//			return font;
-//		}
-		
-//		final Font fontSystem = display.getSystemFont();
-//		return fontSystem;
-//	}
-	
 	private FontProvider fontprovider = null;
 	
 	private Font getBaseFont() {
 		if ( null == fontprovider ) {
-			fontprovider = new FontProvider();
+			fontprovider = new FontProvider( display );
 		}
-		final Font font = fontprovider.get( display, 
-								FontProvider.FontResource.CABIN_CONDENSED );
+		final Font font = fontprovider.get( 
+//					FontProvider.FontResource.CABIN_CONDENSED );
+					FontProvider.FontResource.SAIRA_SEMI_CONDENSED_MEDIUM );
 		return font;
 	}
 
@@ -627,27 +592,12 @@ public class UI_TeslaMain {
 //			rectOverhead = new Rectangle( 1600, 40, 240, 135 );
 			rectOverhead = new Rectangle( 50, 140, 240, 135 );
 	
-			final Font fontSystem = getBaseFont();
+			//NOTE: previously all fonts were based on Cabin Condensed
+			getBaseFont();
 		    
-			final FontData fd10 = fontSystem.getFontData()[0];
-		    fd10.setHeight( 15 );
-		    fd10.setStyle( SWT.BOLD );
-			font10 = new Font( display, fd10 );
-			
-			final FontData fd20 = fontSystem.getFontData()[0];
-		    fd20.setHeight( 20 );
-//		    fd20.setStyle( SWT.BOLD );
-			font20 = new Font( display, fd20 );
-			
-			final FontData fd30 = fontSystem.getFontData()[0];
-		    fd30.setHeight( 26 );
-		    fd30.setStyle( SWT.BOLD );
-			font30 = new Font( display, fd30 );
-	
-			final FontData fd50 = fontSystem.getFontData()[0];
-		    fd50.setHeight( 36 );
-		    fd50.setStyle( SWT.BOLD );
-			font50 = new Font( display, fd50 );
+			font10 = ThFont._15_CC_V_B.getFont();
+			font30 = ThFont._25_SSCM_V.getFont();
+			font50 = ThFont._36_SSCM_V.getFont();
 		}
 		
 		
@@ -824,29 +774,26 @@ public class UI_TeslaMain {
 
 		
 //		paintStates( image, gc, new Rectangle( 940, 100, 540, 174 ) );
-		paintStates( image, gc, "ADCS", new Rectangle( 730, 460, 300, 520 ) );
+		paintStates( image, gc, "ADCS", new Rectangle( 730, 460, 310, 520 ) );
 		paintStates( image, gc, "X", new Rectangle( 1260, 30, 580, 280 ) );
 
 
 		
-		gc.setFont( font20 );
+//		gc.setFont( font20 );
+		gc.setFont( ThFont._20_SSCM_V.getFont() );
 		gc.setBackground( UI.getColor( SWT.COLOR_DARK_GREEN ) );
 		gc.setForeground( UI.getColor( SWT.COLOR_WHITE ) );
 		gc.fillRectangle( 330, 30, 900, 280 );
-		iY = 280 + 30 - 38;
-		for ( int i = listMessages.size() - 1; i > 0 && iY > 30; i-- ) {
+		iY = 280 + 28 - 40;
+		for ( int i = listMessages.size() - 1; i > 0 && iY > 24; i-- ) {
 			final String strLine = listMessages.get( i );
 			gc.drawText( strLine, 336, iY );
-			iY -= 36;
+			iY -= 30;
 		}
 		
-		
-		
-
 		this.gaugeRefreshRate.paint( lTimeNow, gc, image );
 		this.gaugeAutoHAT_12VBatt.paint( lTimeNow, gc, image );
 		this.gaugeAutoHAT_Accy.paint( lTimeNow, gc, image );
-		
 	
 		// draw 'close' box
 		gc.setBackground( UI.getColor( SWT.COLOR_GRAY ) );

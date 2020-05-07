@@ -5,5 +5,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/SWT_Win64"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr104 - Utilities"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Apache Commons Lang 3.10"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr134 - SWT Loader"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
