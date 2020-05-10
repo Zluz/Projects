@@ -127,7 +127,7 @@ public class Simple implements RulesConstants {
 			}
 	
 			final WebImport wi = new WebImport( strTitle, strURL );
-			final Long seq = wi.save();
+			final Long seq = wi.save( false );
 
 			System.out.println( "Weather refreshed. Result: seq = " + seq );
 				

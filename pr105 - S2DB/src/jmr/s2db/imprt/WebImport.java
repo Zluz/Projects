@@ -55,7 +55,15 @@ public class WebImport {
 	}
 	
 	
-	public Long save() throws IOException {
+	/**
+	 * 
+	 * @param bProcessJson - Process the JSON into name-value data to save.
+	 * 		If FALSE, summarizers are still executed to evaluate properties.
+	 * @param bX
+	 * @return
+	 * @throws IOException
+	 */
+	public Long save( final boolean bProcessJson ) throws IOException {
 //		if ( null==strJSON ) return null;
 //		if ( strJSON.isEmpty() ) return null;
 		
@@ -73,7 +81,8 @@ public class WebImport {
 		}
 
 		final JsonIngest ingest = new JsonIngest();
-		final Long seqData = ingest.saveJson( strPath + "/data", strJSON, true );
+		final Long seqData = 
+				ingest.saveJson( strPath + "/data", strJSON, ! bProcessJson );
 		final Long seqSaver;
 		
 		if ( null != seqData ) {
@@ -229,7 +238,7 @@ public class WebImport {
 //		final WebImport wi = new WebImport( "Test_Import", strURL );
 		final WebImport wi = new WebImport( 
 							"Import_WeatherGov", strURL );
-		final Long seq = wi.save();
+		final Long seq = wi.save( false );
 
 		
 //		System.out.println( "--- JSON Response --- START ---" );

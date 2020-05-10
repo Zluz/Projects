@@ -239,7 +239,7 @@ public class TeslaJob extends JobWorker {
 								"Tesla - " + request.name(),
 								tvi.getURL( request ),
 								strResponse );
-				final Long seq = ingest.save();
+				final Long seq = ingest.save( true );
 //				final String strResult = ingest.getResponse();
 				System.out.println( "Requested from Tesla " + request 
 						+ ", saved to page " + seq ); 

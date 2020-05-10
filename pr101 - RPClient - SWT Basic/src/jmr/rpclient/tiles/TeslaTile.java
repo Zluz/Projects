@@ -93,6 +93,8 @@ public class TeslaTile extends TileBase {
 
 		final String strPath = 
 //				"/External/Ingest/Tesla/" + type.name() + "/response";
+//				"/External/Ingest/Tesla/" + type.name() + "/data";
+//				"/External/Ingest/Tesla/" + type.name() + "/data/response";
 				type.getResponsePath();
 		
 		final Map<String, String> map = 
@@ -104,6 +106,7 @@ public class TeslaTile extends TileBase {
 //		final Long lModified = Long.parseLong( strModified );
 //		updated.put( type, lModified );
 	}
+	
 	
 	private void updatePages() {
 //		synchronized ( pages ) { 

@@ -34,6 +34,7 @@ public class Theme {
 	
 	
 	public enum ThFont {
+		
 		// general purpose large fonts (fixed digits)
 		_66_RC( FontResource.ROBOTO_CONDENSED_REGULAR ),
 		_50_RC( FontResource.ROBOTO_CONDENSED_REGULAR ),
@@ -46,7 +47,9 @@ public class Theme {
 
 		// good general purpose font (fixed digits)
 		_12_M_B( FontResource.MILFORD, SWT.BOLD ),
-		
+
+		_15_CC( FontResource.CABIN_CONDENSED ),
+
 		// narrow font, but variable digits
 		// 			not great below 9
 		_9_SSCM_V( FontResource.SAIRA_SEMI_CONDENSED_MEDIUM ),
@@ -184,7 +187,8 @@ public class Theme {
 		if ( !mapFontNormal.containsKey( iSize ) ) {
 			final FontResource fr;
 			if ( iSize < 6 ) {
-				fr = FontResource.CABIN_CONDENSED;
+//				fr = FontResource.CABIN_CONDENSED;
+				fr = FontResource.SAIRA_SEMI_CONDENSED_MEDIUM;
 			} else if ( iSize > 14 ){
 				if ( bNumberCompat ) {
 					fr = FontResource.ROBOTO_CONDENSED_BOLD;

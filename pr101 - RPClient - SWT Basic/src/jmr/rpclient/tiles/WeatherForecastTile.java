@@ -244,15 +244,17 @@ public class WeatherForecastTile extends TileBase {
 		final String strTextDay = map.get( Value.FORECAST_DAY );
 		final String strText; 
 		final Image imageIconDay;
+		final WeatherSymbol symbolDay;
 		if ( ! StringUtils.isBlank( strTextDay ) ) {
 			strText = "   " + strTextDay;
-			final WeatherSymbol symbolDay = WeatherSymbol.getSymbol( strTextDay );
+			symbolDay = WeatherSymbol.getSymbol( strTextDay );
 			imageIconDay = symbolDay.getIcon();
 		} else {
 			strText = " Night: " + map.get( Value.FORECAST_NIGHT );
 			imageIconDay = WeatherSymbol.getIconUnknown();
+			symbolDay = null;
 		}
-		if ( null != imageIconDay ) {
+		if ( null != imageIconDay && WeatherSymbol.UNKNOWN != symbolDay ) {
 			gc.drawImage( imageIconDay, iX + 2 , iY );
 			iY = 86;
 			gc.setFont( Theme.get().getFont( 10 ) );
@@ -269,7 +271,8 @@ public class WeatherForecastTile extends TileBase {
 			final WeatherSymbol symbolNight = 
 										WeatherSymbol.getSymbol( strNight );
 			final Image imageIconNight = symbolNight.getIcon();
-			if ( null != imageIconNight ) {
+			if ( null != imageIconNight 
+							&& WeatherSymbol.UNKNOWN != symbolNight ) {
 				gc.drawImage( imageIconNight, iX + 60, 26 );
 			} else {
 				listWarning.add( "Not found: " + strNight );
@@ -280,8 +283,14 @@ public class WeatherForecastTile extends TileBase {
 		if ( gc.textExtent( strText ).x + 10 < iDayWidth ) {
 			gc.drawText( strText, iX, iY );
 		} else {
-			gc.drawText( 
-					StringUtils.abbreviate( strText, 16 ), iX, iY );
+			String strAbbr = strText;
+			int iWidth;
+			do {
+				int iLen = strAbbr.length() - 3;
+				strAbbr = strAbbr.substring( 0, iLen );
+				iWidth = gc.textExtent( strAbbr ).x;
+			} while ( iWidth + 10 > iDayWidth );
+			gc.drawText( strAbbr + "...", iX, iY );
 		}
 
 		iY = 114;

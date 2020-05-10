@@ -30,12 +30,12 @@ public abstract class ImportBase extends SummarizerBase {
 	public abstract Map<String, String> getJsonPaths();
 	
 	
-	public Long doImportOnce() {
+	public Long doImportOnce( final boolean bSaveRawJSON ) {
 		SummaryRegistry.get().add( this );
 		
 		final WebImport wi = new WebImport( getImportName(), getURL() );
 		try {
-			final Long seq = wi.save();
+			final Long seq = wi.save( bSaveRawJSON );
 			return seq;
 		} catch ( final IOException e ) {
 			e.printStackTrace();
