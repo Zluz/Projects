@@ -1,20 +1,24 @@
 package jmr.pr134.fonts;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 
 public class FontProvider {
 
 
 	public final static String FONT_BASE_PATH; 
-	
+
 	static {
 		if ( '/' == File.separatorChar ) {
 			FONT_BASE_PATH = "/Share/Resources/fonts/truetype/";
@@ -22,14 +26,25 @@ public class FontProvider {
 			FONT_BASE_PATH = "T:\\Resources\\fonts\\truetype\\";
 		}
 	}
-	
+
+
+	public final static String[] FONT_BASE_PATHS = {
+			"/Share/Resources/fonts/truetype/",
+			"T:\\Resources\\fonts\\truetype\\",
+			"/Local/Resources/fonts/truetype/",
+			"\\\\h04\\share\\Resources\\fonts\\truetype",
+	}; 
+
+
 	
 	public static enum FontResource {
-
-		ROBOTO_CONDENSED( 				"Roboto Condensed", 
+		
+		ROBOTO_CONDENSED_REGULAR( 		"Roboto Condensed", 
 				"-",	"RobotoCondensed-Regular.ttf" ),
 		ROBOTO_CONDENSED_LIGHT( 		"Roboto Condensed Light", 
 				"-",	"RobotoCondensed-Light.ttf" ),
+		ROBOTO_CONDENSED_BOLD( 			"Roboto Condensed Bold", 
+				"-",	"RobotoCondensed-Bold.ttf" ),
 
 		FJALLAONE_REGULAR( 				"FjallaOne Regular", 
 				"K",	"FjallaOne-Regular.ttf" ),
@@ -39,6 +54,9 @@ public class FontProvider {
 		
 		MILFORD( 						"Milford", 
 				"-",	"MILF____.ttf" ),
+		
+		PLAY_REGULAR( 					"Play",
+				"-",	"Play-Regular.ttf" ),
 		
 		// good at very small sizes (ie, micro display)
 		// WARNING: variable width numbers
@@ -51,13 +69,37 @@ public class FontProvider {
 		MERRIWEATHER_SANS( 				"Merriweather Sans", 
 				"N",	"MerriweatherSans-Regular.ttf" ),
 
+		// NOTE: there are 9 other variation font files
+		SAIRA_SEMI_CONDENSED_MEDIUM(	"Saira SemiCondensed Medium", 
+				"N",	"SairaSemiCondensed-Medium.ttf" ),
+		SAIRA_SEMI_CONDENSED_SEMIBOLD(	"Saira SemiCondensed SemiBold", 
+				"N",	"SairaSemiCondensed-SemiBold.ttf" ),
+
+		
+		// organize..
+
+		OVERPASS_REGULAR( 				"Overpass",
+				"N",	"Overpass_Regular.ttf" ),
+
+		DYNO_REGULAR( 					"Dyno Regular",
+				"N",	"Dyno Regular.ttf" ),
+
 		;
 		
 		private final String strFontName;
 		private final String strFilename;
 		private final boolean bVariablePitchNumbers;
 		private final boolean bKerning;
-		
+
+		/**
+		 * For strOptions:
+		 * 		N - Numeric not fixed pitch (Digits have different widths)
+		 *		K - Kerning (characters apply kerning generously) 
+		 *
+		 * @param strFontName
+		 * @param strOptions
+		 * @param strFilename
+		 */
 		private FontResource( 	final String strFontName,
 								final String strOptions,
 								final String strFilename ) {
@@ -92,6 +134,7 @@ public class FontProvider {
 
 	public FontProvider(	final Device device ) {
 		this.device = device;
+		ThFont.initialize( this );
 	}
 	
 	
@@ -102,7 +145,20 @@ public class FontProvider {
 					"" + fontres.ordinal() + "/" + iSize + "/" + iAttrs;
 		return strKey;
 	}
+	
+	
+	public String findFontFile( final FontResource fontres ) {
+		for ( final String strPath : FONT_BASE_PATHS ) {
+			final String strFile = strPath + fontres.strFilename;
+			final File file = new File( strFile );
+			if ( file.canRead() ) {
+				return strFile;
+			}
+		}
+		return null;
+	}
 
+	
 	public Font get(	final FontResource fontres,
 						final int iSize,
 						final int iAttrs ) {
@@ -120,7 +176,7 @@ public class FontProvider {
 //			}
 
 			if ( ! setLoadedFiles.contains( fontres ) ) {
-				final String strFilename = FONT_BASE_PATH + fontres.strFilename;
+				final String strFilename = findFontFile( fontres );
 				final boolean bLoaded = device.loadFont( strFilename );
 				if ( bLoaded ) { 
 					System.out.println( "Font loaded: " + strFilename );
@@ -132,6 +188,8 @@ public class FontProvider {
 			
 			final String strFontName = fontres.strFontName;
 			final Font font = new Font( device, strFontName, iSize, iAttrs );
+			
+//			final String strNameCheck = font.getFontData()[0].getName();
 			
 			mapFontCache.put( strKey, font );
 			
@@ -149,5 +207,22 @@ public class FontProvider {
 		return get( fontres, 12, SWT.NORMAL );
 	}
 	
+	
+	public List<String> getFontList() {
+//		final List<String> list = new LinkedList<>();
+		final Set<String> set = new HashSet<>();
+		final FontData[] arrFonts = device.getFontList( null, true );
+		for ( final FontData fd : arrFonts ) {
+//			list.add( "\"" + fd.getName() + "\"  - "
+//								+ "style: " + fd.getStyle() + ", "
+//								+ "height: " + fd.getHeight() + ", "
+//								+ "locale: " + fd.getLocale() 
+//								);
+			set.add( fd.getName() );
+		}
+		final List<String> list = new LinkedList<>( set );
+		Collections.sort( list );
+		return list;
+	}
 	
 }
