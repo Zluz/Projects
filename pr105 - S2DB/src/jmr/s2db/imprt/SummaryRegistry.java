@@ -1,5 +1,6 @@
 package jmr.s2db.imprt;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -67,11 +68,14 @@ public class SummaryRegistry {
 		boolean bApplied = false;
 		for ( final Summarizer summarizer : SUMMARIZERS ) {
 			if ( summarizer.isMatch( strNodePath ) ) {
-				final Map<String, String> 
-							mapSummary = summarizer.summarize( je );
+				
+				final Map<String,String> mapSummary = new HashMap<>();
+				mapSummary.putAll( summarizer.summarize( je ) );
+				mapSummary.putAll( summarizer.summarize( mapSummary ) );
+				
 				if ( null!=mapSummary && !mapSummary.isEmpty() ) {
 					bApplied = true;
-					for ( final Entry<String, String> 
+					for ( final Entry<String,String> 
 											entry : mapSummary.entrySet() ) {
 						final String strKey = PREFIX_SUMMARY + entry.getKey();
 						final String strValue = entry.getValue();

@@ -17,8 +17,11 @@ public enum WeatherSymbol {
 
 	CHANCE_FLURRIES( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chanceflurries.png" ) ),
 	CHANCE_RAIN( "scattered showers", //"chance rain showers", 
-			"$slight chance rain.*", "$chance rain showers.*", 
-			"$mostly cloudy then chance rain showers.*",
+			"$slight chance rain.*", 
+			"$.*rain showers.*", 
+//			"$mostly cloudy then chance rain showers.*",
+//			"$partly cloudy then chance rain showers.*",
+			"$.*cloudy then .*rain showers.*",
 			"occasional light rain", "$occasional light rain.*", "$occasional rain.*",  
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancerain.png" ) ),
 	CHANCE_SLEET( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancesleet.png" ) ),

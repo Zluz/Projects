@@ -251,7 +251,7 @@ public class TeslaIngestManager {
 						strResponse );
 		Long seq;
 		try {
-			seq = ingest.save();
+			seq = ingest.save( true );
 		} catch ( final IOException e ) {
 			LOGGER.severe( "Failed to save data to " + ingest.getURL() );
 			e.printStackTrace();

@@ -655,7 +655,8 @@ public class ProcImageTile extends TileBase {
 			case WARNING__MISSING_SOURCE_DIR:
 			case WARNING__SHARE_READONLY:
 				gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
-				gc.setBackground( Theme.get().getColor( Colors.BACK_ALERT ) );
+				gc.setBackground( Theme.get().getColor( 
+											Colors.BACKGROUND_FLASH_ALERT ) );
 				break;
 		}
 		text.println( "State:  " + this.state.name() );

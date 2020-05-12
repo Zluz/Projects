@@ -241,10 +241,10 @@ public class WebImport {
 		final Long seq = wi.save( false );
 
 		
-//		System.out.println( "--- JSON Response --- START ---" );
-//		final String strJson = wi.getResponse();
-//		System.out.println( JsonUtils.getPretty( strJson ) );
-//		System.out.println( "--- JSON Response --- END ---" );
+		System.out.println( "--- JSON Response --- START ---" );
+		final String strJson = wi.getResponse();
+		System.out.println( JsonUtils.getPretty( strJson ) );
+		System.out.println( "--- JSON Response --- END ---" );
 		
 		
 		System.out.println( "Result: seq = " + seq );

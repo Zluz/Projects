@@ -337,7 +337,7 @@ public class WeatherForecastTile extends TileBase {
 			gc.drawText( strHigh, iX + 14, iY );
 		} else {
 			gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
-			gc.drawText( "(-)", iX + 14, iY + 1 );
+			gc.drawText( "..", iX + 14, iY + 1 );
 		}
 		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 	}
@@ -439,7 +439,8 @@ public class WeatherForecastTile extends TileBase {
 			gc.setClipping( rectOriginal );
 
 			if ( ! listWarning.isEmpty() ) {
-				gc.setBackground( Theme.get().getColor( Colors.BACK_ALERT ) );
+				gc.setBackground( Theme.get().getColor( 
+											Colors.BACKGROUND_FLASH_ALERT ) );
 				gc.setFont( Theme.get().getFont( 12 ) );
 				gc.drawText( "WARNING", 26, 30 );
 				int iY = 46;
@@ -448,7 +449,9 @@ public class WeatherForecastTile extends TileBase {
 					iY += 16;
 				}
 			}
-			
+
+			gc.setBackground( Theme.get().getColor( Colors.BACKGROUND ) );
+
 			if ( null != pagedata ) {
 				gc.setFont( Theme.get().getFont( 7 ) );
 				

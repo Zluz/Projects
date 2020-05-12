@@ -22,13 +22,34 @@ public class Theme {
 		TEXT( 190, 190, 190 ),
 		TEXT_LIGHT( 140,140,140 ),
 		TEXT_BOLD( 255, 253, 250 ),
-		BACK_ALERT( 120, 0, 0 ),
+		
+		BACKGROUND_FLASH_ALERT_ALT( 60, 0, 0 ),
+		BACKGROUND_FLASH_ALERT( 120, 0, 0, BACKGROUND_FLASH_ALERT_ALT ),
 		;
 		
 		final RGB rgb;
+		final Colors colorAltCycle;
 		
-		private Colors( final int r, final int g, final int b ) {
+		private Colors(	final int r, 
+						final int g, 
+						final int b,
+						final Colors colorAlt ) {
 			this.rgb = new RGB( r,g,b );
+			this.colorAltCycle = colorAlt;
+		}
+		
+		private Colors(	final int r, 
+						final int g, 
+						final int b ) {
+			this( r, g, b, null );
+		}
+		
+		public Colors getAlternateCycleColor() {
+			return this.colorAltCycle;
+		}
+		
+		public boolean isCycled() {
+			return null != this.colorAltCycle;
 		}
 	}
 	
@@ -159,15 +180,36 @@ public class Theme {
 			case TEXT_BOLD  	: iColor = SWT.COLOR_WHITE; break;
 			case LINE_FAINT		: iColor = SWT.COLOR_DARK_BLUE; break;
 			case LINE_BOLD		: iColor = SWT.COLOR_GREEN; break;
-			case BACK_ALERT		: iColor = SWT.COLOR_DARK_RED; break;
+			case BACKGROUND_FLASH_ALERT		
+								: iColor = SWT.COLOR_DARK_RED; break;
 			default				: iColor = SWT.COLOR_GRAY; break;
 		}
 		return display.getSystemColor( iColor );
 	}
+	
 
 	public Color getColor( Colors color ) {
-		return COLORMAP.get( color );
+
+		final Colors colorSafe;
+		
+		if ( null != color ) {
+			if ( color.isCycled() ) {
+				final boolean bAlertCycle = 
+						Math.floor(System.currentTimeMillis()/500) % 2 == 0;
+				if ( bAlertCycle ) {
+					colorSafe = color;
+				} else {
+					colorSafe = color.colorAltCycle;
+				}
+			} else {
+				colorSafe = color;
+			}
+		} else {
+			colorSafe = Colors.TEXT_BOLD;
+		}
+		return COLORMAP.get( colorSafe );
 	}
+	
 	
 	/**
 	 * RPi:

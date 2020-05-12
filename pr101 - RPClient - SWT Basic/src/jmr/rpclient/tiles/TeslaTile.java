@@ -165,9 +165,12 @@ public class TeslaTile extends TileBase {
 			final Map<String, String> mapClimate = new HashMap<>(); 
 
 			synchronized ( pages ) { 
-				mapCharge.putAll( nullCheck( pages.get( DataRequest.CHARGE_STATE ) ) );
-				mapVehicle.putAll( nullCheck( pages.get( DataRequest.VEHICLE_STATE ) ) );
-				mapClimate.putAll( nullCheck( pages.get( DataRequest.CLIMATE_STATE ) ) );
+				mapCharge.putAll( nullCheck( 
+								pages.get( DataRequest.CHARGE_STATE ) ) );
+				mapVehicle.putAll( nullCheck( 
+								pages.get( DataRequest.VEHICLE_STATE ) ) );
+				mapClimate.putAll( nullCheck( 
+								pages.get( DataRequest.CLIMATE_STATE ) ) );
 			}
 
 			if ( null!=mapCharge && null!=mapVehicle ) {
@@ -178,7 +181,8 @@ public class TeslaTile extends TileBase {
 //				final String strStatus = mapCharge.get( "+status" );
 				final String strChargeStatus = mapCharge.get( "charging_state" );
 				final String strSoftware = mapVehicle.get( "software_update" );
-				final String strUpdate = JsonUtils.getJsonValue( strSoftware, "status" );
+				final String strUpdate = JsonUtils.getJsonValue( 
+												strSoftware, "status" );
 				
 //				final String strTimestampCharge = mapCharge.get( ".last_modified_uxt" );
 //				
@@ -230,7 +234,8 @@ public class TeslaTile extends TileBase {
 				final boolean bCharging = 
 							"Charging".equalsIgnoreCase( strChargeState );
 
-				final boolean bAlertCycle = Math.floor(System.currentTimeMillis()/500) % 2 == 0;
+//				final boolean bAlertCycle = 
+//						Math.floor(System.currentTimeMillis()/500) % 2 == 0;
 //				final boolean bAlert = bAlertCycle && bHome && !bPortOpen;
 //				final boolean bAlert = bHome && !bPortOpen;
 //				final boolean bError = null!=strError;
@@ -245,21 +250,26 @@ public class TeslaTile extends TileBase {
 				}
 				
 				final boolean bAlert = ( null!=strError || null!=strAlert ); 
-				if ( bAlert && bAlertCycle ) {
+				if ( bAlert ) { // && bAlertCycle ) {
 //						gc.setForeground( Theme.get().getColor( Colors.BACK_ALERT ) );
-					gc.setBackground( Theme.get().getColor( Colors.BACK_ALERT ) );
+					gc.setBackground( Theme.get().getColor( 
+									Colors.BACKGROUND_FLASH_ALERT ) );
 					gc.fillRectangle( 0, 0, 299, 149 );
 				}
 
 				try {
 //					final Long lLastModified = Long.parseLong( strTimestampCharge );
 //					if ( lLastRefresh != lLastModified ) {
-					if ( null!=lTimestampLatest && lLastRefresh != lTimestampLatest ) {
+					if ( null!=lTimestampLatest 
+									&& lLastRefresh != lTimestampLatest ) {
 						bRefreshRequest = false;
 						lLastRefresh = lTimestampLatest;
-						setButtonState( TeslaTile.BUTTON_CLIMATE_OFF, ButtonState.READY );
-						setButtonState( TeslaTile.BUTTON_CLIMATE_ON, ButtonState.READY );
-						setButtonState( TeslaTile.BUTTON_FLASH_LIGHTS, ButtonState.READY );
+						setButtonState( TeslaTile.BUTTON_CLIMATE_OFF, 
+													ButtonState.READY );
+						setButtonState( TeslaTile.BUTTON_CLIMATE_ON, 
+													ButtonState.READY );
+						setButtonState( TeslaTile.BUTTON_FLASH_LIGHTS, 
+													ButtonState.READY );
 					}
 				} catch ( final NumberFormatException e ) {
 					// just ignore
@@ -281,7 +291,8 @@ public class TeslaTile extends TileBase {
 						String strInsideTempF = "<?>";
 						try {
 							if ( null!=strInsideTemp ) {
-								final float fTempC = Float.parseFloat( strInsideTemp );
+								final float fTempC = Float.parseFloat( 
+																strInsideTemp );
 								final float fTempF = (fTempC * 9f / 5f ) + 32f;
 								strInsideTempF = String.format( "%.1f", fTempF );
 							}
@@ -313,19 +324,39 @@ public class TeslaTile extends TileBase {
 						text.addSpace( 8 );
 						text.println( bChargeComplete, "Charge complete" );
 						text.println( bCharging, "   Charging" );
-						text.println( bLowBattery, "   Low battery: " + strBatteryLevel );
+						text.println( bLowBattery, "   Low battery: " 
+															+ strBatteryLevel );
 						text.println( "        State: " + strChargeState );
 						text.println( "        Power: " + strChargerPower );
 						text.addSpace( 8 );
 						text.println( bClimateOn, "Climate On" );
 						text.println( bFanOn, "   Fan On" );
+						if ( bRefreshRequest ) {
+							gc.setBackground( Theme.get().getColor( 
+											Colors.BACKGROUND_FLASH_ALERT ) );
+						}
 						text.println( bRefreshRequest, "Refresh request" );
 						text.addSpace( 12 );
-						
-						text.println( null!=strError, "Err>" 
-								+ ( null!=strError ? ": " + strError : " -" ) );
-						text.println( null!=strAlert, "Alr> " 
-								+ ( null!=strAlert ? strAlert : " -" ) );
+
+						if ( null != strAlert ) {
+							gc.setBackground( Theme.get().getColor( 
+									Colors.BACKGROUND_FLASH_ALERT ) );
+							text.println( null!=strAlert, "Alr> " + strAlert );
+						} else {
+							gc.setBackground( Theme.get().getColor( 
+									Colors.BACKGROUND ) );
+							text.println( null!=strAlert, "Alr>  -" );
+						}
+
+						if ( null != strError ) {
+							gc.setBackground( Theme.get().getColor( 
+									Colors.BACKGROUND_FLASH_ALERT ) );
+							text.println( null!=strError, "Err> " + strError );
+						} else {
+							gc.setBackground( Theme.get().getColor( 
+									Colors.BACKGROUND ) );
+							text.println( null!=strError, "Err>  -" );
+						}
 					}
 					
 				} else {
@@ -376,7 +407,8 @@ public class TeslaTile extends TileBase {
 					if ( null!=lTimestampLatest ) {
 						final String strElapsed = 
 	//							DateFormatting.getSmallTime( strTimestampCharge );
-								DateFormatting.getSmallTime( super.iNowPaint - lTimestampLatest );
+								DateFormatting.getSmallTime( 
+										super.iNowPaint - lTimestampLatest );
 						
 						gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 //						gc.setFont( Theme.get().getFont( 7 ) );
@@ -423,18 +455,27 @@ public class TeslaTile extends TileBase {
 		this.pointClick = point;
 
 		if ( !this.bClimateControl ) {
-			bRefreshRequest = true;
-			final Job.JobSet set = new Job.JobSet( 3 );
-
-//			final Map<String,Object> map = new HashMap<>();
-			final TraceMap map = new TraceMap();
-			map.put( "reason", "user-click.canvas" );
-			map.put( "job-set.first", set.lFirstSeq );
-			map.put( "job-set.count", 3 );
-
-			Job.add( JobType.TESLA_READ, set, null, DataRequest.CHARGE_STATE.name(), map );
-			Job.add( JobType.TESLA_READ, set, null, DataRequest.VEHICLE_STATE.name(), map );
-			Job.add( JobType.TESLA_READ, set, null, DataRequest.CLIMATE_STATE.name(), map );
+			
+			final Thread thread = new Thread( ()-> {
+				
+				bRefreshRequest = true;
+				final Job.JobSet set = new Job.JobSet( 3 );
+	
+	//			final Map<String,Object> map = new HashMap<>();
+				final TraceMap map = new TraceMap();
+				map.put( "reason", "user-click.canvas" );
+				map.put( "job-set.first", set.lFirstSeq );
+				map.put( "job-set.count", 3 );
+	
+				Job.add( JobType.TESLA_READ, set, null, 
+										DataRequest.CHARGE_STATE.name(), map );
+				Job.add( JobType.TESLA_READ, set, null, 
+										DataRequest.VEHICLE_STATE.name(), map );
+				Job.add( JobType.TESLA_READ, set, null, 
+										DataRequest.CLIMATE_STATE.name(), map );
+			} );
+			thread.start();
+			
 			return true;
 		} else {
 			return false;
@@ -458,23 +499,28 @@ public class TeslaTile extends TileBase {
 		switch ( button.getIndex() ) {
 			case BUTTON_CLIMATE_ON: {
 				System.out.println( "Climate ON" );
-				job = Job.add( JobType.TESLA_WRITE, null, null, Command.HVAC_START.name(), map );
+				job = Job.add( JobType.TESLA_WRITE, null, null, 
+									Command.HVAC_START.name(), map );
 				Thread.sleep( 1000 );
-				Job.add( JobType.TESLA_READ, null, null, DataRequest.CLIMATE_STATE.name(), map );
+				Job.add( JobType.TESLA_READ, null, null, 
+									DataRequest.CLIMATE_STATE.name(), map );
 				
 				break;
 			}
 			
 			case BUTTON_CLIMATE_OFF: {
 				System.out.println( "Climate OFF" );
-				job = Job.add( JobType.TESLA_WRITE, null, null, Command.HVAC_STOP.name(), map );
+				job = Job.add( JobType.TESLA_WRITE, null, null, 
+									Command.HVAC_STOP.name(), map );
 				Thread.sleep( 1000 );
-				Job.add( JobType.TESLA_READ, null, null, DataRequest.CLIMATE_STATE.name(), map );
+				Job.add( JobType.TESLA_READ, null, null, 
+									DataRequest.CLIMATE_STATE.name(), map );
 				break;
 			}
 			case BUTTON_FLASH_LIGHTS: {
 				System.out.println( "Flash lights" );
-				job = Job.add( JobType.TESLA_WRITE, null, null, Command.FLASH_LIGHTS.name(), map );
+				job = Job.add( JobType.TESLA_WRITE, null, null, 
+									Command.FLASH_LIGHTS.name(), map );
 				break;
 			}
 		}

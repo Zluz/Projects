@@ -50,7 +50,7 @@ public class JsonIngest {
 		final Date now = new Date();
 		final JsonElement element = new JsonParser().parse( strJson );
 		
-		final Map<String,String> mapSummary = new HashMap<>();
+//		final Map<String,String> mapSummary = new HashMap<>();
 		
 		final Long lSeq;
 		

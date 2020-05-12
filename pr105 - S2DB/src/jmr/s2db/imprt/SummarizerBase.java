@@ -1,6 +1,7 @@
 package jmr.s2db.imprt;
 
 import java.util.AbstractCollection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,14 +29,13 @@ public abstract class SummarizerBase implements Summarizer {
 
 	@Override
 	public Map<String, String> summarize( final Map<String, String> map ) {
-		// not implemented, but stubbed out.
-		return null;
+		return Collections.emptyMap();
 	}
 	
 
 	@Override
 	public Map<String, String> summarize( final Object objRaw ) {
-		if ( null == objRaw ) return null;
+		if ( null == objRaw ) return Collections.emptyMap();
 		
 		final Map<String,String> map = new HashMap<>();
 		
