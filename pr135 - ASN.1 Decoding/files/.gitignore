@@ -1,2 +1,11 @@
 /BCCH-DL-SCH-Message.bin
 /__pycache__/
+/dist/
+/dist.backup_001/
+/LTE.schema
+/SIB7.bin
+/Schema_LTE.pkl
+/test_exe.001/
+/test_exe.002/
+/test_exe.003/
+/3GPP RRC v15.3.0.asn
