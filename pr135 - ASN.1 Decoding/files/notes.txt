@@ -3,3 +3,15 @@ Some parsers to look into:
     https://bellard.org/ffasn1/
     https://github.com/eerimoq/asn1tools
     https://github.com/vlm/asn1c
+
+    
+    
+    
+
+    
+test data
+	L*:BCCH-DL-SCH-Message
+
+000E8409D590440590808FC208817A100802411016C1E00242348261892228880800
+
+
