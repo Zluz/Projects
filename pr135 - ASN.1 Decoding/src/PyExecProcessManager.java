@@ -8,11 +8,21 @@ import java.util.concurrent.TimeUnit;
 
 public class PyExecProcessManager {
 	
-	public static final String PROG_PATH = 
+
+	public final static String WORKING_DIR = 
+//			"C:\\Development\\CM\\Git_20190124.002\\Projects__20190125\\"
+//					+ "pr135 - ASN.1 Decoding\\files";
 			"C:\\Development\\CM\\Git_20190124.002\\Projects__20190125\\"
-			+ "pr135 - ASN.1 Decoding\\files\\test_exe.005\\dist\\asn1tools_003";
+					+ "pr135 - ASN.1 Decoding\\files\\"
+						+ "test_exe.006\\dist\\asn1tools_003";
+	
+	public static final String PROG_PATH = 
+//			"C:\\Development\\CM\\Git_20190124.002\\Projects__20190125\\"
+//			+ "pr135 - ASN.1 Decoding\\files\\test_exe.005\\dist\\asn1tools_003";
+			WORKING_DIR;
 	
 //	public static final String PROG_FILE = "test_stdio.exe";
+//	public static final String PROG_FILE = "asn1tools_003.exe";
 	public static final String PROG_FILE = "asn1tools_003.exe";
 	
 	
@@ -20,23 +30,19 @@ public class PyExecProcessManager {
 			"C:\\Development\\Runtimes\\Python 3.8.1 (32bit)\\python.exe";
 	
 
-	public final static String WORKING_DIR = 
-			"C:\\Development\\CM\\Git_20190124.002\\Projects__20190125\\"
-					+ "pr135 - ASN.1 Decoding\\files";
-	
 	public final static String[] CMD_PARAMS = {
 			
 //			"/bin/sh",
 //			"/bin/bash",
 //			"/Local/scripts/exec_automationhat_input.sh",
 			
-			CMD_PYTHON,
+//			CMD_PYTHON,
 //			"-u",
 //			"-O",
-			"C:\\Development\\CM\\Git_20190124.002\\Projects__20190125\\"
-						+ "pr135 - ASN.1 Decoding\\files\\asn1tools_003.py",
+//			"C:\\Development\\CM\\Git_20190124.002\\Projects__20190125\\"
+//						+ "pr135 - ASN.1 Decoding\\files\\asn1tools_003.py",
 
-//			PROG_PATH + "\\" + PROG_FILE
+			PROG_PATH + "\\" + PROG_FILE
 						
 		};
 	
@@ -122,8 +128,8 @@ public class PyExecProcessManager {
 	public static void main( final String[] args ) 
 					throws IOException, InterruptedException {
 		
-		final File file = new File( PROG_PATH, PROG_FILE );
-		final String strCommand = file.getAbsolutePath();
+//		final File file = new File( PROG_PATH, PROG_FILE );
+//		final String strCommand = file.getAbsolutePath();
 //		final String strCommand = COMMAND;
 //		final String[] arrCommand = { strCommand };
 		final String[] arrCommand = CMD_PARAMS;
@@ -132,6 +138,11 @@ public class PyExecProcessManager {
 //		final Process process = pb.start();
 		
 		final File fileDir = new File( WORKING_DIR );
+		
+		System.out.println( "Launching process:" );
+		for ( final String strCommand : arrCommand ) {
+			System.out.println( "\t" + strCommand );
+		}
 		
 		final Process process = Runtime.getRuntime().exec( 
 								arrCommand, new String[]{}, fileDir );
@@ -164,7 +175,7 @@ public class PyExecProcessManager {
 			}
 			
 			if ( ! strInput.isEmpty() ) {
-				System.out.println( "Sending: " + strInput );
+				System.out.println( "sending> " + strInput );
 				try {
 					os.write( strInput.getBytes() );
 					os.write( "\n".getBytes() );
@@ -176,7 +187,7 @@ public class PyExecProcessManager {
 		}
 		
 		final int iExit = process.exitValue();
-		System.out.println( "Exit code: " + iExit );
+		System.out.println( "Process ended, exit code: " + iExit );
 	}
 
 
