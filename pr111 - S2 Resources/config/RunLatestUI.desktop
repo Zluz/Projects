@@ -1,0 +1,9 @@
+
+[Desktop Entry]
+Type=Application
+Name=RunLatestUI
+Exec=/bin/bash /Local/scripts/RunLatestUI.sh
+
+#Note= place this file in dir:  ~pi/.config/autostart
+#Ref=https://learn.sparkfun.com/tutorials/how-to-run-a-raspberry-pi-program-on-startup#method-2-autostart
+
