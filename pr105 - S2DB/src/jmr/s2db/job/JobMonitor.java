@@ -3,6 +3,7 @@ package jmr.s2db.job;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -263,6 +264,9 @@ public class JobMonitor {
 	}
 	
 	
+	public static final List<Job> REPORTED_JOBS = new ArrayList<>( 20 );
+	
+	
 	private void doWorkJobs( final List<Job> jobs ) {
 		if ( null==jobs ) return;
 		if ( jobs.isEmpty() ) return;
@@ -277,6 +281,10 @@ public class JobMonitor {
 				for ( final Job job : jobs ) {
 					i++;
 					final JobType type = job.getJobType();
+					
+					if ( REPORTED_JOBS.contains( job ) ) {
+						continue;
+					}
 					
 					System.out.print( "[" + System.currentTimeMillis() + "] " );
 					System.out.print( "JobMonitor: "
@@ -305,6 +313,10 @@ public class JobMonitor {
 
 					} else {
 						System.out.println( "  Not intended here." );
+						while ( REPORTED_JOBS.size() > 20 ) {
+							REPORTED_JOBS.remove( 0 );
+						}
+						REPORTED_JOBS.add( job );
 					}
 				}
 			}
