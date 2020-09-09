@@ -7,5 +7,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/pr104 - Utilities"/>
+	<classpathentry kind="lib" path="D:/Development/Libraries/GSON 2.3.1/gson-2.3.1.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
