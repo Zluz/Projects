@@ -29,6 +29,11 @@ public class JobMonitor {
 	private String strName = null;
 	
 	private RunRemoteJob runner = null;
+
+	private static final int MAX_MUTED_JOBS = 40; 
+	private static final List<Long> 
+							MUTED_JOBS = new ArrayList<>( MAX_MUTED_JOBS );
+	
 	
 	private static JobMonitor instance;
 	
@@ -264,9 +269,6 @@ public class JobMonitor {
 	}
 	
 	
-	public static final List<Job> REPORTED_JOBS = new ArrayList<>( 20 );
-	
-	
 	private void doWorkJobs( final List<Job> jobs ) {
 		if ( null==jobs ) return;
 		if ( jobs.isEmpty() ) return;
@@ -282,21 +284,24 @@ public class JobMonitor {
 					i++;
 					final JobType type = job.getJobType();
 					
-					if ( REPORTED_JOBS.contains( job ) ) {
+					if ( MUTED_JOBS.contains( job.getJobSeq() ) ) {
 						continue;
 					}
+					
+					final boolean bMute;
 					
 					System.out.print( "[" + System.currentTimeMillis() + "] " );
 					System.out.print( "JobMonitor: "
 							+ "(job " + i + " of " + jobs.size() + ") " );
+					System.out.print( "seq " + job.getJobSeq() + " " );
 
 					if ( ! type.isRemoteType() ) {
-						System.out.println( "No remote." );
+						System.out.print( " - No remote. " );
+						bMute = true;
 					} else if ( runner.isIntendedHere( job ) ) {
 						
-						System.out.println( 
-								"Remote job identified to run here "
-								+ "(Job " + job.getJobSeq() + ")" );
+						System.out.print( 
+								"Remote job identified to run here. " );
 						
 						job.setState( JobState.WORKING );
 
@@ -311,13 +316,21 @@ public class JobMonitor {
 							runner.runGetCallStack( job );
 						}
 
+						bMute = false;
 					} else {
-						System.out.println( "  Not intended here." );
-						while ( REPORTED_JOBS.size() > 20 ) {
-							REPORTED_JOBS.remove( 0 );
-						}
-						REPORTED_JOBS.add( job );
+						System.out.print( "  Not intended here. " );
+						bMute = true;
 					}
+					
+					if ( bMute ) {
+						System.out.print( "Further logging will be muted. " );
+						while ( MUTED_JOBS.size() > 20 ) {
+							MUTED_JOBS.remove( 0 );
+						}
+						MUTED_JOBS.add( job.getJobSeq() );
+					}
+					
+					System.out.println();
 				}
 			}
 		};

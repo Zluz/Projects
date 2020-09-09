@@ -40,8 +40,8 @@ public class RunRemoteJob {
 		final String strRemoteDest = map.get( "remote" );
 		
 //		System.out.println( "isIntendedHere() - strRemoteDest = " + strRemoteDest );
-		System.out.print( "Job " + job.getJobSeq() + " - "
-								+ "dest: " + strRemoteDest );
+		System.out.print( // "Job " + job.getJobSeq() + " - "
+								" - dest: " + strRemoteDest );
 		
 		final boolean bMatchIP = this.strIP.equals( strRemoteDest );
 		if ( bMatchIP ) return true;
