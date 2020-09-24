@@ -1,7 +1,5 @@
 package jmr.pr138;
 
-import java.io.InputStream;
-import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 //TODO from pr130
@@ -15,6 +13,7 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
@@ -24,6 +23,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.swt.widgets.Tray;
 import org.eclipse.swt.widgets.TrayItem;
+
+import jmr.ui.ColorIcon;
 
 
 public class S2TrayIcon {
@@ -40,23 +41,22 @@ public class S2TrayIcon {
 	
 	private boolean bActive;
 	
-	
-//	final static String ICON_S2 = "/resources/icons/1872821.png"; // 3-line
-//	final static String ICON_S2 = "/resources/icons/121155.png"; // cyan
-	final static String ICON_S2 = "/resources/icons/116048.png"; // on-off
-
 	private TrayItem trayitem;
 	
 	
 	public static Image getS2Icon() {
-		final Class<?> classThis = S2TrayIcon.class;
-		final InputStream is = classThis.getResourceAsStream( ICON_S2 );
-		if ( null != is ) {
-			final Image image = new Image( display, is );
-			return image;
-		} else {
-			return null;
-		}
+		
+		final ColorIcon ci = new ColorIcon( display );
+		return ci.getIcon( new RGB( 60, 80, 250 ) );
+		
+//		final Class<?> classThis = S2TrayIcon.class;
+//		final InputStream is = classThis.getResourceAsStream( ICON_S2 );
+//		if ( null != is ) {
+//			final Image image = new Image( display, is );
+//			return image;
+//		} else {
+//			return null;
+//		}
 	}
 	
 	
