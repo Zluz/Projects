@@ -84,6 +84,10 @@ public class S2TrayIcon {
 		final MenuItem miSession = new MenuItem( menu, SWT.PUSH );
 		new MenuItem( menu, SWT.SEPARATOR );
 
+		final MouseJitter actionMJ = new MouseJitter();
+		final MenuItem miMouseJitter = actionMJ.getMenuItem( menu );
+		
+		new MenuItem( menu, SWT.SEPARATOR );
 		final MenuItem miShowSchedule = new MenuItem( menu, SWT.PUSH );
 		final MenuItem miShowDevices = new MenuItem( menu, SWT.PUSH );
 		final MenuItem miLaunchClient = new MenuItem( menu, SWT.PUSH );
