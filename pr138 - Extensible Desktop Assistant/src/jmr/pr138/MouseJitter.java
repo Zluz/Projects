@@ -5,6 +5,7 @@ import java.awt.MouseInfo;
 import java.awt.PointerInfo;
 import java.awt.Robot;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -15,6 +16,9 @@ import org.eclipse.swt.widgets.Shell;
 
 public class MouseJitter implements ActionEntry {
 
+	final static private Logger LOGGER = 
+			Logger.getLogger( MouseJitter.class.getName() );
+	
 	private long lJitterDuration;
 	
 	private Thread thread;
@@ -37,8 +41,11 @@ public class MouseJitter implements ActionEntry {
 			miJF.setText( strDuration );
 			final SelectionAdapter listener = new SelectionAdapter() {
 				public void widgetSelected( SelectionEvent e ) {
-					lJitterDuration = lDuration;
-					mi.setText( "Mouse Jitter (" + strDuration + ")" );
+					if ( miJF.getSelection() ) {
+						lJitterDuration = lDuration;
+						mi.setText( "Mouse Jitter (" + strDuration + ")" );
+						LOGGER.info( "Mouse jitter set to " + strDuration );
+					}
 				};
 			};
 			miJF.addSelectionListener( listener );

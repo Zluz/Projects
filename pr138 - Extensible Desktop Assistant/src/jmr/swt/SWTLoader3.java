@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
+import java.util.logging.Logger;
 
 import jmr.pr138.S2TrayIcon;
 
@@ -15,7 +16,9 @@ import jmr.pr138.S2TrayIcon;
  */
 public class SWTLoader3 {
 
-
+	final static private Logger LOGGER = 
+			Logger.getLogger( SWTLoader3.class.getName() );
+	
 	final static URLClassLoader classloader = 
 			(URLClassLoader) ClassLoader.getSystemClassLoader();
 	
@@ -122,6 +125,11 @@ public class SWTLoader3 {
 
 	
 	public static void main( final String[] args ) {
+		
+		System.setProperty( "java.util.logging.SimpleFormatter.format", 
+						"[%1$tF %1$tT] [%4$-7s] %5$s %n" );
+		
+		LOGGER.info( "Starting up" ); //TODO show more info..
 		
 		boolean bConsole = false;
 		for ( final String arg : args ) {
