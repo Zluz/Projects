@@ -1,4 +1,4 @@
-package jmr.pr138;
+package jmr.pr138.actions;
 
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;

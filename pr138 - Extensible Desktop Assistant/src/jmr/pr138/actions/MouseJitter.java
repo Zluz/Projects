@@ -1,4 +1,4 @@
-package jmr.pr138;
+package jmr.pr138.actions;
 
 import java.awt.AWTException;
 import java.awt.MouseInfo;
@@ -60,6 +60,7 @@ public class MouseJitter implements ActionEntry {
 	public static void doMouseJitter( final Robot robot ) 
 							throws InterruptedException {
 		
+		final long lTimeStart = System.currentTimeMillis();
 		final PointerInfo piNow = MouseInfo.getPointerInfo();
 		if ( null==piNow ) return;
 		
@@ -74,7 +75,11 @@ public class MouseJitter implements ActionEntry {
 			robot.mouseMove( iX + 1, iY ); 
 		}
 		Thread.sleep( 10 );
-		robot.mouseMove( iX,  iY );
+		final long lTimeAfter = System.currentTimeMillis();
+		final long lElapsed = lTimeAfter - lTimeStart;
+		if ( lElapsed < 50 ) {
+			robot.mouseMove( iX,  iY );
+		}
 	}
 	
 	

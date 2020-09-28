@@ -1,4 +1,4 @@
-package jmr.pr138;
+package jmr.pr138.actions;
 
 public enum JitterFrequency {
 

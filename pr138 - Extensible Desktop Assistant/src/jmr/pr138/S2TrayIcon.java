@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.swt.widgets.Tray;
 import org.eclipse.swt.widgets.TrayItem;
 
+import jmr.pr138.actions.MouseJitter;
 import jmr.ui.ColorIcon;
 
 
