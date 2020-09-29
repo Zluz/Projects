@@ -42,6 +42,17 @@ public class Functions {
 		return point;
 	}
 	
+	public static Point getParabolicVertex( final Point ptA,
+											final Point ptB,
+											final Point ptC ) {
+		final Point[] arrPoints = new Point[ 3 ];
+		arrPoints[ 0 ] = ptA;
+		arrPoints[ 1 ] = ptB;
+		arrPoints[ 2 ] = ptC;
+		return getParabolicVertex( arrPoints );
+	}
+
+	
 	
 	public static void main( final String[] args ) {
 		
@@ -81,9 +92,14 @@ public class Functions {
 
 		// testing EarlySelector results..
 		final Point[] arr7 = Point.createPointArray( 
-						3.0,570.091, 3.2,570.286, 3.4,571.455 );
+//					3.0,570.091, 3.2,570.286, 3.4,571.455 );
+//									3.0,570.091, 
+									3.2, 570.286, 
+									3.4, 571.455,
+									3.8, 569.643
+								);
 		final Point pt7 = getParabolicVertex( arr7 );
-		System.out.println( pt7 );
+		System.out.println( pt7.toString( 6 ) );
 		
 	}
 	
