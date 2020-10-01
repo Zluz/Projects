@@ -14,7 +14,7 @@ public class TestAlgorithm implements Optimizable {
 	public final double dTargetValue;
 	public double dCurrentValue;
 	
-	private Parameter parameter;
+//	private Parameter parameter;
 	
 	public static class TestParameter implements Parameter {
 
@@ -76,8 +76,9 @@ public class TestAlgorithm implements Optimizable {
 		final double dRandom = 0.0;
 		final double dDiff = this.dTargetValue - this.dCurrentValue; 
 		// score parabola must rise at x^1.4 or better
-		final double dResult = Math.pow( Math.abs( dDiff ), 1.3 ) + dRandom;
+//		final double dResult = Math.pow( Math.abs( dDiff ), 1.00000 ) + dRandom;
 //		final double dResult = Math.pow( Math.abs( dDiff ), 2.1 ) + dRandom;
+		final double dResult = Math.pow( Math.abs( dDiff ), 3 ) + dRandom;
 //		final double dResult = dDiff * dDiff; // easy. simple check.
 		if ( ! Double.isFinite( dResult ) ) {
 			LOGGER.warning( "Invalid result from getScore()" );

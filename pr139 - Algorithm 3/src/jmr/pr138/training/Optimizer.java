@@ -16,8 +16,10 @@ public class Optimizer {
 	public static enum TargetState {
 		/** has not yet been tested */
 		UNTESTED,
-		/** last trial improved the parameter */
-		IMPROVED,
+		/** last trial improved the parameter (avg parabolic vertex) */
+		IMPROVED_PARABOLIC,
+		/** last trial improved the parameter (best of calculated scores) */
+		IMPROVED_INCREMENTAL,
 		/** minimum found, current value is optimal for parameter */
 		MINIMUM,
 		/** last trial did not improve, but does not appear to be a minimum */
@@ -35,6 +37,8 @@ public class Optimizer {
 	private Double dRangeLeft;
 	private Double dRangeRight;
 	
+	private int iStep = 0;
+	
 	
 	public Optimizer( final Optimizable algorithm ) {
 		this.algorithm = algorithm;
@@ -49,6 +53,7 @@ public class Optimizer {
 //	public double testParam( final Parameter param ) {
 //	public double testParam( final double dValue ) {
 	public void step() {
+		iStep++;
 //		this.algorithm.setParameter( param );
 
 		final double dLeft, dRight;
@@ -69,7 +74,6 @@ public class Optimizer {
 		final Point[] arrResults = new Point[ 4 ];
 		final Set<Double> set = new HashSet<>();
 		
-		int iFoundGood = 0, iFoundBad = 0;
 		for ( int i = 0; i < 4; i++ ) {
 			final double dValue = (double) i / 3 * dRange + dLeft;
 			arrTestValues[ i ] = dValue;
@@ -77,10 +81,7 @@ public class Optimizer {
 			this.algorithm.setParamValue( dValue );
 			final double dScore = this.algorithm.getScore();
 			if ( Double.isFinite( dScore ) ) {
-				iFoundGood++;
 				set.add( dScore );
-			} else {
-				iFoundBad++;
 			}
 			
 			final Point point = new Point( dValue, dScore );
@@ -106,6 +107,8 @@ public class Optimizer {
 		}
 		
 		
+		// attempt to calculate the optimal value
+		// (by averaging minimums of 3 parabolas based on 4 points)
 		
 		final Point[] arrVertices = new Point[ 4 ];
 		
@@ -132,7 +135,7 @@ public class Optimizer {
 			
 			// normal execution
 
-			// .. wait.. let's just double check this..
+			// double check that this value is actually an improvement
 			if ( this.parameter.isLeftBetter( 
 								dCandidateScore, this.dCurrentScore ) ) {
 				
@@ -152,7 +155,7 @@ public class Optimizer {
 				}
 	
 				if ( dValuePrevious != this.dCurrentValue ) {
-					this.state = TargetState.IMPROVED;
+					this.state = TargetState.IMPROVED_PARABOLIC;
 				} else {
 					this.state = TargetState.MINIMUM;
 				}
@@ -161,77 +164,52 @@ public class Optimizer {
 				
 			}
 		}
-//			} else {
-				// either: (1) getting precise, need to tighten range, or
-				//         (2) a shallow slope can throw off the calc
-				
-				// look for the best value among the test values. 
-				// if nothing better, tighten the range.
-				
-//				LOGGER.warning( "Resolved parabolic vertex is not improved." );
-//				LOGGER.info( "Current score: " + this.dCurrentScore );
-//				LOGGER.info( "Current range: " + this.dCurrentRange + " %" );
-//				LOGGER.info( "Score array: " + Arrays.deepToString( arrResults ) );
-//				LOGGER.info( "Vertex array: " + Arrays.deepToString( arrVertices ) );
-//				
-////				for ( final Point point : arrResults ) {
-////					final double dScore = point.getY();
-////					if ( )
-////				}
-//				
-//				
-//				this.state = TargetState.UNIMPROVED;
-//				
-//				this.dRangeLeft = null;
-//				this.dRangeRight = null;
-//				
-////				LOGGER.info( "Doubling the current test range." );
-////				this.dCurrentRange = this.dCurrentRange * 2;
-//				LOGGER.info( "Halving the current test range." );
-//				this.dCurrentRange = this.dCurrentRange / 2.0;
-//			}
 
-//		} else { // if ( iFoundGood > 0 ) { // already tested this above
-			
-			LOGGER.warning( "Failed to resolve a parametric vertex score." );
-			LOGGER.info( "Score array: " + Arrays.deepToString( arrResults ) );
-			
-			// slope of results may be too shallow (a line)
-			// just take the best score
-			
-			double dBestScore = this.dCurrentScore;
-			double dBestParam = this.dCurrentValue;
-			boolean bChanged = false;
-			
-			for ( final Point point : arrResults ) {
-//				if ( Double.isFinite( dBestScore ) || point.dY < dBestScore ) {
-				if ( ( ! Double.isFinite( dBestScore ) ) ||
-						parameter.isLeftBetter( point.dY, dBestScore ) ) {
 
-					bChanged = true;
-					dBestScore = point.dY;
-					dBestParam = point.dX;
-				}
+	
+	
+//		LOGGER.warning( "Failed to resolve a parametric vertex score." );
+//		LOGGER.info( "Score array: " + Arrays.deepToString( arrResults ) );
+		
+		
+		// slope of results may be too shallow (a line)
+		// just take the best of the known scores 
+		
+		double dBestScore = this.dCurrentScore;
+		double dBestParam = this.dCurrentValue;
+		boolean bChanged = false;
+		
+		for ( final Point point : arrResults ) {
+			if ( ( ! Double.isFinite( dBestScore ) ) ||
+					parameter.isLeftBetter( point.dY, dBestScore ) ) {
+
+				bChanged = true;
+				dBestScore = point.dY;
+				dBestParam = point.dX;
 			}
+		}
+		
+		if ( ! bChanged ) {
 			
-			if ( ! bChanged ) {
-				this.state = TargetState.UNIMPROVED;
-				
-				LOGGER.warning( "Failed to find a better score." );
-			} else {
-				this.state = TargetState.IMPROVED;
-				
-				this.dCurrentValue = dBestParam;
-				this.dCurrentScore = dBestScore;
-			}
+			// could do no better..
+//			this.state = TargetState.UNIMPROVED;
+//			LOGGER.warning( "Failed to find a better score." );
 			
-//		} else {
-//			// could not improve the parameter. scores may fall on a line.
-//			LOGGER.warning( "No valid parametric vertices found." );
-//			return;
-//		}
+			// maybe we've found the optimal value
+			this.state = TargetState.MINIMUM;
+			LOGGER.info( "Value appears to be optimized." );
+			
+			
+			
+		} else {
+			this.state = TargetState.IMPROVED_INCREMENTAL;
+			
+			this.dCurrentValue = dBestParam;
+			this.dCurrentScore = dBestScore;
+		}
 		
 	}
+	
 	
 	public void optimize( final double dValue ) {
 		
@@ -260,7 +238,13 @@ public class Optimizer {
 			System.out.print( "[" + o.state.name() + "] " );
 			System.out.println( String.format( 
 							"Current value: %.30f", o.dCurrentValue ) );
+			if ( TargetState.MINIMUM.equals( o.state ) ) {
+				System.out.println( String.format( 
+						"Found optimal value: %.30f", o.dCurrentValue ) );
+				break;
+			}
 		}
+		System.out.println( "Found in " + o.iStep + " steps." );
 	}
 	
 	
