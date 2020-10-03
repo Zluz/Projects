@@ -52,10 +52,13 @@ public enum WeatherSymbol {
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/snow.png" ) ),
 	
 	SUNNY(	"mostly sunny", 
-			"$widespread frost then mostly sunny",
+			"$.*frost then sunny",
+			"$.*frost then mostly sunny",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sunny.png" ) ),
 	
 	TSTORMS( "thunderstorms", 
+			"$showers and thunderstorms likely",
+			"$.* and thunderstorms",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/tstorms.png" ) ),
 	
 	UNKNOWN( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/unknown.png" ) ),

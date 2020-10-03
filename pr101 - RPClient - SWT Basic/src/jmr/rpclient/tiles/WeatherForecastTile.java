@@ -27,7 +27,7 @@ public class WeatherForecastTile extends TileBase {
 
 	public final static int NUMBER_OF_DAYS = 1;
 	
-	public final static long MAX_IMPORT_AGE = TimeUnit.HOURS.toMillis( 2 );
+	public final static long MAX_IMPORT_AGE = TimeUnit.HOURS.toMillis( 4 );
 	
 	@SuppressWarnings("serial")
 	final class PageData extends HashMap<String,String> {};

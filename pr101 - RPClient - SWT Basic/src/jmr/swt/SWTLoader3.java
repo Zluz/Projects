@@ -151,6 +151,9 @@ public class SWTLoader3 {
 	
 	public static void main( final String[] args ) {
 		
+		System.setProperty( "java.util.logging.SimpleFormatter.format", 
+						"[%1$tF %1$tT] [%4$-7s] %5$s %n" );
+		
 		boolean bConsole = false;
 		for ( final String arg : args ) {
 			if ( arg.toLowerCase().endsWith( "console" ) ) {

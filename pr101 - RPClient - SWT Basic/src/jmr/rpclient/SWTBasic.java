@@ -128,6 +128,30 @@ public class SWTBasic {
 
 	public static void close() {
 		Logging.log("Application closing. " + new Date().toString());
+		
+		Runtime.getRuntime().halt( 98 ); // <<<======== HALT
+		
+		new Thread( "Application Abort" ) {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep( 3000 );
+					System.err.println(
+							"Timeout (3s) elapsed. "
+							+ "Application aborted." );
+					System.exit( 100 );
+					Runtime.getRuntime().exit( 100 );
+				} catch ( final InterruptedException e ) {
+					System.err.println( 
+							"Application Abort thread interrupted. "
+							+ "Application aborted." );
+					e.printStackTrace();
+					System.exit( 100 );
+					Runtime.getRuntime().exit( 100 );
+				}
+			}
+		}.start();
+		
 		LOGGER.log( Level.INFO, "Session ending." );
 		new Thread( "Shut down S2 session" ) {
 			@Override
@@ -151,26 +175,6 @@ public class SWTBasic {
 				}
 			}
 		}.start();
-		
-		new Thread( "Application Abort" ) {
-			@Override
-			public void run() {
-				try {
-					Thread.sleep( 3000 );
-					System.err.println(
-							"Timeout (3s) elapsed. "
-							+ "Application aborted." );
-					Runtime.getRuntime().exit( 100 );
-				} catch ( final InterruptedException e ) {
-					System.err.println( 
-							"Application Abort thread interrupted. "
-							+ "Application aborted." );
-					e.printStackTrace();
-					Runtime.getRuntime().exit( 100 );
-				}
-			}
-		}.start();
-		
 	}
 
 	public final static SelectionAdapter selClose = new SelectionAdapter() {
