@@ -29,7 +29,7 @@ public class AreaMap {
 		final long lY = (long)Math.floor( coord.dY );
 //		final long lX = (long)Math.floor( coordRounded.dX );
 //		final long lY = (long)Math.floor( coordRounded.dY );
-		final long lKey = lY << 64 + lX;
+		final long lKey = lY << 32 + lX;
 		return lKey;
 	}
 	

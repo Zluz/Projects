@@ -6,21 +6,28 @@ package jmr.pr138.training;
  * 	 must be linear
  *   must be zero-based
  */
-public interface Parameter {
+public abstract class Parameter<T> {
 
 //	public String getName();
 	
-	public double getInitial();
-	
-//	public double getCurrent();
+	public abstract T getInitial();
 	
 	/** default test range, as a percentage */
-	public double getTestRange();
+	public abstract double getTestRange();
 	
-	public boolean isLinear();
 
-	/** less than zero means dLHS is better (closer to zero) */
-	public double compare( final double dLHS, final double dRHS );
+
+	public abstract void setCurrent( final T tValue );
 	
-	public boolean isLeftBetter( final double dLHS, final double dRHS );
+	public abstract T getCurrent();
+	
+	
+	public double asDouble() {
+		final T t = getCurrent();
+		if ( t instanceof Double ) {
+			return (double)t;
+		} else {
+			throw new IllegalStateException( "Parameter is not a double." );
+		}
+	}
 }
