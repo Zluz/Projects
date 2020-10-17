@@ -38,6 +38,7 @@ echo ""
 
 cd $rundir
 /usr/bin/java -jar $latest | tee $FILE_LOG
+export exit_code=$?
 
 `sleep 1;/Local/scripts/conky.sh > /dev/null 2>&1;` &
 
@@ -48,8 +49,8 @@ echo $FILE_LOG
 file /tmp/session
 echo ""
 
-echo -n "Client process ended, showing desktop prompt..."
-zenity --warning --no-wrap --text="Client process ended.\n\nLog written to:\n${FILE_LOG}" 2> /dev/null
+echo -n "Client process ended, exit code $exit_code.  Script about to end..."
+zenity --warning --no-wrap --text="Client process ended\nExit code  $exit_code\n\nLog written to:\n${FILE_LOG}" 2> /dev/null
 echo "Done."
 
 
