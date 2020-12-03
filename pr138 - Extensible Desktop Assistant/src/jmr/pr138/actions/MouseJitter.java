@@ -14,6 +14,8 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 
+import jmr.pr140.Domain;
+
 public class MouseJitter implements ActionEntry {
 
 	final static private Logger LOGGER = 
@@ -25,11 +27,23 @@ public class MouseJitter implements ActionEntry {
 	private boolean bActive = false;
 	private Shell shell;
 	
+
+	public static JitterFrequency getDefault() {
+//		if ( Domain.getDomain() )
+//		return JitterFrequency.OFF;
+		return JitterFrequency._60;
+	}
+	
+	
+	
 	@Override
 	public MenuItem getMenuItem( final Menu menuParent ) {
 		final MenuItem mi = new MenuItem( menuParent, SWT.CASCADE );
 		mi.setText( "Mouse Jitter" );
 		this.shell = menuParent.getShell();
+		
+		final MenuItem[] miSelect = { null };
+		final SelectionAdapter[] saSelect = { null };
 		
 		final Menu menuSub = new Menu( this.shell, SWT.DROP_DOWN );
 		mi.setMenu( menuSub );
@@ -49,9 +63,19 @@ public class MouseJitter implements ActionEntry {
 				};
 			};
 			miJF.addSelectionListener( listener );
+			
+			if ( jf.equals( MouseJitter.getDefault() ) ) {
+				miSelect[0] = miJF;
+				saSelect[0] = listener;
+			}
 		}
 		
 		this.start();
+		
+		if ( null != miSelect[0] ) {
+			miSelect[0].setSelection( true );
+			saSelect[0].widgetSelected( null );
+		}
 		
 		return mi;
 	}

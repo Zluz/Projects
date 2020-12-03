@@ -2,17 +2,17 @@ package jmr.pr140;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.sun.jna.Native;
-import com.sun.jna.platform.win32.Tlhelp32;
+import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.User32;
+import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinDef.HWND;
 import com.sun.jna.platform.win32.WinDef.RECT;
-import com.sun.jna.platform.win32.WinNT.HANDLE;
+import com.sun.jna.platform.win32.WinUser;
 import com.sun.jna.platform.win32.WinUser.WINDOWINFO;
 import com.sun.jna.win32.StdCallLibrary;
-
-import jmr.pr140.ProcessUtils.Kernel32;
 
 public class WindowUtils {
 
@@ -71,14 +71,64 @@ public class WindowUtils {
 				(User32_SO35393786)Native.loadLibrary( 
 						"user32", User32_SO35393786.class );
 		
+		boolean EnumWindows( WinUser.WNDENUMPROC ldEnumFunc, Pointer arg );
+		
+		WinDef.HWND SetFocus( WinDef.HWND hWnd );
+		
+		int GetWindowTextA( HWND hWnd, byte[] lpString, int nMaxCount );
+		
+		boolean SetForegroundWindow( WinDef.HWND hWnd );
 	}
+	
+	static final User32_SO35393786 USER32 = User32_SO35393786.INSTANCE;
+	
 	
 	
 	
 	public static Map<HWND,String> getAllWindows() {
 		final Map<HWND,String> map = new HashMap<>();
-//		USER32 ...
+		USER32.EnumWindows( new WinUser.WNDENUMPROC() {
+			
+			@Override
+			public boolean callback( final HWND hwnd, final Pointer data ) {
+				final byte[] bTitle = new byte[ 512 ];
+				USER32.GetWindowTextA( hwnd, bTitle, 512 );
+				final String strTitle = Native.toString( bTitle );
+				map.put( hwnd, strTitle );
+				return true;
+			}
+		}, null );
 		return map;
+	}
+	
+	
+	public static WindowInfo getWindowInfo( final String strTitle ) {
+		if ( null == strTitle ) return null;
+		
+		final Map<HWND, String> map = getAllWindows();
+		for ( final Entry<HWND, String> entry : map.entrySet() ) {
+			if ( strTitle.equals( entry.getValue() ) ) {
+				final WindowInfo info = getWindowInfo( entry.getKey() );
+				return info;
+			}
+		}
+		return null;
+	}
+	
+	
+	public static WindowInfo findWindowMatching( final String strTitle,
+												 final int iStyle ) {
+		final String strSafe = null != strTitle ? strTitle : "";
+		final Map<HWND, String> map = getAllWindows();
+		for ( final Entry<HWND, String> entry : map.entrySet() ) {
+			if ( strSafe.equals( entry.getValue() ) ) {
+				final WindowInfo info = getWindowInfo( entry.getKey() );
+				if ( info.iStyle == iStyle ) {
+					return info;
+				}
+			}
+		}
+		return null;
 	}
 	
 	

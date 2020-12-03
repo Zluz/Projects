@@ -7,5 +7,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/SWT 3.114.100 (Win64)"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr140 - JNA Utilities"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

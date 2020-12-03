@@ -71,6 +71,7 @@ public class ProcessUtils {
 		}
 		return list;
 	}
+
 	
 	
 	public static void main( final String[] args ) {
@@ -80,7 +81,5 @@ public class ProcessUtils {
 					"\tprocess " + process.iPid + ":\t" + process.strName );
 		}
 	}
-	
-	
 	
 }
