@@ -1,0 +1,47 @@
+
+TAC
+
+from
+	https://en.wikipedia.org/wiki/Type_Allocation_Code
+
+TAC 		Manufacturer 	Model 		Internal Model Number 	Source/Notes
+32930400 	Samsung 	Galaxy S7 
+35330509 	Samsung 	Galaxy S9 	SM-G960U 
+
+35189206	Samsung		Galaxy S4				(internal)
+35735007	Samsung		Galaxy S7				Osmocom TAC database
+
+IMEIs
+353305090000000
+357350070000000
+
+possible information path:
+
+	1. get list of TACs
+		a. download CSV or JSON from http://tacdb.osmocom.org/
+			http://tacdb.osmocom.org/export/tacdb.csv
+			http://tacdb.osmocom.org/export/tacdb.json
+			http://tacdb.osmocom.org/export/tacdb.sqlite3		(binary)
+	2. get additional data given TAC
+		a. www.imeidb.website
+			http://www.imeidb.website/?imei=357350070000000
+	
+	
+	
+
+
+information of interest:
+
+	DESC				compressed detailed text, not necessarily human-readable
+	MARKETINGNAME			human-readable name
+	MODELNAME			more specific name, possibly including product code
+	WDSID				? (5-digit number)
+	NETWORKCHARACTERISTICS		many fields, pipe-delimited
+	WDSNETWORKCHARACTERISTICS	many fields, pipe-delimited
+	SIMCOUNT			number
+	DUALSIM				"Yes"(or "No" .. ?)
+	SMALLIMAGEURL			public source url of image ?
+	SMALLIMAGE			(empty?)
+	tac-list			list of TACs
+	image-thumbnail-binary		base-64 encoded image (probably JPG)
+	time-load			date/time of data import
