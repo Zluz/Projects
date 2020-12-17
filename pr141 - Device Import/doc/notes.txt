@@ -11,9 +11,18 @@ TAC 		Manufacturer 	Model 		Internal Model Number 	Source/Notes
 35189206	Samsung		Galaxy S4				(internal)
 35735007	Samsung		Galaxy S7				Osmocom TAC database
 
-IMEIs
+IMEIs (fake)
 353305090000000
 357350070000000
+
+IMEIs (real: valid check-digit)
+359997070049352 - (phone, very little info)
+			https://www.imei.info/?imei=359997070049352
+353451048099913 - (modem)
+			https://www.imei.info/?imei=353451048099913
+867370021413553 - ZTE Blade A460 Specification - IMEI.info
+			https://www.imei.info/phonedatabase/81302-zte-blade-a460/#basic
+
 
 possible information path:
 
@@ -45,3 +54,19 @@ information of interest:
 	tac-list			list of TACs
 	image-thumbnail-binary		base-64 encoded image (probably JPG)
 	time-load			date/time of data import
+
+
+[www.imei.info]
+
+IMEI.info: 359997070049352
+
+IMEI.info: EI CHECK: 867370021413553
+
+359997070049352 - (phone, very little info)
+353451048099913 - (modem)
+867370021413553 - ZTE Blade A460 Specification - IMEI.info
+
+
+
+https://www.imei.info/phonedatabase/81302-zte-blade-a460/#parameters
+
