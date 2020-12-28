@@ -24,6 +24,8 @@ import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.swt.widgets.Tray;
 import org.eclipse.swt.widgets.TrayItem;
 
+import jmr.pr138.actions.ActionEntry;
+import jmr.pr138.actions.BackupPointerAction;
 import jmr.pr138.actions.MouseJitter;
 import jmr.ui.ColorIcon;
 
@@ -87,7 +89,12 @@ public class S2TrayIcon {
 
 		final MouseJitter actionMJ = new MouseJitter();
 		final MenuItem miMouseJitter = actionMJ.getMenuItem( menu );
-		
+
+//		final ActionEntry actionPointer = new BackupPointerAction();
+		final ActionEntry actionPointer = 
+								new BackupPointerAction( trayitem, menu );
+		final MenuItem miPointer = actionPointer.getMenuItem( menu );
+
 		new MenuItem( menu, SWT.SEPARATOR );
 		final MenuItem miShowSchedule = new MenuItem( menu, SWT.PUSH );
 		final MenuItem miShowDevices = new MenuItem( menu, SWT.PUSH );
@@ -131,13 +138,6 @@ public class S2TrayIcon {
 				} else if ( miPostEvent.getSelection() ) {
 					doPostStatusEvent();
 				}
-			}
-		});
-		
-		trayitem.addListener( SWT.MenuDetect, new Listener() {
-			@Override
-			public void handleEvent( final Event event ) {
-				menu.setVisible( true );
 			}
 		});
 		
