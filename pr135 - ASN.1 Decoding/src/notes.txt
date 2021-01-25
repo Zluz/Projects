@@ -1,1 +1,26 @@
-This is just a placeholder file.
+
+Notes. See email from about 20210125.
+
+https://www.sqimway.com/rrc_nr_g10.html
+
+ControlResourceSetZero ::= INTEGER (0..15)
+
+SearchSpaceZero ::= INTEGER (0..15)
+
+PDCCH-ConfigSIB1 ::= SEQUENCE {
+   controlResourceSetZero ControlResourceSetZero,
+   searchSpaceZero SearchSpaceZero
+}
+
+MIB ::= SEQUENCE {
+   systemFrameNumber BITSTRING (SIZE (6)),
+   subCarrierSpacingCommon ENUMERATED {scs15or60, scs30or120},
+   ssb-SubcarrierOffset INTEGER (0..15),
+   dmrs-TypeA-Position ENUMERATED {pos2, pos3},
+   pdcch-ConfigSIB1 PDCCH-ConfigSIB1,
+   cellBarred ENUMERATED {barred, notBarred},
+   intraFreqReselection ENUMERATED {allowed, notAllowed},
+   spare BITSTRING (SIZE (1))
+}
+
+.. SIB1 is complicated.
