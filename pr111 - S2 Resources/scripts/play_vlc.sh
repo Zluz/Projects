@@ -18,6 +18,7 @@ fi
 
 xdotool windowfocus $WID
 xdotool windowactivate $WID
+xdotool windowraise $WID
 sleep 1
 # xdotool key ctrl+shift+p
 xdotool key Escape
@@ -40,4 +41,7 @@ else
 	echo "    $LSOF_TEST"
 	echo "#JSON  {\"caption\":\"Audio detected\",\"status\":\"done\"}"
 fi
+
+
+/Local/scripts/show_vnc_QVRPro.sh
 

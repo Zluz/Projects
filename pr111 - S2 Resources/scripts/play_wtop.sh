@@ -55,7 +55,7 @@ echo "#JSON  {\"caption\":\"Stopping audio\"}"
 /usr/bin/killall chromium-browser
 
 # /Local/scripts/launch_web.sh
-/Local/scripts/stop_all.sh
+# /Local/scripts/stop_all.sh
 
 echo "#JSON  {\"caption\":\"Activting browser\"}"
 
@@ -65,8 +65,8 @@ sleep 8
 echo "#JSON  {\"caption\":\"Activating playback\"}"
 /usr/lib/chromium-browser/chromium-browser --kiosk "https://live.wtop.com/listen/?autoplay=1" &
 
-echo "Sleeping for 20s.."
-sleep 20
+echo "Sleeping for 30s.."
+sleep 30 
 
 for i in 1 2 3 4 5 6 7
 do
@@ -76,9 +76,16 @@ do
 		echo "#JSON  {\"caption\":\"Activating playback\",\"status\":\"warning\"}"
 		echo "No web audio detected yet, retrying URL.."
 
+		/usr/bin/killall chromium-browser
+		sleep 1
+		/usr/bin/killall chromium-browser
+		sleep 1
+
+		/usr/lib/chromium-browser/chromium-browser &
+		sleep 10
 		/usr/lib/chromium-browser/chromium-browser --kiosk "https://live.wtop.com/listen/?autoplay=1" &
 
-		sleep 20 
+		sleep 40 
 		echo "#JSON  {\"caption\":\"Checking playback\",\"status\":\"warning\"}"
 		sleep 1
 	else
@@ -96,7 +103,11 @@ do
 		else
 			echo "Web audio detected (final check):"
 			echo "    $LSOF_TEST"
-			echo "#JSON  {\"caption\":\"Audio detected..2\",\"status\":\"done\"}"
+			# echo "#JSON  {\"caption\":\"Audio detected..2\",\"status\":\"done\"}"
+
+			echo "#JSON  {\"caption\":\"Stopping VLC..\"}"
+			/Local/scripts/stop_vlc.sh
+			echo "#JSON  {\"caption\":\"Done.\"}"
 
 			rm $PID_FILE
 			exit 0

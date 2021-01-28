@@ -14,6 +14,7 @@ echo -n "Stopping VLC audio..."
 
 WID=`xdotool search --name "VLC media player"`
 xdotool windowfocus $WID
+xdotool windowraise $WID
 sleep 1
 # xdotool key ctrl+shift+p
 xdotool key s

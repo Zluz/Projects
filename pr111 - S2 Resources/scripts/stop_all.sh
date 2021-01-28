@@ -31,3 +31,7 @@ echo "#JSON  {\"caption\":\"All audio stopped\",\"status\":\"done\"}"
 # /Local/scripts/stop_vlc.sh
 # /Local/scripts/stop_web.sh
 
+
+/Local/scripts/show_vnc_QVRPro.sh
+
+
