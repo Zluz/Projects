@@ -19,8 +19,8 @@ public class SWTLoader3 {
 	final static private Logger LOGGER = 
 			Logger.getLogger( SWTLoader3.class.getName() );
 	
-	final static URLClassLoader classloader = 
-			(URLClassLoader) ClassLoader.getSystemClassLoader();
+	final static ClassLoader classloader = 
+			(ClassLoader) ClassLoader.getSystemClassLoader();
 	
 
 	public static void printLoadedClasses() {
