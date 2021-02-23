@@ -1,0 +1,58 @@
+
+abbrs
+	A - All
+	S - Segments
+	R - Recent
+
+inputs, initial (static)
+
+	points
+		Pt_TS-003  - point, top 3% of target scan
+		Pt_TS-010  - point, top 10%
+		Pt_TS-050  - point, top 50%
+		Pt_TS-100  - point, all cells
+		Pt_NS2-50  - point, top 50% of narrowing-scan-2 (no B)  (maybe?)
+		
+		Pt_LM-003  - point, nearest to pt_003, touching nearest M
+		Pt_LM-010  - point, nearest to pt_010, touching nearest M
+		Pt_LM-050  - point, nearest to pt_050, touching nearest M
+		
+		Pt_RM-02   - point, calculated using recent M (2s?)  (maybe??)
+		Pt_RM-06   - point, calculated using recent M (6s?)  (maybe)
+		Pt_RM-10   - point, calculated using recent M (10s?)  (maybe??)
+		
+	inner points?
+		projection: [Pt_TS-010] 50% past [Pt_LM-010]
+	
+	radius?
+		Rad_S-003  - radius, top 3% of target scan
+		Rad_S-010  - radius, top 10%
+		Rad_S-050  - radius, top 50%
+		Rad_S-100  - radius, all cells
+		
+		Rad_RM-06-10 - radius, top 10% of recent M (6s?)
+
+	M_CA   - M count, all
+	M_CS   - M count, applied to segments
+
+inputs
+	Range_SR    - average range to most recent segment (all M b adjusted)
+	Range_MR02  - average range to recent M (2s?)
+	Range_MR06  - average range to recent M (6s?)
+	Range_MR10  - average range to recent M (10s?)
+
+outputs
+	% of each input point
+		how to measure confidence?
+	dynamic degree
+		(most likely requres more layers)
+
+
+[ideas, dynamic focused]
+
+change in area ?
+d*r^2 ?
+
+input: change in r^2 ?
+
+
