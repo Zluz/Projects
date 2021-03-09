@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
@@ -91,6 +93,20 @@ public class Device {
 		}
 	}
 	
+
+	private static String getJsonMember( final JsonObject jo,
+								  		 final String strKey ) {
+		if ( null == jo ) return NULL_INDICATOR;
+		if ( ! jo.has( strKey ) ) return NULL_INDICATOR;
+		final JsonElement je = jo.get( strKey );
+		if ( null == je ) return NULL_INDICATOR;
+		if ( je.isJsonNull() ) return NULL_INDICATOR;
+		final String strValue = je.getAsString();
+		if ( null == strValue ) return NULL_INDICATOR;
+		return strValue;
+		
+	}
+	
 	
 	public static Device importDeviceFromJSON( final File file ) 
 													throws IOException {
@@ -99,18 +115,23 @@ public class Device {
 		
 		final JsonObject jo = GSON.fromJson( br, JsonObject.class );
 		if ( null == jo ) return null;
-		if ( 0 == jo.size() ) return null;
+//		if ( 0 == jo.size() ) return null;
+		
+		if ( ! jo.has( "tac-list" ) ) {
+			return null;
+		}
 		
 		final JsonArray jaTACs = jo.getAsJsonArray( "tac-list" );
+		
 		final Type listType = new TypeToken<List<Long>>(){}.getType();
 		final List<Long> listTACs = GSON.fromJson( jaTACs.toString(), listType);
 
 		final Device device = new Device( listTACs );
 		
-		device.set(	TextProperty.MARKETING_NAME, 
-					jo.get( "MARKETINGNAME" ).getAsString() );
-		device.set(	TextProperty.MODEL_NAME, 
-					jo.get( "MODELNAME" ).getAsString() );
+		device.set(	TextProperty.MARKETING_NAME,
+				getJsonMember( jo, "MARKETINGNAME" ) );
+		device.set(	TextProperty.MODEL_NAME,
+				getJsonMember( jo, "MODELNAME" ) );
 		
 		device.loadCharacteristics( 
 				jo.get( "NETWORKCHARACTERISTICS" ).getAsString() );
@@ -125,8 +146,7 @@ public class Device {
 			device.iSimCount = null;
 		}
 		
-		device.strImageBase64 = 
-					jo.get( "image-thumbnail-binary" ).getAsString();
+		device.strImageBase64 = getJsonMember( jo, "image-thumbnail-binary" );
 		
 		return device;
 	}
@@ -166,8 +186,8 @@ public class Device {
 		final StringBuilder sb = new StringBuilder();
 		
         final String strTACs = this.listTACs.stream()
-		                .map( l-> ""+ l )
-		                .collect( Collectors.joining(",") );
+				                .map( l-> ""+ l )
+				                .collect( Collectors.joining(",") );
         sb.append( String.format( "%18s \t ", strTACs ) );
 		
 		sb.append( getNumeric( this.iSimCount ) + "," );
@@ -200,13 +220,67 @@ public class Device {
 	
 	
 	public static void main( final String[] args ) throws IOException {
-		final String strFile = "/data/Development/CM/"
-				+ "jmr_Projects__20210129/pr141 - Device Import/files/"
-				+ "Samsung_Galaxy_S4_SGH_M919V_Galaxy_S4_48089.json";
-		final File file = new File( strFile );
-		final Device device = Device.importDeviceFromJSON( file );
 		
-		System.out.println( device.toTSV() );
+//		final String strFile = "/data/Development/CM/"
+//				+ "jmr_Projects__20210129/pr141 - Device Import/files/"
+//				+ "Samsung_Galaxy_S4_SGH_M919V_Galaxy_S4_48089.json";
+//		final String strFile = "D:\\Development\\CM\\"
+//				+ "jmr__Projects__20200908\\pr141 - Device Import\\files\\"
+//				+ "Samsung_Galaxy_S4_SGH_M919V_Galaxy_S4_48089.json";
+//		final File file = new File( strFile );
+//		final Device device = Device.importDeviceFromJSON( file );
+//		System.out.println( device.toTSV() );
+		
+		
+		final String strWorkDir = "D:\\Tasks\\"
+								+ "20210309 - COSMIC-417 - Devices\\";
+		final File fileDatabase = new File( strWorkDir + "catalog.tsv" );
+		final File fileHeader = new File( strWorkDir + "header.txt" );
+		if ( fileDatabase.exists() ) fileDatabase.delete();
+		
+		final byte[] arrHeader = Files.readAllBytes( fileHeader.toPath() );
+		
+		Files.write( fileDatabase.toPath(), arrHeader,
+						StandardOpenOption.CREATE );
+		
+		final Map<Integer,Long> mapTACCounts = new HashMap<>();
+		
+		final String strDir = strWorkDir + "device-mine-2019091104";
+		final File fileDir = new File( strDir );
+		
+		for ( final File file : fileDir.listFiles() ) {
+			if ( file.isFile() ) {
+				final Device device = Device.importDeviceFromJSON( file );
+				if ( null != device ) {
+					
+					final String strTSV = device.toTSV() + "\n";
+					
+					System.out.print( strTSV );
+					Files.write( fileDatabase.toPath(), strTSV.getBytes(),
+									StandardOpenOption.APPEND );
+					
+					final int iTACCount = device.listTACs.size();
+					if ( mapTACCounts.containsKey( iTACCount ) ) {
+						final long lCount = mapTACCounts.get( iTACCount );
+						mapTACCounts.put( iTACCount, lCount + 1 );
+					} else {
+						mapTACCounts.put( iTACCount, 1L );
+					}
+					
+				} else {
+					System.out.println( 
+							"  Null import from: " + file.getName() );
+				}
+			}
+			
+			if ( mapTACCounts.get( 1 ) > 200 ) break;
+		}
+		
+		System.out.println( "TAC count distribution:\n" 
+						+ mapTACCounts.toString() );
+		// for the first 1000:
+		// {1=1001, 2=323, 3=155, 4=87, 5=86, 6=50, 7=30, 8=23, 9=25, ...
+
 	}
 	
 }

@@ -13,7 +13,7 @@ public class ScanFile {
 		
 		final RandomAccessFile raf = new RandomAccessFile( file, "r" );
 		
-		boolean bContinue = true;
+//		boolean bContinue = true;
 		final long lLength = raf.length();
 		
 //		while ( bContinue ) {
@@ -37,7 +37,7 @@ public class ScanFile {
 			System.out.print( "length() = " + raf.length() + " " );
 			System.out.print( "iCount = " + iCount + " " );
 			
-			bContinue = iBytesRead == arrBytes.length;
+//			bContinue = iBytesRead == arrBytes.length;
 			System.out.println();
 		}
 		raf.close();
