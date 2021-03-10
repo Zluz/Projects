@@ -13,6 +13,10 @@ import java.util.TreeMap;
 import jmr.pr141.device.TSVRecord;
 
 public class ScanFile {
+
+	public final static boolean DEBUG_SHOW_LOAD_DETAIL = false;
+	public final static boolean DEBUG_RUN_TAC_SEEK_TEST = false;
+	
 	
 	final RandomAccessFile raf;
 	
@@ -179,75 +183,63 @@ public class ScanFile {
 			
 			final long lFilePos = raf.getFilePointer();
 			
-//			final boolean bAdvHit1 = advanceTo( "\t\r", 40, true );
-//			final String str = clean( this.sbReader.toString() );
-//			final String str = readNextLine();
 			final String str = readNextSignificantLine();
 			
 			if ( null == str ) break; //TODO change
 			
 			lMaxLineSize = Math.max( lMaxLineSize, str.length() );
 			
-//			final String strTrimmed = str.trim();
-//			final boolean bComment = ( 1 == strTrimmed.indexOf( '#' ) );
-			
 			final List<Long> listTACs = TSVRecord.getTACsFromLine( str );
 			
-			final boolean bHitLF = str.contains( "\n" ) 
-					|| str.contains( "\f" ) || str.contains( "\r" );
-			final boolean bHitTab = str.contains( "\t" );
 			
-			final long lPosition = raf.getFilePointer();
+			if ( DEBUG_SHOW_LOAD_DETAIL ) {
+				final boolean bHitLF = str.contains( "\n" ) 
+						|| str.contains( "\f" ) || str.contains( "\r" );
+				final boolean bHitTab = str.contains( "\t" );
+				
+				final long lPosition = raf.getFilePointer();
+	
+				System.out.print( "Read [" );
+				if ( bHitLF ) System.out.print( "L" );
+				if ( bHitTab ) System.out.print( "T" );
+				System.out.print( "] (" + lPosition + "): " );
+				final String strSafe = safe( str );
+				if ( strSafe.length() > 100 ) {
+					System.out.print( "(" + strSafe.length() + " chars):" );
+					System.out.print( "\"" + strSafe.substring( 0, 98 ) + "...\"" );
+				} else {
+					System.out.print( "\"" + strSafe + "\"" );
+				}
+				System.out.print( " TACs: " + listTACs.toString() );
 
-//			if ( ! bHitLF ) {
-//			this.sbReader.setLength( 0 );
-//			final boolean bAdvHit2 = advanceTo( "\r", 100000, true );
-			
-//			}
-			
-			System.out.print( "Read [" );
-//			if ( bAdvHit1 ) System.out.print( "1" );
-//			if ( bComment ) System.out.print( "C" );
-			if ( bHitLF ) System.out.print( "L" );
-			if ( bHitTab ) System.out.print( "T" );
-//			if ( bAdvHit2 ) System.out.print( "2" );
-			System.out.print( "] (" + lPosition + "): " );
-			final String strSafe = safe( str );
-			if ( strSafe.length() > 100 ) {
-				System.out.print( "(" + strSafe.length() + " chars):" );
-				System.out.print( "\"" + strSafe.substring( 0, 98 ) + "...\"" );
-			} else {
-				System.out.print( "\"" + strSafe + "\"" );
+				System.out.println();
 			}
-			
-			System.out.print( " TACs: " + listTACs.toString() );
 
 			addTacPosition( lFilePos, listTACs );
 			
-//			System.out.print( " >>> \"" 
-//						+ safe( clean( sbReader.toString() ) ) + "\"" );
-			System.out.println();
-
 			bContinue = i < lMaxCount;
 		}
 
-		System.out.println( "lCountLines      : " + lCountLines );
-		System.out.println( "lCountLineTACs   : " + lCountLineTACs );
-		System.out.println( "lMaxLineSize     : " + lMaxLineSize );
-		System.out.println( "lMaxRepeatedTACs : " + lMaxRepeatedTACs );
-		System.out.println( "lTacMostRepeated : " + lTacMostRepeated );
+		if ( DEBUG_SHOW_LOAD_DETAIL ) {
+			System.out.println( "lCountLines      : " + lCountLines );
+			System.out.println( "lCountLineTACs   : " + lCountLineTACs );
+			System.out.println( "lMaxLineSize     : " + lMaxLineSize );
+			System.out.println( "lMaxRepeatedTACs : " + lMaxRepeatedTACs );
+			System.out.println( "lTacMostRepeated : " + lTacMostRepeated );
+		}
 		
-		
-		final List<Long> list = mapTacPos.get( lTacMostRepeated );
-		System.out.println( "Positions: " + list.toString() );
-		
-		System.out.println( "Seeking, Loading.." );
-		for ( final Long lPos : list ) {
-			raf.seek( lPos );
-			final String strLine = readNextLine();
-			System.out.println( "Read (pos:" + lPos + "): "
-					+ "(len:" + strLine.length() + ") "
-					+ "\"" + strLine.substring( 0, 40 ) + "...\"" );
+		if ( DEBUG_RUN_TAC_SEEK_TEST ) {
+			final List<Long> list = mapTacPos.get( lTacMostRepeated );
+			System.out.println( "Positions: " + list.toString() );
+			
+			System.out.println( "Seeking, Loading.." );
+			for ( final Long lPos : list ) {
+				raf.seek( lPos );
+				final String strLine = readNextLine();
+				System.out.println( "Read (pos:" + lPos + "): "
+						+ "(len:" + strLine.length() + ") "
+						+ "\"" + strLine.substring( 0, 40 ) + "...\"" );
+			}
 		}
 	}
 	
@@ -293,17 +285,17 @@ public class ScanFile {
 		final List<Long> listPositions = mapTacPos.get( lTAC );
 		if ( null == listPositions ) return listRecords;
 		
-		System.out.println( "Positions: " + listPositions.toString() );
+//		System.out.println( "Positions: " + listPositions.toString() );
 		
-		System.out.println( "Seeking, Loading.." );
+//		System.out.println( "Seeking, Loading.." );
 		for ( final Long lPos : listPositions ) {
 			try {
 				raf.seek( lPos );
 				final String strLine = readNextLine();
 				listRecords.add( strLine );
-				System.out.println( "Read (pos:" + lPos + "): "
-						+ "(len:" + strLine.length() + ") "
-						+ "\"" + strLine.substring( 0, 40 ) + "...\"" );
+//				System.out.println( "Read (pos:" + lPos + "): "
+//						+ "(len:" + strLine.length() + ") "
+//						+ "\"" + strLine.substring( 0, 40 ) + "...\"" );
 			} catch ( final IOException e ) {
 				// just ignore for now
 			}

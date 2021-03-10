@@ -1,7 +1,6 @@
 package jmr.pr141;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -46,11 +45,22 @@ public class DeviceService {
 		return list;
 	}
 	
+	public void clear() {
+		this.mapTacPos.clear();
+	}
+	
 	public boolean load( final File file ) {
+		System.out.println( "Loading: \"" + file.getAbsolutePath() + "\"" );
+		final long lTimeStart = System.currentTimeMillis();
 		try {
 			this.scanner = new ScanFile( file );
-			scanner.scan_002( 100 );
+			scanner.scan_002( 100000 );
 			this.mapTacPos.putAll( scanner.getTacPosMap() );
+			
+			final long lTimeEnd = System.currentTimeMillis();
+			final long lElapsed = lTimeEnd - lTimeStart;
+			System.out.println( "Load completed in " + lElapsed + " ms." );
+			
 			return true;
 		} catch ( final Exception e ) {
 			return false;
@@ -64,9 +74,20 @@ public class DeviceService {
 		final String strFile = "D:\\Tasks\\20210309 - COSMIC-417 - Devices\\"
 							+ "catalog.tsv";
 		final File file = new File( strFile );
-		
+
 		final DeviceService devices = new DeviceService();
-		devices.load( file );
+
+		final int iIterations = 8;
+		final long lTimeStart = System.currentTimeMillis();
+		for ( int i = 0; i < iIterations; i++ ) {
+			devices.clear();
+			devices.load( file );
+		}
+		final long lTimeEnd = System.currentTimeMillis();
+		final long lElapsed = lTimeEnd - lTimeStart;
+		final double dAvgTime = (double)lElapsed / 1000.0 / iIterations;
+		System.out.println( String.format( 
+				"Average time elapsed: %.3f seconds.", dAvgTime ) );
 		
 		final long lTAC = 35888803; //Acer beTouch E400
 		final List<Device> list = devices.getAllDeviceRecords( lTAC );
