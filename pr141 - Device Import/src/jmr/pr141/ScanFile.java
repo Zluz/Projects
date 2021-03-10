@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import jmr.pr141.device.TSVRecord;
+
 public class ScanFile {
 	
 	final RandomAccessFile raf;
@@ -189,7 +191,7 @@ public class ScanFile {
 //			final String strTrimmed = str.trim();
 //			final boolean bComment = ( 1 == strTrimmed.indexOf( '#' ) );
 			
-			final List<Long> listTACs = Util.getTACsFromLine( str );
+			final List<Long> listTACs = TSVRecord.getTACsFromLine( str );
 			
 			final boolean bHitLF = str.contains( "\n" ) 
 					|| str.contains( "\f" ) || str.contains( "\r" );

@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import jmr.pr141.device.Device;
+import jmr.pr141.device.TSVRecord;
+
 public class DeviceService {
 
 	enum MergeStrategy {
@@ -33,7 +36,8 @@ public class DeviceService {
 		
 		final List<String> listRecords = scanner.getDeviceLines( lTAC );
 		for ( final String strRecord : listRecords ) {
-			final Device device = Device.fromTSV( strRecord );
+//			final Device device = Device.fromTSV( strRecord );
+			final Device device = TSVRecord.fromTSV( strRecord );
 			if ( null != device ) {
 				list.add( device );
 			}
@@ -68,7 +72,9 @@ public class DeviceService {
 		final List<Device> list = devices.getAllDeviceRecords( lTAC );
 		
 		for ( final Device device : list ) {
-			final String strNewTSV = device.toTSV();
+//			final String strNewTSV = device.toTSV();
+			final TSVRecord tsv = new TSVRecord( device );
+			final String strNewTSV = tsv.toTSV();
 			final String strShort = 
 					( strNewTSV.length() > 100 ) 
 							? strNewTSV.substring( 0, 100 ) + "..."
