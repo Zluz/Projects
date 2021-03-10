@@ -1,9 +1,12 @@
 package jmr.pr141;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -11,7 +14,7 @@ public class ScanFile {
 	
 	final RandomAccessFile raf;
 	
-	final Map<Long,Long> mapTacPos = new TreeMap<>();
+	final Map<Long,List<Long>> mapTacPos = new TreeMap<>();
 	
 
 
@@ -20,9 +23,24 @@ public class ScanFile {
 	
 	final StringBuilder sbReader = new StringBuilder();
 	
+
+	long lCountLines = 0;
+	long lCountLineTACs = 0;
+	long lMaxRepeatedTACs = 0;
+	long lMaxLineSize = 0;
+	long lTacMostRepeated = 0;
 	
-	public ScanFile( final File file ) throws Exception {
+
+	
+	
+	
+	
+	public ScanFile( final File file ) throws FileNotFoundException {
 		raf = new RandomAccessFile( file, "r" );
+	}
+	
+	public Map<Long,List<Long>> getTacPosMap() {
+		return this.mapTacPos;
 	}
 	
 	
@@ -36,52 +54,6 @@ public class ScanFile {
 			}
 		}
 		return null;
-	}
-	
-	private boolean advanceTo( final String strTarget,
-							   final int iMaxLength,
-							   final boolean bRead ) {
-		boolean bSearching = true;
-		int iTravelled = 0;
-		try {
-			final long lPosStart = raf.getFilePointer();
-			do {
-				Arrays.fill( arrBytes, (byte)0 );
-				final int iBytesRead = raf.read( arrBytes );
-				iTravelled += iBytesRead;
-				
-				final Integer iFound = findCharInBuffer( strTarget );			
-				if ( null != iFound ) {
-					bSearching = false;
-					final long lPosTarget = lPosStart + iFound + 1;
-					raf.seek( lPosTarget );
-
-					if ( bRead ) {
-						final String strSubstr = 
-								new String( arrBytes, 0, iFound + 1 );
-						sbReader.append( strSubstr );
-					}
-//System.out.print( "+" );
-					return true;
-				} else if ( iBytesRead != arrBytes.length ) {
-//System.out.print( "Y1" );
-					bSearching = false;
-				} else if ( iTravelled > iMaxLength ) {
-//System.out.print( "Y2" );
-					bSearching = false;
-				}
-				
-				if ( bRead ) {
-					sbReader.append( arrBytes );
-				}
-				
-			} while ( bSearching );
-//System.out.print( "X1" );
-			return false;
-		} catch ( final IOException e ) {
-//System.out.print( "X2" );					
-			return false;
-		}
 	}
 	
 	
@@ -110,7 +82,88 @@ public class ScanFile {
 	}
 	
 	
-	public void scan_002() throws Exception {
+	public String readNextLine() {
+		final StringBuilder sb = new StringBuilder();
+		final int iSize = 10240;
+		final byte[] arrBuffer = new byte[ iSize ];
+		try {
+			boolean bContinue = true;
+			while ( bContinue ) {
+				Arrays.fill( arrBuffer, (byte)0 );
+				final long lFilePosLast = raf.getFilePointer();
+				final int iRead = raf.read( arrBuffer );
+				if ( -1 == iRead && 0 == sb.length() ) {
+					// already at the end of the file
+					return null;
+				}
+				if ( iRead != iSize ) {
+					// just reached the end of the file
+					bContinue = false;
+				}
+				
+				int iPos = -1;
+				for ( int i = 0; i < iRead; i++ ) {
+					final char c = (char)arrBuffer[ i ];
+					if ( 10 == c || 13 == c ) {
+						iPos = i;
+						bContinue = false;
+						raf.seek( lFilePosLast + iPos + 1 );
+						break;
+					} else {
+						sb.append( c );
+					}
+				}
+			}
+			return sb.toString();
+		} catch ( final IOException e ) {
+			return null;
+		}
+	}
+	
+	public String readNextSignificantLine() {
+		boolean bAbort = false;
+		boolean bKeepSearching = true;
+		String strLine;
+		do {
+			strLine = readNextLine();
+			bAbort = ( null == strLine );
+			bKeepSearching = ( null == strLine
+							|| strLine.isEmpty()
+							|| '#' == strLine.charAt( 0 ) );
+		} while ( bKeepSearching && ! bAbort );
+		return strLine;
+	}
+	
+	
+	
+	private void addTacPosition( final long lFilePos, 
+								 final List<Long> listTACs ) {
+		if ( null == listTACs ) return;
+		if ( listTACs.isEmpty() ) return;
+		if ( -1 == lFilePos ) return;
+		
+		lCountLines++;
+		
+		for ( final Long lTAC : listTACs ) {
+			lCountLineTACs++;
+			final List<Long> listPositions;
+			if ( this.mapTacPos.containsKey( lTAC ) ) {
+				listPositions = mapTacPos.get( lTAC );
+				final int iSize = listPositions.size() + 1;
+				if ( iSize > lMaxRepeatedTACs ) {
+					lMaxRepeatedTACs = iSize;
+					lTacMostRepeated = lTAC;
+				}
+			} else {
+				listPositions = new LinkedList<>();
+				mapTacPos.put( lTAC, listPositions );
+			}
+			listPositions.add( lFilePos );
+		}
+	}
+
+	
+	public void scan_002( final long lMaxCount ) throws Exception {
 
 		boolean bContinue = true;
 		final long lLength = raf.length();
@@ -122,11 +175,21 @@ public class ScanFile {
 			
 			this.sbReader.setLength( 0 );
 			
-			final boolean bAdvHit1 = advanceTo( "\t\r", 40, true );
-			final String str = clean( this.sbReader.toString() );
+			final long lFilePos = raf.getFilePointer();
 			
-			final String strTrimmed = str.trim();
-			final boolean bComment = ( '#' == strTrimmed.charAt( 0 ) );
+//			final boolean bAdvHit1 = advanceTo( "\t\r", 40, true );
+//			final String str = clean( this.sbReader.toString() );
+//			final String str = readNextLine();
+			final String str = readNextSignificantLine();
+			
+			if ( null == str ) break; //TODO change
+			
+			lMaxLineSize = Math.max( lMaxLineSize, str.length() );
+			
+//			final String strTrimmed = str.trim();
+//			final boolean bComment = ( 1 == strTrimmed.indexOf( '#' ) );
+			
+			final List<Long> listTACs = Util.getTACsFromLine( str );
 			
 			final boolean bHitLF = str.contains( "\n" ) 
 					|| str.contains( "\f" ) || str.contains( "\r" );
@@ -135,28 +198,57 @@ public class ScanFile {
 			final long lPosition = raf.getFilePointer();
 
 //			if ( ! bHitLF ) {
-			this.sbReader.setLength( 0 );
-			final boolean bAdvHit2 = advanceTo( "\r", 100000, true );
+//			this.sbReader.setLength( 0 );
+//			final boolean bAdvHit2 = advanceTo( "\r", 100000, true );
 			
 //			}
 			
 			System.out.print( "Read [" );
-			if ( bAdvHit1 ) System.out.print( "1" );
-			if ( bComment ) System.out.print( "C" );
+//			if ( bAdvHit1 ) System.out.print( "1" );
+//			if ( bComment ) System.out.print( "C" );
 			if ( bHitLF ) System.out.print( "L" );
 			if ( bHitTab ) System.out.print( "T" );
-			if ( bAdvHit2 ) System.out.print( "2" );
+//			if ( bAdvHit2 ) System.out.print( "2" );
 			System.out.print( "] (" + lPosition + "): " );
 			final String strSafe = safe( str );
-			System.out.print( "\"" + strSafe + "\"" );
+			if ( strSafe.length() > 100 ) {
+				System.out.print( "(" + strSafe.length() + " chars):" );
+				System.out.print( "\"" + strSafe.substring( 0, 98 ) + "...\"" );
+			} else {
+				System.out.print( "\"" + strSafe + "\"" );
+			}
+			
+			System.out.print( " TACs: " + listTACs.toString() );
 
-			System.out.println( " >>> \"" 
-						+ safe( clean( sbReader.toString() ) ) + "\"" );
+			addTacPosition( lFilePos, listTACs );
+			
+//			System.out.print( " >>> \"" 
+//						+ safe( clean( sbReader.toString() ) ) + "\"" );
+			System.out.println();
 
-			bContinue = i < 14;
+			bContinue = i < lMaxCount;
 		}
 
+		System.out.println( "lCountLines      : " + lCountLines );
+		System.out.println( "lCountLineTACs   : " + lCountLineTACs );
+		System.out.println( "lMaxLineSize     : " + lMaxLineSize );
+		System.out.println( "lMaxRepeatedTACs : " + lMaxRepeatedTACs );
+		System.out.println( "lTacMostRepeated : " + lTacMostRepeated );
+		
+		
+		final List<Long> list = mapTacPos.get( lTacMostRepeated );
+		System.out.println( "Positions: " + list.toString() );
+		
+		System.out.println( "Seeking, Loading.." );
+		for ( final Long lPos : list ) {
+			raf.seek( lPos );
+			final String strLine = readNextLine();
+			System.out.println( "Read (pos:" + lPos + "): "
+					+ "(len:" + strLine.length() + ") "
+					+ "\"" + strLine.substring( 0, 40 ) + "...\"" );
+		}
 	}
+	
 	
 	public void scan_001() throws Exception {
 		
@@ -191,6 +283,31 @@ public class ScanFile {
 		raf.close();
 	}
 	
+
+	public List<String> getDeviceLines( final long lTAC ) {
+		
+		final List<String> listRecords = new LinkedList<>();
+
+		final List<Long> listPositions = mapTacPos.get( lTAC );
+		if ( null == listPositions ) return listRecords;
+		
+		System.out.println( "Positions: " + listPositions.toString() );
+		
+		System.out.println( "Seeking, Loading.." );
+		for ( final Long lPos : listPositions ) {
+			try {
+				raf.seek( lPos );
+				final String strLine = readNextLine();
+				listRecords.add( strLine );
+				System.out.println( "Read (pos:" + lPos + "): "
+						+ "(len:" + strLine.length() + ") "
+						+ "\"" + strLine.substring( 0, 40 ) + "...\"" );
+			} catch ( final IOException e ) {
+				// just ignore for now
+			}
+		}
+		return listRecords;
+	}
 	
 	
 	public static void main( final String[] args ) throws Exception {
@@ -202,7 +319,7 @@ public class ScanFile {
 		
 		final ScanFile sf = new ScanFile( file );
 		
-		sf.scan_002();
+		sf.scan_002( 10000 );
 	}
 	
 

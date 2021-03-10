@@ -173,7 +173,7 @@ public class Device {
 		}
 	}
 
-	private String getBoolean( final Boolean bValue ) {
+	private static String getBoolean( final Boolean bValue ) {
 		if ( null != bValue ) {
 			return bValue ? "Y" : "N";
 		} else {
@@ -181,6 +181,68 @@ public class Device {
 		}
 	}
 	
+	private static Boolean setBoolean( final String strValue ) {
+		if ( null == strValue ) return null;
+		final String strTrimmed = strValue.trim();
+		if ( "Y" == strTrimmed ) {
+			return Boolean.TRUE;
+		} else if ( "N" == strTrimmed ) {
+			return Boolean.FALSE;
+		} else {
+			return null;
+		}
+	}
+	
+	
+	public static Device fromTSV( final String strLine ) {
+		if ( null == strLine ) return null;
+		if ( strLine.isEmpty() ) return null;
+		
+		final String[] arrParts = strLine.split( "\t" );
+		if ( arrParts.length < 7 ) return null;
+		
+		final String strTACs = arrParts[ 0 ];
+		final String strInfoBlock = arrParts[ 1 ];
+		final String[] arrInfo = strInfoBlock.split( "," );
+		if ( 4 != arrInfo.length ) return null;
+		
+		final String strBrandName = arrParts[ 2 ].trim();
+		final String strModelName = arrParts[ 3 ].trim();
+		final String strMarketing = arrParts[ 4 ].trim();
+		final String strDeviceType = arrParts[ 5 ].trim();
+		
+		final String strCharacteristics = arrParts[ 6 ];
+		final String strImageBase64 = arrParts[ 7 ].trim();
+		
+		final List<Long> listTACs = Util.getTACsFromLine( strTACs );
+		
+		final Device device = new Device( listTACs );
+		device.mapProperties.put( TextProperty.BRAND_NAME, strBrandName );
+		device.mapProperties.put( TextProperty.MODEL_NAME, strModelName );
+		device.mapProperties.put( TextProperty.MARKETING_NAME, strMarketing );
+		device.mapProperties.put( TextProperty.DEVICE_TYPE, strDeviceType );
+		
+		device.strImageBase64 = strImageBase64;
+
+		try {
+			final String strSimCount = arrInfo[ 0 ].trim();
+			final int iSimCount = Integer.parseInt( strSimCount );
+			device.iSimCount = iSimCount;
+		} catch ( final NumberFormatException e ) {
+			// then do not record a sim count
+		}
+		device.bBluetooth = setBoolean( arrInfo[ 1 ] );
+		device.bWLAN = setBoolean( arrInfo[ 2 ] );
+		try {
+			final String strCountryCode = arrInfo[ 3 ].trim();
+			final int iCountryCode = Integer.parseInt( strCountryCode );
+			device.iCountryCode = iCountryCode;
+		} catch ( final NumberFormatException e ) {
+			// then do not record a country code
+		}
+				
+		return device;
+	}
 	
 	public String toTSV() {
 		final StringBuilder sb = new StringBuilder();
