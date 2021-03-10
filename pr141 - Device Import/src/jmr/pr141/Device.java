@@ -212,7 +212,7 @@ public class Device {
 		} else {
 			sb.append( NULL_INDICATOR );
 		}
-		sb.append( 0x0A ); // LF
+		sb.append( 0x0D0A ); // CR+LF
         
 		return sb.toString();
 	}
@@ -247,15 +247,26 @@ public class Device {
 		
 		final String strDir = strWorkDir + "device-mine-2019091104";
 		final File fileDir = new File( strDir );
-		
-		for ( final File file : fileDir.listFiles() ) {
+
+		final File[] arrFiles = fileDir.listFiles();
+
+		final long lTotalFiles = arrFiles.length;
+		long lCurrentFile = 0;
+				
+		for ( final File file : arrFiles ) {
+			lCurrentFile++;
 			if ( file.isFile() ) {
 				final Device device = Device.importDeviceFromJSON( file );
 				if ( null != device ) {
 					
 					final String strTSV = device.toTSV() + "\n";
 					
-					System.out.print( strTSV );
+//					System.out.print( strTSV );
+					if ( 0 == lCurrentFile % 500 ) {
+						System.out.println( "File " + lCurrentFile 
+										+ " of " + lTotalFiles );
+					}
+					
 					Files.write( fileDatabase.toPath(), strTSV.getBytes(),
 									StandardOpenOption.APPEND );
 					
@@ -268,12 +279,13 @@ public class Device {
 					}
 					
 				} else {
-					System.out.println( 
-							"  Null import from: " + file.getName() );
+//					System.out.println( 
+//							"  Null import from: " + file.getName() );
 				}
 			}
 			
-			if ( mapTACCounts.get( 1 ) > 200 ) break;
+//			if ( mapTACCounts.get( 1 ) > 1000 ) break;
+//			if ( lCurrentFile > 4000 ) break;
 		}
 		
 		System.out.println( "TAC count distribution:\n" 
