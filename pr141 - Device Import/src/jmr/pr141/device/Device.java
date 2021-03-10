@@ -13,24 +13,32 @@ import java.util.Map;
 public class Device {
 	
 	public static enum TextProperty {
-		MARKETING_NAME( 20 ),
-		MANUFACTURER( 50 ),
-		BRAND_NAME( 16 ),
-		MODEL_NAME( 20 ),
+		MARKETING_NAME( 20, "Marketing Name" ),
+		MANUFACTURER( 50, "Manufacturer" ),
+		BRAND_NAME( 16, "Brand Name" ),
+		MODEL_NAME( 20, "Model Name" ),
 		
-		BANDS( 50 ),
-		BANDS_5G( 50 ),
-		RADIO_INTERFACE( 20 ),
-		OPERATING_SYSTEM( 12 ),
-		DEVICE_TYPE( 10 ),
+		BANDS( 50, "Bands" ),
+		BANDS_5G( 50, "5G Bands" ),
+		RADIO_INTERFACE( 20, "Radio Interface" ),
+		OPERATING_SYSTEM( 12, "Operating System" ),
+		DEVICE_TYPE( 10, "Device Type" ),
 		
-		CHARACTERISTICS( 100 ),
+		CHARACTERISTICS( 100, "Characteristics" ),
+		IMAGE_BASE64( 0, "Base64 Image Data" ),
 		;
 		
+		final String strLabel;
 		final int iPadding;
 		
-		private TextProperty( final int iPadding ) {
+		private TextProperty( final int iPadding,
+							  final String strLabel ) {
+			this.strLabel = strLabel;
 			this.iPadding = iPadding;
+		}
+		
+		public String getLabel() {
+			return strLabel;
 		}
 	}
 	
@@ -48,13 +56,25 @@ public class Device {
 	Boolean bBluetooth;
 	Boolean bWLAN;
 	
-	String strImageBase64;
+//	String strImageBase64;
 	
 	
 	public Device( final List<Long> listTACs ) {
 		if ( null != listTACs ) {
 			this.listTACs.addAll( listTACs );
 		}
+	}
+	
+	public List<Long> getTACs() {
+		return this.listTACs;
+	}
+	
+	public Integer getSimCount() {
+		return this.iSimCount;
+	}
+	
+	public String getProperty( final TextProperty property ) {
+		return this.mapProperties.get( property );
 	}
 	
 	public void set( final TextProperty property,
@@ -78,7 +98,10 @@ public class Device {
 	}
 	
 	
+	
 	public static void main( final String[] args ) throws IOException {
+		
+		// running this will rebuild catalog.tsv from the DM dir
 		
 //		final String strFile = "/data/Development/CM/"
 //				+ "jmr_Projects__20210129/pr141 - Device Import/files/"

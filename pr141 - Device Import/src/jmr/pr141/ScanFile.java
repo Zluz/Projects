@@ -24,9 +24,6 @@ public class ScanFile {
 	
 
 
-	final int iBufferSize = 5000;
-	final byte[] arrBytes = new byte[ iBufferSize ];
-	
 	final StringBuilder sbReader = new StringBuilder();
 	
 
@@ -47,19 +44,6 @@ public class ScanFile {
 	
 	public Map<Long,List<Long>> getTacPosMap() {
 		return this.mapTacPos;
-	}
-	
-	
-	private Integer findCharInBuffer( final String strTarget ) {
-		final byte[] arrTarget = strTarget.getBytes();
-		for ( int i = 0; i < arrBytes.length; i++ ) {
-			for ( int j = 0; j < arrTarget.length; j++ ) {
-				if ( arrTarget[ j ] == arrBytes[ i ] ) {
-					return i;
-				}
-			}
-		}
-		return null;
 	}
 	
 	
@@ -88,16 +72,19 @@ public class ScanFile {
 	}
 	
 	
-	public String readNextLine() {
+	public String readNextLine_001() { // Average time: ~1.5 s
+		// uses a fresh buffer every time and calls raf.seek()
+		// very strange that this is faster than not using seek()
 		final StringBuilder sb = new StringBuilder();
 		final int iSize = 10240;
 		final byte[] arrBuffer = new byte[ iSize ];
 		try {
 			boolean bContinue = true;
-			while ( bContinue ) {
+			do {
 				Arrays.fill( arrBuffer, (byte)0 );
 				final long lFilePosLast = raf.getFilePointer();
 				final int iRead = raf.read( arrBuffer );
+				
 				if ( -1 == iRead && 0 == sb.length() ) {
 					// already at the end of the file
 					return null;
@@ -119,12 +106,72 @@ public class ScanFile {
 						sb.append( c );
 					}
 				}
-			}
+			} while ( bContinue );
 			return sb.toString();
 		} catch ( final IOException e ) {
 			return null;
 		}
 	}
+	
+	
+	public String readNextLine() {
+		return readNextLine_001();
+	}
+
+	
+	final int iBufSize = 10240;
+	final byte[] arrBuffer = new byte[ iBufSize ];
+	int iBufPos = -1;
+	long lFilePosLast;
+	
+	// never calls seek()
+	public String readNextLine_002() { // Average time: 1.6+ s ???
+		final StringBuilder sb = new StringBuilder();
+		try {
+			boolean bContinue = true;
+			do {
+				
+				if ( -1 == iBufPos ) {
+					
+					Arrays.fill( arrBuffer, (byte)0 );
+					lFilePosLast = raf.getFilePointer();
+					final int iRead = raf.read( arrBuffer );
+					
+					if ( -1 == iRead && 0 == sb.length() ) {
+						// already at the end of the file
+						return null;
+					}
+					if ( iRead != iBufSize ) {
+						// just reached the end of the file
+						bContinue = false;
+					}
+					
+					iBufPos = 0;
+				}
+				
+				int iPos = -1;
+				for ( int i = iBufPos; i < iBufSize; i++ ) {
+					final char c = (char)arrBuffer[ i ];
+					if ( 10 == c || 13 == c ) {
+						iPos = i;
+						bContinue = false;
+//						raf.seek( lFilePosLast + iPos + 1 );
+						iBufPos = iPos + 1;
+						break;
+					} else if ( 0 != c ) {
+						sb.append( c );
+					}
+				}
+				if ( bContinue ) {
+					iBufPos = -1;
+				}
+			} while ( bContinue );
+			return sb.toString();
+		} catch ( final IOException e ) {
+			return null;
+		}
+	}
+	
 	
 	public String readNextSignificantLine() {
 		boolean bAbort = false;
@@ -172,7 +219,6 @@ public class ScanFile {
 	public void scan_002( final long lMaxCount ) throws Exception {
 
 		boolean bContinue = true;
-		final long lLength = raf.length();
 		
 		int i = 0;
 
@@ -197,7 +243,8 @@ public class ScanFile {
 						|| str.contains( "\f" ) || str.contains( "\r" );
 				final boolean bHitTab = str.contains( "\t" );
 				
-				final long lPosition = raf.getFilePointer();
+//				final long lPosition = raf.getFilePointer();
+				final long lPosition = this.lFilePosLast + this.iBufPos;
 	
 				System.out.print( "Read [" );
 				if ( bHitLF ) System.out.print( "L" );
@@ -243,41 +290,6 @@ public class ScanFile {
 		}
 	}
 	
-	
-	public void scan_001() throws Exception {
-		
-		boolean bContinue = true;
-		final long lLength = raf.length();
-		
-		while ( bContinue ) {
-//		for ( int i = 1; i < 1000; i++ ) {
-			
-//			final long lRand = (long)( Math.random() * lLength );
-//			raf.seek( lRand );
-			
-			final int iBytesRead = raf.read( arrBytes );
-			
-			System.out.print( ""+ iBytesRead + " bytes read. " );
-			
-			int iCount = 0;
-			for ( int j = 0; j < arrBytes.length; j++ ) {
-				if ( 10 == arrBytes[ j ] ) { // LF
-					iCount++;
-				}
-			}
-			
-			System.out.print( "getFilePointer() = " + raf.getFilePointer() + " " );
-			System.out.print( "length() = " + raf.length() + " " );
-			System.out.print( "iCount = " + iCount + " " );
-			
-//			bContinue = iBytesRead == arrBytes.length;
-			bContinue = raf.getFilePointer() < 100000;
-			System.out.println();
-		}
-		raf.close();
-	}
-	
-
 	public List<String> getDeviceLines( final long lTAC ) {
 		
 		final List<String> listRecords = new LinkedList<>();

@@ -77,7 +77,9 @@ public class JsonImport {
 			device.iSimCount = null;
 		}
 		
-		device.strImageBase64 = getJsonMember( jo, "image-thumbnail-binary" );
+//		device.strImageBase64 = getJsonMember( jo, "image-thumbnail-binary" );
+		device.set(	TextProperty.IMAGE_BASE64,
+							getJsonMember( jo, "image-thumbnail-binary" ) );
 		
 		return device;
 	}

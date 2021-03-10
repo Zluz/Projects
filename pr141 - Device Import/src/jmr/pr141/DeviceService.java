@@ -54,7 +54,8 @@ public class DeviceService {
 		final long lTimeStart = System.currentTimeMillis();
 		try {
 			this.scanner = new ScanFile( file );
-			scanner.scan_002( 100000 );
+//			scanner.scan_002( 100000 );
+			scanner.scan_002( 100 );
 			this.mapTacPos.putAll( scanner.getTacPosMap() );
 			
 			final long lTimeEnd = System.currentTimeMillis();
@@ -77,7 +78,7 @@ public class DeviceService {
 
 		final DeviceService devices = new DeviceService();
 
-		final int iIterations = 8;
+		final int iIterations = 1;
 		final long lTimeStart = System.currentTimeMillis();
 		for ( int i = 0; i < iIterations; i++ ) {
 			devices.clear();
@@ -89,7 +90,8 @@ public class DeviceService {
 		System.out.println( String.format( 
 				"Average time elapsed: %.3f seconds.", dAvgTime ) );
 		
-		final long lTAC = 35888803; //Acer beTouch E400
+//		final long lTAC = 35888803; // TAC appears early: Acer beTouch E400
+		final long lTAC = 35160003; // very repeated TAC: Sony Ericsson K770
 		final List<Device> list = devices.getAllDeviceRecords( lTAC );
 		
 		for ( final Device device : list ) {
@@ -97,8 +99,8 @@ public class DeviceService {
 			final TSVRecord tsv = new TSVRecord( device );
 			final String strNewTSV = tsv.toTSV();
 			final String strShort = 
-					( strNewTSV.length() > 100 ) 
-							? strNewTSV.substring( 0, 100 ) + "..."
+					( strNewTSV.length() > 200 ) 
+							? strNewTSV.substring( 0, 200 ) + "..."
 							: strNewTSV;
 			System.out.println( "Device record: " + strShort );
 		}

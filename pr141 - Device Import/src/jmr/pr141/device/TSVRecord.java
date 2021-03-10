@@ -5,10 +5,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
-import static jmr.pr141.device.Device.TextProperty;
+import jmr.pr141.device.Device.TextProperty;
 
 public class TSVRecord {
 
@@ -118,8 +115,10 @@ public class TSVRecord {
 		}
 		
 		sb.append( " \t " );
-		if ( null != device.strImageBase64 ) {
-			sb.append( device.strImageBase64 );
+		final String strBase64 = 
+						device.getProperty( TextProperty.IMAGE_BASE64 );
+		if ( null != strBase64 ) {
+			sb.append( strBase64 );
 		} else {
 			sb.append( NULL_INDICATOR );
 		}
@@ -158,7 +157,8 @@ public class TSVRecord {
 		device.mapProperties.put( TextProperty.MARKETING_NAME, strMarketing );
 		device.mapProperties.put( TextProperty.DEVICE_TYPE, strDeviceType );
 		
-		device.strImageBase64 = strImageBase64;
+//		device.strImageBase64 = strImageBase64;
+		device.mapProperties.put( TextProperty.IMAGE_BASE64, strImageBase64 );
 
 		try {
 			final String strSimCount = arrInfo[ 0 ].trim();
