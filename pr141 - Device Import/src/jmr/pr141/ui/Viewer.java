@@ -11,6 +11,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -57,6 +58,7 @@ public class Viewer {
 	
 	Image imageThumbnail;
 	String strImageNote;
+	boolean bStatusQueued = false;
 	
 	
 	final EnumMap<TextProperty,Text> mapText = 
@@ -185,13 +187,18 @@ public class Viewer {
 	}
 	
 	private void setStatus( final String strText ) {
+		if ( bStatusQueued ) return;
 		final String strSafe;
 		if ( null != strText ) {
 			strSafe = strText;
 		} else {
 			strSafe = "";
 		}
-		display.asyncExec( ()-> txtStatus.setText( strSafe ) );
+		bStatusQueued = true;
+		display.asyncExec( ()-> {
+			txtStatus.setText( strSafe );
+			bStatusQueued = false;
+		} );
 	}
 	
 	private void addTextProperty( final Composite comp,
@@ -293,8 +300,18 @@ public class Viewer {
 	}
 	
 	
-	public void loadSourceFile( final File file ) {
-		this.devices.load( file );
+	public void loadSourceFile( final File file,
+								final long lMaxCount ) {
+		
+		final long lTimeStart = System.currentTimeMillis();
+		this.devices.load( file, lMaxCount );
+		final long lTimeEnd = System.currentTimeMillis();
+		
+		final long lElapsed = lTimeEnd - lTimeStart;
+		final String strMessage = ""+ this.devices.getTotalReferences() 
+				+ " device references indexed in " + lElapsed + " ms";
+		this.setStatus( strMessage );
+		
 		this.addProviders( devices );
 	}
 	
@@ -386,7 +403,18 @@ public class Viewer {
 		this.imageThumbnail = getImageFromBase64( strImageData );
 		this.canvasImage.addPaintListener( event-> {
 			if ( null != imageThumbnail ) {
-				event.gc.drawImage( imageThumbnail, 0, 0 );
+//				event.gc.drawImage( imageThumbnail, 0, 0 );
+				final ImageData id = imageThumbnail.getImageData();
+				event.gc.setAntialias( SWT.ON );
+				event.gc.setAdvanced( true );
+				event.gc.drawImage( imageThumbnail, 
+								0, 0, id.width, id.height,
+								0, 0, id.width * 2, id.height * 2 );
+//				drawImage( Image image, 
+//						int srcX, int srcY, 
+//						int srcWidth, int srcHeight, 
+//						int destX, int destY, 
+//						int destWidth, int destHeight)
 			}
 			if ( null != strImageNote ) {
 				event.gc.drawText( strImageNote, 10, 10 );
@@ -420,7 +448,7 @@ public class Viewer {
 //		final DeviceService devices = new DeviceService();
 //		ui.devices.load( file );
 //		ui.addProviders( devices );
-		ui.loadSourceFile( file );
+		ui.loadSourceFile( file, Integer.MAX_VALUE );
 		
 		
 //		final long lTAC = 35888803; // TAC appears early: Acer beTouch E400
@@ -430,8 +458,11 @@ public class Viewer {
 //		final List<DeviceReference> 
 //							list = devices.getAllDeviceReferences( lTAC );
 		
+//		final String strOriginalStatus = ui.txtStatus.getText();
 		ui.txtSearchTAC.setText( ""+ lTAC );
 		ui.doSearchForTAC();
+		
+//		ui.setStatus( strOriginalStatus );
 
 //		final Device device = list.get( 0 );
 //		final DeviceReference device = list.get( 0 );

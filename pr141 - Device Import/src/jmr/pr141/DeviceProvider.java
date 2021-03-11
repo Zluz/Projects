@@ -11,5 +11,8 @@ public interface DeviceProvider {
 	List<DeviceReference> findReferences( final long lTAC );
 	
 	String getName();
+	
+	public long getTotalReferences();
+	public long getTotalUniqueTACs();
 
 }

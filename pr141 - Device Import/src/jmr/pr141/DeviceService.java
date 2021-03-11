@@ -33,6 +33,14 @@ public class DeviceService {
 		return listProviders; 
 	}
 	
+	public long getTotalReferences() {
+		long lCount = 0;
+		for ( final DeviceProvider provider : listProviders ) {
+			lCount += provider.getTotalReferences();
+		}
+		return lCount;
+	}
+
 	public List<Device> getAllDeviceRecords( final long lTAC ) {
 		final List<Device> list = new LinkedList<>();
 		
@@ -75,14 +83,15 @@ public class DeviceService {
 		this.listProviders.clear();
 	}
 	
-	public boolean load( final File file ) {
+	public boolean load( final File file,
+						 final long lMaxCount ) {
 		System.out.println( "Loading: \"" + file.getAbsolutePath() + "\"" );
 		final long lTimeStart = System.currentTimeMillis();
 		try {
 			final ScanFile scanner = new ScanFile( file );
 			this.listProviders.add( scanner );
 //			scanner.scan_002( 100000 );
-			scanner.scan( 1000 );
+			scanner.scan( lMaxCount );
 //			this.mapTacPos.putAll( scanner.getTacPosMap() );
 			
 			final long lTimeEnd = System.currentTimeMillis();
@@ -109,7 +118,7 @@ public class DeviceService {
 		final long lTimeStart = System.currentTimeMillis();
 		for ( int i = 0; i < iIterations; i++ ) {
 			devices.clear();
-			devices.load( file );
+			devices.load( file, 1000 );
 		}
 		final long lTimeEnd = System.currentTimeMillis();
 		final long lElapsed = lTimeEnd - lTimeStart;

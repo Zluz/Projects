@@ -41,7 +41,6 @@ public class ScanFile implements DeviceProvider {
 	
 	
 	
-	
 	public ScanFile( final File file ) throws FileNotFoundException {
 		this.raf = new RandomAccessFile( file, "r" );
 		this.strName = "ScanFile: " + file.getName();
@@ -101,6 +100,17 @@ public class ScanFile implements DeviceProvider {
 			}
 		}
 		return listRefs;
+	}
+	
+
+	@Override
+	public long getTotalReferences() {
+		return this.lCountLineTACs;
+	}
+
+	@Override
+	public long getTotalUniqueTACs() {
+		return this.mapTacPos.size();
 	}
 	
 	
