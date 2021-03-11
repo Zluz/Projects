@@ -3,8 +3,6 @@ package jmr.pr141;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import jmr.pr141.device.Device;
 import jmr.pr141.device.TSVRecord;
@@ -21,42 +19,71 @@ public class DeviceService {
 	}
 	
 	private MergeStrategy strategy;
-	private ScanFile scanner = null;
+//	private ScanFile scanner = null;
+	final List<DeviceProvider> listProviders = new LinkedList<>();
 	
-	final Map<Long,List<Long>> mapTacPos = new TreeMap<>();
+//	final Map<Long,List<Long>> mapTacPos = new TreeMap<>();
 	
 	
 	public void setStrategy( final MergeStrategy strategy ) {
 		this.strategy = strategy;
 	}
 	
+	public List<DeviceProvider> getAllDeviceProviders() {
+		return listProviders; 
+	}
+	
 	public List<Device> getAllDeviceRecords( final long lTAC ) {
 		final List<Device> list = new LinkedList<>();
 		
-		final List<String> listRecords = scanner.getDeviceLines( lTAC );
-		for ( final String strRecord : listRecords ) {
-//			final Device device = Device.fromTSV( strRecord );
-			final Device device = TSVRecord.fromTSV( strRecord );
-			if ( null != device ) {
-				list.add( device );
+		for ( final DeviceProvider provider : listProviders ) {
+//			final List<String> listRecords = scanner.getDeviceLines( lTAC );
+			final List<DeviceReference> 
+						listReferences = provider.findReferences( lTAC );
+//			for ( final String strRecord : listRecords ) {
+			for ( final DeviceReference reference : listReferences ) {
+	//			final Device device = Device.fromTSV( strRecord );
+//				final Device device = TSVRecord.fromTSV( strRecord );
+				final Device device = provider.getDevice( reference );
+				if ( null != device ) {
+					list.add( device );
+				}
 			}
 		}
 		
 		return list;
 	}
 	
+
+	public List<DeviceReference> getAllDeviceReferences( final long lTAC ) {
+		final List<DeviceReference> listResult = new LinkedList<>();
+		
+		for ( final DeviceProvider provider : listProviders ) {
+			final List<DeviceReference> listProviderReferences = 
+									provider.findReferences( lTAC );
+			for ( final DeviceReference reference : listProviderReferences ) {
+				listResult.add( reference );
+			}
+		}
+		
+		return listResult;
+	}
+	
+	
 	public void clear() {
-		this.mapTacPos.clear();
+//		this.mapTacPos.clear();
+		this.listProviders.clear();
 	}
 	
 	public boolean load( final File file ) {
 		System.out.println( "Loading: \"" + file.getAbsolutePath() + "\"" );
 		final long lTimeStart = System.currentTimeMillis();
 		try {
-			this.scanner = new ScanFile( file );
+			final ScanFile scanner = new ScanFile( file );
+			this.listProviders.add( scanner );
 //			scanner.scan_002( 100000 );
-			scanner.scan_002( 100 );
-			this.mapTacPos.putAll( scanner.getTacPosMap() );
+			scanner.scan( 1000 );
+//			this.mapTacPos.putAll( scanner.getTacPosMap() );
 			
 			final long lTimeEnd = System.currentTimeMillis();
 			final long lElapsed = lTimeEnd - lTimeStart;

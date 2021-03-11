@@ -73,6 +73,14 @@ public class Device {
 		return this.iSimCount;
 	}
 	
+	public Boolean getBluetooth() {
+		return this.bBluetooth;
+	}
+	
+	public Boolean getWLAN() {
+		return this.bWLAN;
+	}
+	
 	public String getProperty( final TextProperty property ) {
 		return this.mapProperties.get( property );
 	}

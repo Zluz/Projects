@@ -10,11 +10,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import jmr.pr141.device.Device;
 import jmr.pr141.device.TSVRecord;
 
-public class ScanFile {
 
-	public final static boolean DEBUG_SHOW_LOAD_DETAIL = false;
+public class ScanFile implements DeviceProvider {
+
+	public final static boolean DEBUG_SHOW_LOAD_DETAIL = true;
 	public final static boolean DEBUG_RUN_TAC_SEEK_TEST = false;
 	
 	
@@ -25,6 +27,8 @@ public class ScanFile {
 
 
 	final StringBuilder sbReader = new StringBuilder();
+	
+	final String strName;
 	
 
 	long lCountLines = 0;
@@ -39,8 +43,67 @@ public class ScanFile {
 	
 	
 	public ScanFile( final File file ) throws FileNotFoundException {
-		raf = new RandomAccessFile( file, "r" );
+		this.raf = new RandomAccessFile( file, "r" );
+		this.strName = "ScanFile: " + file.getName();
 	}
+	
+	private class SCDReference extends DeviceReference {
+		
+		final long lFilePosition;
+		
+		public SCDReference( final long lFilePosition ) {
+			super( ScanFile.this );
+			this.lFilePosition = lFilePosition;
+		}
+		
+		@Override
+		public String getName() {
+			return "Position " + lFilePosition;
+		}
+		
+		public long getFilePosition() {
+			return lFilePosition;
+		}
+	}
+	
+	
+	@Override
+	public String getName() {
+		return this.strName; 
+	}
+	
+	@Override
+	public Device getDevice( final DeviceReference ref ) {
+		if ( ! ( ref instanceof SCDReference ) ) return null; 
+
+		final SCDReference scdr = (SCDReference)ref;
+		
+		try {
+			this.raf.seek( scdr.getFilePosition() );
+		} catch ( final IOException e ) {
+			return null;
+		}
+		final String strLine = this.readNextLine();
+		final Device device = TSVRecord.fromTSV( strLine );
+		return device;
+	}
+	
+	
+	@Override
+	public List<DeviceReference> findReferences( final long lTAC ) {
+		final List<DeviceReference> listRefs = new LinkedList<>();
+		
+		if ( mapTacPos.containsKey( lTAC ) ) {
+			final List<Long> listPositions = mapTacPos.get( lTAC );
+			for ( final Long lPosition : listPositions ) {
+				final DeviceReference ref = new SCDReference( lPosition );
+				listRefs.add( ref );
+			}
+		}
+		return listRefs;
+	}
+	
+	
 	
 	public Map<Long,List<Long>> getTacPosMap() {
 		return this.mapTacPos;
@@ -216,7 +279,7 @@ public class ScanFile {
 	}
 
 	
-	public void scan_002( final long lMaxCount ) throws Exception {
+	public void scan( final long lMaxCount ) throws Exception {
 
 		boolean bContinue = true;
 		
@@ -325,7 +388,7 @@ public class ScanFile {
 		
 		final ScanFile sf = new ScanFile( file );
 		
-		sf.scan_002( 10000 );
+		sf.scan( 1000 );
 	}
 	
 

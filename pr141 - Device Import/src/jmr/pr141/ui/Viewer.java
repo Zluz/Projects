@@ -2,15 +2,19 @@ package jmr.pr141.ui;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.EnumMap;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -19,6 +23,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import jmr.pr141.DeviceProvider;
+import jmr.pr141.DeviceReference;
 import jmr.pr141.DeviceService;
 import jmr.pr141.device.Device;
 import jmr.pr141.device.Device.TextProperty;
@@ -29,31 +35,78 @@ public class Viewer {
 	final static Display display = Display.getDefault();
 
 	final private Shell shell;
+	final private Composite comp;
 	
 	final private static String[] arrBoolOptions = 
 					new String[] { "<null>", "YES", "NO" };
 
 	
+	final Text txtSearchTAC;
+	final Button btnSearchTAC;
+	final Text txtStatus;
+	
+	final Combo cmbDeviceSources;
+	final Combo cmbReference;
+	
 	final Text txtTAC;
 	final Text txtSimCount;
-	final Combo cmbTAC;
 	final Combo cmbWLAN;
+	final Combo cmbBluetooth;
 	final Text txtCountryCode;
 	final Canvas canvasImage;
+	
+	Image imageThumbnail;
+	String strImageNote;
 	
 	
 	final EnumMap<TextProperty,Text> mapText = 
 							new EnumMap<>( TextProperty.class );
 	
+	final DeviceService devices = new DeviceService();
+
 
 	public Viewer() {
 		this.shell = new Shell( display, SWT.SHELL_TRIM );
 		shell.setText( "Device Viewer" );
 		shell.setLayout( new FillLayout() );
 		
-		final Composite comp = new Composite( shell, SWT.RESIZE );
+		comp = new Composite( shell, SWT.RESIZE );
 		
 		comp.setLayout( new GridLayout( 3, false ) );
+		
+		txtSearchTAC = new Text( comp, SWT.BORDER );
+		final GridData gdSearchTAC = new GridData();
+		gdSearchTAC.horizontalSpan = 2;
+		gdSearchTAC.grabExcessHorizontalSpace = true;
+		gdSearchTAC.horizontalAlignment = GridData.FILL;
+		txtSearchTAC.setLayoutData( gdSearchTAC );
+		btnSearchTAC = new Button( comp, SWT.PUSH );
+		btnSearchTAC.setText( "Search for TAC" );
+		btnSearchTAC.addSelectionListener( new SelectionAdapter() {
+			@Override
+			public void widgetSelected( final SelectionEvent e ) {
+				Viewer.this.doSearchForTAC();
+			}
+		});
+		
+		txtStatus = new Text( comp, SWT.READ_ONLY );
+		final GridData gdStatus = new GridData();
+		gdStatus.horizontalSpan = 3;
+		gdStatus.grabExcessHorizontalSpace = true;
+		gdStatus.horizontalAlignment = GridData.FILL;
+		txtStatus.setLayoutData( gdStatus );
+
+		new Label( comp, SWT.NONE ).setText( "Source" );
+		cmbDeviceSources = new Combo( comp, SWT.DROP_DOWN | SWT.READ_ONLY );
+		final GridData gdSources = new GridData();
+		gdSources.horizontalSpan = 2;
+		gdSources.grabExcessHorizontalSpace = true;
+		gdSources.horizontalAlignment = GridData.FILL;
+		cmbDeviceSources.setLayoutData( gdSources );
+
+		new Label( comp, SWT.NONE ).setText( "Reference" );
+		cmbReference = new Combo( comp, SWT.DROP_DOWN | SWT.READ_ONLY );
+		cmbReference.setLayoutData( gdSources );
 		
 		new Label( comp, SWT.NONE ).setText( "TAC(s)" );
 		final int iTACStyle = SWT.MULTI | SWT.BORDER | 
@@ -62,40 +115,52 @@ public class Viewer {
 		final GridData gdTAC = new GridData();
 		gdTAC.widthHint = 100;
 		gdTAC.grabExcessVerticalSpace = true;
+		gdTAC.horizontalAlignment = GridData.FILL;
+		gdTAC.verticalAlignment = GridData.FILL;
 		txtTAC.setLayoutData( gdTAC );
 		txtTAC.setText( Text.DELIMITER + Text.DELIMITER + Text.DELIMITER
 			  		+ Text.DELIMITER + Text.DELIMITER + Text.DELIMITER );
 		
 		final GridData gdImage = new GridData();
 		gdImage.verticalAlignment = GridData.FILL;
+		gdImage.horizontalAlignment = GridData.FILL;
+		gdImage.grabExcessHorizontalSpace = true;
 		gdImage.verticalSpan = 7;
 		gdImage.widthHint = 200;
 		gdImage.heightHint = 300;
-//		final Composite compImage = new Composite( comp, SWT.NONE );
-//		compImage.setLayoutData( gdImage );
 		canvasImage = new Canvas( comp, SWT.BORDER );
 		canvasImage.setLayoutData( gdImage );
 
-		addTextProperty( comp, null, TextProperty.DEVICE_TYPE );
-		addTextProperty( comp, null, TextProperty.OPERATING_SYSTEM );
+		final GridData gdField = new GridData();
+		gdField.horizontalAlignment = GridData.FILL;
+		
+		addTextProperty( comp, gdField, TextProperty.DEVICE_TYPE );
+		addTextProperty( comp, gdField, TextProperty.OPERATING_SYSTEM );
 
 		new Label( comp, SWT.NONE ).setText( "Sim Count" );
 		txtSimCount = new Text( comp, SWT.SINGLE | SWT.BORDER );
+		txtSimCount.setLayoutData( gdField );
 
 		new Label( comp, SWT.NONE ).setText( "Bluetooth?" );
-		cmbTAC = new Combo( comp, SWT.DROP_DOWN );
-		cmbTAC.setItems( arrBoolOptions );
+		cmbBluetooth = new Combo( comp, SWT.DROP_DOWN | SWT.READ_ONLY );
+		cmbBluetooth.setItems( arrBoolOptions );
 
 		new Label( comp, SWT.NONE ).setText( "WLAN?" );
-		cmbWLAN = new Combo( comp, SWT.DROP_DOWN );
+		cmbWLAN = new Combo( comp, SWT.DROP_DOWN | SWT.READ_ONLY );
 		cmbWLAN.setItems( arrBoolOptions );
 
 		new Label( comp, SWT.NONE ).setText( "Country Code" );
 		txtCountryCode = new Text( comp, SWT.SINGLE | SWT.BORDER );
+		txtCountryCode.setLayoutData( gdField );
 		
 		final GridData gdWide = new GridData();
 		gdWide.horizontalAlignment = GridData.FILL;
 		gdWide.horizontalSpan = 2;
+
+		final GridData gdBigHex = new GridData();
+		gdBigHex.horizontalAlignment = GridData.FILL;
+		gdBigHex.horizontalSpan = 2;
+		gdBigHex.heightHint = 60;
 		
 		addTextProperty( comp, gdWide, TextProperty.MARKETING_NAME );
 		addTextProperty( comp, gdWide, TextProperty.MANUFACTURER );
@@ -106,9 +171,27 @@ public class Viewer {
 		addTextProperty( comp, gdWide, TextProperty.BANDS_5G );
 		addTextProperty( comp, gdWide, TextProperty.RADIO_INTERFACE );
 		addTextProperty( comp, gdWide, TextProperty.CHARACTERISTICS );
-		addTextProperty( comp, gdWide, TextProperty.IMAGE_BASE64 );
 		
+		final int iHexStyle = SWT.MULTI | SWT.BORDER | 
+							SWT.V_SCROLL | SWT.WRAP;
+
+		new Label( comp, SWT.NONE ).setText( 
+								TextProperty.IMAGE_BASE64.getLabel() );
+		final Text txtBase64 = new Text( comp, iHexStyle );
+		txtBase64.setLayoutData( gdBigHex );
+		this.mapText.put( TextProperty.IMAGE_BASE64, txtBase64 );
+
 		shell.pack();
+	}
+	
+	private void setStatus( final String strText ) {
+		final String strSafe;
+		if ( null != strText ) {
+			strSafe = strText;
+		} else {
+			strSafe = "";
+		}
+		display.asyncExec( ()-> txtStatus.setText( strSafe ) );
 	}
 	
 	private void addTextProperty( final Composite comp,
@@ -140,34 +223,141 @@ public class Viewer {
 		if ( null == txt ) return;
 		
 		final String strValue = device.getProperty( property );
-		if ( null != strValue ) {
-			txt.setText( strValue );
-		} else {
+		if ( null == strValue ) {
 			txt.setText( "<null>" );
+		} else if ( strValue.length() > 100 ) {
+			txt.setText( strValue.substring( 0, 100 ) + "..." );
+		} else {
+			txt.setText( strValue );
 		}
+	}
+	
+	
+	private void setImageNote( final String strText ) {
+		if ( null == strText ) {
+			strImageNote = null;
+		} else {
+			final String strUI = strText.replace( "\n", Text.DELIMITER );
+			this.strImageNote = strUI;
+		}
+		this.canvasImage.redraw();
 	}
 	
 	
 	public Image getImageFromBase64( final String strBase64 ) {
 		final Base64.Decoder decoder = Base64.getDecoder();
-		final byte[] arrBytes = decoder.decode( strBase64 );
-		final ByteArrayInputStream bais = new ByteArrayInputStream( arrBytes );
-		final Image image = new Image( display, bais );
-		
-		if ( null != image ) {
-			System.out.println( "Image generated" );
-			System.out.println( "\tImage bounds: " + image.getBounds() );
-//			final int iColors = image.getImageData().palette.colors.length;
-//			System.out.println( "\tPalette size: " + iColors );
+		try {
+			final byte[] arrBytes = decoder.decode( strBase64.trim() );
+			final ByteArrayInputStream bais = new ByteArrayInputStream( arrBytes );
+			final Image image = new Image( display, bais );
+			setImageNote( null );
+			return image;
 			
+		} catch ( final IllegalArgumentException e ) {
+			// can happen if encoding is bad
+			final String strException = e.toString().replace( ":", "\n" );
+			setImageNote( "Failed to load image, encountered\n " 
+						+ strException );
+			return null;
 		}
-		
-		return image;
+	}
+	
+
+	private void addProviders( final DeviceService devices ) {
+		final List<DeviceProvider> list = devices.getAllDeviceProviders();
+		for ( final DeviceProvider provider : list ) {
+			final String strName = provider.getName();
+			final List<String> listExisting = 
+							Arrays.asList( cmbDeviceSources.getItems() );
+			if ( ! listExisting.contains( strName ) ) {
+				cmbDeviceSources.add( strName );
+			}
+		}
 	}
 	
 	
-	public void load( final Device device ) {
-//		txtTAC.setText( ""+ device.getTAC() );
+	public void doSearchForTAC() {
+		final long lTAC;
+		try {
+			final Long lCandidate = Long.parseLong( txtSearchTAC.getText() );
+			lTAC = lCandidate.longValue();
+		} catch ( final NumberFormatException e ) {
+			this.setStatus( "Invalid TAC: " + e.toString() );
+			return;
+		}
+		
+		final List<DeviceReference> 
+				listReferences = devices.getAllDeviceReferences( lTAC );
+
+		this.load( listReferences, 0 );
+	}
+	
+	
+	public void loadSourceFile( final File file ) {
+		this.devices.load( file );
+		this.addProviders( devices );
+	}
+	
+	private void setComboSelection( final Combo combo,
+									final Boolean bValue ) {
+		if ( null == bValue ) {
+			combo.select( 0 );
+		} else if ( bValue ) {
+			combo.select( 1 );
+		} else {
+			combo.select( 2 );
+		}
+	}
+	
+	
+	public void load( final List<DeviceReference> listReferences,
+					  final int iSelect ) {
+		final String strError;
+		if ( null == listReferences ) {
+			strError = "Data loaded is null";
+		} else if ( listReferences.isEmpty() ) {
+			strError = "No data found";
+		} else if ( listReferences.size() <= iSelect ) {
+			strError = "List of references is too small for selection";
+		} else if ( iSelect < 0 ) {
+			strError = "Invalid selection";
+		} else {
+			strError = null;
+		}
+		if ( null != strError ) {
+			this.setStatus( strError );
+			return;
+		}
+		
+		final long lTimeStart = System.currentTimeMillis();
+		
+		final DeviceReference ref = listReferences.get( iSelect );
+		
+		final Device device = ref.resolve();
+		
+		final long lTimeEnd = System.currentTimeMillis();
+		final long lElapsed = lTimeEnd - lTimeStart;
+		this.setStatus( "Device loaded in " + lElapsed + " ms" );
+
+		final String strProviderName = ref.getProvider().getName(); 
+		final String[] arrSources = cmbDeviceSources.getItems();
+		for ( int i = 0; i < arrSources.length; i++ ) {
+			if ( strProviderName.equals( arrSources[ i ] ) ) {
+				cmbDeviceSources.select( i );
+			}
+		}
+
+		final int iRefCount = listReferences.size();
+		final String[] arrReferences = new String[ iRefCount ];
+		for ( int i = 0; i < iRefCount; i++ ) {
+			final String strName = listReferences.get( i ).getName();
+			arrReferences[ i ] = ""+ ( i + 1 ) + " : " + strName;
+		}
+		cmbReference.setItems( arrReferences );
+		cmbReference.select( iSelect );
+		
+		setComboSelection( cmbWLAN, device.getWLAN() );
+		setComboSelection( cmbBluetooth, device.getBluetooth() );
 		
 		final List<Long> listTACs = device.getTACs();
 		final StringBuilder sbTACs = new StringBuilder();
@@ -190,19 +380,21 @@ public class Viewer {
 		final String strImageData = 
 						device.getProperty( TextProperty.IMAGE_BASE64 );
 		
-		final Image imageNew = getImageFromBase64( strImageData );
-//		final Image imageLast = this.canvasImage.getBackgroundImage();
-//		if ( null != imageLast ) {
-//			imageLast.dispose();
-//		}
-//		this.canvasImage.setBackgroundImage( imageNew );
+		if ( null != imageThumbnail ) {
+			imageThumbnail.dispose();
+		}
+		this.imageThumbnail = getImageFromBase64( strImageData );
 		this.canvasImage.addPaintListener( event-> {
-			System.out.println( "Drawing image.." );
-			event.gc.drawImage( imageNew, 0, 0 );
-//			event.gc.dra
+			if ( null != imageThumbnail ) {
+				event.gc.drawImage( imageThumbnail, 0, 0 );
+			}
+			if ( null != strImageNote ) {
+				event.gc.drawText( strImageNote, 10, 10 );
+			}
 		});
+		
 		this.canvasImage.redraw();
-//		this.shell.redraw();
+//		this.comp.setRedraw( true );
 	}
 
 	public static void main( final String[] args ) {
@@ -225,14 +417,25 @@ public class Viewer {
 
 		
 		
-		final DeviceService devices = new DeviceService();
-		devices.load( file );
+//		final DeviceService devices = new DeviceService();
+//		ui.devices.load( file );
+//		ui.addProviders( devices );
+		ui.loadSourceFile( file );
 		
-		final long lTAC = 35888803; // TAC appears early: Acer beTouch E400
+		
+//		final long lTAC = 35888803; // TAC appears early: Acer beTouch E400
 //		final long lTAC = 35160003; // very repeated TAC: Sony Ericsson K770
-		final List<Device> list = devices.getAllDeviceRecords( lTAC );
+		final long lTAC = 1318400;  // many repeats, appears in first 1000
+//		final List<Device> list = devices.getAllDeviceRecords( lTAC );
+//		final List<DeviceReference> 
+//							list = devices.getAllDeviceReferences( lTAC );
 		
-		ui.load( list.get( 0 ) );
+		ui.txtSearchTAC.setText( ""+ lTAC );
+		ui.doSearchForTAC();
+
+//		final Device device = list.get( 0 );
+//		final DeviceReference device = list.get( 0 );
+//		ui.load( list, 0 );
 
 		
 		
