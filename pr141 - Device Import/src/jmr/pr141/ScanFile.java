@@ -1,8 +1,12 @@
 package jmr.pr141;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -17,12 +21,18 @@ import jmr.pr141.device.Device;
 
 public class ScanFile implements DeviceProvider {
 
-	public final static boolean DEBUG_SHOW_LOAD_DETAIL = false;
-	public final static boolean DEBUG_RUN_TAC_SEEK_TEST = false;
+	public final static boolean DEBUG_SHOW_LOAD_DETAIL = true;
+	public final static boolean DEBUG_RUN_TAC_SEEK_TEST = true;
+
+	/** key of entry used to validate an index file to its source */
+	private final static Long KEY_CHECK = 0L;
+	/** future-proofing (maybe) */
+	private final static Long CHECK_VERSION = 1L;
 	
 	
 	final RandomAccessFile raf;
 	
+	// index zero: <source file-size>
 	final Map<Long,List<Long>> mapTacPos = new TreeMap<>();
 	
 
@@ -94,7 +104,8 @@ public class ScanFile implements DeviceProvider {
 	public List<DeviceReference> findReferences( final long lTAC ) {
 		final List<DeviceReference> listRefs = new LinkedList<>();
 		
-		if ( mapTacPos.containsKey( lTAC ) ) {
+		if ( lTAC != KEY_CHECK 
+				&& mapTacPos.containsKey( lTAC ) ) {
 			final List<Long> listPositions = mapTacPos.get( lTAC );
 			for ( final Long lPosition : listPositions ) {
 				final DeviceReference ref = new SCDReference( lPosition );
@@ -116,6 +127,16 @@ public class ScanFile implements DeviceProvider {
 	}
 	
 	
+	public void addCheckEntry( final File fileSource ) {
+		final List<Long> list = new LinkedList<>();
+		
+		list.add( CHECK_VERSION );
+		list.add( (long)fileSource.length() );
+		list.add( fileSource.lastModified() );
+		list.add( (long)fileSource.getName().hashCode() );
+		
+		this.mapTacPos.put( KEY_CHECK, list );
+	}
 	
 	public Map<Long,List<Long>> getTacPosMap() {
 		return this.mapTacPos;
@@ -352,18 +373,29 @@ public class ScanFile implements DeviceProvider {
 			System.out.println( "lTacMostRepeated : " + lTacMostRepeated );
 		}
 		
+	}
+	
+	private void runSeekTest( final long lTAC ) throws IOException {
+
 		if ( DEBUG_RUN_TAC_SEEK_TEST ) {
-			final List<Long> list = mapTacPos.get( lTacMostRepeated );
+			final List<Long> list = mapTacPos.get( lTAC );
 			System.out.println( "Positions: " + list.toString() );
 			
 			System.out.println( "Seeking, Loading.." );
 			for ( final Long lPos : list ) {
 				raf.seek( lPos );
-				final String strLine = readNextLine();
+//				final String strLine = readNextLine();
+				final String strLine = readNextSignificantLine();
+				final int iLen = strLine.length();
+				final String strSafe;
+				if ( iLen > 1000 ) {
+					strSafe = strLine.substring( 0, 1000 ) + "..";
+				} else {
+					strSafe = strLine;
+				}
 				System.out.println( "Read (pos:" + lPos + "): "
 						+ "(len:" + strLine.length() + ") "
-						+ "\"" + strLine.substring( 0, 1000 ) + "...\"" );
-//						+ "\"" + strLine + "\"" );
+						+ "\"" + strSafe + "\"" );
 			}
 		}
 	}
@@ -393,6 +425,34 @@ public class ScanFile implements DeviceProvider {
 		return listRecords;
 	}
 	
+	//from https://beginnersbook.com/2013/12/how-to-serialize-hashmap-in-java/
+	public void saveIndex( final File file ) {
+		 try {
+		 	final FileOutputStream fos = new FileOutputStream( file );
+            final ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject( this.mapTacPos );
+            oos.close();
+            fos.close();
+            System.out.println( "Saved to: " + file.getAbsolutePath() );
+	     } catch(IOException ioe) {
+            ioe.printStackTrace();
+	     }
+	}
+
+	public void loadIndex( final File file ) throws ClassNotFoundException {
+		try {
+			final FileInputStream fis = new FileInputStream( file );
+			final ObjectInputStream ois = new ObjectInputStream( fis );
+			final Map<Long, List<Long>> 
+					map = (Map<Long, List<Long>>) ois.readObject();
+			this.mapTacPos.putAll( map );
+			ois.close();
+			fis.close();
+			System.out.println("Saved to: " + file.getAbsolutePath());
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+	}
 	
 	public static void main( final String[] args ) throws Exception {
 		
@@ -400,10 +460,24 @@ public class ScanFile implements DeviceProvider {
 		final String strFile = "D:\\Tasks\\20210309 - COSMIC-417 - Devices\\"
 							+ "catalog.tsv";
 		final File file = new File( strFile );
-		
+
+		final String strFileIndex = "D:\\Tasks\\"
+						+ "20210309 - COSMIC-417 - Devices\\catalog.idx";
+		final File fileIndex = new File( strFileIndex );
+
 		final ScanFile sf = new ScanFile( file );
 		
-		sf.scan( 1000 );
+		final long lTimeStart = System.currentTimeMillis();
+		sf.loadIndex( fileIndex );
+//		sf.scan( 1000 );
+		final long lTimeEnd = System.currentTimeMillis();
+		final long lElapsed = lTimeEnd - lTimeStart;
+		System.out.println( "Elapsed: " + lElapsed / 1000 );
+		
+//		sf.runSeekTest( sf.lTacMostRepeated );
+		sf.runSeekTest( 1318400 );
+		
+//		sf.saveIndex( fileIndex );
 	}
 	
 

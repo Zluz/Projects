@@ -17,6 +17,8 @@ import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.FillLayout;
@@ -139,7 +141,11 @@ public class Viewer {
 		cmbPresentation.setLayoutData( gdSources );
 		cmbPresentation.setItems( OPTIONS_PRESENTATION );
 		cmbPresentation.select( 0 );
-		
+		cmbPresentation.addSelectionListener( new SelectionAdapter() {
+			public void widgetSelected( final SelectionEvent e ) {
+				doSearchForTAC();
+			}
+		});
 		new Label( comp, SWT.NONE ).setText( "Source" );
 		cmbDeviceSources = new Combo( comp, SWT.DROP_DOWN | SWT.READ_ONLY );
 		cmbDeviceSources.setLayoutData( gdSources );
@@ -565,15 +571,21 @@ public class Viewer {
 			imageThumbnail.dispose();
 		}
 		this.imageThumbnail = getImageFromBase64( strImageData );
+		final int iIndent = 8;
 		this.canvasImage.addPaintListener( event-> {
+			final GC gc = event.gc;
+			final Color color = display.getSystemColor( SWT.COLOR_DARK_GRAY );
+			gc.setBackground( color );
+			gc.fillRectangle( gc.getClipping() );
 			if ( null != imageThumbnail ) {
 //				event.gc.drawImage( imageThumbnail, 0, 0 );
 				final ImageData id = imageThumbnail.getImageData();
-				event.gc.setAntialias( SWT.ON );
-				event.gc.setAdvanced( true );
-				event.gc.drawImage( imageThumbnail, 
-								0, 0, id.width, id.height,
-								0, 0, id.width * 2, id.height * 2 );
+				gc.setAntialias( SWT.ON );
+				gc.setAdvanced( true );
+				gc.drawImage( imageThumbnail, 
+						0, 0, id.width, id.height,
+						iIndent, iIndent, 
+						iIndent+ id.width * 2, iIndent+ id.height * 2 );
 //				drawImage( Image image, 
 //						int srcX, int srcY, 
 //						int srcWidth, int srcHeight, 
@@ -581,7 +593,7 @@ public class Viewer {
 //						int destWidth, int destHeight)
 			}
 			if ( null != strImageNote ) {
-				event.gc.drawText( strImageNote, 10, 10 );
+				gc.drawText( strImageNote, 10, 10 );
 			}
 		});
 		
