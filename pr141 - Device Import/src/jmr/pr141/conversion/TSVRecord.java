@@ -1,10 +1,15 @@
-package jmr.pr141.device;
+package jmr.pr141.conversion;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import jmr.pr141.device.Device.TextProperty;
+import jmr.pr141.device.Device;
+import jmr.pr141.device.Device.BooleanProperty;
+import jmr.pr141.device.Device.IntegerProperty;
+import jmr.pr141.device.TextProperty;
 
 public class TSVRecord {
 
@@ -19,14 +24,15 @@ public class TSVRecord {
 	
 
 
-	private String getTSVProperty( final Device.TextProperty property ) {
+	private String getTSVProperty( final TextProperty property ) {
 		final String strValue;
-		if ( device.mapProperties.containsKey( property ) ) {
-			strValue = device.mapProperties.get( property );
+		final EnumMap<TextProperty,String> map = device.getPropertyMap();
+		if ( map.containsKey( property ) ) {
+			strValue = map.get( property );
 		} else {
 			strValue = NULL_INDICATOR;
 		}
-		final int iPadding = property.iPadding;
+		final int iPadding = property.getPadding();
 		final String strPadded = 
 					String.format( "%-" + iPadding + "s \t ", strValue );
 		return strPadded;
@@ -129,7 +135,7 @@ public class TSVRecord {
 		
 		final StringBuilder sb = new StringBuilder();
 		
-        final String strTACs = device.listTACs.stream()
+        final String strTACs = device.getTACs().stream()
 				                .map( l-> ""+ l )
 				                .collect( Collectors.joining(",") );
         sb.append( String.format( "%18s \t ", strTACs ) );
@@ -139,12 +145,19 @@ public class TSVRecord {
 		sb.append( check( sb, 43 ) );
 		sb.append( "\t " );
 		
-		sb.append( getNumeric( device.iSimCount ) + "," );
-		sb.append( getNumeric( device.iImeiQtySupport ) + "," );
-		sb.append( getBoolean( device.bBluetooth ) + "," );
-		sb.append( getBoolean( device.bWLAN ) + "," );
-		sb.append( getBoolean( device.bNFC ) + "," );
-		sb.append( getNumeric( device.iCountryCode ) + " \t " );
+		sb.append( getNumeric( device.getSimCount() ) + "," );
+		
+//		sb.append( getNumeric( device.iImeiQtySupport ) + "," );
+		sb.append( getNumeric( device.getIntegerProperty( 
+						IntegerProperty.IMEI_QTY_SUPPORT ) ) + "," );
+		
+		sb.append( getBoolean( device.getBluetooth() ) + "," );
+		sb.append( getBoolean( device.getWLAN() ) + "," );
+		sb.append( getBoolean( device.getNFC() ) + "," );
+
+//		sb.append( getNumeric( device.iCountryCode ) + " \t " );
+		sb.append( getNumeric( device.getIntegerProperty( 
+						IntegerProperty.COUNTRY_CODE ) ) + "," );
 		
 		final String strFront = sb.toString();
 		sb.setLength( 0 );
@@ -156,7 +169,8 @@ public class TSVRecord {
 		sb.append( check( sb, 64 ) );
 		sb.append( "\t " );
 
-		for ( final Entry<String, String> entry: device.mapChars.entrySet() ) {
+		final Map<String, String> map = device.getCharacteristicsMap();
+		for ( final Entry<String, String> entry: map.entrySet() ) {
 			final String strKey = entry.getKey();
 			final String strValue = entry.getValue();
 			sb.append( strKey + "=" + strValue + "|" );
@@ -203,17 +217,21 @@ public class TSVRecord {
 						Utils.getNumbersFromLine( strTACs );
 		
 		final Device device = new Device( listTACs );
-		device.mapProperties.put( TextProperty.BRAND_NAME, strBrandName );
-		device.mapProperties.put( TextProperty.MODEL_NAME, strModelName );
-		device.mapProperties.put( TextProperty.MARKETING_NAME, strMarketing );
-		device.mapProperties.put( TextProperty.DEVICE_TYPE, strDeviceType );
+		final EnumMap<TextProperty, String> map = device.getPropertyMap();
+		map.put( TextProperty.BRAND_NAME, strBrandName );
+		map.put( TextProperty.MODEL_NAME, strModelName );
+		map.put( TextProperty.MARKETING_NAME, strMarketing );
+		map.put( TextProperty.DEVICE_TYPE, strDeviceType );
 		
 //		device.strImageBase64 = strImageBase64;
-		device.mapProperties.put( TextProperty.IMAGE_BASE64, strImageBase64 );
+		map.put( TextProperty.IMAGE_BASE64, strImageBase64 );
 
-		device.iSimCount = Utils.parseNumber( arrInfo[ 0 ] );
-		device.iImeiQtySupport = Utils.parseNumber( arrInfo[ 1 ] );
-		device.iCountryCode = Utils.parseNumber( arrInfo[ 5 ] );
+//		device.iSimCount = Utils.parseNumber( arrInfo[ 0 ] );
+		device.setIntegerProperty( IntegerProperty.SIM_COUNT, arrInfo[ 0 ] );
+//		device.iImeiQtySupport = Utils.parseNumber( arrInfo[ 1 ] );
+		device.setIntegerProperty( IntegerProperty.IMEI_QTY_SUPPORT, arrInfo[ 0 ] );
+//		device.iCountryCode = Utils.parseNumber( arrInfo[ 5 ] );
+		device.setIntegerProperty( IntegerProperty.COUNTRY_CODE, arrInfo[ 0 ] );
 		
 //		try {
 //			final String strSimCount = arrInfo[ 0 ].trim();
@@ -222,9 +240,12 @@ public class TSVRecord {
 //		} catch ( final NumberFormatException e ) {
 //			// then do not record a sim count
 //		}
-		device.bBluetooth = Utils.setBoolean( arrInfo[ 2 ] );
-		device.bWLAN = Utils.setBoolean( arrInfo[ 3 ] );
-		device.bNFC = Utils.setBoolean( arrInfo[ 4 ] );
+//		device.bBluetooth = Utils.setBoolean( arrInfo[ 2 ] );
+		device.setBooleanProperty( BooleanProperty.BLUETOOTH, arrInfo[ 2 ] );
+//		device.bWLAN = Utils.setBoolean( arrInfo[ 3 ] );
+		device.setBooleanProperty( BooleanProperty.WLAN, arrInfo[ 3 ] );
+//		device.bNFC = Utils.setBoolean( arrInfo[ 4 ] );
+		device.setBooleanProperty( BooleanProperty.NFC, arrInfo[ 4 ] );
 //		try {
 //			final String strCountryCode = arrInfo[ 3 ].trim();
 //			final int iCountryCode = Integer.parseInt( strCountryCode );

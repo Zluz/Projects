@@ -7,38 +7,24 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import jmr.pr141.conversion.Utils;
+
 public class Device {
 	
 	public static final Device DUMMY_DEVICE;
 	
-	public static enum TextProperty {
-		MARKETING_NAME( 20, "Marketing Name" ),
-		MANUFACTURER( 50, "Manufacturer" ),
-		BRAND_NAME( 16, "Brand Name" ),
-		MODEL_NAME( 20, "Model Name" ),
-		
-		BANDS( 50, "Bands" ),
-		BANDS_5G( 50, "5G Bands" ),
-		RADIO_INTERFACE( 20, "Radio Interface" ),
-		OPERATING_SYSTEM( 12, "Operating System" ),
-		DEVICE_TYPE( 18, "Device Type" ),
-		
-		CHARACTERISTICS( 100, "Characteristics" ),
-		IMAGE_BASE64( 0, "Base64 Image Data" ),
-		;
-		
-		final String strLabel;
-		final int iPadding;
-		
-		private TextProperty( final int iPadding,
-							  final String strLabel ) {
-			this.strLabel = strLabel;
-			this.iPadding = iPadding;
-		}
-		
-		public String getLabel() {
-			return strLabel;
-		}
+	public static enum BooleanProperty {
+			BLUETOOTH,
+			WLAN,
+			NFC,
+			;
+	}
+	
+	public static enum IntegerProperty {
+			SIM_COUNT,
+			IMEI_QTY_SUPPORT,
+			COUNTRY_CODE,
+			;
 	}
 	
 	static {
@@ -47,8 +33,10 @@ public class Device {
 		for ( final TextProperty property : TextProperty.values() ) {
 			map.put( property, property.getLabel() );
 		}
-		DUMMY_DEVICE.bBluetooth = true;
-		DUMMY_DEVICE.bNFC = false;
+//		DUMMY_DEVICE.bBluetooth = true;
+		DUMMY_DEVICE.arrBooleanProperties[ 0 ] = Boolean.TRUE;
+//		DUMMY_DEVICE.bNFC = false;
+		DUMMY_DEVICE.arrBooleanProperties[ 2 ] = Boolean.FALSE;
 		DUMMY_DEVICE.iSimCount = 1;
 		DUMMY_DEVICE.iCountryCode = 999;
 		DUMMY_DEVICE.mapChars.put( 
@@ -67,10 +55,13 @@ public class Device {
 	Integer iSimCount;
 	Integer iImeiQtySupport;
 	
-	Boolean bBluetooth;
-	Boolean bWLAN;
-	Boolean bNFC;
+//	Boolean bBluetooth;
+//	Boolean bWLAN;
+//	Boolean bNFC;
 	
+	final private Boolean[] arrBooleanProperties;
+	final private Integer[] arrIntegerProperties;
+
 //	String strImageBase64;
 	
 	
@@ -78,8 +69,26 @@ public class Device {
 		if ( null != listTACs ) {
 			this.listTACs.addAll( listTACs );
 		}
+		arrBooleanProperties = new Boolean[ BooleanProperty.values().length ];
+		arrIntegerProperties = new Integer[ IntegerProperty.values().length ];
 	}
 	
+	public EnumMap<TextProperty,String> getPropertyMap() {
+		return this.mapProperties;
+	}
+	
+	public Map<String,String> getCharacteristicsMap() {
+		return this.mapChars;
+	}
+	
+	public void setSimCount( final Integer iSimCount ) {
+		this.iSimCount = iSimCount;
+	}
+	
+	public void setCountryCode( final Integer iCountryCode ) {
+		this.iCountryCode = iCountryCode;
+	}
+		
 	public List<Long> getTACs() {
 		return this.listTACs;
 	}
@@ -89,16 +98,64 @@ public class Device {
 	}
 	
 	public Boolean getBluetooth() {
-		return this.bBluetooth;
+//		return this.bBluetooth;
+		return arrBooleanProperties[ BooleanProperty.BLUETOOTH.ordinal() ];
 	}
 	
 	public Boolean getWLAN() {
-		return this.bWLAN;
+//		return this.bWLAN;
+		return arrBooleanProperties[ BooleanProperty.WLAN.ordinal() ];
 	}
 
 	public Boolean getNFC() {
-		return this.bNFC;
+//		return this.bNFC;
+		return arrBooleanProperties[ BooleanProperty.NFC.ordinal() ];
 	}
+	
+	public void setBooleanProperty( final BooleanProperty property,
+									final Boolean bValue ) {
+		final int iIndex = property.ordinal();
+		this.arrBooleanProperties[ iIndex ] = bValue;
+	}
+	
+	public void setBooleanProperty( final BooleanProperty property,
+									final String strValue ) {
+		final Boolean bValue = Utils.parseBoolean( strValue );
+		this.setBooleanProperty( property, bValue ); 
+	}
+
+	public Boolean getBooleanProperty( final BooleanProperty property ) {
+		final int iIndex = property.ordinal();
+		final Boolean bValue = this.arrBooleanProperties[ iIndex ];
+		return bValue;
+	}
+
+	
+	
+
+	public void setIntegerProperty( final IntegerProperty property,
+									final Integer bValue ) {
+		final int iIndex = property.ordinal();
+		this.arrIntegerProperties[ iIndex ] = bValue;
+	}
+	
+	public void setIntegerProperty( final IntegerProperty property,
+									final String strValue ) {
+		final Integer bValue = Utils.parseNumber( strValue );
+		this.setIntegerProperty( property, bValue ); 
+	}
+
+	public Integer getIntegerProperty( final IntegerProperty property ) {
+		final int iIndex = property.ordinal();
+		final Integer bValue = this.arrIntegerProperties[ iIndex ];
+		return bValue;
+	}
+	
+	
+	
+	
+	
+	
 	
 	public String getProperty( final TextProperty property ) {
 		return this.mapProperties.get( property );
@@ -110,7 +167,7 @@ public class Device {
 	}
 	
 	
-	/*package*/ void loadCharacteristics( final String strInput ) {
+	/*package*/ public void loadCharacteristics( final String strInput ) {
 		if ( null == strInput ) return;
 		if ( strInput.isEmpty() ) return;
 		

@@ -4,8 +4,8 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
+import jmr.pr141.conversion.TSVRecord;
 import jmr.pr141.device.Device;
-import jmr.pr141.device.TSVRecord;
 
 public class DeviceService {
 

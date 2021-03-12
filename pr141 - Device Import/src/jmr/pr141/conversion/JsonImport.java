@@ -1,4 +1,4 @@
-package jmr.pr141.device;
+package jmr.pr141.conversion;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -17,7 +17,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
-import jmr.pr141.device.Device.TextProperty;
+import jmr.pr141.device.Device;
+import jmr.pr141.device.TextProperty;
 
 public class JsonImport {
 	
@@ -75,9 +76,9 @@ public class JsonImport {
 		final String strSimCount = jo.get( "SIMCOUNT" ).getAsString();
 		try {
 			final Integer iSimCount = Integer.valueOf( strSimCount );
-			device.iSimCount = iSimCount;
+			device.setSimCount( iSimCount );
 		} catch ( NumberFormatException e ) {
-			device.iSimCount = null;
+			device.setSimCount( null );
 		}
 		
 //		device.strImageBase64 = getJsonMember( jo, "image-thumbnail-binary" );
@@ -150,7 +151,7 @@ public class JsonImport {
 					Files.write( fileDatabase.toPath(), strTSV.getBytes(),
 									StandardOpenOption.APPEND );
 					
-					final int iTACCount = device.listTACs.size();
+					final int iTACCount = device.getTACs().size();
 					if ( mapTACCounts.containsKey( iTACCount ) ) {
 						final long lCount = mapTACCounts.get( iTACCount );
 						mapTACCounts.put( iTACCount, lCount + 1 );

@@ -1,4 +1,4 @@
-package jmr.pr141.device;
+package jmr.pr141.conversion;
 
 import java.util.LinkedList;
 import java.util.List;

@@ -28,13 +28,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 
 import jmr.pr141.DeviceProvider;
 import jmr.pr141.DeviceReference;
 import jmr.pr141.DeviceService;
 import jmr.pr141.device.Device;
-import jmr.pr141.device.Device.TextProperty;
+import jmr.pr141.device.TextProperty;
 
 
 public class Viewer {
@@ -57,7 +58,8 @@ public class Viewer {
 									"Add Data (create new record)" };
 
 	
-	final Text txtSearchTAC;
+//	final Text txtSearchTAC;
+	final Spinner spnSearchTAC;
 	final Button btnSearchTAC;
 	final Text txtStatus;
 	
@@ -92,14 +94,22 @@ public class Viewer {
 		
 		comp.setLayout( new GridLayout( 3, false ) );
 		
-		txtSearchTAC = new Text( comp, SWT.BORDER );
+//		txtSearchTAC = new Text( comp, SWT.BORDER );
+		spnSearchTAC = new Spinner( comp, SWT.BORDER );
+		
 		final GridData gdSearchTAC = new GridData();
 		gdSearchTAC.horizontalSpan = 2;
 		gdSearchTAC.grabExcessHorizontalSpace = true;
 		gdSearchTAC.horizontalAlignment = GridData.FILL;
-		txtSearchTAC.setLayoutData( gdSearchTAC );
+		spnSearchTAC.setLayoutData( gdSearchTAC );
+		spnSearchTAC.setIncrement( 1 );
+		spnSearchTAC.setPageIncrement( 1000 );
+		spnSearchTAC.setMinimum( 100000 );
+		spnSearchTAC.setMaximum( 99999999 );
+		spnSearchTAC.setTextLimit( 9 );
 		btnSearchTAC = new Button( comp, SWT.PUSH );
 		btnSearchTAC.setText( "Search for TAC" );
+		spnSearchTAC.addModifyListener( e-> Viewer.this.doSearchForTAC() );
 		btnSearchTAC.addSelectionListener( new SelectionAdapter() {
 			@Override
 			public void widgetSelected( final SelectionEvent e ) {
@@ -333,14 +343,16 @@ public class Viewer {
 
 	private void addProviders( final DeviceService devices ) {
 		final List<DeviceProvider> list = devices.getAllDeviceProviders();
-		for ( final DeviceProvider provider : list ) {
-			final String strName = provider.getName();
-			final List<String> listExisting = 
-							Arrays.asList( cmbDeviceSources.getItems() );
-			if ( ! listExisting.contains( strName ) ) {
-				cmbDeviceSources.add( strName );
+		display.asyncExec( ()-> {
+			for ( final DeviceProvider provider : list ) {
+				final String strName = provider.getName();
+				final List<String> listExisting = 
+								Arrays.asList( cmbDeviceSources.getItems() );
+				if ( ! listExisting.contains( strName ) ) {
+					cmbDeviceSources.add( strName );
+				}
 			}
-		}
+		} );
 	}
 
 	
@@ -348,7 +360,7 @@ public class Viewer {
 		final long[] lTAC = { -1 };
 		display.syncExec( ()-> {
 			try {
-				final Long lCand = Long.parseLong( txtSearchTAC.getText() );
+				final Long lCand = Long.parseLong( spnSearchTAC.getText() );
 				lTAC[0] = lCand.longValue();
 			} catch ( final NumberFormatException e ) {
 				this.setStatus( "Invalid TAC: " + e.toString() );
@@ -517,14 +529,16 @@ public class Viewer {
 		if ( null == arrFiles ) return;
 		if ( 0 == arrFiles.length ) return;
 		
-		for ( final String strFile : arrFiles ) {
-			final File file = new File( strFile );
-			if ( file.isFile() ) {
-				this.setStatus( "Loading: " + strFile );
-				
-				loadSourceFile( file, Integer.MAX_VALUE );
+		new Thread( ()-> {
+			for ( final String strFile : arrFiles ) {
+				final File file = new File( strFile );
+				if ( file.isFile() ) {
+					this.setStatus( "Loading: " + strFile );
+					
+					loadSourceFile( file, Integer.MAX_VALUE );
+				}
 			}
-		}
+		} ).start();
 	}
 
 	
@@ -563,7 +577,8 @@ public class Viewer {
 //							list = devices.getAllDeviceReferences( lTAC );
 		
 //		final String strOriginalStatus = ui.txtStatus.getText();
-		ui.txtSearchTAC.setText( ""+ lTAC );
+//		ui.txtSearchTAC.setText( ""+ lTAC );
+		ui.spnSearchTAC.setSelection( (int)lTAC );
 		ui.doSearchForTAC();
 		
 //		ui.setStatus( strOriginalStatus );

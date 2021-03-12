@@ -1,4 +1,4 @@
-package jmr.pr141.device;
+package jmr.pr141.conversion;
 
 import java.io.File;
 import java.io.FileInputStream;

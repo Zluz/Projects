@@ -10,14 +10,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import jmr.pr141.device.Utils;
+import jmr.pr141.conversion.TSVRecord;
+import jmr.pr141.conversion.Utils;
 import jmr.pr141.device.Device;
-import jmr.pr141.device.TSVRecord;
 
 
 public class ScanFile implements DeviceProvider {
 
-	public final static boolean DEBUG_SHOW_LOAD_DETAIL = true;
+	public final static boolean DEBUG_SHOW_LOAD_DETAIL = false;
 	public final static boolean DEBUG_RUN_TAC_SEEK_TEST = false;
 	
 	

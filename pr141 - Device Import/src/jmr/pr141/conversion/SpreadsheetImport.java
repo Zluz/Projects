@@ -1,4 +1,4 @@
-package jmr.pr141.device;
+package jmr.pr141.conversion;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,7 +11,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import jmr.pr141.device.Device.TextProperty;
+import jmr.pr141.device.Device;
+import jmr.pr141.device.Device.BooleanProperty;
+import jmr.pr141.device.Device.IntegerProperty;
+import jmr.pr141.device.TextProperty;
 
 /**
  * Import (convert to TSV database file) from a 
@@ -45,8 +48,8 @@ public class SpreadsheetImport {
 		
 		final Device device = new Device( listTACs );
 		
-		final EnumMap<TextProperty,String> mapP = device.mapProperties;
-		final Map<String,String> mapC = device.mapChars;
+		final EnumMap<TextProperty,String> mapP = device.getPropertyMap();
+		final Map<String,String> mapC = device.getCharacteristicsMap();
 		int i = 1;
 		mapP.put( TextProperty.MARKETING_NAME, arrParts[ i++ ] );
 		mapP.put( TextProperty.MANUFACTURER, arrParts[ i++ ] );
@@ -73,12 +76,16 @@ public class SpreadsheetImport {
 		final String strSimSlot = arrParts[ i++ ]; // Simslot
 		final String strImeiQtySpt = arrParts[ i++ ]; // Imeiquantitysupport
 		
-		device.iSimCount = Utils.parseNumber( strSimSlot );
-		device.iCountryCode = Utils.parseNumber( strCountryCode );
-		device.bBluetooth = Utils.parseBoolean( strBluetooth );
-		device.bWLAN = Utils.parseBoolean( strWLAN );
-		device.bNFC = Utils.parseBoolean( strNFC );
-		device.iImeiQtySupport = Utils.parseNumber( strImeiQtySpt );
+		device.setSimCount( Utils.parseNumber( strSimSlot ) );
+		device.setCountryCode( Utils.parseNumber( strCountryCode ) );
+//		device.bBluetooth = Utils.parseBoolean( strBluetooth );
+		device.setBooleanProperty( BooleanProperty.BLUETOOTH, strBluetooth );
+//		device.bWLAN = Utils.parseBoolean( strWLAN );
+		device.setBooleanProperty( BooleanProperty.WLAN, strWLAN );
+//		device.bNFC = Utils.parseBoolean( strNFC );
+		device.setBooleanProperty( BooleanProperty.NFC, strNFC );
+//		device.iImeiQtySupport = Utils.parseNumber( strImeiQtySpt );
+		device.setIntegerProperty( IntegerProperty.IMEI_QTY_SUPPORT, strImeiQtySpt );
 
 		if ( useful( strAllocDate ) ) mapC.put( "AllocationDate", strAllocDate );
 		if ( useful( strFixedCode ) ) mapC.put( "FixedCode", strFixedCode );
