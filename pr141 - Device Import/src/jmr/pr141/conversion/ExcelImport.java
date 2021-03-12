@@ -13,7 +13,14 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  * following guidance from:
  * https://www.javatpoint.com/how-to-read-excel-file-in-java
  * 
- *  .. no good, runs out of memory when trying to load.
+ * 
+ *  no good, runs out of memory when trying to load.
+ *  	may revisit in the future.
+ *  	not used for now.
+ *  	delete if no plans to revisit.
+ * 
+ *  
+ *  there are additional jars are required to get this to work.
  */
 public class ExcelImport {
 	
@@ -22,6 +29,7 @@ public class ExcelImport {
 			+ "TAC Lookup 20210122\\testing.xlsx";
 	
 
+	@SuppressWarnings({ "resource", "deprecation" })
 	public static void main(String[] args) {
 		try {
 //			File file = new File("C:\\demo\\employee.xlsx"); // creating a new

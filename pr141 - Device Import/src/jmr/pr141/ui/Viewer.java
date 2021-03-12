@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.EnumMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
@@ -35,6 +36,7 @@ import jmr.pr141.DeviceProvider;
 import jmr.pr141.DeviceReference;
 import jmr.pr141.DeviceService;
 import jmr.pr141.device.Device;
+import jmr.pr141.device.DeviceMerge;
 import jmr.pr141.device.TextProperty;
 
 
@@ -138,10 +140,12 @@ public class Viewer {
 		new Label( comp, SWT.NONE ).setText( "Source" );
 		cmbDeviceSources = new Combo( comp, SWT.DROP_DOWN | SWT.READ_ONLY );
 		cmbDeviceSources.setLayoutData( gdSources );
+		cmbDeviceSources.setItems( "<merged data>" );
 
 		new Label( comp, SWT.NONE ).setText( "Reference" );
 		cmbReference = new Combo( comp, SWT.DROP_DOWN | SWT.READ_ONLY );
 		cmbReference.setLayoutData( gdSources );
+		cmbReference.setItems( "<merged data>" );
 		cmbReference.addSelectionListener( new SelectionAdapter() {
 			@Override
 			public void widgetSelected( final SelectionEvent e ) {
@@ -377,7 +381,7 @@ public class Viewer {
 		final List<DeviceReference> 
 				listReferences = devices.getAllDeviceReferences( lTAC );
 
-		this.load( listReferences, 0 );
+		this.load( lTAC, listReferences, 0 );
 	}
 	
 	public void doSelectReference() {
@@ -390,7 +394,7 @@ public class Viewer {
 		final List<DeviceReference> 
 				listReferences = devices.getAllDeviceReferences( lTAC );
 
-		this.load( listReferences, iSel[0] );
+		this.load( lTAC, listReferences, iSel[0] - 1 );
 	}
 	
 	
@@ -421,7 +425,8 @@ public class Viewer {
 	}
 	
 	
-	public void load( final List<DeviceReference> listReferences,
+	public void load( final long lTAC,
+					  final List<DeviceReference> listReferences,
 					  final int iSelect ) {
 		final String strError;
 		if ( null == listReferences ) {
@@ -439,47 +444,89 @@ public class Viewer {
 			this.setStatus( strError );
 			return;
 		}
-		
-		final long lTimeStart = System.currentTimeMillis();
-		
-		final DeviceReference ref = listReferences.get( iSelect );
-		
-		final Device device = ref.resolve();
-		final long lTimeEnd = System.currentTimeMillis();
-		final long lElapsed = lTimeEnd - lTimeStart;
-		
-		if ( null != device ) {
-			this.setStatus( "Device loaded in " + lElapsed + " ms" );
-		} else {
-			this.setStatus( "Failed to load device" );
-			return;
-		}
 
-		final String strProviderName = ref.getProvider().getName(); 
-		final String[] arrSources = cmbDeviceSources.getItems();
-		for ( int i = 0; i < arrSources.length; i++ ) {
-			if ( strProviderName.equals( arrSources[ i ] ) ) {
-				cmbDeviceSources.select( i );
+		final int[] iPresent = { -1 }; 
+		display.syncExec( 
+				()-> iPresent[0] = cmbPresentation.getSelectionIndex() );
+		final boolean bMerge = ( 1 == iPresent[ 0 ] );
+
+		final Device device;
+		
+		if ( bMerge ) {
+			
+			final List<Device> list = new LinkedList<>();
+			final DeviceMerge merger = new DeviceMerge( true );
+			
+			final long lTimeStart = System.currentTimeMillis();
+			
+			for ( final DeviceReference ref : listReferences ) {
+				final Device deviceItem = ref.resolve();
+				if ( null != deviceItem ) {
+					list.add( deviceItem );
+				}
 			}
+			
+			device = merger.merge( lTAC, list );
+			
+			final long lTimeEnd = System.currentTimeMillis();
+			final long lElapsed = lTimeEnd - lTimeStart;
+			
+			if ( null != device ) {
+				this.setStatus( "All device data "
+						+ "loaded and merged in " + lElapsed + " ms" );
+			} else {
+				this.setStatus( "Failed to load device data" );
+				return;
+			}
+			
+			cmbDeviceSources.select( 0 );
+			cmbReference.select( 0 );
+
+		} else {
+			final long lTimeStart = System.currentTimeMillis();
+			
+			final DeviceReference ref = listReferences.get( iSelect );
+			
+			device = ref.resolve();
+			final long lTimeEnd = System.currentTimeMillis();
+			final long lElapsed = lTimeEnd - lTimeStart;
+			
+			if ( null != device ) {
+				this.setStatus( "Device loaded in " + lElapsed + " ms" );
+			} else {
+				this.setStatus( "Failed to load device" );
+				return;
+			}
+			
+			final String strProviderName = ref.getProvider().getName(); 
+			final String[] arrSources = cmbDeviceSources.getItems();
+			for ( int i = 1; i < arrSources.length; i++ ) {
+				if ( strProviderName.equals( arrSources[ i ] ) ) {
+					cmbDeviceSources.select( i );
+				}
+			}
+
+			final int iRefCount = listReferences.size();
+			final String[] arrReferences = new String[ iRefCount + 1 ];
+			arrReferences[ 0 ] = "<merged data>";
+			for ( int i = 0; i < iRefCount; i++ ) {
+				final String strName = listReferences.get( i ).getName();
+				arrReferences[ i + 1 ] = ""+ ( i + 1 ) + " : " + strName;
+			}
+			cmbReference.setItems( arrReferences );
+			cmbReference.select( iSelect + 1 );
+			
 		}
 
-		final int iRefCount = listReferences.size();
-		final String[] arrReferences = new String[ iRefCount ];
-		for ( int i = 0; i < iRefCount; i++ ) {
-			final String strName = listReferences.get( i ).getName();
-			arrReferences[ i ] = ""+ ( i + 1 ) + " : " + strName;
-		}
-		cmbReference.setItems( arrReferences );
-		cmbReference.select( iSelect );
-		
+
 		setComboSelection( cmbWLAN, device.getWLAN() );
 		setComboSelection( cmbBluetooth, device.getBluetooth() );
 		
 		final List<Long> listTACs = device.getTACs();
 		final StringBuilder sbTACs = new StringBuilder();
 		if ( null != listTACs ) {
-			for ( final Long lTAC : listTACs ) {
-				sbTACs.append( ""+ lTAC );
+			for ( final Long lTACItem : listTACs ) {
+				sbTACs.append( ""+ lTACItem );
 				sbTACs.append( Text.DELIMITER );
 			}
 			txtTAC.setText( sbTACs.toString() );

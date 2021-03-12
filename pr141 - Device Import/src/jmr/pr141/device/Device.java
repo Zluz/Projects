@@ -28,17 +28,15 @@ public class Device {
 	}
 	
 	static {
-		DUMMY_DEVICE = new Device( Collections.singletonList( 999999L ) );
+		DUMMY_DEVICE = new Device( 999999L );
 		final EnumMap<TextProperty,String> map = DUMMY_DEVICE.mapProperties;
 		for ( final TextProperty property : TextProperty.values() ) {
 			map.put( property, property.getLabel() );
 		}
-//		DUMMY_DEVICE.bBluetooth = true;
-		DUMMY_DEVICE.arrBooleanProperties[ 0 ] = Boolean.TRUE;
-//		DUMMY_DEVICE.bNFC = false;
-		DUMMY_DEVICE.arrBooleanProperties[ 2 ] = Boolean.FALSE;
-		DUMMY_DEVICE.iSimCount = 1;
-		DUMMY_DEVICE.iCountryCode = 999;
+		DUMMY_DEVICE.setBooleanProperty( BooleanProperty.BLUETOOTH, true );
+		DUMMY_DEVICE.setBooleanProperty( BooleanProperty.NFC, false );
+		DUMMY_DEVICE.setIntegerProperty( IntegerProperty.SIM_COUNT, 1 );
+		DUMMY_DEVICE.setIntegerProperty( IntegerProperty.COUNTRY_CODE, 999 );
 		DUMMY_DEVICE.mapChars.put( 
 				"CharacteristicRandomName", "CharacteristicRandomValue" );
 	}
@@ -51,19 +49,9 @@ public class Device {
 	
 	final Map<String,String> mapChars = new HashMap<>();
 	
-	Integer iCountryCode;
-	Integer iSimCount;
-	Integer iImeiQtySupport;
-	
-//	Boolean bBluetooth;
-//	Boolean bWLAN;
-//	Boolean bNFC;
-	
 	final private Boolean[] arrBooleanProperties;
 	final private Integer[] arrIntegerProperties;
 
-//	String strImageBase64;
-	
 	
 	public Device( final List<Long> listTACs ) {
 		if ( null != listTACs ) {
@@ -71,6 +59,10 @@ public class Device {
 		}
 		arrBooleanProperties = new Boolean[ BooleanProperty.values().length ];
 		arrIntegerProperties = new Integer[ IntegerProperty.values().length ];
+	}
+	
+	public Device( final long lTAC ) {
+		this( Collections.singletonList( lTAC ) );
 	}
 	
 	public EnumMap<TextProperty,String> getPropertyMap() {
@@ -82,11 +74,11 @@ public class Device {
 	}
 	
 	public void setSimCount( final Integer iSimCount ) {
-		this.iSimCount = iSimCount;
+		arrIntegerProperties[ IntegerProperty.SIM_COUNT.ordinal() ] = iSimCount;
 	}
 	
 	public void setCountryCode( final Integer iCountryCode ) {
-		this.iCountryCode = iCountryCode;
+		arrIntegerProperties[ IntegerProperty.COUNTRY_CODE.ordinal() ] = iCountryCode;
 	}
 		
 	public List<Long> getTACs() {
@@ -94,21 +86,18 @@ public class Device {
 	}
 	
 	public Integer getSimCount() {
-		return this.iSimCount;
+		return arrIntegerProperties[ IntegerProperty.SIM_COUNT.ordinal() ];
 	}
 	
 	public Boolean getBluetooth() {
-//		return this.bBluetooth;
 		return arrBooleanProperties[ BooleanProperty.BLUETOOTH.ordinal() ];
 	}
 	
 	public Boolean getWLAN() {
-//		return this.bWLAN;
 		return arrBooleanProperties[ BooleanProperty.WLAN.ordinal() ];
 	}
 
 	public Boolean getNFC() {
-//		return this.bNFC;
 		return arrBooleanProperties[ BooleanProperty.NFC.ordinal() ];
 	}
 	
@@ -131,8 +120,6 @@ public class Device {
 	}
 
 	
-	
-
 	public void setIntegerProperty( final IntegerProperty property,
 									final Integer bValue ) {
 		final int iIndex = property.ordinal();
@@ -150,11 +137,6 @@ public class Device {
 		final Integer bValue = this.arrIntegerProperties[ iIndex ];
 		return bValue;
 	}
-	
-	
-	
-	
-	
 	
 	
 	public String getProperty( final TextProperty property ) {

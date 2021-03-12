@@ -11,18 +11,18 @@ import jmr.pr141.device.Device.BooleanProperty;
 import jmr.pr141.device.Device.IntegerProperty;
 import jmr.pr141.device.TextProperty;
 
+
 public class TSVRecord {
 
 	final public static String NULL_INDICATOR = "-"; 
 		
 	private final Device device;
 	
+	
 	public TSVRecord( final Device device ) {
 		this.device = device;
 	}
 	
-	
-
 
 	private String getTSVProperty( final TextProperty property ) {
 		final String strValue;
@@ -147,7 +147,6 @@ public class TSVRecord {
 		
 		sb.append( getNumeric( device.getSimCount() ) + "," );
 		
-//		sb.append( getNumeric( device.iImeiQtySupport ) + "," );
 		sb.append( getNumeric( device.getIntegerProperty( 
 						IntegerProperty.IMEI_QTY_SUPPORT ) ) + "," );
 		
@@ -155,7 +154,6 @@ public class TSVRecord {
 		sb.append( getBoolean( device.getWLAN() ) + "," );
 		sb.append( getBoolean( device.getNFC() ) + "," );
 
-//		sb.append( getNumeric( device.iCountryCode ) + " \t " );
 		sb.append( getNumeric( device.getIntegerProperty( 
 						IntegerProperty.COUNTRY_CODE ) ) + "," );
 		
@@ -213,8 +211,7 @@ public class TSVRecord {
 		final String strCharacteristics = arrParts[ 6 ];
 		final String strImageBase64 = arrParts[ 7 ].trim();
 		
-		final List<Long> listTACs = 
-						Utils.getNumbersFromLine( strTACs );
+		final List<Long> listTACs = Utils.getNumbersFromLine( strTACs );
 		
 		final Device device = new Device( listTACs );
 		final EnumMap<TextProperty, String> map = device.getPropertyMap();
@@ -223,36 +220,15 @@ public class TSVRecord {
 		map.put( TextProperty.MARKETING_NAME, strMarketing );
 		map.put( TextProperty.DEVICE_TYPE, strDeviceType );
 		
-//		device.strImageBase64 = strImageBase64;
 		map.put( TextProperty.IMAGE_BASE64, strImageBase64 );
 
-//		device.iSimCount = Utils.parseNumber( arrInfo[ 0 ] );
 		device.setIntegerProperty( IntegerProperty.SIM_COUNT, arrInfo[ 0 ] );
-//		device.iImeiQtySupport = Utils.parseNumber( arrInfo[ 1 ] );
 		device.setIntegerProperty( IntegerProperty.IMEI_QTY_SUPPORT, arrInfo[ 0 ] );
-//		device.iCountryCode = Utils.parseNumber( arrInfo[ 5 ] );
 		device.setIntegerProperty( IntegerProperty.COUNTRY_CODE, arrInfo[ 0 ] );
 		
-//		try {
-//			final String strSimCount = arrInfo[ 0 ].trim();
-//			final int iSimCount = Integer.parseInt( strSimCount );
-//			device.iSimCount = iSimCount;
-//		} catch ( final NumberFormatException e ) {
-//			// then do not record a sim count
-//		}
-//		device.bBluetooth = Utils.setBoolean( arrInfo[ 2 ] );
 		device.setBooleanProperty( BooleanProperty.BLUETOOTH, arrInfo[ 2 ] );
-//		device.bWLAN = Utils.setBoolean( arrInfo[ 3 ] );
 		device.setBooleanProperty( BooleanProperty.WLAN, arrInfo[ 3 ] );
-//		device.bNFC = Utils.setBoolean( arrInfo[ 4 ] );
 		device.setBooleanProperty( BooleanProperty.NFC, arrInfo[ 4 ] );
-//		try {
-//			final String strCountryCode = arrInfo[ 3 ].trim();
-//			final int iCountryCode = Integer.parseInt( strCountryCode );
-//			device.iCountryCode = iCountryCode;
-//		} catch ( final NumberFormatException e ) {
-//			// then do not record a country code
-//		}
 				
 		return device;
 	}
