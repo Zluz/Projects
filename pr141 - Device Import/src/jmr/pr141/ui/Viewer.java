@@ -47,6 +47,8 @@ public class Viewer {
 	final private Shell shell;
 	final private Composite comp;
 	
+	private Device device; // the currently loaded device
+	
 	final private static String[] 
 				arrBoolOptions = new String[] { 
 									"<null>", 
@@ -75,6 +77,7 @@ public class Viewer {
 	final Combo cmbBluetooth;
 	final Text txtCountryCode;
 	final Canvas canvasImage;
+	final Button btnShowChars;
 	
 	Image imageThumbnail;
 	String strImageNote;
@@ -171,8 +174,8 @@ public class Viewer {
 		gdImage.horizontalAlignment = GridData.FILL;
 		gdImage.grabExcessHorizontalSpace = true;
 		gdImage.verticalSpan = 7;
-		gdImage.widthHint = 200;
-		gdImage.heightHint = 300;
+		gdImage.widthHint = 240;
+		gdImage.heightHint = 280;
 		canvasImage = new Canvas( comp, SWT.BORDER );
 		canvasImage.setLayoutData( gdImage );
 		
@@ -247,8 +250,23 @@ public class Viewer {
 		final Text txtBase64 = new Text( comp, iHexStyle );
 		txtBase64.setLayoutData( gdBigHex );
 		this.mapText.put( TextProperty.IMAGE_BASE64, txtBase64 );
+		
+		btnShowChars = new Button( comp, SWT.PUSH );
+		btnShowChars.setText( "Show Characteristics" );
+		btnShowChars.addSelectionListener( new SelectionAdapter() {
+			public void widgetSelected( final SelectionEvent e ) {
+				doShowCharacteristics();
+			}
+		} );
 
 		shell.pack();
+	}
+	
+	private void doShowCharacteristics() {
+		if ( null == this.device ) return;
+		final CharacteristicsForm form = 
+						new CharacteristicsForm( display, device );
+		form.open();
 	}
 	
 	private void setStatus( final String strText ) {
@@ -450,7 +468,7 @@ public class Viewer {
 				()-> iPresent[0] = cmbPresentation.getSelectionIndex() );
 		final boolean bMerge = ( 1 == iPresent[ 0 ] );
 
-		final Device device;
+//		final Device device;
 		
 		if ( bMerge ) {
 			
@@ -567,6 +585,8 @@ public class Viewer {
 			}
 		});
 		
+		this.shell.setText( device.getName() );
+		
 		this.canvasImage.redraw();
 //		this.comp.setRedraw( true );
 	}
@@ -594,7 +614,8 @@ public class Viewer {
 //		final String strFile = "/data/Development/CM/test.tar";
 		final String strFile = "D:\\Tasks\\20210309 - COSMIC-417 - Devices\\"
 //							+ "catalog.tsv";
-							+ "TAC_Lookup__small.tsv";
+//							+ "TAC_Lookup__small.tsv";
+							+ "device-mine__small.tsv";
 		final File file = new File( strFile );
 
 		
@@ -617,8 +638,8 @@ public class Viewer {
 		
 		
 //		final long lTAC = 35888803; // TAC appears early: Acer beTouch E400
-//		final long lTAC = 35160003; // very repeated TAC: Sony Ericsson K770
-		final long lTAC = 1318400;  // many repeats, appears in first 1000
+		final long lTAC = 35160003; // very repeated TAC: Sony Ericsson K770
+//		final long lTAC = 1318400;  // many repeats, appears in first 1000
 //		final List<Device> list = devices.getAllDeviceRecords( lTAC );
 //		final List<DeviceReference> 
 //							list = devices.getAllDeviceReferences( lTAC );

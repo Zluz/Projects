@@ -147,14 +147,14 @@ public class TSVRecord {
 		
 		sb.append( getNumeric( device.getSimCount() ) + "," );
 		
-		sb.append( getNumeric( device.getIntegerProperty( 
+		sb.append( getNumeric( device.getProperty( 
 						IntegerProperty.IMEI_QTY_SUPPORT ) ) + "," );
 		
 		sb.append( getBoolean( device.getBluetooth() ) + "," );
 		sb.append( getBoolean( device.getWLAN() ) + "," );
 		sb.append( getBoolean( device.getNFC() ) + "," );
 
-		sb.append( getNumeric( device.getIntegerProperty( 
+		sb.append( getNumeric( device.getProperty( 
 						IntegerProperty.COUNTRY_CODE ) ) + "," );
 		
 		final String strFront = sb.toString();
@@ -189,7 +189,6 @@ public class TSVRecord {
 		return strFront + sb.toString();
 	}
 	
-	
 
 	public static Device fromTSV( final String strLine ) {
 		if ( null == strLine ) return null;
@@ -208,7 +207,7 @@ public class TSVRecord {
 		final String strMarketing = arrParts[ 4 ].trim();
 		final String strBrandName = arrParts[ 5 ].trim();
 		
-		final String strCharacteristics = arrParts[ 6 ];
+		final String strChars = arrParts[ 6 ];
 		final String strImageBase64 = arrParts[ 7 ].trim();
 		
 		final List<Long> listTACs = Utils.getNumbersFromLine( strTACs );
@@ -222,14 +221,17 @@ public class TSVRecord {
 		
 		map.put( TextProperty.IMAGE_BASE64, strImageBase64 );
 
-		device.setIntegerProperty( IntegerProperty.SIM_COUNT, arrInfo[ 0 ] );
-		device.setIntegerProperty( IntegerProperty.IMEI_QTY_SUPPORT, arrInfo[ 0 ] );
-		device.setIntegerProperty( IntegerProperty.COUNTRY_CODE, arrInfo[ 0 ] );
+		device.setProperty( IntegerProperty.SIM_COUNT, arrInfo[ 0 ] );
+		device.setProperty( IntegerProperty.IMEI_QTY_SUPPORT, arrInfo[ 0 ] );
+		device.setProperty( IntegerProperty.COUNTRY_CODE, arrInfo[ 0 ] );
 		
-		device.setBooleanProperty( BooleanProperty.BLUETOOTH, arrInfo[ 2 ] );
-		device.setBooleanProperty( BooleanProperty.WLAN, arrInfo[ 3 ] );
-		device.setBooleanProperty( BooleanProperty.NFC, arrInfo[ 4 ] );
-				
+		device.setProperty( BooleanProperty.BLUETOOTH, arrInfo[ 2 ] );
+		device.setProperty( BooleanProperty.WLAN, arrInfo[ 3 ] );
+		device.setProperty( BooleanProperty.NFC, arrInfo[ 4 ] );
+
+		final Map<String, String> mapChars = Utils.getMapFrom( strChars );
+		device.getCharacteristicsMap().putAll( mapChars ); 
+		
 		return device;
 	}
 	

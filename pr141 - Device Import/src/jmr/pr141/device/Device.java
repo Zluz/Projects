@@ -33,21 +33,21 @@ public class Device {
 		for ( final TextProperty property : TextProperty.values() ) {
 			map.put( property, property.getLabel() );
 		}
-		DUMMY_DEVICE.setBooleanProperty( BooleanProperty.BLUETOOTH, true );
-		DUMMY_DEVICE.setBooleanProperty( BooleanProperty.NFC, false );
-		DUMMY_DEVICE.setIntegerProperty( IntegerProperty.SIM_COUNT, 1 );
-		DUMMY_DEVICE.setIntegerProperty( IntegerProperty.COUNTRY_CODE, 999 );
+		DUMMY_DEVICE.setProperty( BooleanProperty.BLUETOOTH, true );
+		DUMMY_DEVICE.setProperty( BooleanProperty.NFC, false );
+		DUMMY_DEVICE.setProperty( IntegerProperty.SIM_COUNT, 1 );
+		DUMMY_DEVICE.setProperty( IntegerProperty.COUNTRY_CODE, 999 );
 		DUMMY_DEVICE.mapChars.put( 
 				"CharacteristicRandomName", "CharacteristicRandomValue" );
 	}
 	
 	
-	final List<Long> listTACs = new LinkedList<>();
+	final private List<Long> listTACs = new LinkedList<>();
 	
-	final EnumMap<TextProperty,String> 
+	final private EnumMap<TextProperty,String> 
 					mapProperties = new EnumMap<>( TextProperty.class );
 	
-	final Map<String,String> mapChars = new HashMap<>();
+	final private Map<String,String> mapChars = new HashMap<>();
 	
 	final private Boolean[] arrBooleanProperties;
 	final private Integer[] arrIntegerProperties;
@@ -101,38 +101,38 @@ public class Device {
 		return arrBooleanProperties[ BooleanProperty.NFC.ordinal() ];
 	}
 	
-	public void setBooleanProperty( final BooleanProperty property,
+	public void setProperty( final BooleanProperty property,
 									final Boolean bValue ) {
 		final int iIndex = property.ordinal();
 		this.arrBooleanProperties[ iIndex ] = bValue;
 	}
 	
-	public void setBooleanProperty( final BooleanProperty property,
+	public void setProperty( final BooleanProperty property,
 									final String strValue ) {
 		final Boolean bValue = Utils.parseBoolean( strValue );
-		this.setBooleanProperty( property, bValue ); 
+		this.setProperty( property, bValue ); 
 	}
 
-	public Boolean getBooleanProperty( final BooleanProperty property ) {
+	public Boolean getProperty( final BooleanProperty property ) {
 		final int iIndex = property.ordinal();
 		final Boolean bValue = this.arrBooleanProperties[ iIndex ];
 		return bValue;
 	}
 
 	
-	public void setIntegerProperty( final IntegerProperty property,
+	public void setProperty( final IntegerProperty property,
 									final Integer bValue ) {
 		final int iIndex = property.ordinal();
 		this.arrIntegerProperties[ iIndex ] = bValue;
 	}
 	
-	public void setIntegerProperty( final IntegerProperty property,
+	public void setProperty( final IntegerProperty property,
 									final String strValue ) {
 		final Integer bValue = Utils.parseNumber( strValue );
-		this.setIntegerProperty( property, bValue ); 
+		this.setProperty( property, bValue ); 
 	}
 
-	public Integer getIntegerProperty( final IntegerProperty property ) {
+	public Integer getProperty( final IntegerProperty property ) {
 		final int iIndex = property.ordinal();
 		final Integer bValue = this.arrIntegerProperties[ iIndex ];
 		return bValue;
@@ -161,6 +161,30 @@ public class Device {
 				this.mapChars.put( strKey, strValue );
 			}
 		}
+	}
+	
+	
+	// attempt to generate a helpful name
+	public String getName() {
+		final StringBuilder sb = new StringBuilder();
+		if ( 1 == this.listTACs.size() ) {
+			sb.append( "TAC " + listTACs.get( 0 ) );
+		}
+		
+		final String strMarketing = 
+						this.getProperty( TextProperty.MARKETING_NAME );
+		if ( null != strMarketing && strMarketing.length() > 2 ) {
+			if ( sb.length() > 0 ) sb.append( " - " );
+			sb.append( strMarketing );
+		}
+		
+		if ( sb.length() > 0 ) {
+			return sb.toString();
+		}
+		
+		sb.append( "TACs" );
+		this.listTACs.forEach( l-> sb.append( " " + l ) );
+		return sb.toString();
 	}
 	
 }

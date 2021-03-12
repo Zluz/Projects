@@ -78,14 +78,10 @@ public class SpreadsheetImport {
 		
 		device.setSimCount( Utils.parseNumber( strSimSlot ) );
 		device.setCountryCode( Utils.parseNumber( strCountryCode ) );
-//		device.bBluetooth = Utils.parseBoolean( strBluetooth );
-		device.setBooleanProperty( BooleanProperty.BLUETOOTH, strBluetooth );
-//		device.bWLAN = Utils.parseBoolean( strWLAN );
-		device.setBooleanProperty( BooleanProperty.WLAN, strWLAN );
-//		device.bNFC = Utils.parseBoolean( strNFC );
-		device.setBooleanProperty( BooleanProperty.NFC, strNFC );
-//		device.iImeiQtySupport = Utils.parseNumber( strImeiQtySpt );
-		device.setIntegerProperty( IntegerProperty.IMEI_QTY_SUPPORT, strImeiQtySpt );
+		device.setProperty( BooleanProperty.BLUETOOTH, strBluetooth );
+		device.setProperty( BooleanProperty.WLAN, strWLAN );
+		device.setProperty( BooleanProperty.NFC, strNFC );
+		device.setProperty( IntegerProperty.IMEI_QTY_SUPPORT, strImeiQtySpt );
 
 		if ( useful( strAllocDate ) ) mapC.put( "AllocationDate", strAllocDate );
 		if ( useful( strFixedCode ) ) mapC.put( "FixedCode", strFixedCode );

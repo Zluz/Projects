@@ -1,7 +1,9 @@
 package jmr.pr141.conversion;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class Utils {
 
@@ -70,6 +72,10 @@ public class Utils {
 		
 		if ( "NOT KNOWN".equals( strTrimmed ) ) {
 			return null;
+		} else if ( "-".equals( strTrimmed ) ) {
+			return null;
+		} else if ( strTrimmed.contains( "NULL" ) ) {
+			return null;
 		} else if ( 'N' == c ) {
 			return false;
 		} else if ( 'Y' == c ) {
@@ -99,6 +105,23 @@ public class Utils {
 			}
 		}
 		return sb.length();
+	}
+	
+	
+	public static Map<String,String> getMapFrom( final String strLine ) {
+		final Map<String,String> map = new HashMap<>();
+		if ( null == strLine ) return map;
+		if ( strLine.isEmpty() ) return map;
+		
+		for ( final String strEntry : strLine.split( "\\|" ) ) {
+			final String[] strParts = strEntry.split( "=" );
+			if ( 2 == strParts.length ) {
+				final String strKey = strParts[ 0 ].trim();
+				final String strValue = strParts[ 1 ].trim();
+				map.put( strKey, strValue );
+			}
+		}
+		return map;
 	}
 	
 	
