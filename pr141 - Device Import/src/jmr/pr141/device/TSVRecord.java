@@ -1,6 +1,5 @@
 package jmr.pr141.device;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -19,33 +18,6 @@ public class TSVRecord {
 	
 	
 
-	public static List<Long> getTACsFromLine( final String strLine ) {
-		final List<Long> list = new LinkedList<>();
-		if ( null == strLine ) return list;
-		if ( strLine.length() < 8 ) return list;
-		
-		final String strTACs;
-		final int iPosTab = strLine.indexOf( '\t' );
-		if ( -1 == iPosTab ) {
-			strTACs = strLine;
-		} else {
-			strTACs = strLine.substring( 0, iPosTab );
-		}
-		
-		for ( final String strRawTAC : strTACs.split( "," ) ) {
-			final String strTAC = strRawTAC.trim();
-			try {
-				final Long lTAC = Long.parseLong( strTAC );
-				if ( null != lTAC ) {
-					list.add( lTAC );
-				} 
-			} catch ( final NumberFormatException e ) {
-				// just ignore
-			}
-		}
-		return list;
-	}
-	
 
 	private String getTSVProperty( final Device.TextProperty property ) {
 		final String strValue;
@@ -56,11 +28,11 @@ public class TSVRecord {
 		}
 		final int iPadding = property.iPadding;
 		final String strPadded = 
-					String.format( "%-" + iPadding + "s\t ", strValue );
+					String.format( "%-" + iPadding + "s \t ", strValue );
 		return strPadded;
 	}
 	
-	private static String getNumeric( final Integer iValue ) {
+	public static String getNumeric( final Integer iValue ) {
 		if ( null != iValue ) {
 			return ""+ iValue;
 		} else {
@@ -68,45 +40,121 @@ public class TSVRecord {
 		}
 	}
 
-	private static String getBoolean( final Boolean bValue ) {
+	public static String getBoolean( final Boolean bValue ) {
 		if ( null != bValue ) {
 			return bValue ? "Y" : "N";
 		} else {
 			return NULL_INDICATOR;
 		}
 	}
+
 	
-	private static Boolean setBoolean( final String strValue ) {
-		if ( null == strValue ) return null;
-		final String strTrimmed = strValue.trim();
-		if ( "Y" == strTrimmed ) {
-			return Boolean.TRUE;
-		} else if ( "N" == strTrimmed ) {
-			return Boolean.FALSE;
-		} else {
-			return null;
+	public static String shorten( final String strLine ) {
+		if ( null == strLine ) return "";
+		final int iLen = strLine.length();
+		if ( 0 == iLen ) return "";
+		
+		if ( ' ' == strLine.charAt( iLen - 1 ) ) {
+			final String strNew = strLine.substring( 0, iLen - 1 );
+			return strNew;
 		}
+		
+		final int iPosTS = strLine.lastIndexOf( "\t " );
+		if ( iPosTS > -1 ) {
+			final String strFront = strLine.substring( 0, iPosTS + 1 );
+			final String strBack = strLine.substring( iPosTS + 2, iLen );
+			String strNew = strFront + strBack;
+			return strNew;
+		}
+
+//		final int iPosST = strLine.lastIndexOf( " \t" );
+//		if ( iPosST > -1 ) {
+//			final String strFront = strLine.substring( 0, iPosST );
+//			final String strBack = strLine.substring( iPosST + 1, iLen );
+//			String strNew = strFront + strBack;
+//			return strNew;
+//		}
+		
+		if ( ' ' == strLine.charAt( 0 ) ) {
+			final String strCropped = strLine.substring( 1 );
+			return strCropped;
+		}
+
+		return strLine;
 	}
 	
+	public static String check( final StringBuilder sb,
+							    final int iTargetLength ) {
+		String strLine = sb.toString();
+		int iCharLen = strLine.length();
+		sb.setLength( 0 );
+		final String strTail = strLine.substring( iCharLen - 2, iCharLen - 0 );
+		if ( "\t ".equals( strTail ) ) {
+			strLine = strLine.substring( 0, iCharLen - 2 );
+			iCharLen = strLine.length();
+		}
+		
+		int iTabLen = Utils.getTabbedLength( strLine );
+		
+		if ( iTabLen < iTargetLength ) { // too short
+			do {
+				strLine += " ";
+				iTabLen = Utils.getTabbedLength( strLine );
+			} while ( iTabLen < iTargetLength );
+			return strLine;
+		} else if ( iTabLen > iTargetLength ) { // too long
+			
+			int iLastCharLen;
+			do {
+				iLastCharLen = strLine.length();
+				strLine = shorten( strLine );
+				iTabLen = Utils.getTabbedLength( strLine );
+			} while ( iTabLen > iTargetLength 
+							&& iLastCharLen != strLine.length() );
+
+			while ( iTabLen < iTargetLength ) {
+				strLine += " ";
+				iTabLen = Utils.getTabbedLength( strLine );
+			}
+			
+			return strLine;
+		} else { // just right
+			return strLine;
+		}
+	}
+						
 	
 	
 	public String toTSV() {
+		
 		final StringBuilder sb = new StringBuilder();
 		
         final String strTACs = device.listTACs.stream()
 				                .map( l-> ""+ l )
 				                .collect( Collectors.joining(",") );
         sb.append( String.format( "%18s \t ", strTACs ) );
+
+		sb.append( getTSVProperty( TextProperty.DEVICE_TYPE ) );
+		
+		sb.append( check( sb, 43 ) );
+		sb.append( "\t " );
 		
 		sb.append( getNumeric( device.iSimCount ) + "," );
+		sb.append( getNumeric( device.iImeiQtySupport ) + "," );
 		sb.append( getBoolean( device.bBluetooth ) + "," );
 		sb.append( getBoolean( device.bWLAN ) + "," );
+		sb.append( getBoolean( device.bNFC ) + "," );
 		sb.append( getNumeric( device.iCountryCode ) + " \t " );
 		
-		sb.append( getTSVProperty( TextProperty.BRAND_NAME ) );
+		final String strFront = sb.toString();
+		sb.setLength( 0 );
+		
 		sb.append( getTSVProperty( TextProperty.MODEL_NAME ) );
 		sb.append( getTSVProperty( TextProperty.MARKETING_NAME ) );
-		sb.append( getTSVProperty( TextProperty.DEVICE_TYPE ) );
+		sb.append( getTSVProperty( TextProperty.BRAND_NAME ) );
+		
+		sb.append( check( sb, 64 ) );
+		sb.append( "\t " );
 
 		for ( final Entry<String, String> entry: device.mapChars.entrySet() ) {
 			final String strKey = entry.getKey();
@@ -122,9 +170,11 @@ public class TSVRecord {
 		} else {
 			sb.append( NULL_INDICATOR );
 		}
-		sb.append( 0x0D0A ); // CR+LF
+//		sb.append( 0x0D0A ); // CR+LF
+//		sb.append( "\n" );
+		sb.append( (char)0x0D );sb.append( (char)0x0A ); // CR+LF
         
-		return sb.toString();
+		return strFront + sb.toString();
 	}
 	
 	
@@ -137,19 +187,20 @@ public class TSVRecord {
 		if ( arrParts.length < 7 ) return null;
 		
 		final String strTACs = arrParts[ 0 ];
-		final String strInfoBlock = arrParts[ 1 ];
+		final String strInfoBlock = arrParts[ 2 ];
 		final String[] arrInfo = strInfoBlock.split( "," );
-		if ( 4 != arrInfo.length ) return null;
+		if ( 6 != arrInfo.length ) return null;
 		
-		final String strBrandName = arrParts[ 2 ].trim();
+		final String strDeviceType = arrParts[ 1 ].trim();
 		final String strModelName = arrParts[ 3 ].trim();
 		final String strMarketing = arrParts[ 4 ].trim();
-		final String strDeviceType = arrParts[ 5 ].trim();
+		final String strBrandName = arrParts[ 5 ].trim();
 		
 		final String strCharacteristics = arrParts[ 6 ];
 		final String strImageBase64 = arrParts[ 7 ].trim();
 		
-		final List<Long> listTACs = getTACsFromLine( strTACs );
+		final List<Long> listTACs = 
+						Utils.getNumbersFromLine( strTACs );
 		
 		final Device device = new Device( listTACs );
 		device.mapProperties.put( TextProperty.BRAND_NAME, strBrandName );
@@ -160,25 +211,29 @@ public class TSVRecord {
 //		device.strImageBase64 = strImageBase64;
 		device.mapProperties.put( TextProperty.IMAGE_BASE64, strImageBase64 );
 
-		try {
-			final String strSimCount = arrInfo[ 0 ].trim();
-			final int iSimCount = Integer.parseInt( strSimCount );
-			device.iSimCount = iSimCount;
-		} catch ( final NumberFormatException e ) {
-			// then do not record a sim count
-		}
-		device.bBluetooth = setBoolean( arrInfo[ 1 ] );
-		device.bWLAN = setBoolean( arrInfo[ 2 ] );
-		try {
-			final String strCountryCode = arrInfo[ 3 ].trim();
-			final int iCountryCode = Integer.parseInt( strCountryCode );
-			device.iCountryCode = iCountryCode;
-		} catch ( final NumberFormatException e ) {
-			// then do not record a country code
-		}
+		device.iSimCount = Utils.parseNumber( arrInfo[ 0 ] );
+		device.iImeiQtySupport = Utils.parseNumber( arrInfo[ 1 ] );
+		device.iCountryCode = Utils.parseNumber( arrInfo[ 5 ] );
+		
+//		try {
+//			final String strSimCount = arrInfo[ 0 ].trim();
+//			final int iSimCount = Integer.parseInt( strSimCount );
+//			device.iSimCount = iSimCount;
+//		} catch ( final NumberFormatException e ) {
+//			// then do not record a sim count
+//		}
+		device.bBluetooth = Utils.setBoolean( arrInfo[ 2 ] );
+		device.bWLAN = Utils.setBoolean( arrInfo[ 3 ] );
+		device.bNFC = Utils.setBoolean( arrInfo[ 4 ] );
+//		try {
+//			final String strCountryCode = arrInfo[ 3 ].trim();
+//			final int iCountryCode = Integer.parseInt( strCountryCode );
+//			device.iCountryCode = iCountryCode;
+//		} catch ( final NumberFormatException e ) {
+//			// then do not record a country code
+//		}
 				
 		return device;
 	}
-	
 	
 }

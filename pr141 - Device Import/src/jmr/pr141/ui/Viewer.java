@@ -8,6 +8,12 @@ import java.util.EnumMap;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DropTarget;
+import org.eclipse.swt.dnd.DropTargetAdapter;
+import org.eclipse.swt.dnd.DropTargetEvent;
+import org.eclipse.swt.dnd.FileTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -38,14 +44,24 @@ public class Viewer {
 	final private Shell shell;
 	final private Composite comp;
 	
-	final private static String[] arrBoolOptions = 
-					new String[] { "<null>", "YES", "NO" };
+	final private static String[] 
+				arrBoolOptions = new String[] { 
+									"<null>", 
+									"YES", 
+									"NO" };
+
+	final private static String[] 
+				OPTIONS_PRESENTATION = new String[] { 
+									"Single Record", 
+									"Merged Content", 
+									"Add Data (create new record)" };
 
 	
 	final Text txtSearchTAC;
 	final Button btnSearchTAC;
 	final Text txtStatus;
 	
+	final Combo cmbPresentation;
 	final Combo cmbDeviceSources;
 	final Combo cmbReference;
 	
@@ -98,18 +114,31 @@ public class Viewer {
 		gdStatus.horizontalAlignment = GridData.FILL;
 		txtStatus.setLayoutData( gdStatus );
 
-		new Label( comp, SWT.NONE ).setText( "Source" );
-		cmbDeviceSources = new Combo( comp, SWT.DROP_DOWN | SWT.READ_ONLY );
 		final GridData gdSources = new GridData();
 		gdSources.horizontalSpan = 2;
 		gdSources.grabExcessHorizontalSpace = true;
 		gdSources.horizontalAlignment = GridData.FILL;
+
+		new Label( comp, SWT.NONE ).setText( "Presentation" );
+		cmbPresentation = new Combo( comp, SWT.DROP_DOWN | SWT.READ_ONLY );
+		cmbPresentation.setLayoutData( gdSources );
+		cmbPresentation.setItems( OPTIONS_PRESENTATION );
+		cmbPresentation.select( 0 );
+		
+		new Label( comp, SWT.NONE ).setText( "Source" );
+		cmbDeviceSources = new Combo( comp, SWT.DROP_DOWN | SWT.READ_ONLY );
 		cmbDeviceSources.setLayoutData( gdSources );
 
 		new Label( comp, SWT.NONE ).setText( "Reference" );
 		cmbReference = new Combo( comp, SWT.DROP_DOWN | SWT.READ_ONLY );
 		cmbReference.setLayoutData( gdSources );
-		
+		cmbReference.addSelectionListener( new SelectionAdapter() {
+			@Override
+			public void widgetSelected( final SelectionEvent e ) {
+				doSelectReference();
+			}
+		});
+
 		new Label( comp, SWT.NONE ).setText( "TAC(s)" );
 		final int iTACStyle = SWT.MULTI | SWT.BORDER | 
 							SWT.V_SCROLL | SWT.H_SCROLL;
@@ -132,6 +161,28 @@ public class Viewer {
 		gdImage.heightHint = 300;
 		canvasImage = new Canvas( comp, SWT.BORDER );
 		canvasImage.setLayoutData( gdImage );
+		
+		
+		final int iDnDOps = DND.DROP_COPY | DND.DROP_MOVE | DND.DROP_DEFAULT;
+		final DropTarget dt = new DropTarget( canvasImage, iDnDOps );
+		final FileTransfer ft = FileTransfer.getInstance();
+		final Transfer[] arrTypes = new Transfer[] { ft };
+		dt.setTransfer( arrTypes );
+		
+		dt.addDropListener( new DropTargetAdapter() {
+			
+			@Override
+			public void dragEnter( final DropTargetEvent event ) {
+				event.detail = DND.DROP_COPY;
+			}
+			
+			@Override
+			public void drop( final DropTargetEvent event ) {
+				final String[] arrFiles = (String[])event.data;
+				doProcessDroppedFiles( arrFiles );
+			}
+		});
+		
 
 		final GridData gdField = new GridData();
 		gdField.horizontalAlignment = GridData.FILL;
@@ -252,6 +303,16 @@ public class Viewer {
 	
 	
 	public Image getImageFromBase64( final String strBase64 ) {
+		if ( null == strBase64 ) {
+			setImageNote( "Null image data" );
+			return null;
+		}
+		
+		if ( strBase64.isEmpty() || "-".equals( strBase64 ) ) {
+			setImageNote( "No image data" );
+			return null;
+		}
+		
 		final Base64.Decoder decoder = Base64.getDecoder();
 		try {
 			final byte[] arrBytes = decoder.decode( strBase64.trim() );
@@ -281,22 +342,43 @@ public class Viewer {
 			}
 		}
 	}
+
+	
+	public Long getTAC() {
+		final long[] lTAC = { -1 };
+		display.syncExec( ()-> {
+			try {
+				final Long lCand = Long.parseLong( txtSearchTAC.getText() );
+				lTAC[0] = lCand.longValue();
+			} catch ( final NumberFormatException e ) {
+				this.setStatus( "Invalid TAC: " + e.toString() );
+				lTAC[0] = -1;
+			}
+		} );
+		return lTAC[0];
+	}
 	
 	
 	public void doSearchForTAC() {
-		final long lTAC;
-		try {
-			final Long lCandidate = Long.parseLong( txtSearchTAC.getText() );
-			lTAC = lCandidate.longValue();
-		} catch ( final NumberFormatException e ) {
-			this.setStatus( "Invalid TAC: " + e.toString() );
-			return;
-		}
+		final long lTAC = getTAC();
 		
 		final List<DeviceReference> 
 				listReferences = devices.getAllDeviceReferences( lTAC );
 
 		this.load( listReferences, 0 );
+	}
+	
+	public void doSelectReference() {
+
+		final long lTAC = getTAC();
+		
+		final int[] iSel = { -1 };
+		display.syncExec( ()-> iSel[0] = cmbReference.getSelectionIndex() );
+
+		final List<DeviceReference> 
+				listReferences = devices.getAllDeviceReferences( lTAC );
+
+		this.load( listReferences, iSel[0] );
 	}
 	
 	
@@ -351,10 +433,15 @@ public class Viewer {
 		final DeviceReference ref = listReferences.get( iSelect );
 		
 		final Device device = ref.resolve();
-		
 		final long lTimeEnd = System.currentTimeMillis();
 		final long lElapsed = lTimeEnd - lTimeStart;
-		this.setStatus( "Device loaded in " + lElapsed + " ms" );
+		
+		if ( null != device ) {
+			this.setStatus( "Device loaded in " + lElapsed + " ms" );
+		} else {
+			this.setStatus( "Failed to load device" );
+			return;
+		}
 
 		final String strProviderName = ref.getProvider().getName(); 
 		final String[] arrSources = cmbDeviceSources.getItems();
@@ -425,11 +512,28 @@ public class Viewer {
 //		this.comp.setRedraw( true );
 	}
 
+	
+	private void doProcessDroppedFiles( final String[] arrFiles ) {
+		if ( null == arrFiles ) return;
+		if ( 0 == arrFiles.length ) return;
+		
+		for ( final String strFile : arrFiles ) {
+			final File file = new File( strFile );
+			if ( file.isFile() ) {
+				this.setStatus( "Loading: " + strFile );
+				
+				loadSourceFile( file, Integer.MAX_VALUE );
+			}
+		}
+	}
+
+	
 	public static void main( final String[] args ) {
 
 //		final String strFile = "/data/Development/CM/test.tar";
 		final String strFile = "D:\\Tasks\\20210309 - COSMIC-417 - Devices\\"
-							+ "catalog.tsv";
+//							+ "catalog.tsv";
+							+ "TAC_Lookup__small.tsv";
 		final File file = new File( strFile );
 
 		

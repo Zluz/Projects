@@ -1,9 +1,6 @@
 package jmr.pr141.device;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -11,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 public class Device {
+	
+	public static final Device DUMMY_DEVICE;
 	
 	public static enum TextProperty {
 		MARKETING_NAME( 20, "Marketing Name" ),
@@ -22,7 +21,7 @@ public class Device {
 		BANDS_5G( 50, "5G Bands" ),
 		RADIO_INTERFACE( 20, "Radio Interface" ),
 		OPERATING_SYSTEM( 12, "Operating System" ),
-		DEVICE_TYPE( 10, "Device Type" ),
+		DEVICE_TYPE( 18, "Device Type" ),
 		
 		CHARACTERISTICS( 100, "Characteristics" ),
 		IMAGE_BASE64( 0, "Base64 Image Data" ),
@@ -42,6 +41,20 @@ public class Device {
 		}
 	}
 	
+	static {
+		DUMMY_DEVICE = new Device( Collections.singletonList( 999999L ) );
+		final EnumMap<TextProperty,String> map = DUMMY_DEVICE.mapProperties;
+		for ( final TextProperty property : TextProperty.values() ) {
+			map.put( property, property.getLabel() );
+		}
+		DUMMY_DEVICE.bBluetooth = true;
+		DUMMY_DEVICE.bNFC = false;
+		DUMMY_DEVICE.iSimCount = 1;
+		DUMMY_DEVICE.iCountryCode = 999;
+		DUMMY_DEVICE.mapChars.put( 
+				"CharacteristicRandomName", "CharacteristicRandomValue" );
+	}
+	
 	
 	final List<Long> listTACs = new LinkedList<>();
 	
@@ -52,9 +65,11 @@ public class Device {
 	
 	Integer iCountryCode;
 	Integer iSimCount;
+	Integer iImeiQtySupport;
 	
 	Boolean bBluetooth;
 	Boolean bWLAN;
+	Boolean bNFC;
 	
 //	String strImageBase64;
 	
@@ -80,6 +95,10 @@ public class Device {
 	public Boolean getWLAN() {
 		return this.bWLAN;
 	}
+
+	public Boolean getNFC() {
+		return this.bNFC;
+	}
 	
 	public String getProperty( final TextProperty property ) {
 		return this.mapProperties.get( property );
@@ -103,89 +122,6 @@ public class Device {
 				this.mapChars.put( strKey, strValue );
 			}
 		}
-	}
-	
-	
-	
-	public static void main( final String[] args ) throws IOException {
-		
-		// running this will rebuild catalog.tsv from the DM dir
-		
-//		final String strFile = "/data/Development/CM/"
-//				+ "jmr_Projects__20210129/pr141 - Device Import/files/"
-//				+ "Samsung_Galaxy_S4_SGH_M919V_Galaxy_S4_48089.json";
-//		final String strFile = "D:\\Development\\CM\\"
-//				+ "jmr__Projects__20200908\\pr141 - Device Import\\files\\"
-//				+ "Samsung_Galaxy_S4_SGH_M919V_Galaxy_S4_48089.json";
-//		final File file = new File( strFile );
-//		final Device device = Device.importDeviceFromJSON( file );
-//		System.out.println( device.toTSV() );
-		
-		
-		final String strWorkDir = "D:\\Tasks\\"
-								+ "20210309 - COSMIC-417 - Devices\\";
-		final File fileDatabase = new File( strWorkDir + "catalog.tsv" );
-		final File fileHeader = new File( strWorkDir + "header.txt" );
-		if ( fileDatabase.exists() ) fileDatabase.delete();
-		
-		final byte[] arrHeader = Files.readAllBytes( fileHeader.toPath() );
-		
-		Files.write( fileDatabase.toPath(), arrHeader,
-						StandardOpenOption.CREATE );
-		
-		final Map<Integer,Long> mapTACCounts = new HashMap<>();
-		
-		final String strDir = strWorkDir + "device-mine-2019091104";
-		final File fileDir = new File( strDir );
-
-		final File[] arrFiles = fileDir.listFiles();
-
-		final long lTotalFiles = arrFiles.length;
-		long lCurrentFile = 0;
-				
-		for ( final File file : arrFiles ) {
-			lCurrentFile++;
-			if ( file.isFile() ) {
-//				final Device device = Device.importDeviceFromJSON( file );
-				final Device device = JsonImport.importDeviceFromJSON( file );
-				if ( null != device ) {
-					
-//					final String strTSV = device.toTSV() + "\n";
-					final TSVRecord tsv = new TSVRecord( device );
-					final String strTSV = tsv.toTSV() + "\n";
-					
-//					System.out.print( strTSV );
-					if ( 0 == lCurrentFile % 500 ) {
-						System.out.println( "File " + lCurrentFile 
-										+ " of " + lTotalFiles );
-					}
-					
-					Files.write( fileDatabase.toPath(), strTSV.getBytes(),
-									StandardOpenOption.APPEND );
-					
-					final int iTACCount = device.listTACs.size();
-					if ( mapTACCounts.containsKey( iTACCount ) ) {
-						final long lCount = mapTACCounts.get( iTACCount );
-						mapTACCounts.put( iTACCount, lCount + 1 );
-					} else {
-						mapTACCounts.put( iTACCount, 1L );
-					}
-					
-				} else {
-//					System.out.println( 
-//							"  Null import from: " + file.getName() );
-				}
-			}
-			
-//			if ( mapTACCounts.get( 1 ) > 1000 ) break;
-//			if ( lCurrentFile > 4000 ) break;
-		}
-		
-		System.out.println( "TAC count distribution:\n" 
-						+ mapTACCounts.toString() );
-		// for the first 1000:
-		// {1=1001, 2=323, 3=155, 4=87, 5=86, 6=50, 7=30, 8=23, 9=25, ...
-
 	}
 	
 }

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import jmr.pr141.device.Utils;
 import jmr.pr141.device.Device;
 import jmr.pr141.device.TSVRecord;
 
@@ -78,7 +79,8 @@ public class ScanFile implements DeviceProvider {
 		final SCDReference scdr = (SCDReference)ref;
 		
 		try {
-			this.raf.seek( scdr.getFilePosition() );
+			final long lPosition = scdr.getFilePosition();
+			this.raf.seek( lPosition + 1 );
 		} catch ( final IOException e ) {
 			return null;
 		}
@@ -308,7 +310,9 @@ public class ScanFile implements DeviceProvider {
 			
 			lMaxLineSize = Math.max( lMaxLineSize, str.length() );
 			
-			final List<Long> listTACs = TSVRecord.getTACsFromLine( str );
+			final List<Long> listTACs = 
+//					TSVRecord.getTACsFromLine( str );
+					Utils.getNumbersFromLine( str );
 			
 			
 			if ( DEBUG_SHOW_LOAD_DETAIL ) {
@@ -358,7 +362,8 @@ public class ScanFile implements DeviceProvider {
 				final String strLine = readNextLine();
 				System.out.println( "Read (pos:" + lPos + "): "
 						+ "(len:" + strLine.length() + ") "
-						+ "\"" + strLine.substring( 0, 40 ) + "...\"" );
+						+ "\"" + strLine.substring( 0, 1000 ) + "...\"" );
+//						+ "\"" + strLine + "\"" );
 			}
 		}
 	}
