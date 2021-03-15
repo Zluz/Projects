@@ -26,13 +26,14 @@ public class CharacteristicsForm {
 		this.device = device;
 		this.display = display;
 		
-		final int iStyle = SWT.TOOL | SWT.RESIZE | SWT.CLOSE;
-		this.shell = new Shell( display, iStyle );
+		final int iShellStyle = SWT.TOOL | SWT.RESIZE | SWT.CLOSE;
+		this.shell = new Shell( display, iShellStyle );
 		shell.setLayout( new FillLayout() );
 		
 		shell.setText( "Characteristics for " + device.getName() );
 		
-		this.tree = new Tree( shell, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL );
+		final int iTreeStyle = SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL;
+		this.tree = new Tree( shell, iTreeStyle );
 		drawTree( tree );
 		
 		shell.pack();

@@ -180,7 +180,7 @@ public class Viewer {
 		gdImage.horizontalAlignment = GridData.FILL;
 		gdImage.grabExcessHorizontalSpace = true;
 		gdImage.verticalSpan = 7;
-		gdImage.widthHint = 240;
+		gdImage.widthHint = 300;
 		gdImage.heightHint = 280;
 		canvasImage = new Canvas( comp, SWT.BORDER );
 		canvasImage.setLayoutData( gdImage );
