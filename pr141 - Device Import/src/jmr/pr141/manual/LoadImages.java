@@ -43,26 +43,39 @@ public class LoadImages {
 	
 	public static void main( final String[] args ) throws Exception {
 		
-		final String strWorkDir = "/data/Tasks/20210309__COSMIC-417__Devices/";
-		final String strReadDir = strWorkDir + "Phone Images";
+//		final String strWorkDir = "/data/Tasks/20210309__COSMIC-417__Devices/";
+//		final String strReadDir = strWorkDir + "Phone Images";
+//		final String strTSVFile = strWorkDir + "new_images.tsv";
 		
-		final String strTSVFile = strWorkDir + "new_images.tsv";
+		final String strTSVFile = "new_images.tsv";
+		final String strReadDir = ".";
 		
 		final String strRegex = "[0-9]+_.+\\.jpg";
 		
 		final File fileTSV = new File( strTSVFile );
 
+		System.out.println( "Creating file: " + fileTSV.getName() );
+		
 		fileTSV.delete();
 		Files.write( fileTSV.toPath(), "\n\n".getBytes(), 
 									StandardOpenOption.CREATE );
 		Thread.sleep( 200 );
 		
 		final File fileReadDir = new File( strReadDir );
+		int iCount = 0;
 		for ( final File fileRead : fileReadDir.listFiles() ) {
 			final String strFilename = fileRead.getName();
 			if ( strFilename.matches( strRegex ) ) {
+				iCount++;
 				process( fileRead, fileTSV );
 			}
+		}
+		
+		if ( iCount > 0 ) {
+			System.out.println( ""+ iCount + " file(s) processed." );
+		} else {
+			System.out.println( "No files found matching pattern: " 
+							+ strRegex );	
 		}
 	}
 }
