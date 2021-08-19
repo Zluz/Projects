@@ -35,7 +35,7 @@ public class LoadImages {
 		
 		System.out.print( "\tTAC: " + strTAC ); 
 		System.out.print( "\t" + arrBin.length + " binary bytes" );
-		System.out.print( "\tB64: " + strEncoded.substring( 0, 80 ) + ".." );
+		System.out.print( "\tB64: " + strEncoded.substring( 0, 20 ) + ".." );
 		System.out.print( "\tFile: " + strFilename );
 		
 		System.out.println();
@@ -47,10 +47,13 @@ public class LoadImages {
 //		final String strReadDir = strWorkDir + "Phone Images";
 //		final String strTSVFile = strWorkDir + "new_images.tsv";
 		
+//		final File fileThisDir = new File( "." );
+		
 		final String strTSVFile = "new_images.tsv";
+//		final String strTSVFile = fileThisDir.getName() + ".tsv";
 		final String strReadDir = ".";
 		
-		final String strRegex = "[0-9]+_.+\\.jpg";
+		final String strRegex = "[0-9]+_.+\\.(JPG|PNG)";
 		
 		final File fileTSV = new File( strTSVFile );
 
@@ -64,7 +67,7 @@ public class LoadImages {
 		final File fileReadDir = new File( strReadDir );
 		int iCount = 0;
 		for ( final File fileRead : fileReadDir.listFiles() ) {
-			final String strFilename = fileRead.getName();
+			final String strFilename = fileRead.getName().toUpperCase();
 			if ( strFilename.matches( strRegex ) ) {
 				iCount++;
 				process( fileRead, fileTSV );
