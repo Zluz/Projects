@@ -457,12 +457,16 @@ public class ScanFile implements DeviceProvider {
 	public static void main( final String[] args ) throws Exception {
 		
 //		final String strFile = "/data/Development/CM/test.tar";
-		final String strFile = "D:\\Tasks\\20210309 - COSMIC-417 - Devices\\"
-							+ "catalog.tsv";
+//		final String strFile = "D:\\Tasks\\20210309 - COSMIC-417 - Devices\\"
+//							+ "catalog.tsv";
+		final String strFile = "/home/jmraben/Tasks/20210805_Devices/"
+				+ "TAC_Lookup_202107.csv";
 		final File file = new File( strFile );
 
-		final String strFileIndex = "D:\\Tasks\\"
-						+ "20210309 - COSMIC-417 - Devices\\catalog.idx";
+//		final String strFileIndex = "D:\\Tasks\\"
+//						+ "20210309 - COSMIC-417 - Devices\\catalog.idx";
+		final String strFileIndex = "/home/jmraben/Tasks/20210805_Devices/"
+				+ "catalog_202107.idx";
 		final File fileIndex = new File( strFileIndex );
 
 		final ScanFile sf = new ScanFile( file );
