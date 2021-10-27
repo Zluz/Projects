@@ -17,6 +17,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.entity.ContentType;
 
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
+
 import jmr.pr122.DocMetadataKey;
 import jmr.pr123.storage.GCSFileReader;
 import jmr.pr131.data.FileCache;
@@ -37,7 +40,10 @@ public class FileEditor extends HttpServlet {
 	}
 	
 	final static List<String> BROWSERS = new LinkedList<>();
+	final static List<String> USERS = new LinkedList<>();
 	
+	final UserService usersvc = UserServiceFactory.getUserService();
+
 	
 //	final GCSFactory factory = new GCSFactory( Constants.BUCKET_NAME );
 	final FileCache filecache = new FileCache( Constants.BUCKET_NAME );
@@ -133,6 +139,12 @@ public class FileEditor extends HttpServlet {
 		    sb.append( "<LI><TT>" + strLine + "</TT></LI>\n" );
 	    }
 	    sb.append( "</UL>\n" );
+
+	    sb.append( "Past Users:<UL>\n" );
+	    for ( final String strLine : USERS ) {
+		    sb.append( "<LI><TT>" + strLine + "</TT></LI>\n" );
+	    }
+	    sb.append( "</UL>\n" );
 	    
 	    sb.append( "Static Log:\n<BR>" );
 	    for ( final String strLine : Logger.getLines() ) {
@@ -194,13 +206,41 @@ public class FileEditor extends HttpServlet {
 	}
 	
 	
+	public static boolean doesRequireAuthentication( 
+										final HttpServletRequest request ) {
+		final String strURI = request.getRequestURI();
+		final Principal user = request.getUserPrincipal();
+
+		if ( null != user ) return false;
+		
+		if ( strURI.startsWith( "/file/reload" ) ) {
+			final String strUserAgent = request.getHeader( "User-Agent" );
+			if ( strUserAgent.startsWith( "Java/1.8.0_" ) ) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	
 	@Override
 	public void doGet( 	final HttpServletRequest request, 
 		  			 	final HttpServletResponse response ) 
 		  					 		throws IOException {
-		Logger.info( "--- FileEditor.doGet()" );
+//		Logger.info( "--- FileEditor.doGet()" );
 
-		final String strURI = request.getRequestURI().trim();
+		final String strURI = request.getRequestURI();
+		final Principal user = request.getUserPrincipal();
+		
+		if ( doesRequireAuthentication( request ) ) {
+			final String strSignInURL = usersvc.createLoginURL( strURI );
+			final String strHtml = 
+					"Please <a href=\"" + strSignInURL + "\">sign in</a>.";
+			response.getWriter().println( strHtml );
+			return;
+		}
+		
 		
 //		final Enumeration<?> enAttrs = request.getAttributeNames();
 //		while ( enAttrs.hasMoreElements() ) {
@@ -216,9 +256,12 @@ public class FileEditor extends HttpServlet {
 			System.out.println( "\t" + strName + " = " + strValue );
 		}
 
-		final Principal user = request.getUserPrincipal();
 		if ( null!=user ) {
-			Logger.info( "User: " + user.toString() );
+			final String strUser = user.toString();
+			if ( ! USERS.contains( strUser ) ) {
+				USERS.add( strUser );
+				Logger.info( "New User: " + strUser );
+			}
 		}
 		
 		final String strUserAgent = request.getHeader( "User-Agent" );

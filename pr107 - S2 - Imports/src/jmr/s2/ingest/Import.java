@@ -10,9 +10,10 @@ import jmr.s2db.comm.ConnectionProvider;
 import jmr.s2db.imprt.Import_WeatherGov;
 import jmr.s2db.imprt.Summarizer;
 import jmr.s2db.imprt.WebImport;
+import jmr.s2db.imprt.WebImport.ImportConfiguration;
 import jmr.util.NetUtil;
 
-public enum Import {
+public enum Import implements ImportConfiguration {
 
 	/*=== WEATHER ===*/
 	
@@ -94,10 +95,12 @@ public enum Import {
 		this( strTitle, strURL, null, lInterval, bProcessJson );
 	}
 
+	@Override
 	public String getTitle() {
 		return this.strTitle;
 	}
 	
+	@Override
 	public String getURL() {
 		return this.strURL;
 	}

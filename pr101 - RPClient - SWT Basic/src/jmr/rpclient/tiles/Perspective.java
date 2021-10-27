@@ -7,6 +7,8 @@ import java.util.logging.Logger;
 
 import org.eclipse.swt.graphics.Rectangle;
 
+import jmr.rpclient.tiles.TeslaTile.Mode;
+
 public enum Perspective {
 
 	TOP_PAGE( 5, 3, true, false ),
@@ -14,6 +16,7 @@ public enum Perspective {
 	TESLA( 5, 3, true, false ),
 	CAMERA_LOCAL( 5, 3, true, false ),
 	CAMERA_REMOTE( 5, 3, true, false ),
+	OFFICE_SILL( 5, 3, true, false ),
 	DESKTOP( 5, 6, false, false ),
 	DAILY_ROTATE( 3, 5, true, true ),
 	REMOTE( 6, 2, false, false ),
@@ -21,6 +24,7 @@ public enum Perspective {
 	AUTO_HAT( 5, 3, false, false ),
 	PROC_IMAGE( 8, 3, false, false ),
 	WORKER_IMAGE( 7, 3, false, false ),
+	SURVEILLANCE_STAMP( 5, 2, false, false ),
 	
 	TEST( 5, 3, false, false ),
 	;
@@ -79,9 +83,11 @@ public enum Perspective {
 				case TESLA: this.build_Tesla( mapOptions ); break;
 				case CAMERA_LOCAL: this.build_CameraLocal(); break;
 				case CAMERA_REMOTE: this.build_CameraRemote(); break;
+				case OFFICE_SILL: this.build_OfficeSill( mapOptions ); break;
 				case TEST: this.build_Test(); break;
-				case DAILY_ROTATE: this.build_DailyRotate(); break;
+				case DAILY_ROTATE: this.build_DailyRotate( mapOptions ); break;
 				case REMOTE: this.build_Remote( mapOptions ); break;
+				case SURVEILLANCE_STAMP: this.build_SurvStamp( mapOptions ); break;
 				case GPIO: this.build_GPIO( mapOptions ); break;
 				case AUTO_HAT: this.build_AutoHAT( mapOptions ); break;
 				case PROC_IMAGE: this.build_ProcImage( mapOptions ); break;
@@ -229,6 +235,27 @@ public enum Perspective {
 						new CameraTile( CameraTile.CameraLocation.ALL_CAPTURES ), 
 						new Rectangle( 0, 0, 5, 3 ) ) ); 
 	}
+
+	
+
+
+	private void build_OfficeSill( final Map<String, String> mapOptions ) {
+		list.add( new TileGeometry( new ClockTile(), 
+						new Rectangle( 0, 0, 3, 1 ) ) );
+
+		list.add( new TileGeometry( new TeslaTile(), 
+						new Rectangle( 3, 0, 2, 1 ) ) );
+		
+		list.add( new TileGeometry( new JobListingTile( mapOptions ), 
+						new Rectangle( 3, 1, 2, 1 ) ) ); 
+
+		list.add( new TileGeometry( new AudioSelectionTile(), 
+						new Rectangle( 0, 1, 3, 1 ) ) ); 
+
+		list.add( new TileGeometry( new WeatherForecastTile(), 
+						new Rectangle( 0, 2, 5, 1 ) ) ); 
+	}
+
 	
 
 	private void build_TopPage( final Map<String, String> mapOptions ) {
@@ -280,28 +307,37 @@ public enum Perspective {
 		list.add( new TileGeometry( new WeatherForecastTile(), 
 						new Rectangle( 0, 2, 5, 1 ) ) ); 
 	}
-	private void build_DailyRotate() {
+	
+	private void build_DailyRotate( final Map<String, String> mapOptions ) {
 		list.add( new TileGeometry( new ClockTile(), 
 						new Rectangle( 0, 0, 3, 1 ) ) );
 
-		list.add( new TileGeometry( new NetworkListTile(), 
-						new Rectangle( 0, 1, 3, 1 ) ) );
+//		list.add( new TileGeometry( new NetworkListTile(), 
+//						new Rectangle( 0, 1, 3, 1 ) ) );
 
-		
-		list.add( new TileGeometry( new SystemInfoTile(), 
-						new Rectangle( 1, 2, 1, 1 ) ) );
+		list.add( new TileGeometry( new JobListingTile( mapOptions ), 
+						new Rectangle( 0, 1, 3, 1 ) ) ); 
 
-		list.add( new TileGeometry( new PerformanceMonitorTile(), 
+//		list.add( new TileGeometry( new SystemInfoTile(), 
+//						new Rectangle( 1, 2, 1, 1 ) ) );
+//		list.add( new TileGeometry( new PerformanceMonitorTile(), 
+//						new Rectangle( 2, 2, 1, 1 ) ) );
+		list.add( new TileGeometry( new TeslaTile(), 
+						new Rectangle( 0, 2, 2, 1 ) ) );
+		list.add( new TileGeometry( new TeslaTile( Mode.CLIMATE ), 
 						new Rectangle( 2, 2, 1, 1 ) ) );
 
-		list.add( new TileGeometry( new WeatherForecastTile(), 
+
+		list.add( new TileGeometry( new AudioSelectionTile(), 
 						new Rectangle( 0, 3, 3, 1 ) ) ); 
 
+		list.add( new TileGeometry( new WeatherForecastTile(), 
+						new Rectangle( 0, 4, 3, 1 ) ) ); 
 		
-		list.add( new TileGeometry( new CalibrationTile(), 
-						new Rectangle( 2, 4, 1, 1 ) ) ); 
-		list.add( new TileGeometry( new CalibrationTile(), 
-						new Rectangle( 0, 4, 1, 1 ) ) ); 
+//		list.add( new TileGeometry( new CalibrationTile(), 
+//						new Rectangle( 2, 4, 1, 1 ) ) ); 
+//		list.add( new TileGeometry( new CalibrationTile(), 
+//						new Rectangle( 0, 4, 1, 1 ) ) ); 
 	}
 	
 
@@ -320,6 +356,24 @@ public enum Perspective {
 						new Rectangle( 5, 1, 1, 1 ) ) ); 
 	}
 
+
+	private void build_SurvStamp( final Map<String, String> mapOptions ) {
+		
+		list.add( new TileGeometry( new SystemInfoTile(), 
+						new Rectangle( 0, 1, 1, 1 ) ) );
+
+		list.add( new TileGeometry( new PerformanceMonitorTile(), 
+						new Rectangle( 1, 1, 1, 1 ) ) );
+
+		list.add( new TileGeometry( new TeslaTile( Mode.STAMP ), 
+						new Rectangle( 0, 0, 2, 1 ) ) );
+
+		list.add( new TileGeometry( new WeatherForecastTile(), 
+						new Rectangle( 2, 0, 3, 2 ) ) ); 
+
+	}
+
+	
 	private void build_GPIO( final Map<String, String> mapOptions ) {
 		
 		list.add( new TileGeometry( new IO_GPIOTile( mapOptions ), 
@@ -436,7 +490,7 @@ public enum Perspective {
 
 		list.add( new TileGeometry( new TeslaTile(), 
 						new Rectangle( 2, 1, 2, 1 ) ) );
-		list.add( new TileGeometry( new TeslaTile( true ), 
+		list.add( new TileGeometry( new TeslaTile( Mode.CLIMATE ), 
 						new Rectangle( 3, 0, 1, 1 ) ) );
 		
 		list.add( new TileGeometry( new JobListingTile( mapOptions ), 
@@ -457,7 +511,7 @@ public enum Perspective {
 		list.add( new TileGeometry( new TeslaTile(), 
 						new Rectangle( 2, 1, 1, 2 ) ) );
 		
-		list.add( new TileGeometry( new TeslaTile( true ), 
+		list.add( new TileGeometry( new TeslaTile( Mode.CLIMATE ), 
 						new Rectangle( 2, 3, 1, 1 ) ) );
 		
 //		list.add( new TileGeometry( new SystemInfoTile(), 

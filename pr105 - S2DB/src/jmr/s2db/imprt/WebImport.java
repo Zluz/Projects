@@ -5,15 +5,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.gson.JsonElement;
-
 import jmr.s2db.Client;
 import jmr.s2db.Client.ClientType;
 import jmr.s2db.comm.JsonIngest;
 import jmr.util.NetUtil;
 import jmr.util.http.ContentRetriever;
 import jmr.util.transform.JsonUtils;
-import jmr.util.transform.TextUtils;
 
 public class WebImport {
 	
@@ -47,6 +44,20 @@ public class WebImport {
 		this.strPath = "/External/Ingest/" + strTitle;
 		
 		this.strJSON = null;
+	}
+	
+	
+	public static interface ImportConfiguration {
+		public String getTitle();
+		public String getURL();
+		public Summarizer getSummarizer();
+	}
+	
+
+	public WebImport( final ImportConfiguration source ) {
+		this( source.getTitle(), source.getURL() );
+		final Summarizer summarizer = source.getSummarizer();
+		SummaryRegistry.get().add( summarizer );
 	}
 	
 	

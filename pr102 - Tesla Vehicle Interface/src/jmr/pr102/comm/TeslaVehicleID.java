@@ -39,6 +39,7 @@ public class TeslaVehicleID {
 	
 	private synchronized void loadVehicleData() {
 		map.clear();
+		if ( ! TeslaConstants.ENABLED ) return;
 
 		final String strURL = TeslaConstants.URL_BASE_TESLA_API_PROD 
 						+ "api/1/vehicles/";

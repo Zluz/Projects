@@ -29,10 +29,11 @@ public class FontProvider {
 
 
 	public final static String[] FONT_BASE_PATHS = {
+			"/Local/Resources/fonts/truetype/",
 			"/Share/Resources/fonts/truetype/",
 			"T:\\Resources\\fonts\\truetype\\",
-			"/Local/Resources/fonts/truetype/",
-			"\\\\h04\\share\\Resources\\fonts\\truetype",
+			"\\\\h04\\Share\\Resources\\fonts\\truetype",
+			"\\\\192.168.6.223\\Share\\Resources\\fonts\\truetype",
 	}; 
 
 
@@ -155,6 +156,15 @@ public class FontProvider {
 				return strFile;
 			}
 		}
+		
+		System.err.println( "Failed to find font file for \"" 
+					+ fontres.getName() + "\", expected filename: " 
+					+ fontres.strFilename );
+		System.err.println( "Searched in these paths:" );
+		for ( final String strPath : FONT_BASE_PATHS ) {
+			System.err.println( "\t" + strPath );
+		}
+		
 		return null;
 	}
 
@@ -176,8 +186,32 @@ public class FontProvider {
 //			}
 
 			if ( ! setLoadedFiles.contains( fontres ) ) {
+				
 				final String strFilename = findFontFile( fontres );
-				final boolean bLoaded = device.loadFont( strFilename );
+				boolean bLoaded = false;
+				
+				if ( null == strFilename ) return null;
+				if ( strFilename.isEmpty() ) return null;
+				
+				try {
+					bLoaded = device.loadFont( strFilename );
+				} catch ( final Throwable t ) {
+					// have seen a weird error.. (gone after reboot)
+					/*
+The program 'SWT' received an X Window System error.
+This probably reflects a bug in the program.
+The error was 'BadAccess (attempt to access private resource denied)'.
+  (Details: serial 459 error_code 10 request_code 130 minor_code 1)
+  (Note to programmers: normally, X errors are reported asynchronously;
+   that is, you will receive the error a while after causing it.
+   To debug your program, run it with the --sync command line
+   option to change this behavior. You can then get a meaningful
+   backtrace from your debugger if you break on the gdk_x_error() function.)
+					 */
+					t.printStackTrace();
+					bLoaded = false;
+				}
+
 				if ( bLoaded ) { 
 					System.out.println( "Font loaded: " + strFilename );
 				} else { // is this fatal? .. will fall-back

@@ -3,6 +3,8 @@ package jmr.pr102;
 import java.nio.charset.StandardCharsets;
 
 public interface TeslaConstants {
+	
+	final static boolean ENABLED = false;
 
 	final static String URL_BASE_TESLA_API_PROD = 
 			"https://owner-api.teslamotors.com/";

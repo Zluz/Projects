@@ -13,6 +13,9 @@ import jmr.util.http.ContentType;
 
 public class Handler {
 
+//	final static boolean ENABLED = false;
+	
+	
 	final static SimpleDateFormat DATE_FORMATTER = 
 							new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
 
@@ -55,14 +58,18 @@ public class Handler {
 	
 
 	public String loadControlFile() {
+		if ( ! jmr.pr131.Constants.APP_ENGINE_ENABLED ) return "";
+		
 		try {
+			// can get HTTP 500 here
 			final String strContent = crGet.getContent( ContentType.TEXT_PLAIN );
 			if ( strContent.startsWith( "<!DOCTYPE html" ) ) {
 				System.err.println( "ERROR: Wrong content retrieved "
 							+ "from Control File service." );
 			}
 			return strContent;
-		} catch (IOException e) {
+//		} catch ( final IOException e ) {
+		} catch ( final Exception e ) {
 			e.printStackTrace();
 			return "";
 		}

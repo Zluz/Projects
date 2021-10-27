@@ -52,10 +52,21 @@ public class NestIngestManager {
 	
 	
 	public NestIngestManager() {
+
+		final char[] cUsername;
+		final char[] cPassword;
+
+//		final S2Properties props = S2Properties.get();
+//		cUsername = props.getValue( SettingKey.NEST_USERNAME ).toCharArray();
+//		cPassword = props.getValue( SettingKey.NEST_PASSWORD ).toCharArray();
 		
-		final S2Properties props = S2Properties.get();
-		final char[] cUsername = props.getValue( SettingKey.NEST_USERNAME ).toCharArray();
-		final char[] cPassword = props.getValue( SettingKey.NEST_PASSWORD ).toCharArray();
+		final String strUsername = 
+				SystemUtil.getProperty( SUProperty.NEST_USERNAME ); 
+		final String strPassword = 
+				SystemUtil.getProperty( SUProperty.NEST_PASSWORD ); 
+
+		cUsername = strUsername.toCharArray(); 
+		cPassword = strPassword.toCharArray(); 
 
 		System.out.println( "Creating Nest session.." );
 		this.session = new Session( cUsername, cPassword );
@@ -100,6 +111,7 @@ public class NestIngestManager {
 		final String strSession = NetUtil.getSessionID();
 		final String strClass = NestIngestManager.class.getName();
 		Client.get().register( ClientType.TEST, strSession, strClass );
+		Client.get().setDebug( true );
 
 		final char[] cUsername = 
 				SystemUtil.getProperty( SUProperty.NEST_USERNAME ).toCharArray(); 

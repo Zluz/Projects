@@ -30,7 +30,7 @@ public class JobMonitor {
 	
 	private RunRemoteJob runner = null;
 
-	private static final int MAX_MUTED_JOBS = 40; 
+	private static final int MAX_MUTED_JOBS = 100; 
 	private static final List<Long> 
 							MUTED_JOBS = new ArrayList<>( MAX_MUTED_JOBS );
 	
@@ -324,7 +324,7 @@ public class JobMonitor {
 					
 					if ( bMute ) {
 						System.out.print( "Further logging will be muted. " );
-						while ( MUTED_JOBS.size() > 20 ) {
+						while ( MUTED_JOBS.size() > MAX_MUTED_JOBS ) {
 							MUTED_JOBS.remove( 0 );
 						}
 						MUTED_JOBS.add( job.getJobSeq() );

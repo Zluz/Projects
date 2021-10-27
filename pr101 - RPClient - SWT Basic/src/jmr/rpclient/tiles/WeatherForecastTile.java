@@ -404,6 +404,10 @@ public class WeatherForecastTile extends TileBase {
 				listWarning.add( "Weather import data not found" );
 			}
 			
+			
+			// spacial case: 2 tiles high
+			final boolean bBigTile = 300 == rectOriginal.height;
+			
 			final List<String> listDays;
 			if ( null != mapDays ) {
 				listDays = new LinkedList<>( mapDays.keySet() );
@@ -412,27 +416,54 @@ public class WeatherForecastTile extends TileBase {
 				listDays = Collections.emptyList();
 			}
 
-			int iX = rect.x;
-			
-			final List<Integer> listWidths = 
+			if ( bBigTile ) { 
+
+				if ( ! listDays.isEmpty() ) {
+					
+					final String strKey = listDays.get( 0 );
+							
+					final EnumMap<Value,String> 
+										mapPeriod = mapDays.get( strKey );
+					
+					final Image imageSmall = 
+									new Image( gc.getDevice(), 150, 150 );
+					final GC gcSmall = 
+									new GC( imageSmall );
+					final Rectangle rect = new Rectangle( 0, 0, 150, 150 );
+					gcSmall.setBackground( 
+								Theme.get().getColor( Colors.BACKGROUND ) );
+					gcSmall.fillRectangle( 0, 0, 150, 150 );
+
+					paintDay( gcSmall, rect, mapPeriod, listWarning );
+					
+					gc.drawImage( imageSmall, 0, 0, 150, 150, 0, 0, 400, 300 );
+				}
+
+			} else {
+				
+				int iX = rect.x;
+				
+				final List<Integer> listWidths = 
 										partitionWidth( rectOriginal.width );
-			
-			for ( int iDay = 0; iDay < listWidths.size(); iDay++ ) {
-				if ( listDays.size() > iDay && listWidths.size() > iDay ) {
-					
-					final String strKey = listDays.get( iDay );
-					final int iWidth = listWidths.get( iDay );
-					
-					final EnumMap<Value,String> mapPeriod = mapDays.get( strKey );
-					
-					final Rectangle rectDay = new Rectangle( 
+				
+				for ( int iDay = 0; iDay < listWidths.size(); iDay++ ) {
+					if ( listDays.size() > iDay && listWidths.size() > iDay ) {
+						
+						final String strKey = listDays.get( iDay );
+						final int iWidth = listWidths.get( iDay );
+						
+						final EnumMap<Value,String> 
+										mapPeriod = mapDays.get( strKey );
+						
+						final Rectangle rectDay = new Rectangle( 
 										iX, 0, iWidth, rectOriginal.height );
-					
-					gc.setClipping( rectDay );
-					
-					paintDay( gc, rectDay, mapPeriod, listWarning );
-					
-					iX += iWidth;
+						
+						gc.setClipping( rectDay );
+						
+						paintDay( gc, rectDay, mapPeriod, listWarning );
+						
+						iX += iWidth;
+					}
 				}
 			}
 			

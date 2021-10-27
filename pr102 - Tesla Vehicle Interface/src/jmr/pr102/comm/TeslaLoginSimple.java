@@ -82,7 +82,8 @@ public class TeslaLoginSimple implements TeslaLogin, TeslaConstants {
 		
 //		final String strResponse = post.postContent( "" );
 		final String strResponse = 
-						retriever.postContent( ContentType.TEXT_PLAIN, "" );
+//						retriever.postContent( ContentType.TEXT_PLAIN, "" );
+						retriever.postContent( ContentType.APP_JSON, "" );
 		
 		this.bIsAuthenticating = false;
 //		

@@ -18,7 +18,7 @@ import jmr.pr104.util.http.ContentType;
 import jmr.pr131.data.Logger;
 
 
-public class GCSFileWriter {
+public class GCSFileWriter implements jmr.pr131.Constants {
 
 	/*
 	 * https://github.com/GoogleCloudPlatform/getting-started-java/blob
@@ -56,6 +56,8 @@ public class GCSFileWriter {
 	
 	
 	public String upload( final File file ) throws IOException {
+		if ( ! APP_ENGINE_ENABLED ) return null;
+		
 		final InputStream stream = new FileInputStream( file );
 		final String strResult = this.upload( stream );
 		return strResult;

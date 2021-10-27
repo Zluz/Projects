@@ -129,16 +129,19 @@ public class SWTBasic {
 	public static void close() {
 		Logging.log("Application closing. " + new Date().toString());
 		
-		Runtime.getRuntime().halt( 98 ); // <<<======== HALT
-		
+//		Runtime.getRuntime().halt( 98 ); // <<<======== HALT
+
 		new Thread( "Application Abort" ) {
 			@Override
 			public void run() {
 				try {
-					Thread.sleep( 3000 );
+					Thread.sleep( 5000 );
 					System.err.println(
-							"Timeout (3s) elapsed. "
+							"Timeout (5s) elapsed. "
 							+ "Application aborted." );
+
+					Runtime.getRuntime().halt( 97 ); // <<<======== HALT
+
 					System.exit( 100 );
 					Runtime.getRuntime().exit( 100 );
 				} catch ( final InterruptedException e ) {
@@ -326,6 +329,8 @@ public class SWTBasic {
 		
 	    final boolean bTouchscreen = RPiTouchscreen.getInstance().isEnabled();
 
+	    final boolean bMediaServer = 
+	    			Perspective.SURVEILLANCE_STAMP.equals( perspective );
 	    
 //	    final PaletteData palette = new PaletteData(
 //	    		new RGB[] { UI.colorWhite.getRGB(), UI.colorBlack.getRGB() } );
@@ -334,16 +339,19 @@ public class SWTBasic {
 //	    idHide.transparentPixel = 0;
 	    
 	    final int iOptions;
+	    if ( bMediaServer ) { // special case
+	    	iOptions = SWT.TOOL | SWT.NO_TRIM | SWT.ON_TOP;
+	    	
 //	    if ( OSUtil.isWin() || !perspective.isFullscreen() ) {
-		if ( OSUtil.isWin() || !bTouchscreen ) {
+	    } else if ( OSUtil.isWin() || !bTouchscreen ) {
 //	    	iOptions = SWT.TOOL | SWT.SHELL_TRIM;
 	    	iOptions = SWT.SHELL_TRIM;
 	    } else {
 	    	iOptions = SWT.TOOL | SWT.ON_TOP | SWT.NO_TRIM;
 	    }
 	    final Shell shell = new Shell( UI.display, iOptions );
-	    
-		if ( bTouchscreen ) {
+
+	    if ( bTouchscreen ) {
 	    	LOGGER.info( "Display is RPi touchscreen" );
 		    shell.setSize( 800, 495 );
 	    	shell.setLocation( 0, 0 );
@@ -354,9 +362,29 @@ public class SWTBasic {
 	    	LOGGER.info( "Display size: " 
 	    				+ rectArea.width + " x " + rectArea.height );
 	    	
-//		    shell.setSize( 810, 520 );
-	    	final int iX = perspective.getColCount() * 150 + 60;
-	    	final int iY = perspective.getRowCount() * 150 + 66;
+	    	final int iXOffs;
+	    	final int iYOffs;
+	    	if ( bMediaServer ) {
+	    		// iXOffs = 54; // fitted
+	    		// iXOffs = 70; // push off
+	    		iXOffs = 10; // push off
+	    		iYOffs = 30;
+	    		new Thread( ()-> {
+	    			try { 
+	    				Thread.sleep( 2000 );
+	    				display.asyncExec( ()-> shell.setLocation( 1257, 48 ) );
+	    				Thread.sleep( 2000 );
+	    				display.asyncExec( ()-> shell.setLocation( 1257, 48 ) );
+    				} catch ( final InterruptedException e ) {};
+	    		} ).start();
+	    		
+	    	} else {
+	    		iXOffs = 60;
+	    		iYOffs = 66;
+	    	}
+	    	
+	    	final int iX = perspective.getColCount() * 150 + iXOffs;
+	    	final int iY = perspective.getRowCount() * 150 + iYOffs;
 	    	
 	    	if ( OSUtil.isWin() ) {
 	    		shell.setSize( iX + 20, iY + 20 ); // window trim

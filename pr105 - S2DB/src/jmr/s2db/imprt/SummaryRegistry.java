@@ -28,6 +28,10 @@ public class SummaryRegistry {
 
 	
 	public void add( final Summarizer summarizer ) {
+		if ( null == summarizer ) return;
+//		for ( final Summarizer item : SUMMARIZERS ) {
+//			if ( item.getClass().equals( summarizer))
+//		}
 		SUMMARIZERS.add( summarizer );
 	}
 	

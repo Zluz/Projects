@@ -174,6 +174,7 @@ public class TeslaVehicleInterface implements TeslaConstants {
 	
 	public String request(	final DataRequest request ) {
 		if ( null==request ) throw new IllegalStateException( "Null request" );
+		if ( ! TeslaConstants.ENABLED ) return "";
 		
 		final String strURL = getURL( request );
 		

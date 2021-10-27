@@ -37,7 +37,11 @@ public class RunRemoteJob {
 		final Map<String,String> map = job.getJobDetails();
 		if ( null==map ) return false;
 
-		final String strRemoteDest = map.get( "remote" );
+		String strRemoteDest = map.get( "remote" );
+		if ( null == strRemoteDest ) return false;
+		
+		strRemoteDest = strRemoteDest.trim().toLowerCase();
+		if ( strRemoteDest.isEmpty() ) return false;
 		
 //		System.out.println( "isIntendedHere() - strRemoteDest = " + strRemoteDest );
 		System.out.print( // "Job " + job.getJobSeq() + " - "

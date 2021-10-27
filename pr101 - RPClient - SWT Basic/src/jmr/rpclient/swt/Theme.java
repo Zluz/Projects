@@ -63,8 +63,12 @@ public class Theme {
 //		_12_RCB( FontResource.ROBOTO_CONDENSED_BOLD, SWT.BOLD ),
 		_12_RCB( FontResource.ROBOTO_CONDENSED_BOLD ),
 
+		_42_RCB( FontResource.ROBOTO_CONDENSED_BOLD ),
+
+
 		// good general purpose font (fixed digits)
 		_25_PR( FontResource.PLAY_REGULAR ),
+		_42_PR( FontResource.PLAY_REGULAR ),
 
 		// good general purpose font (fixed digits)
 		_12_M_B( FontResource.MILFORD, SWT.BOLD ),
@@ -86,7 +90,7 @@ public class Theme {
 		_18_SSCSB_V( FontResource.SAIRA_SEMI_CONDENSED_SEMIBOLD ),
 		_12_SSCSB_V( FontResource.SAIRA_SEMI_CONDENSED_SEMIBOLD ),
 		_14_SSCSB_V( FontResource.SAIRA_SEMI_CONDENSED_SEMIBOLD ),
-		
+
 		// very narrow font, but variable digits 
 		_12_BCM_V( FontResource.BARLOW_CONDENSED_MEDIUM ),
 		_25_BCM_V( FontResource.BARLOW_CONDENSED_MEDIUM ),

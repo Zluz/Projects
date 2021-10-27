@@ -1,6 +1,7 @@
 package jmr.swt;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -172,7 +173,29 @@ public class SWTLoader3 {
 			System.out.println( "Console mode. SWT libraries not loaded." );
 		}
 //		TestSWT.main( args );
-		SWTBasic.main( args );
+		try {
+			
+			SWTBasic.main( args );
+			
+		} catch ( final UnsatisfiedLinkError e ) {
+			final String strMessage = e.toString();
+			if ( strMessage.contains( " SWT " ) ) {
+				
+				System.err.println( "(1) SWT libraries appear to have "
+						+ "failed to load. Aborting." );
+				
+			}
+//		} catch ( final InvocationTargetException e ) {
+//
+//			System.err.println( "(2) InvocationTargetException encountered. "
+//						+ "Aborting." );
+
+		} catch ( final Throwable t ) {
+
+			System.err.println( "(3) Error encountered: " + t.toString()
+					+ "Aborting." );
+
+		}
 	}
 
 }

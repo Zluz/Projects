@@ -158,6 +158,26 @@ public abstract class SystemUtil {
 	}
 	
 	
+	// see https://stackoverflow.com/questions/2591083/getting-java-version-at-runtime
+	public static int getJavaMajorVersion() {
+	    final String strPropVer = System.getProperty("java.version");
+	    final String strMajorVer;
+	    if ( strPropVer.startsWith( "1." ) ) {
+	    	strMajorVer = strPropVer.substring( 2, 3 );
+	    } else {
+	        final int iDot = strPropVer.indexOf( "." );
+	        if ( -1 != iDot ) { 
+	        	strMajorVer = strPropVer.substring( 0, iDot ); 
+        	} else {
+        		strMajorVer = strPropVer;
+        	}
+	    } 
+	    return Integer.parseInt( strMajorVer );
+	}
+	
+	
+	
+	
 	private static File fileTemp = null;
 	
 	public static File getTempDir() {

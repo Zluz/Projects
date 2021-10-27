@@ -1,10 +1,13 @@
 package jmr.pr134.fonts;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Font;
@@ -174,11 +177,18 @@ public class FontDemo {
 							FontProvider.FONT_BASE_PATH, IMAGE_SAVE_FILE );
 					strFilename[0] = file.getAbsolutePath();
 					
-					final ImageLoader ilSave = new ImageLoader();
-					ilSave.data = new ImageData[] { image.getImageData() };
-					ilSave.save( strFilename[0], SWT.IMAGE_PNG );
+					try {
+						final ImageLoader ilSave = new ImageLoader();
+						ilSave.data = new ImageData[] { image.getImageData() };
+						ilSave.save( strFilename[0], SWT.IMAGE_PNG );
+
+						System.out.println( "File saved: " + strFilename[0] );
+
+					} catch ( final SWTException e2 ) {
+						System.err.println( 
+								"Failed to save file: " + strFilename[0] );
+					}
 					
-					System.out.println( "File saved: " + strFilename[0] );
 				}
 				
 				gcEvent.drawImage( image, 0, 0 );

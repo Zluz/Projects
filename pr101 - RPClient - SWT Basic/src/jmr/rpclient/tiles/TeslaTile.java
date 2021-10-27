@@ -26,15 +26,18 @@ import jmr.s2db.tables.Job;
 import jmr.util.report.TraceMap;
 import jmr.util.transform.DateFormatting;
 import jmr.util.transform.JsonUtils;
+import jmr.util.transform.Temperature;
 
 public class TeslaTile extends TileBase {
 
+	public static enum Mode { STATUS, CLIMATE, STAMP }; 
+	
 	
 	private final static int BUTTON_CLIMATE_ON = 1;
 	private final static int BUTTON_CLIMATE_OFF = 2;
 	private final static int BUTTON_FLASH_LIGHTS = 3;
 	
-
+	
 	final static EnumMap< DataRequest, Map<String,String> > 
 							pages = new EnumMap<>( DataRequest.class );
 
@@ -42,7 +45,8 @@ public class TeslaTile extends TileBase {
 							updated = new EnumMap<>( DataRequest.class );
 
 	
-	private final boolean bClimateControl;
+//	private final boolean bClimateControl;
+	private final Mode mode;
 	
 	private static Thread threadUpdater;
 	
@@ -53,12 +57,14 @@ public class TeslaTile extends TileBase {
 
 	
 	public TeslaTile() {
-		this( false );
+		this( Mode.STATUS );
 	}
 
 	
-	public TeslaTile( final boolean bClimateControl ) {
-		this.bClimateControl = bClimateControl;
+//	public TeslaTile( final boolean bClimateControl ) {
+	public TeslaTile( final Mode mode ) {
+//		this.bClimateControl = bClimateControl;
+		this.mode = mode;
 		if ( null==threadUpdater ) {
 			threadUpdater = new Thread( "TeslaTile Updater" ) {
 				@Override
@@ -207,6 +213,7 @@ public class TeslaTile extends TileBase {
 //					final boolean bLatch = "Engaged".equalsIgnoreCase( strLatch );
 				final boolean bPortOpen = "true".equalsIgnoreCase( strPortOpen );
 				final String strInsideTemp = mapClimate.get( "inside_temp" );
+				final String strSetTemp = mapClimate.get( "driver_temp_setting" );
 
 				final String strLatch = mapCharge.get( "charge_port_latch" );
 				final boolean bLatched = "Engaged".equalsIgnoreCase( strLatch );
@@ -218,9 +225,9 @@ public class TeslaTile extends TileBase {
 				
 				final String strBatteryLevel = mapCharge.get( "battery_level" );
 				boolean bLowBattery = false;
+				int iBatteryLevel = -1;
 				try {
-					final int iBatteryLevel = 
-							Integer.parseInt( strBatteryLevel );
+					iBatteryLevel = Integer.parseInt( strBatteryLevel );
 					bLowBattery = iBatteryLevel < 70;
 				} catch ( final NumberFormatException e ) {
 					bLowBattery = true;
@@ -275,30 +282,46 @@ public class TeslaTile extends TileBase {
 					// just ignore
 				}
 
-				
 
-				
-				if ( bSingleCell ) {
+				final double dFahrenheitInside = Temperature
+						.getFahrenheitFromCelsius( strInsideTemp );
+
+				if ( Mode.STAMP.equals( this.mode ) ) {
+					
+
+//					gc.setFont( Theme.get().getFont( 11 ) );
+					gc.setFont( Theme.ThFont._42_RCB.getFont() );
+//					gc.setFont( Theme.ThFont._42_PR.getFont() );
+
+					final String strInsideTempF = 
+								String.format( "%.1f", dFahrenheitInside );
+					
+					final GCTextUtils text = new GCTextUtils( gc );
+					text.setRect( gc.getClipping() );
+
+					final String strMode;
+					if ( ! bClimateOn ) {
+						strMode = "off";
+					}
+					
+					text.println( "In: " + strInsideTempF + "°F" );
+
+					text.println( "Batt: " + iBatteryLevel + " %" );
+
+					
+				} else if ( bSingleCell ) {
 
 					final GCTextUtils text = new GCTextUtils( gc );
 					text.setRect( gc.getClipping() );
 					
-					if ( this.bClimateControl ) {
+//					if ( this.bClimateControl ) {
+					if ( Mode.CLIMATE.equals( this.mode ) ) {
 
 //						gc.setFont( Theme.get().getFont( 11 ) );
 						gc.setFont( Theme.ThFont._11_SSCM_V.getFont() );
 
-						String strInsideTempF = "<?>";
-						try {
-							if ( null!=strInsideTemp ) {
-								final float fTempC = Float.parseFloat( 
-																strInsideTemp );
-								final float fTempF = (fTempC * 9f / 5f ) + 32f;
-								strInsideTempF = String.format( "%.1f", fTempF );
-							}
-						} catch ( final NumberFormatException e ) {
-							// ignore
-						}
+						final String strInsideTempF = 
+									String.format( "%.1f", dFahrenheitInside );
 						
 						text.println( "Inside temp: " + strInsideTempF + " °F" );
 						
@@ -454,7 +477,8 @@ public class TeslaTile extends TileBase {
 	public boolean clickCanvas( final Point point ) {
 		this.pointClick = point;
 
-		if ( !this.bClimateControl ) {
+//		if ( !this.bClimateControl ) {
+		if ( Mode.CLIMATE.equals( this.mode ) ) {
 			
 			final Thread thread = new Thread( ()-> {
 				

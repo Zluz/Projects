@@ -119,22 +119,28 @@ public class DeviceExamine {
 		bArmFreqCappedOccurred = false;
 		bThrottleOccurred = false;
 
-		final String strHex = getValue( Key.CPU_THROTTLE );
+		String strHex = getValue( Key.CPU_THROTTLE );
+		strHex = strHex.trim();
 		if ( StringUtils.isBlank( strHex ) ) return;
 		
+		strHex = strHex.toLowerCase();
+		strHex = StringUtils.remove( strHex, "\\" );
+		strHex = StringUtils.removeStart( strHex, "0x" );
+		
 		final BigInteger bigint;
-		if ( strHex.contains( "x0\\" ) ) {
-			bigint = BigInteger.ZERO;
-		} else {
+//		if ( strHex.contains( "x0\\" ) ) {
+//			bigint = BigInteger.ZERO;
+//		} else {
 			int iValue;
 			try {
-				iValue = Integer.parseInt( strHex.substring( 2 ), 16 );
+//				iValue = Integer.parseInt( strHex.substring( 2 ), 16 );
+				iValue = Integer.parseInt( strHex, 16 );
 			} catch ( final NumberFormatException e ) {
 				System.err.println( "Failed to read CPU_THROTTLE: " + strHex ); 
 				iValue = 0;
 			}
 			bigint = BigInteger.valueOf( iValue );
-		}
+//		}
 //		final String strBin = Integer.toBinaryString( iValue );
 //		final BigInteger bigint = BigInteger.valueOf( iValue );
 		

@@ -7,12 +7,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringJoiner;
@@ -32,6 +35,10 @@ public class ContentRetriever {
 	final private Map<String,String> mapFormValues = new HashMap<>();
 	
 	final private String strURL;
+
+
+	private Map<String, List<String>> mapResponseHeaderFields = new HashMap<>();
+	private final List<HttpCookie> listCookies = new LinkedList<>();
 	
 	
 	public ContentRetriever( final String strURL ) {
@@ -111,6 +118,7 @@ public class ContentRetriever {
 		
 //		conn.setDoOutput( true );
 //		conn.setInstanceFollowRedirects( false );
+		
 		conn.setRequestMethod( "GET" );
 //		conn.setRequestProperty( "Content-Type", "application/x-www-form-urlencoded"); 
 		conn.setRequestProperty( "Content-Type", type.getMimeType() ); 
@@ -135,9 +143,18 @@ public class ContentRetriever {
 		final int iCode = conn.getResponseCode();
 		if ( iCode<200 || iCode>=300 ) {
 //			throw new HTTPException( iCode );
-			throw new RuntimeException( "Exception, HTTP " + iCode );
+//			throw new RuntimeException( "Exception, HTTP " + iCode );
 			//( "HTTP code " + iCode + " received " + "for URL " + strURL );
+			System.err.println( "HTTP GET returned code " + iCode );
 		}
+		
+		mapResponseHeaderFields.clear();
+		mapResponseHeaderFields = conn.getHeaderFields();
+		
+		// https://www.baeldung.com/java-http-request
+		final String strCookies = conn.getHeaderField( "Set-Cookie" );
+		listCookies.clear();
+		listCookies.addAll( HttpCookie.parse( strCookies ) );
 		
 		final StringBuffer strbuf = new StringBuffer();
 
@@ -157,6 +174,10 @@ public class ContentRetriever {
         return strbuf.toString();
 	}
 	
+
+	public List<HttpCookie> getCookies() {
+		return Collections.unmodifiableList( this.listCookies );
+	}
 	
 	public String postContent( final ContentType type,
 							   final String strPost ) throws Exception {
@@ -232,6 +253,27 @@ public class ContentRetriever {
 //	        System.out.println();
 		}
 		
+		final int iResponseCode = conn.getResponseCode();
+		System.out.println( "Response code: " + iResponseCode );
+		
+		this.mapResponseHeaderFields = conn.getHeaderFields();
+		
+		System.out.println( "Response header fields:" );
+		this.mapResponseHeaderFields.keySet().forEach( strKey-> {
+			if ( null != strKey ) {
+				System.out.println( "\t" + strKey );
+				final List<String> listFields = 
+								this.mapResponseHeaderFields.get( strKey );
+				final String strFields = listFields.toString();
+				final String strLower = strFields.toLowerCase();
+				if ( strLower.contains( "code=" ) ) {
+					System.out.println( "\t\t-->  " + strFields );
+				} else if ( strLower.contains( "code" ) ) {
+					System.out.println( "\t\t?    " + strFields );
+				}
+			}
+		} );
+		
 		conn.disconnect();
         
         final String strResponse = strbuf.toString();
@@ -239,6 +281,11 @@ public class ContentRetriever {
         return strResponse;
 	}
 
+	
+	public Map<String, List<String>> getResponseHeaderFields() {
+		return Collections.unmodifiableMap( this.mapResponseHeaderFields );
+	}
+	
 	
 	
 	public static void main( final String[] args ) throws IOException {

@@ -185,6 +185,8 @@ public class Simple implements RulesConstants {
 		if ( null==jobs ) return;
 		if ( jobs.isEmpty() ) return;
 		
+if ( 1==1 ) return; //FIXME disable for now		
+		
 		final LocalDateTime now = LocalDateTime.now();
 		final JobType type = jobs.get( 0 ).getJobType();
 		

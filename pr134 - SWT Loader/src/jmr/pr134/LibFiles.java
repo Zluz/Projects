@@ -6,11 +6,14 @@ import java.util.List;
 public enum LibFiles {
 
 	LNX_SWT_GTK(	false, true, true,
+					"/Local/lib/swt-gtk.jar",
+					"/Local/lib/swt-gtk-3.8.2.jar",
 					"/usr/lib/java/swt-gtk-3.8.2.jar",
 					"/usr/share/java/swt-gtk-3.8.2.jar",
 					"/Share/Resources/lib/swt-gtk.jar",
 					"" ),
 	LNX_SWT(		false, true, true,
+					"/Local/lib/Lnx32/swt.jar",
 					"/usr/lib/java/eclipse/plugins/org.eclipse.swt_3.8.2.jar",
 					"/usr/share/java/swt.jar",
 					"/Share/Resources/lib/Lnx32/swt.jar",

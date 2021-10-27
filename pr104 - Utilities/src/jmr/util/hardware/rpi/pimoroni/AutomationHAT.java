@@ -168,7 +168,7 @@ public class AutomationHAT {
 			
 			if ( null!=port ) {
 				
-				System.out.println( "Initializing hardware port: " + port );
+//				System.out.println( "Initializing hardware port: " + port );
 				
 				final String[] strValues = entry.getValue().split( ":" );
 				
@@ -206,8 +206,8 @@ public class AutomationHAT {
 				} else if ( null!=input ) {
 
 					mapInputs.put( port, input );
-					System.out.println( "Registering input " 
-								+ port.name() + " as " + input.name() );
+					System.out.println( "Registering input:  " 
+								+ port.name() + " as: " + input.name() );
 					
 					if ( port.isAnalog() ) {
 						pi = new InputAnalogInterface<Port>( port, strParameters );
@@ -219,8 +219,8 @@ public class AutomationHAT {
 					pi = new OutputDigitalInterface<Port>( port );
 					
 					mapOutputs.put( port, output );
-					System.out.println( "Registering output " 
-								+ port.name() + " as " + output.name() );
+					System.out.println( "Registering output: " 
+								+ port.name() + " as: " + output.name() );
 				}
 				
 				if ( null != pi ) {
@@ -338,7 +338,8 @@ public class AutomationHAT {
 			int iDropBottom = 3;
 			double dIntercept = 0;
 			double dMultiplier = 0;
-			
+			Boolean bIsLogical = null;
+
 			double fDriftThreshold = ANALOG_THRESHOLD_DRIFT;
 			String strUnit = null;
 			
@@ -348,7 +349,7 @@ public class AutomationHAT {
 //				final PortInterface pi = mapInterface.get( port );
 				final String strParameters = input.strParameters;
 				
-System.out.println( "port parameters: " + strParameters );
+//System.out.println( "port parameters: " + strParameters );
 				final String[] strParams = strParameters.split( "," );
 				if ( strParams.length >= 4 ) {
 					try {
@@ -359,6 +360,15 @@ System.out.println( "port parameters: " + strParameters );
 						dMultiplier = Double.parseDouble( strParams[2] );
 						fDriftThreshold = Double.parseDouble( strParams[3] );
 						strUnit = strParams[4];
+						
+						if ( strParams.length > 5 ) {
+							final String strOptions = strParams[5];
+							if ( strOptions.indexOf( 'L' ) > -1 ) {
+								bIsLogical = true;
+							} else if ( strOptions.indexOf( 'l' ) > -1 ) {
+								bIsLogical = false;
+							}
+						}
 
 						LOGGER.info( "Applied input "
 								+ "parameters \"" + strParameters + "\"" );
@@ -386,9 +396,11 @@ System.out.println( "port parameters: " + strParameters );
 //			mapAnalogInput.put( port, nf );
 			input.nfValue = nf;
 			
-			final Boolean bIsLogical = 
-					( 1.0 == dMultiplier && 0.0 == dIntercept 
+			if ( null == bIsLogical ) {
+				bIsLogical = ( 1.0 == dMultiplier && 0.0 == dIntercept 
 					&& "volts".equals( strUnit ) );
+			}
+			
 //			mapLogical.put( port, bIsLogical );
 			input.bLogical = bIsLogical;
 			
@@ -599,7 +611,7 @@ nf.setParamDouble( FunctionParameter.VAR_VALUE_LAST_POSTED, dNewNorm );
 System.out.println( "[Logical = TRUE]" );					
 							
 						} else if ( lElapsed < 1000 ) {
-							
+//FIXME .. change this at some point..							
 							// only post power-off if more than 1 sec
 							bPost = false;
 System.out.println( "[Elapsed too short (" + lElapsed + ")]" );					
