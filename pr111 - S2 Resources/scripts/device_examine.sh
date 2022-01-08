@@ -8,8 +8,10 @@ export SENSOR_TEMP_DESC=`jq '."sensor-temperature-description"' < /tmp/session/d
 export SENSOR_TEMP_DESC=`echo $SENSOR_TEMP_DESC | tr ' ' '_'` 
 
 export NOW=$(date +"%Y%m%d_%H%M%S")
+export TIME_ISO=$(date "+%Y-%m-%dT%H:%M:%S")
 
-export OUT="time=$NOW "
+export OUT="time-label=$NOW "
+export OUT="$OUT time-iso=$TIME_ISO"
 
 export THROTTLED=`/usr/bin/vcgencmd get_throttled`
 export THROTTLED=`echo $THROTTLED | cut -d '=' -f 2`
@@ -22,7 +24,12 @@ fi
 
 export CPU_TEMP=`/usr/bin/vcgencmd measure_temp`
 export CPU_TEMP=`echo $CPU_TEMP | tr "'" '=' | cut -d '=' -f 2`
-export OUT="$OUT cpu-temperature=$CPU_TEMP"
+export OUT="$OUT soc-temperature=$CPU_TEMP"
+
+export CPU_VOLTS=`/usr/bin/vcgencmd measure_volts core`
+export CPU_VOLTS=`echo $CPU_VOLTS | tr "V" '=' | cut -d '=' -f 2`
+export OUT="$OUT core-volts=$CPU_VOLTS"
+
 
 export OS_NAME=`/bin/uname -a | cut -d '#' -f 1 | awk '{$1=$1;print}' | tr ' ' '_'`
 export OUT="$OUT os-name=$OS_NAME"
@@ -30,10 +37,16 @@ export OUT="$OUT os-name=$OS_NAME"
 export OS_UPTIME=`/usr/bin/uptime -p | tr ' ' '_'`
 export OUT="$OUT os-uptime=$OS_UPTIME"
 
-export VIDEO_NAME=`/usr/bin/tvservice -n | cut -d '=' -f 2 | tr ' ' '_'`
-export OUT="$OUT video_display_name=$VIDEO_NAME"
-export VIDEO_STATUS=`/usr/bin/tvservice -s | tr ' ' '_'`
-export OUT="$OUT video_status=$VIDEO_STATUS"
+export VIDEO_NAME=`/usr/bin/tvservice -n 2> /dev/null | cut -d '=' -f 2 | tr ' ' '_'` 
+if [ "$VIDEO_NAME" == "null" ]; then
+	: # probably no camera
+elif [ "$VIDEO_NAME" == "" ]; then
+	: # probably no camera
+else
+	export OUT="$OUT video_display_name=$VIDEO_NAME"
+	export VIDEO_STATUS=`/usr/bin/tvservice -s | tr ' ' '_'`
+	export OUT="$OUT video_status=$VIDEO_STATUS"
+fi
 
 # export PID_PRANY=`ps -ef | grep java | tr '/' '\n' | grep jar | grep pr`
 
@@ -71,13 +84,22 @@ export OUT="$OUT cpu-model=${CPU_MODEL}"
 export CPU_MIPS=`cat /proc/cpuinfo | grep -i "mips" | head -1 | cut -d ':' -f 2 | awk '{$1=$1;print}' | tr ' ' '_'`
 export OUT="$OUT cpu-MIPS=$CPU_MIPS"
 
+export NET_MAC=`/sbin/ifconfig eth0 | grep ether | awk '{print toupper($2)}' | sed 's/:/-/g'`
+export OUT="$OUT network-mac=$NET_MAC"
+export NET_IP=`ip a | grep 192.168 | sort --key=1.40 | head -1 | awk '{print $2;}' | cut -d '/' -f 1`
+export OUT="$OUT network-ip=$NET_IP"
 
-if [ -n "$SENSOR_TEMP_PORT" ]; then
 
+# if [ -n $SENSOR_TEMP_PORT ]; then
+if [ "$SENSOR_TEMP_PORT" == "" ]; then
+	: # no sensor
+elif [ "$SENSOR_TEMP_PORT" == "null" ]; then
+	: # no sensor
+else
 	echo -n "Reading GPIO port $SENSOR_TEMP_PORT..."
 	export DHT_OUT=`/Local/scripts/sensor_read_dht.py $SENSOR_TEMP_PORT | grep '='`
 	echo "Done."
-	echo "DHT_OUT = $DHT_OUT"
+	# echo "DHT_OUT = $DHT_OUT"
 
 	export DHT_TEMP=`echo "$DHT_OUT" | grep -i Temp | cut -d '=' -f 2`
 	export DHT_HUMID=`echo "$DHT_OUT" | grep -i Humid | cut -d '=' -f 2`
@@ -90,9 +112,19 @@ fi
 
 echo
 
-echo "OUT = $OUT"
+
+export FILE_JSON=/tmp/session/device_report.json
+
 export JO_OUT=`jo $OUT`
-echo $JO_OUT
-echo $JO_OUT | jq '.'
-echo $JO_OUT | jq '.' > /tmp/session/device_report.json
+echo $JO_OUT | jq '.' > $FILE_JSON
+
+
+echo Final JSON saved to $FILE_JSON
+cat $FILE_JSON
+
+echo
+echo POSTing to the 'status-node' index...
+curl -X POST 'http://192.168.6.20:9200/status-node/_doc/' -H 'Content-Type: application/json' -d @$FILE_JSON > /dev/null
+
+echo
 
