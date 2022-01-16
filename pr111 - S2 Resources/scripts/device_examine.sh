@@ -4,19 +4,16 @@ export SP="_SP_"
 
 export SENSOR_TEMP_PORT=`jq '."sensor-temperature-gpio"' < /tmp/session/device_config.json`
 export SENSOR_TEMP_DESC=`jq '."sensor-temperature-description"' < /tmp/session/device_config.json`
-
-# not sure why jo complains about spaces here..
-#export SENSOR_TEMP_DESC=`echo $SENSOR_TEMP_DESC | tr '"' "'"`
-export SENSOR_TEMP_DESC=`echo $SENSOR_TEMP_DESC | tr ' ' '$SP'` 
+export SENSOR_TEMP_DESC=`echo $SENSOR_TEMP_DESC | sed 's/\"//g' | sed 's/ /_SP_/g' `
 
 export NOW=$(date +"%Y%m%d_%H%M%S")
-export TIME_ISO=$(date "+%Y-%m-%dT%H:%M:%S")
+export TIME_ISO=$(date -u "+%Y-%m-%dT%H:%M:%S")
 
 export OUT="time-label=$NOW "
 export OUT="$OUT time-iso=$TIME_ISO"
 
 export THROTTLED=`/usr/bin/vcgencmd get_throttled`
-export THROTTLED=`echo $THROTTLED | cut -d '=' -f 2`
+export THROTTLED=`echo $THROTTLED | cut -d '=' -f 2 | sed 's/\"//g'`
 export OUT="$OUT cpu-throttle=\"$THROTTLED\""
 if [ "$THROTTLED" == "0x0" ]; then
 	export OUT="$OUT _9_throttle=\"$THROTTLED\""
@@ -33,10 +30,10 @@ export CPU_VOLTS=`echo $CPU_VOLTS | tr "V" '=' | cut -d '=' -f 2`
 export OUT="$OUT core-volts=$CPU_VOLTS"
 
 
-export OS_NAME=`/bin/uname -a | cut -d '#' -f 1 | awk '{$1=$1;print}' | tr ' ' '$SP'`
+export OS_NAME=`/bin/uname -a | cut -d '#' -f 1 | awk '{$1=$1;print}' | sed 's/ /_SP_/g' `
 export OUT="$OUT os-name=$OS_NAME"
 
-export OS_UPTIME=`/usr/bin/uptime -p | tr ' ' '$SP'`
+export OS_UPTIME=`/usr/bin/uptime -p | sed 's/ /_SP_/g' `
 export OUT="$OUT os-uptime=$OS_UPTIME"
 
 export VIDEO_NAME=`/usr/bin/tvservice -n 2> /dev/null | cut -d '=' -f 2 | tr ' ' '$SP'` 
@@ -81,23 +78,24 @@ export CPU_HARDWARE=`cat /proc/cpuinfo | grep -i Hardware | cut -d ':' -f 2 | aw
 export OUT="$OUT cpu-hardware=$CPU_HARDWARE"
 export CPU_CORES=`cat /proc/cpuinfo | grep "processor" | wc -l`
 export OUT="$OUT cpu-cores=$CPU_CORES"
-export CPU_MODEL=`cat /proc/cpuinfo | grep -i "model name" | head -1 | cut -d ':' -f 2 | awk '{$1=$1;print}' | tr ' ' '$SP'`
+export CPU_MODEL=`cat /proc/cpuinfo | grep -i "model name" | head -1 | cut -d ':' -f 2 | awk '{$1=$1;print}' | sed 's/ /_SP_/g' `
 export OUT="$OUT cpu-model=${CPU_MODEL}"
 export CPU_MIPS=`cat /proc/cpuinfo | grep -i "mips" | head -1 | cut -d ':' -f 2 | awk '{$1=$1;print}' | tr ' ' '$SP'`
 export OUT="$OUT cpu-MIPS=$CPU_MIPS"
 
-export NET_MAC=`/sbin/ifconfig eth0 2> /dev/null | grep ether | awk '{print toupper($2)}' | sed 's/:/_/g'`
+export NET_MAC=`/sbin/ifconfig eth0 2>/dev/null | grep ether | awk '{print toupper($2)}' | sed 's/:/_/g'`
 if [ "$NET_MAC" == "" ]; then
         export NET_MAC=`/sbin/ifconfig wlan0 | grep ether | awk '{print toupper($2)}' | sed 's/:/_/g'`
 fi
-
 export OUT="$OUT network-mac=$NET_MAC"
+
 export NET_IP=`ip a | grep 192.168 | sort --key=1.40 | head -1 | awk '{print $2;}' | cut -d '/' -f 1`
 export OUT="$OUT network-ip=$NET_IP"
 
 
 export FILE_CONFIG=/tmp/session/device_config.json
-export CONFIG_DESC=`jq '.description' $FILE_CONFIG | tr -s ' ' '$SP'`
+export CONFIG_DESC=`jq '.description' $FILE_CONFIG | sed 's/\"//g' | sed 's/ /_SP_/g' `
+
 if [ "$CONFIG_DESC" == "" ]; then
 	: # missing config
 elif [ "$CONFIG_DESC" == "null" ]; then
@@ -135,7 +133,7 @@ echo
 export FILE_JSON=/tmp/session/device_report.json
 
 export JO_OUT=`jo $OUT`
-echo $JO_OUT | jq '.' | tr -s '$SP' ' '  > $FILE_JSON
+echo $JO_OUT | jq '.' | sed 's/_SP_/ /g'  > $FILE_JSON
 
 
 echo Final JSON saved to $FILE_JSON
