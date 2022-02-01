@@ -1,11 +1,10 @@
 
-Add usage of User32/GetKeyboardState().
+See also:
+	https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getkeystate
+	https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 
 
-
-
-
-
+Code example:
 	private static final User32 kernel = 
 					(User32)Native.loadLibrary( User32.class );
 
