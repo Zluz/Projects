@@ -2,3 +2,19 @@
 Add usage of User32/GetKeyboardState().
 
 
+
+
+
+
+	private static final User32 kernel = 
+					(User32)Native.loadLibrary( User32.class );
+
+	public interface User32 extends com.sun.jna.platform.win32.User32 {
+		Kernel32 INSTANCE = (User32)Native.loadLibrary( 
+						"kernel32", User32.class );
+		
+		int GetKeyState( int iKeyStatus );
+	}
+	
+	
+	int iNumLockState = kernel.GetKeyState( 0x090 );
