@@ -8,12 +8,14 @@ import java.util.logging.Logger;
 import org.eclipse.swt.graphics.Rectangle;
 
 import jmr.rpclient.tiles.TeslaTile.Mode;
+import jmr.util.devices.IPCamera;
 
 public enum Perspective {
 
 	TOP_PAGE( 5, 3, true, false ),
 	DAILY( 5, 3, true, false ),
 	TESLA( 5, 3, true, false ),
+	GARAGE_ENTRANCE( 5, 3, true, false ),
 	CAMERA_LOCAL( 5, 3, true, false ),
 	CAMERA_REMOTE( 5, 3, true, false ),
 	OFFICE_SILL( 5, 3, true, false ),
@@ -29,6 +31,10 @@ public enum Perspective {
 	TEST( 5, 3, false, false ),
 	;
 	
+
+	public final static Perspective DEFAULT_PERSPECTIVE = 
+//								Perspective.DAILY;
+								Perspective.GARAGE_ENTRANCE;
 	
 
 	private static final Logger 
@@ -81,6 +87,7 @@ public enum Perspective {
 				case TOP_PAGE: this.build_TopPage( mapOptions ); break;
 				case DAILY: this.build_Daily(); break;
 				case TESLA: this.build_Tesla( mapOptions ); break;
+				case GARAGE_ENTRANCE: this.build_GarageEntrance( mapOptions ); break;
 				case CAMERA_LOCAL: this.build_CameraLocal(); break;
 				case CAMERA_REMOTE: this.build_CameraRemote(); break;
 				case OFFICE_SILL: this.build_OfficeSill( mapOptions ); break;
@@ -145,9 +152,9 @@ public enum Perspective {
 		}
 	}
 
-
+	
 	public static Perspective getPerspectiveFor( final String strName ) {
-		if ( null==strName ) return Perspective.DAILY;
+		if ( null==strName ) return DEFAULT_PERSPECTIVE;
 		
 		final String strNormal = strName.trim().toUpperCase();
 		for ( final Perspective perspective : Perspective.values() ) {
@@ -155,7 +162,7 @@ public enum Perspective {
 				return perspective;
 			}
 		}
-		return Perspective.DAILY;
+		return DEFAULT_PERSPECTIVE;
 	}
 	
 	
@@ -476,6 +483,23 @@ public enum Perspective {
 //						new Rectangle( 3, 2, 1, 1 ) ) ); 
 	}
 
+	
+	private void build_GarageEntrance( final Map<String, String> mapOptions ) {
+		list.add( new TileGeometry( new ClockTile(), 
+						new Rectangle( 0, 0, 2, 1 ) ) );
+
+		list.add( new TileGeometry( new IPCamTile( IPCamera.CAM_241 ), 
+						new Rectangle( 2, 0, 3, 3 ) ) );
+		
+//		list.add( new TileGeometry( new TeslaTile(), 
+//						new Rectangle( 0, 1, 2, 1 ) ) );
+		list.add( new TileGeometry( new WeatherForecastTile(), 
+						new Rectangle( 0, 2, 2, 1 ) ) );
+
+		list.add( new TileGeometry( new NestTile(), 
+						new Rectangle( 0, 1, 2, 1 ) ) ); 
+	}
+	
 
 	private void build_Tesla( final Map<String, String> mapOptions ) {
 		list.add( new TileGeometry( new ClockTile(), 

@@ -23,7 +23,8 @@ import jmr.util.SystemUtil;
 //TODO this should be extracted into shared code, with SWTLoader*, etc
 public abstract class UI {
 
-	private final static Logger LOGGER = Logger.getLogger(UI.class.getName());
+	private final static Logger 
+				LOGGER = Logger.getLogger( UI.class.getName() );
 
 
 	final public static Display display;

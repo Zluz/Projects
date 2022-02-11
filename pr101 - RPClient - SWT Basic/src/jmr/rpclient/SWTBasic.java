@@ -76,7 +76,7 @@ import jmr.util.SystemUtil;
 public class SWTBasic {
 
 
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 	
 	private static final Logger 
 			LOGGER = Logger.getLogger( SWTBasic.class.getName() );
