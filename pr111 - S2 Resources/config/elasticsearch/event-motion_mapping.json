@@ -1,0 +1,41 @@
+{
+  "properties": {
+    "core": {
+
+      "properties": {
+        "time-event-iso": {
+          "type": "date"
+        },
+        "time-scan-iso": {
+          "type": "date"
+        },
+        "time-scan-label": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 16
+            }
+          }
+        },
+        "camera-id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 6
+            }
+          }
+        }
+      }
+    },
+    "image-identify": {
+      "properties": {
+        "Number pixels": {
+          "type": "text"
+        }
+      }
+    }
+    
+  }
+}

@@ -34,11 +34,16 @@ fi
 
 if [[ -e "/tmp/session" ]]; then
 	# delete old files. see SO:13489398, SO:430106.
-	# find /tmp/session/ -mtime +1 -type f -delete -name "capture_cam-t*.jpg"
 
-#	find   /tmp/session/ -mmin +10 -type f -delete -name "capture_cam-t*.jpg"
-#	echo "(find-delete skipped)"
-	find   /tmp/session/ -mmin +10 -type f         -name "capture_cam-t*.jpg" -exec rm {} \;
+	echo -n "Deleting files..."
+	# find /tmp/session/ -mtime +1 -type f -delete -name "capture_cam-t2*.jpg"
+
+	# find   /tmp/session/ -mmin +10  -type f -delete -name "capture_cam-t2*.jpg"
+	# echo "(find-delete skipped)"
+	# find   /tmp/session/ -mtime +10 -type f         -name "capture_cam-t2*.jpg"     -exec rm {} \;
+	find     /tmp/session/ -mtime +1  -type f         -name "capture_cam-t*thumb.jpg" -exec rm {} \;
+	find     /tmp/session/ -mtime +7  -type f         -name "capture_cam-t*.jpg"      -exec rm {} \;
+	echo "Done."
 fi
 
 

@@ -14,12 +14,13 @@ export OUT="$OUT time-iso=$TIME_ISO"
 
 export THROTTLED=`/usr/bin/vcgencmd get_throttled`
 export THROTTLED=`echo $THROTTLED | cut -d '=' -f 2 | sed 's/\"//g'`
-export OUT="$OUT cpu-throttle=\"$THROTTLED\""
-if [ "$THROTTLED" == "0x0" ]; then
-	export OUT="$OUT _9_throttle=\"$THROTTLED\""
-else
-	export OUT="$OUT _3_throttle=\"$THROTTLED\""
-fi
+export OUT="$OUT cpu-throttle=$THROTTLED"
+
+# if [ "$THROTTLED" == "0x0" ]; then
+# 	export OUT="$OUT _9_throttle='$THROTTLED'"
+# else
+# 	export OUT="$OUT _3_throttle='$THROTTLED'"
+# fi
 
 export CPU_TEMP=`/usr/bin/vcgencmd measure_temp`
 export CPU_TEMP=`echo $CPU_TEMP | tr "'" '=' | cut -d '=' -f 2`
@@ -36,14 +37,22 @@ export OUT="$OUT os-name=$OS_NAME"
 export OS_UPTIME=`/usr/bin/uptime -p | sed 's/ /_SP_/g' `
 export OUT="$OUT os-uptime=$OS_UPTIME"
 
-export VIDEO_NAME=`/usr/bin/tvservice -n 2> /dev/null | cut -d '=' -f 2 | tr ' ' '$SP'` 
+export SESSION_FILES=`ls -l /tmp/session/ | wc -l`
+export OUT="$OUT session-files=$SESSION_FILES"
+
+export SCRIPT_TIME_EPOCH=`stat -c %y device_examine.sh`
+export SCRIPT_TIME_ISO=`date -Is -d "$SCRIPT_TIME_EPOCH"`
+export OUT="$OUT script-timestamp=$SCRIPT_TIME_ISO"
+
+
+export VIDEO_NAME=`/usr/bin/tvservice -n 2> /dev/null | cut -d '=' -f 2 | sed 's/ /_SP_/g' `
 if [ "$VIDEO_NAME" == "null" ]; then
 	: # probably no camera
 elif [ "$VIDEO_NAME" == "" ]; then
 	: # probably no camera
 else
 	export OUT="$OUT video_display_name=$VIDEO_NAME"
-	export VIDEO_STATUS=`/usr/bin/tvservice -s | tr ' ' '$SP'`
+	export VIDEO_STATUS=`/usr/bin/tvservice -s | sed 's/ /_SP_/g'`
 	export OUT="$OUT video_status=$VIDEO_STATUS"
 fi
 
@@ -74,13 +83,13 @@ else
 	export OUT="$OUT proc-vncserver-pid=<none>"
 fi
 
-export CPU_HARDWARE=`cat /proc/cpuinfo | grep -i Hardware | cut -d ':' -f 2 | awk '{$1=$1;print}' | tr ' ' '$SP'`
+export CPU_HARDWARE=`cat /proc/cpuinfo | grep -i Hardware | cut -d ':' -f 2 | awk '{$1=$1;print}' | sed 's/ /_SP_/g' `
 export OUT="$OUT cpu-hardware=$CPU_HARDWARE"
 export CPU_CORES=`cat /proc/cpuinfo | grep "processor" | wc -l`
 export OUT="$OUT cpu-cores=$CPU_CORES"
 export CPU_MODEL=`cat /proc/cpuinfo | grep -i "model name" | head -1 | cut -d ':' -f 2 | awk '{$1=$1;print}' | sed 's/ /_SP_/g' `
 export OUT="$OUT cpu-model=${CPU_MODEL}"
-export CPU_MIPS=`cat /proc/cpuinfo | grep -i "mips" | head -1 | cut -d ':' -f 2 | awk '{$1=$1;print}' | tr ' ' '$SP'`
+export CPU_MIPS=`cat /proc/cpuinfo | grep -i "mips" | head -1 | cut -d ':' -f 2 | awk '{$1=$1;print}' | sed 's/ /_SP_/g' `
 export OUT="$OUT cpu-MIPS=$CPU_MIPS"
 
 export NET_MAC=`/sbin/ifconfig eth0 2>/dev/null | grep ether | awk '{print toupper($2)}' | sed 's/:/_/g'`
@@ -134,6 +143,7 @@ export FILE_JSON=/tmp/session/device_report.json
 
 export JO_OUT=`jo $OUT`
 echo $JO_OUT | jq '.' | sed 's/_SP_/ /g'  > $FILE_JSON
+# echo $JO_OUT | jq '.' | sed 's/_SP_/ /g' | sed 's/_QT_//g'  > $FILE_JSON
 
 
 echo Final JSON saved to $FILE_JSON
