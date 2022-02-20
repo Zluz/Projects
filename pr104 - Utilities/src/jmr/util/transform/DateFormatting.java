@@ -2,6 +2,7 @@ package jmr.util.transform;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
@@ -43,8 +44,26 @@ public class DateFormatting {
 		return DateFormatting.getTimestamp( new Date() );
 	}
 	
+	/**
+	 * convert the given date string to an epoch millisecond 
+	 * @param strDate
+	 * @return
+	 */
 	public static Long getDateTime( final String strDate ) {
 		if ( null == strDate ) return null;
+		
+		if ( strDate.contains( "T" ) && strDate.contains( "+" ) ) {
+			// looks like an ISO-8601 time
+			try {
+				final ZonedDateTime zdt = ZonedDateTime.parse( strDate );
+				if ( null != zdt ) {
+					return zdt.toEpochSecond() * 1000;
+				}
+			} catch ( final Exception e ) {
+				// just move along
+			}
+		}
+		
 		try {
 			String strNorm = strDate.trim();
 			strNorm = strNorm.substring( 0, 20 );

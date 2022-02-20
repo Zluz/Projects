@@ -27,10 +27,12 @@ public enum IPCamera {
 		if ( null == strURL ) {
 			this.strURL = properties.getProperty( this.name() + ".url" );
 			this.strTitle = properties.getProperty( this.name() + ".title" );
+			if ( null == strURL ) return; // special case, debug test ?
 			try {
 				this.url = new URL( strURL );
 				this.strHost = this.url.getHost();
 			} catch ( final MalformedURLException e ) {
+				System.err.println( "Failed to read from URL: " + strURL );
 				e.printStackTrace();
 			}
 		}
