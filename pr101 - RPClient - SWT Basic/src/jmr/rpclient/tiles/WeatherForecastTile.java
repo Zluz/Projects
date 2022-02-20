@@ -247,7 +247,7 @@ public class WeatherForecastTile extends TileBase {
 		final WeatherSymbol symbolDay;
 		if ( ! StringUtils.isBlank( strTextDay ) ) {
 			strText = "   " + strTextDay;
-			symbolDay = WeatherSymbol.getSymbol( strTextDay );
+			symbolDay = WeatherSymbol.getSymbol( strTextDay, null );
 			imageIconDay = symbolDay.getIcon();
 		} else {
 			strText = " Night: " + map.get( Value.FORECAST_NIGHT );
@@ -269,7 +269,7 @@ public class WeatherForecastTile extends TileBase {
 		if ( iDayWidth > 120 ) {
 			final String strNight = map.get( Value.FORECAST_NIGHT );
 			final WeatherSymbol symbolNight = 
-										WeatherSymbol.getSymbol( strNight );
+								WeatherSymbol.getSymbol( strNight, null );
 			final Image imageIconNight = symbolNight.getIcon();
 			if ( null != imageIconNight 
 							&& WeatherSymbol.UNKNOWN != symbolNight ) {

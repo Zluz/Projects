@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -329,12 +330,18 @@ public class IPCamTile extends TileBase {
 			final ImageLoader loader = new ImageLoader();
 			final URL url = this.camera.getURL();
 //			final URL url = new URL( strURL );
-			try ( final InputStream is = url.openStream() ) {
-				final ImageData[] arrData = loader.load( is );
-				this.lImageAge = System.currentTimeMillis();
-				imageRemote = new Image( UI.display, arrData[0] );
+			if ( null != url ) {
+				final URLConnection c = url.openConnection();
+				c.setReadTimeout( 5000 );
+				c.setConnectTimeout( 5000 );
+	//			try ( final InputStream is = url.openStream() ) {
+				try ( final InputStream is = c.getInputStream() ) {
+					final ImageData[] arrData = loader.load( is );
+					this.lImageAge = System.currentTimeMillis();
+					imageRemote = new Image( UI.display, arrData[0] );
+				}
 			}
-		} catch ( final IOException e ) {
+		} catch ( final Exception e ) {
 //			e.printStackTrace();
 			LOGGER.warning( ()-> String.format( 
 					"While reading image from %s, encountered %s", 

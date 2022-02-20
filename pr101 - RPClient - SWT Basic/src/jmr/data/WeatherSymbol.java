@@ -15,19 +15,25 @@ import jmr.rpclient.S2Resource;
 // https://peter.build/weather-underground-icons/
 public enum WeatherSymbol {
 
-	CHANCE_FLURRIES( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chanceflurries.png" ) ),
-	CHANCE_RAIN( "scattered showers", //"chance rain showers", 
-			"$slight chance rain.*", 
-			"$.*rain showers.*", 
-//			"$mostly cloudy then chance rain showers.*",
-//			"$partly cloudy then chance rain showers.*",
-			"$.*cloudy then .*rain showers.*",
-			"occasional light rain", "$occasional light rain.*", "$occasional rain.*",  
+	CHANCE_FLURRIES( 
+			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chanceflurries.png" ) ),
+	CHANCE_RAIN(
+//			"^.+:\\/\\/api.weather.gov\\/icons\\/.+\\/rain_showers[,?].*",
+			"^.+://api.weather.gov/icons/.+/rain_showers[,?].*",
+			"scattered showers", //"chance rain showers", 
+			"^slight chance rain.*", 
+			"^.*rain showers.*", 
+//			"^mostly cloudy then chance rain showers.*",
+//			"^partly cloudy then chance rain showers.*",
+			"^.*cloudy then .*rain showers.*",
+			"occasional light rain", "^occasional light rain.*", "^occasional rain.*",  
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancerain.png" ) ),
-	CHANCE_SLEET( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancesleet.png" ) ),
+	CHANCE_SLEET( 
+			"^.+://api.weather.gov/icons/.+/sleet,.+",
+			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancesleet.png" ) ),
 	CHANCE_SNOW( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/snow.png" ) ),
 	CHANCE_TSTORMS(	"chance tstorms", "scattered thunderstorms",
-			"$chance showers and thunderstorms",
+			"^chance showers and thunderstorms",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancetstorms.png" ) ),
 	
 	CLEAR( 	"breezy", "mostlyclear", 
@@ -40,11 +46,21 @@ public enum WeatherSymbol {
 	MOSTLYCLOUDY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/mostlycloudy.png" ) ),
 	MOSTLYSUNNY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/mostlysunny.png" ) ),
 	
-	PARTLYCLOUDY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/partlycloudy.png" ) ),
+	PARTLYCLOUDY( 
+			"^.+://api.weather.gov/icons/.+/few[,?].*", 
+////			"^.+:\\/\\/api.weather.gov\\/icons\\/.+\\/few[,?].*", 
+//			"^.+://api.weather.gov/icons/.+/few", 
+//			"^.+api.weather.gov/icons/.+/few.+", 
+			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/partlycloudy.png" ) ),
 					
 	PARTLYSUNNY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/partlysunny.png" ) ),
-	RAIN( 	"showers", "heavy rain", "rain showers",
-			"$rain showers likely.*",
+	RAIN( 	
+//			"^.+:\\/\\/api.weather.gov\\/icons\\/.+\\/rain[,?].*", 
+			"^.+://api.weather.gov/icons/.+/rain[,?].*", 
+//			"^.+:\\/\\/api.weather.gov\\/icons\\/.+\\/rain_showers[,?].*", 
+			"^.+://api.weather.gov/icons/.+/rain_showers[,?].*", 
+			"showers", "heavy rain", "rain showers",
+			"^rain showers likely.*",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/rain.png" ) ),
 	
 	SLEET( 	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sleet.png" ) ),
@@ -52,13 +68,13 @@ public enum WeatherSymbol {
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/snow.png" ) ),
 	
 	SUNNY(	"mostly sunny", 
-			"$.*frost then sunny",
-			"$.*frost then mostly sunny",
+			"^.*frost then sunny",
+			"^.*frost then mostly sunny",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sunny.png" ) ),
 	
 	TSTORMS( "thunderstorms", 
-			"$showers and thunderstorms likely",
-			"$.* and thunderstorms",
+			"^showers and thunderstorms likely",
+			"^.* and thunderstorms",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/tstorms.png" ) ),
 	
 	UNKNOWN( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/unknown.png" ) ),
@@ -96,7 +112,7 @@ public enum WeatherSymbol {
 		strName = strName.replaceAll( "_", "" );
 		listMatches.add( strName );
 		for ( String strAlias : aliases ) {
-			if ( ! strAlias.startsWith( "$" ) ) {
+			if ( ! strAlias.startsWith( "^" ) ) {
 				strAlias = strAlias.trim().toLowerCase();
 				strAlias = strAlias.replaceAll( " ", "" );
 				strAlias = strAlias.replaceAll( "_", "" );
@@ -106,7 +122,23 @@ public enum WeatherSymbol {
 	}
 	
 	
-	public static WeatherSymbol getSymbol( final String strText ) {
+	public static WeatherSymbol getSymbol( 	final String strText,
+											final String strIconURL ) {
+		if ( null != strIconURL ) {
+			for ( final WeatherSymbol symbol : WeatherSymbol.values() ) {
+				for ( final String strMatch : symbol.listMatches ) {
+					if ( strMatch.startsWith( "^" ) 
+									&& strMatch.contains( ":" ) ) {
+						if ( strIconURL.matches( strMatch ) ) {
+							
+//							System.out.println( "Matched(1): " + strMatch );
+							return symbol;
+						}
+					}
+				}
+			}
+		}
+
 		if ( null==strText ) return WeatherSymbol.UNKNOWN;
 
 		final String strTrimmed = strText.trim().toLowerCase();
@@ -116,7 +148,7 @@ public enum WeatherSymbol {
 
 		for ( final WeatherSymbol symbol : WeatherSymbol.values() ) {
 			for ( final String strMatch : symbol.listMatches ) {
-				if ( ! strMatch.startsWith( "$" ) ) {
+				if ( ! strMatch.startsWith( "^" ) ) {
 					if ( strNormal.equals( strMatch ) ) {
 						return symbol;
 					}
@@ -125,7 +157,7 @@ public enum WeatherSymbol {
 		}
 		for ( final WeatherSymbol symbol : WeatherSymbol.values() ) {
 			for ( String strMatch : symbol.listMatches ) {
-				if ( strMatch.startsWith( "$" ) ) {
+				if ( strMatch.startsWith( "^" ) ) {
 					strMatch = strMatch.substring( 1 ); // why?
 					if ( strTrimmed.matches( strMatch ) ) {
 						return symbol;
@@ -233,8 +265,13 @@ public enum WeatherSymbol {
 	
 
 	public static void main( final String[] args ) throws Exception {
-		final Image image = WeatherSymbol.MOSTLYSUNNY.getIcon();
-		System.out.println( "Image: " + image );
+//		final Image image = WeatherSymbol.MOSTLYSUNNY.getIcon();
+//		System.out.println( "Image: " + image );
+		
+		final String strURL = 
+//				"https://api.weather.gov/icons/land/day/rain,40/rain,30?size=medium";
+				"https://api.weather.gov/icons/land/day/rain,40/few,30?size=medium";
+		WeatherSymbol.getSymbol( null, strURL );
 	}
 
 	

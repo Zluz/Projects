@@ -211,7 +211,7 @@ public enum Perspective {
 		list.add( new TileGeometry( new PerformanceMonitorTile(), 
 						new Rectangle( 4, 2, 1, 1 ) ) );
 		
-		list.add( new TileGeometry( new WeatherForecastTile(), 
+		list.add( new TileGeometry( new WeatherForecastTile2(), 
 						new Rectangle( 0, 2, 5, 1 ) ) ); 
 	}
 	
@@ -233,7 +233,7 @@ public enum Perspective {
 //		list.add( new TileGeometry( new PerformanceMonitorTile(), 
 //						new Rectangle( 2, 1, 1, 1 ) ) );
 		
-		list.add( new TileGeometry( new WeatherForecastTile(), 
+		list.add( new TileGeometry( new WeatherForecastTile2(), 
 						new Rectangle( 0, 2, 5, 1 ) ) ); 
 	}
 
@@ -259,7 +259,7 @@ public enum Perspective {
 		list.add( new TileGeometry( new AudioSelectionTile(), 
 						new Rectangle( 0, 1, 3, 1 ) ) ); 
 
-		list.add( new TileGeometry( new WeatherForecastTile(), 
+		list.add( new TileGeometry( new WeatherForecastTile2(), 
 						new Rectangle( 0, 2, 5, 1 ) ) ); 
 	}
 
@@ -311,7 +311,7 @@ public enum Perspective {
 		list.add( new TileGeometry( new PerformanceMonitorTile(), 
 						new Rectangle( 3, 1, 1, 1 ) ) );
 
-		list.add( new TileGeometry( new WeatherForecastTile(), 
+		list.add( new TileGeometry( new WeatherForecastTile2(), 
 						new Rectangle( 0, 2, 5, 1 ) ) ); 
 	}
 	
@@ -338,7 +338,7 @@ public enum Perspective {
 		list.add( new TileGeometry( new AudioSelectionTile(), 
 						new Rectangle( 0, 3, 3, 1 ) ) ); 
 
-		list.add( new TileGeometry( new WeatherForecastTile(), 
+		list.add( new TileGeometry( new WeatherForecastTile2(), 
 						new Rectangle( 0, 4, 3, 1 ) ) ); 
 		
 //		list.add( new TileGeometry( new CalibrationTile(), 
@@ -375,7 +375,7 @@ public enum Perspective {
 		list.add( new TileGeometry( new TeslaTile( Mode.STAMP ), 
 						new Rectangle( 0, 0, 2, 1 ) ) );
 
-		list.add( new TileGeometry( new WeatherForecastTile(), 
+		list.add( new TileGeometry( new WeatherForecastTile2(), 
 						new Rectangle( 2, 0, 3, 2 ) ) ); 
 
 	}
@@ -493,7 +493,7 @@ public enum Perspective {
 		
 //		list.add( new TileGeometry( new TeslaTile(), 
 //						new Rectangle( 0, 1, 2, 1 ) ) );
-		list.add( new TileGeometry( new WeatherForecastTile(), 
+		list.add( new TileGeometry( new WeatherForecastTile2(), 
 						new Rectangle( 0, 2, 2, 1 ) ) );
 
 		list.add( new TileGeometry( new NestTile(), 
