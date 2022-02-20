@@ -41,8 +41,11 @@ if [[ -e "/tmp/session" ]]; then
 	# find   /tmp/session/ -mmin +10  -type f -delete -name "capture_cam-t2*.jpg"
 	# echo "(find-delete skipped)"
 	# find   /tmp/session/ -mtime +10 -type f         -name "capture_cam-t2*.jpg"     -exec rm {} \;
-	find     /tmp/session/ -mtime +1  -type f         -name "capture_cam-t*thumb.jpg" -exec rm {} \;
-	find     /tmp/session/ -mtime +7  -type f         -name "capture_cam-t*.jpg"      -exec rm {} \;
+
+	# delete thumnails more than 2 minutes old
+	find     /tmp/session/ -mmin  +2  -type f         -name "capture_cam-t*thumb.jpg" -exec rm {} 2> /dev/null \; 
+	# delete any camera images more than 2 days old
+	find     /tmp/session/ -mtime +2  -type f         -name "capture_cam-t*.jpg"      -exec rm {} 2> /dev/null \;
 	echo "Done."
 fi
 

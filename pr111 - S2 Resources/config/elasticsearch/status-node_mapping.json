@@ -1,0 +1,45 @@
+{
+ "properties": {
+  "time-iso": { "type": "date" },
+  "network-mac": { 
+    "type": "text",
+    "fields": {
+      "keyword": {
+        "type": "keyword",
+        "ignore_above": 20
+      }
+    }
+  },
+  "network-ip": {
+    "type": "text",
+    "fields": {
+      "keyword": {
+        "type": "keyword",
+        "ignore_above": 20
+      }
+    }
+  },
+  "sensor-temperature-description": {
+    "type": "text",
+    "fields": {
+      "keyword": {
+        "type": "keyword",
+        "ignore_above": 20
+      }
+    }
+  },
+  "time-label": { "type": "text" },
+  "script-timestamp": { "type": "date" },
+  "cpu-throttle": { "type": "text" },
+  "soc-temperature": { "type": "float" },
+  "core-volts": { "type": "float" },
+  "os-name": { "type": "text" },
+  "proc-pr101-pid": { "type": "text" },
+  "proc-vncserver-pid": { "type": "long" },
+  "proc-vncserver-time": { "type": "long" },
+  "cpu-hardware": { "type": "text" },
+  "cpu-cores": { "type": "short" },
+  "cpu-MIPS": { "type": "float" }
+ }
+}
+

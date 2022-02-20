@@ -1,0 +1,8 @@
+{
+ "properties": {
+  "updated": { "type": "date" },
+  "generatedAt": { "type": "date" },
+  "updateTime": { "type": "date" }
+ }
+}
+
