@@ -21,6 +21,7 @@ import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.util.transform.DateFormatting;
+import jmr.util.transform.Temperature;
 
 public class WeatherForecastTile2 extends TileBase {
 
@@ -303,19 +304,23 @@ public class WeatherForecastTile2 extends TileBase {
 		} else {
 			gc.drawText( strDay, iX + 6, iY );
 		}
-
+		
 		iY = 26;
 //		final String strTextDay = map.get( Value.FORECAST_DAY );
 		final String strTextDay = arr[0].at( "/shortForecast" ).asText();
 		final String strIconDay = arr[0].at( "/icon" ).asText();
 		final String strTextNight = arr[1].at( "/shortForecast" ).asText();
 		final String strIconNight = arr[1].at( "/icon" ).asText();
+		
+		final boolean bNoDay = StringUtils.isEmpty( strIconDay );
+		
 		final String strText; 
 		final Image imageIconDay;
 		final WeatherSymbol symbolDay;
 		if ( ! StringUtils.isBlank( strTextDay ) ) {
 			strText = "   " + strTextDay;
-			symbolDay = WeatherSymbol.getSymbol( strTextDay, strIconDay );
+//			symbolDay = WeatherSymbol.getSymbol( strTextDay, strIconDay );
+			symbolDay = WeatherSymbol.getSymbol( null, strIconDay );
 			imageIconDay = symbolDay.getIcon();
 		} else {
 //			final String strTextNight = arr[1].at( "/shortForecast" ).asText();
@@ -324,24 +329,29 @@ public class WeatherForecastTile2 extends TileBase {
 			imageIconDay = WeatherSymbol.getIconUnknown();
 			symbolDay = null;
 		}
-		
-		if ( null != imageIconDay && WeatherSymbol.UNKNOWN != symbolDay ) {
+
+		if ( bNoDay ) {
+			iY = 86;
+			// skip for now
+		} else if ( null != imageIconDay && WeatherSymbol.UNKNOWN != symbolDay ) {
 			gc.drawImage( imageIconDay, iX + 2 , iY );
 			iY = 86;
-			gc.setFont( Theme.get().getFont( 10 ) );
+//			gc.setFont( Theme.get().getFont( 10 ) );
 		} else {
 			iY = 60;
-			gc.setFont( Theme.get().getFont( 7 ) );
+//			gc.setFont( Theme.get().getFont( 7 ) );
 			listWarning.add( "Not found (text): " + strTextDay );
 			listWarning.add( "Not found (icon): " + strIconDay );
 //			System.out.println( 
 //					"Weather symbol not found for: " + strText );
 		}
+		gc.setFont( Theme.get().getFont( 10 ) );
 
-		if ( iDayWidth > 120 ) {
+		if ( iDayWidth > 120 && StringUtils.isNotBlank( strTextNight ) ) {
 //			final String strNight = map.get( Value.FORECAST_NIGHT );
 			final WeatherSymbol symbolNight = 
-						WeatherSymbol.getSymbol( strTextNight, strIconNight );
+//						WeatherSymbol.getSymbol( strTextNight, strIconNight );
+						WeatherSymbol.getSymbol( null, strIconNight );
 			final Image imageIconNight = symbolNight.getIcon();
 			if ( null != imageIconNight 
 							&& WeatherSymbol.UNKNOWN != symbolNight ) {
@@ -371,53 +381,61 @@ public class WeatherForecastTile2 extends TileBase {
 		final String strLow = arr[1].at( "/temperature" ).asText();
 		if ( iDayWidth < 120 ) {
 			gc.setFont( Theme.get().getFont( 14 ) );
-			gc.drawText( strLow + "°", iX + iDayWidth - 25, 114 );
+			gc.drawText( strLow + "°", iX + iDayWidth - 24, 120 );
 		} else {
 			gc.setFont( Theme.get().getFont( 18 ) );
-			gc.drawText( strLow + "°", iX + 80, 110 );
+			gc.drawText( strLow + "°", iX + 70, 110 );
 		}
 		
 //		final String strWindRaw = map.get( Value.WIND_SPEED );
-		final String strWindRaw = arr[0].at( "/windSpeed" ).asText();
+		final String strWindRaw = getValueDayFirst( arr, "/windSpeed" );
 		if ( ! StringUtils.isEmpty( strWindRaw ) && iDayWidth > 110 ) {
 			
 			String strWindAbbr = strWindRaw;
 			strWindAbbr = strWindAbbr.replaceAll( " mph", "" );
 			strWindAbbr = strWindAbbr.replaceAll( " to ", " - " );
+			strWindAbbr = strWindAbbr.trim();
+			if ( strWindAbbr.length() < 5 ) {
+				strWindAbbr = "  " + strWindAbbr;
+			}
 
 //			final String strWindDir = ""+
 //									map.get( Value.WIND_DIRECTION_COMBINED );
 //			final String strWindDir = arr[0].at( "/windDirection" ).asText();
 			final String strWindDir = getValueDayFirst( arr, "/windDirection" );
 
+			final String strWindDirLong = 
+					Temperature.getLongCardinalDirection( strWindDir );
 			
 			iY = 16;
 //			final int iXW = iX + 68;
-			final int iXW = iX + iDayWidth - 40;
+			final int iXW = iX + iDayWidth - 44;
 			gc.setFont( Theme.get().getFont( 9 ) );
 //			gc.drawText( "wind", iXW, iY );			
-			gc.setFont( Theme.get().getFont( 12 ) );	iY += 14;
+			gc.setFont( Theme.get().getFont( 14 ) );	iY += 14;
 			gc.drawText( strWindAbbr, iXW, iY );	
-			gc.setFont( Theme.get().getFont( 9 ) );		iY += 16;
-			gc.drawText( "mph", iXW + 8, iY );			
-			gc.setFont( Theme.get().getFont( 11 ) );	iY += 17;
-			gc.drawText( strWindDir, iXW, iY );
+			gc.setFont( Theme.get().getFont( 9 ) );		iY += 18;
+			gc.drawText( "mph", iXW + 10, iY );			
+			gc.setFont( Theme.get().getFont( 11 ) );	iY += 16;
+			gc.drawText( strWindDirLong, iXW + 2, iY );
 		}
 		
 
 		iY = 100;
-		gc.setFont( Theme.get().getFont( 26 ) );
+		gc.setFont( Theme.get().getFont( 30 ) );
 		
 //		final String strHigh = map.get( Value.TEMP_DAY );
 		final String strHigh = arr[0].at( "/temperature" ).asText();
 		
 		if ( StringUtils.isNotBlank( strHigh ) ) {
-			gc.drawText( strHigh + "°", iX + 14, iY + 1 );
+			gc.drawText( strHigh + "°", iX + 16, iY + 1, true );
 			gc.setForeground( Theme.get().getColor( Colors.TEXT_BOLD ) );
-			gc.drawText( strHigh, iX + 14, iY );
-		} else {
+			gc.drawText( strHigh, iX + 15, iY, true );
+		} else { // also when bNoDay 
 			gc.setForeground( Theme.get().getColor( Colors.TEXT_LIGHT ) );
-			gc.drawText( "..", iX + 14, iY + 1 );
+			gc.drawText( "..", iX + 16, iY + 1 );
+
+			gc.drawText( "..", iX + 16, 26 );
 		}
 		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 	}

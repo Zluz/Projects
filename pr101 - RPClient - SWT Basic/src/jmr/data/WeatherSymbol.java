@@ -29,7 +29,7 @@ public enum WeatherSymbol {
 			"occasional light rain", "^occasional light rain.*", "^occasional rain.*",  
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancerain.png" ) ),
 	CHANCE_SLEET( 
-			"^.+://api.weather.gov/icons/.+/sleet,.+",
+//			"^.+://api.weather.gov/icons/.+/sleet,.+",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancesleet.png" ) ),
 	CHANCE_SNOW( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/snow.png" ) ),
 	CHANCE_TSTORMS(	"chance tstorms", "scattered thunderstorms",
@@ -44,35 +44,42 @@ public enum WeatherSymbol {
 	HAZY( 	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/hazy.png" ) ),
 	
 	MOSTLYCLOUDY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/mostlycloudy.png" ) ),
-	MOSTLYSUNNY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/mostlysunny.png" ) ),
+	MOSTLYSUNNY( 
+			"^.+://api.weather.gov/icons/.+/sct[,?].*", 
+			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/mostlysunny.png" ) ),
 	
 	PARTLYCLOUDY( 
 			"^.+://api.weather.gov/icons/.+/few[,?].*", 
-////			"^.+:\\/\\/api.weather.gov\\/icons\\/.+\\/few[,?].*", 
-//			"^.+://api.weather.gov/icons/.+/few", 
-//			"^.+api.weather.gov/icons/.+/few.+", 
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/partlycloudy.png" ) ),
 					
 	PARTLYSUNNY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/partlysunny.png" ) ),
 	RAIN( 	
-//			"^.+:\\/\\/api.weather.gov\\/icons\\/.+\\/rain[,?].*", 
 			"^.+://api.weather.gov/icons/.+/rain[,?].*", 
-//			"^.+:\\/\\/api.weather.gov\\/icons\\/.+\\/rain_showers[,?].*", 
 			"^.+://api.weather.gov/icons/.+/rain_showers[,?].*", 
 			"showers", "heavy rain", "rain showers",
 			"^rain showers likely.*",
-			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/rain.png" ) ),
+			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/rain.png" ) 
+//			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/rain.svg" ) 
+			),
 	
-	SLEET( 	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sleet.png" ) ),
-	SNOW( 	"snow showers", "rain and snow", 
+	SLEET( 	
+			"^.+://api.weather.gov/icons/.+/sleet[,?].*", 
+			"^.+://api.weather.gov/icons/.+/snow_fzra[,?].*", 
+			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sleet.png" ) ),
+	SNOW( 	
+			"^.+://api.weather.gov/icons/.+/snow[,?].*", 
+			"snow showers", "rain and snow", 
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/snow.png" ) ),
 	
-	SUNNY(	"mostly sunny", 
+	SUNNY(	
+			"^.+://api.weather.gov/icons/.+/sunny[,?].*", 
+			"mostly sunny", 
 			"^.*frost then sunny",
 			"^.*frost then mostly sunny",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sunny.png" ) ),
 	
-	TSTORMS( "thunderstorms", 
+	TSTORMS( 
+			"thunderstorms", 
 			"^showers and thunderstorms likely",
 			"^.* and thunderstorms",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/tstorms.png" ) ),
