@@ -43,6 +43,7 @@ import org.eclipse.swt.widgets.Text;
 
 import com.google.gson.Gson;
 
+import jmr.pr110.ToDo;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.UI;
 import jmr.rpclient.tab.TabBase;
@@ -67,6 +68,8 @@ import jmr.util.Logging;
 import jmr.util.NetUtil;
 import jmr.util.OSUtil;
 import jmr.util.SystemUtil;
+import jmr.util.TimeUtil;
+import jmr.util.transform.DateFormatting;
 
 
 /*
@@ -589,6 +592,9 @@ public class SWTBasic {
 //		LOGGER.log( Level.INFO, "Session started. "
 //				+ "IP:" + strIP + ", Session:" + strSessionID );
 //	    
+	    final String strTimestamp = DateFormatting.getDateTime( now );
+	    ToDo.add( "SWTBasic UI starting - " + strTimestamp );
+	    
 	    final Map<String,String> mapSessionPage = new HashMap<>();
 	    mapSessionPage.put( "page.source.class", SWTBasic.class.getName() );
 	    mapSessionPage.put( "session.start", "" + now.getTime() );

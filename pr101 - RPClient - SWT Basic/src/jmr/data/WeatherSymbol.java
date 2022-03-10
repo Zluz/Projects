@@ -43,7 +43,9 @@ public enum WeatherSymbol {
 	FOG( 	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/fog.png" ) ),
 	HAZY( 	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/hazy.png" ) ),
 	
-	MOSTLYCLOUDY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/mostlycloudy.png" ) ),
+	MOSTLYCLOUDY( 
+			"^.+://api.weather.gov/icons/.+/bkn[,?].*", 
+			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/mostlycloudy.png" ) ),
 	MOSTLYSUNNY( 
 			"^.+://api.weather.gov/icons/.+/sct[,?].*", 
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/mostlysunny.png" ) ),
@@ -65,9 +67,11 @@ public enum WeatherSymbol {
 	SLEET( 	
 			"^.+://api.weather.gov/icons/.+/sleet[,?].*", 
 			"^.+://api.weather.gov/icons/.+/snow_fzra[,?].*", 
+			"^.+://api.weather.gov/icons/.+/rain_fzra[,?].*", // should this be RAIN? 
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sleet.png" ) ),
 	SNOW( 	
 			"^.+://api.weather.gov/icons/.+/snow[,?].*", 
+			"^.+://api.weather.gov/icons/.+/rain_snow[,?].*", 
 			"snow showers", "rain and snow", 
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/snow.png" ) ),
 	
@@ -79,6 +83,7 @@ public enum WeatherSymbol {
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sunny.png" ) ),
 	
 	TSTORMS( 
+			"^.+://api.weather.gov/icons/.+/tsra[,?].*", 
 			"thunderstorms", 
 			"^showers and thunderstorms likely",
 			"^.* and thunderstorms",

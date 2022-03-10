@@ -15,7 +15,9 @@ import org.eclipse.swt.graphics.Rectangle;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import jmr.S2Properties;
 import jmr.data.WeatherSymbol;
+import jmr.pr110.ToDo;
 import jmr.pr151.S2ES;
 import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
@@ -38,12 +40,61 @@ public class WeatherForecastTile2 extends TileBase {
 //	final private Map<String,EnumMap<Value,String>> mapDays = new HashMap<>();
 //	final private PageData pagedata = new PageData();
 
-	final private S2ES client = new S2ES();
+	final private S2ES client; // = new S2ES();
 	private JsonNode jnCurrent = null;
 	private Map<String,JsonNode[]> mapCurrent = null;
 	private List<String> listKeysCurrent = null;
 
 	
+	
+	
+	public WeatherForecastTile2() {
+		final S2Properties properties = S2Properties.get();
+		final String strESKey = "home.elasticsearch.url";
+		final String strESBase = properties.getProperty( strESKey );
+		client = new S2ES( strESBase );
+		threadUpdater = new Thread( "WeatherForecastTile Updater" ) {
+			@Override
+			public void run() {
+				try {
+		
+					Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
+		
+					for (;;) {
+						
+						try {
+							updatePages();
+						} catch ( final Exception e ) {
+							// ignore.. 
+							// JDBC connection may have been dropped..
+						}
+		
+						Thread.sleep( TimeUnit.MINUTES.toMillis( 2 ) );
+		//						Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
+					}
+				} catch ( final InterruptedException e ) {
+					// just quit
+				}
+			}
+		};
+//		threadUpdater.start();
+	}
+
+	
+//	public enum Value {
+//		DAY_NAME_SHORT,
+//		DAY_NAME_LONG,
+//		TEMP_DAY,
+//		TEMP_NIGHT,
+//		WIND_SPEED,
+//		WIND_DIRECTION_DAY,
+//		WIND_DIRECTION_NIGHT,
+//		WIND_DIRECTION_COMBINED,
+//		FORECAST_DAY,
+//		FORECAST_NIGHT,
+//		UPDATE_TIME, // repeated with current import. meh.
+//		;
+//	}
 
 	private void updatePages() {
 		final JsonNode jnNew = client.retrieveLatestWeatherForecast();
@@ -92,181 +143,6 @@ public class WeatherForecastTile2 extends TileBase {
 		}
 	}
 
-//	private void updatePages_() {
-//
-//		final String strPath = "/External/Ingest/Import_WeatherGov/data";
-//		
-//		final Map<String, String> mapRaw = Client.get().loadPage( strPath );
-//		
-//		final Map<String,EnumMap<Value,String>> mapLoading = new HashMap<>();
-//		
-//		for ( int iPeriod = 0; iPeriod<20; iPeriod++ ) {
-//
-//			boolean bValid = false;
-//			
-//			final Map<String,String> mapPeriod = new HashMap<>();
-//			
-//			final String strNamePrefix = 
-//								String.format( "+period_%02d.", iPeriod ); 
-//			
-//
-//			final String strUpdateTime = mapRaw.get( "+update_time" );
-//
-//			for ( final Entry<String, String> entry : mapRaw.entrySet() ) {
-//				final String strKey = entry.getKey();
-//				
-//				if ( strKey.startsWith( strNamePrefix ) ) {
-//					
-//					final String strNewName = strKey.substring( 
-//												strNamePrefix.length() );
-//					final String strValue = entry.getValue();
-//					
-//					mapPeriod.put( strNewName, strValue );
-//					
-//					bValid = true;
-//				}
-//			}
-//			
-//			if ( bValid ) {
-//				
-//				final String strTimeStart = mapPeriod.get( "time_start" );
-//				final String strDate = strTimeStart.substring( 0, 10 );
-//				
-//				final EnumMap<Value,String> mapValues;
-//				if ( mapLoading.containsKey( strDate ) ) {
-//					mapValues = mapLoading.get( strDate );
-//				} else {
-//					mapValues = new EnumMap<>( Value.class );
-//					mapLoading.put( strDate, mapValues );
-//				}
-//				
-//				final boolean bDaytime = 
-//								"true".equals( mapPeriod.get( "daytime" ) );
-//				
-//				if ( bDaytime ) {
-//					mapValues.put( Value.UPDATE_TIME, strUpdateTime );
-//					mapValues.put( Value.DAY_NAME_LONG, 
-//										mapPeriod.get( "name" ) );
-//					mapValues.put( Value.FORECAST_DAY, 
-//										mapPeriod.get( "forecast_short" ) );
-//					mapValues.put( Value.TEMP_DAY, 
-//										mapPeriod.get( "temperature" ) );
-//					mapValues.put( Value.WIND_DIRECTION_DAY, 
-//										mapPeriod.get( "wind_direction" ) );
-//					mapValues.put( Value.WIND_SPEED, 
-//										mapPeriod.get( "wind_speed" ) );
-//				} else {
-//					mapValues.put( Value.UPDATE_TIME, strUpdateTime );
-//					mapValues.put( Value.FORECAST_NIGHT, 
-//										mapPeriod.get( "forecast_short" ) );
-//					mapValues.put( Value.TEMP_NIGHT, 
-//										mapPeriod.get( "temperature" ) );
-//					mapValues.put( Value.WIND_DIRECTION_NIGHT, 
-//										mapPeriod.get( "wind_direction" ) );
-//					
-//					if ( ! mapValues.containsKey( Value.DAY_NAME_LONG ) ) {
-//						mapValues.put( Value.DAY_NAME_LONG, 
-//											mapPeriod.get( "name" ) );
-//					}
-//				}
-//			}
-//		}
-//		
-//		for ( final EnumMap<Value, String> map : mapLoading.values() ) {
-//			
-//			final String strDayName = map.get( Value.DAY_NAME_LONG );
-//			final String strShortDay =
-//							DateFormatting.getShortDayOfWeek( strDayName );
-//			if ( ! StringUtils.isBlank( strShortDay ) ) {
-//				map.put( Value.DAY_NAME_SHORT, strShortDay );
-//			} else {
-//				map.put( Value.DAY_NAME_SHORT, strDayName );
-//			}
-//			
-//			final String strWDD = map.get( Value.WIND_DIRECTION_DAY );
-//			final String strWDN = map.get( Value.WIND_DIRECTION_NIGHT );
-//			final String strWDC;
-//			
-//			final boolean bWDDBlank = StringUtils.isBlank( strWDD ); 
-//			final boolean bWDNBlank = StringUtils.isBlank( strWDN ); 
-//			
-//			if ( ! bWDDBlank ) {
-//				if ( ! bWDNBlank ) {
-//					if ( strWDD.equals( strWDN ) ) {
-//						strWDC = strWDD;
-//					} else {
-//						strWDC = strWDD + ", " + strWDN;
-//					}
-//				} else {
-//					strWDC = strWDD;
-//				}
-//			} else {
-//				if ( ! bWDNBlank ) {
-//					strWDC = strWDN;
-//				} else {
-//					strWDC = "-";
-//				}
-//			}
-//			
-//			map.put( Value.WIND_DIRECTION_COMBINED, strWDC );
-//		}
-//		
-//
-//		synchronized ( mapDays ) {
-//			mapDays.clear();
-//			mapDays.putAll( mapLoading );
-//		}
-//		synchronized ( pagedata ) {
-//			pagedata.clear();
-//			pagedata.putAll( mapRaw );
-//		}
-//	}
-	
-	
-	public WeatherForecastTile2() {
-		threadUpdater = new Thread( "WeatherForecastTile Updater" ) {
-			@Override
-			public void run() {
-				try {
-		
-					Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
-		
-					for (;;) {
-						
-						try {
-							updatePages();
-						} catch ( final Exception e ) {
-							// ignore.. 
-							// JDBC connection may have been dropped..
-						}
-		
-						Thread.sleep( TimeUnit.MINUTES.toMillis( 2 ) );
-		//						Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
-					}
-				} catch ( final InterruptedException e ) {
-					// just quit
-				}
-			}
-		};
-//		threadUpdater.start();
-	}
-
-	
-//	public enum Value {
-//		DAY_NAME_SHORT,
-//		DAY_NAME_LONG,
-//		TEMP_DAY,
-//		TEMP_NIGHT,
-//		WIND_SPEED,
-//		WIND_DIRECTION_DAY,
-//		WIND_DIRECTION_NIGHT,
-//		WIND_DIRECTION_COMBINED,
-//		FORECAST_DAY,
-//		FORECAST_NIGHT,
-//		UPDATE_TIME, // repeated with current import. meh.
-//		;
-//	}
-	
 	
 	public void paintDay( 	final GC gc,
 							final Rectangle rect,
@@ -342,6 +218,7 @@ public class WeatherForecastTile2 extends TileBase {
 //			gc.setFont( Theme.get().getFont( 7 ) );
 			listWarning.add( "Not found (text): " + strTextDay );
 			listWarning.add( "Not found (icon): " + strIconDay );
+			ToDo.add( "Weather icon not found for: " + strIconDay );
 //			System.out.println( 
 //					"Weather symbol not found for: " + strText );
 		}
@@ -357,7 +234,10 @@ public class WeatherForecastTile2 extends TileBase {
 							&& WeatherSymbol.UNKNOWN != symbolNight ) {
 				gc.drawImage( imageIconNight, iX + 60, 26 );
 			} else {
-				listWarning.add( "Not found: " + strTextNight );
+//				listWarning.add( "Not found: " + strTextNight );
+				listWarning.add( "Not found (text): " + strTextNight );
+				listWarning.add( "Not found (icon): " + strIconNight );
+				ToDo.add( "Weather icon not found for: " + strIconNight );
 			}
 		}
 

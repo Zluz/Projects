@@ -29,6 +29,12 @@ public class S2ES {
 		STATUS_WEATHER,
 		EVENT_MOTION,
 	}
+	
+	private final String strURLBase;
+	
+	public S2ES( final String strURLBase ) {
+		this.strURLBase = strURLBase;
+	}
 
 	
 	public JsonNode retrieveJsonContent( final URL url ) {
@@ -58,8 +64,7 @@ public class S2ES {
 
 	
 	public JsonNode retrieveLatestWeatherForecast() {
-		final String strURL = 
-					"http://192.168.6.20:9200/status-weather/_search";
+		final String strURL = strURLBase + "/status-weather/_search"; 
 		final String strBody = 
 					"{\n" + 
 					"  \"size\": 1,\n" + 
@@ -108,7 +113,8 @@ public class S2ES {
 	
 	
 	public static void main( final String[] args ) {
-		final S2ES client = new S2ES();
+		final String strURLBase = "<ES-server>";
+		final S2ES client = new S2ES( strURLBase );
 		final JsonNode jn = client.retrieveLatestWeatherForecast();
 		System.out.println( jn.toPrettyString() );
 	}

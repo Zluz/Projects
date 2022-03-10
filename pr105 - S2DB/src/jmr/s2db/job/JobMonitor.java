@@ -67,7 +67,7 @@ public class JobMonitor {
 		if ( null==threadUpdater ) {
 			this.initializeJobMonitorThread();
 		}
-		if ( !threadUpdater.isAlive() ) {
+		if ( null != threadUpdater && !threadUpdater.isAlive() ) {
 			threadUpdater.start();
 		}
 	}
