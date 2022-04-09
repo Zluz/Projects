@@ -11,6 +11,8 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -20,18 +22,20 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 
 import jmr.rpclient.ConsoleClient;
+import jmr.rpclient.ModalMessage;
 import jmr.rpclient.RPiTouchscreen;
 import jmr.rpclient.screen.TextCanvas;
 import jmr.rpclient.screen.TextScreen;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
+import jmr.rpclient.swt.Theme.ThFont;
 import jmr.rpclient.swt.UI;
 import jmr.s2db.Client;
-import jmr.s2db.tables.Session;
 import jmr.util.NetUtil;
 import jmr.util.OSUtil;
 import jmr.util.SystemUtil;
 import jmr.util.hardware.rpi.DeviceExamine;
+import jmr.util.transform.DateFormatting;
 
 public class TileCanvas {
 
@@ -63,6 +67,9 @@ public class TileCanvas {
 	private PaintListener listenerCanvasPainter;
 
 	private MouseListener listenerCanvasMouse;
+	
+//	private boolean bModalDisplayed = false;
+	private ModalMessage message = null;
 	
 //	
 //	// fixed tiles
@@ -202,6 +209,11 @@ public class TileCanvas {
 			public void mouseDown( final MouseEvent event ) {
 				if ( null==event ) return;
 				
+				if ( null != TileCanvas.this.message ) {
+					message.close();
+					return;
+				}
+				
 				for ( final TileGeometry geo : TileCanvas.this.getTiles() ) {
 					
 //					final TileBase tile = geo.tile;
@@ -248,6 +260,7 @@ public class TileCanvas {
 									final String strInfo,
 									final Map<String,String> mapOptions ) {
 
+    	final int iXLimit = 150 * perspective.getColCount();
     	final int iYLimit = 150 * perspective.getRowCount();
 
     	System.out.println( "New TileCanvas PaintListener created for " 
@@ -257,6 +270,10 @@ public class TileCanvas {
 			@Override
 			public void paintControl( final PaintEvent e ) {
 				
+				final Image imageFullBuffer = 
+								new Image( e.display, iXLimit, iYLimit );
+				final GC gcFull = new GC( imageFullBuffer );
+
 				e.gc.setFont( Theme.get().getFont( 10 ) );
 
 //				lPaintCount++;
@@ -297,6 +314,8 @@ public class TileCanvas {
 					final int iW = rect.width * 150;
 					final int iH = rect.height * 150;
 					
+					tile.clearInfoRegions();
+					
 					final Image imageBuffer = new Image( e.display, iW, iH );
 
 					try {
@@ -313,22 +332,131 @@ public class TileCanvas {
 					}
 					
 					if ( perspective.isRotated() ) {
-						e.gc.setAdvanced( true );
+//						e.gc.setAdvanced( true );
+						gcFull.setAdvanced( true );
 						
 						final Transform tr = new Transform( display );
 						
 				        tr.rotate( (float) 90 );
 				        tr.translate( +10l, -750l -10 );
 				        
-				        e.gc.setTransform( tr );
+//				        e.gc.setTransform( tr );
+				        gcFull.setTransform( tr );
 					}
 					
-					e.gc.drawImage( imageBuffer, iX + TRIM_X, iY + TRIM_Y );
-					e.gc.setTransform( null );
+//					e.gc.drawImage( imageBuffer, iX + TRIM_X, iY + TRIM_Y );
+//					e.gc.setTransform( null );
+					gcFull.drawImage( imageBuffer, iX, iY );
+					gcFull.setTransform( null );
 					
 					imageBuffer.dispose();
 				}
 				
+				
+				final long lTimeNow = System.currentTimeMillis();
+//				final ModalMessage message = ModalMessage.getNext( lTimeNow );
+				TileCanvas.this.message = ModalMessage.getNext( lTimeNow );
+				if ( null != message ) {
+//					bModalDisplayed = true;
+
+					final GC gcMsg = gcFull;
+					
+					final String strTitle = message.getTitle();
+					final String strBody = message.getBody();
+					final String strContent = strTitle + "\n" + strBody;
+					final long lRemain = message.getRemainingMS( lTimeNow );
+//					final String strRemain = "" + lRemain + " ms";
+					final String strRemain = 
+								DateFormatting.getSmallTime( lRemain, true );
+
+					gcMsg.setFont( Theme.ThFont._12_M_B.getFont() );
+					final Point ptExtentTime = gcMsg.stringExtent( strRemain );
+					
+					ThFont themefont = Theme.ThFont._18_SSCM_V;
+					Font fontBody = themefont.getFont();
+					final String strFontName = fontBody.getFontData()[0].getName();
+					Point ptExtent;
+					boolean bAdjustSmaller = false;
+					do {
+						fontBody = themefont.getFont();
+						gcMsg.setFont( fontBody );
+						ptExtent = gcMsg.textExtent( strContent );
+						if ( ptExtent.x + 30 > iXLimit ) {
+							final int iOrd = themefont.ordinal() - 1;
+							ThFont tfSmaller = Theme.ThFont.values()[ iOrd ];
+							final Font fontSmaller = tfSmaller.getFont();
+							if ( strFontName.equals( 
+									fontSmaller.getFontData()[0].getName() ) ) {
+								themefont = tfSmaller;
+								bAdjustSmaller = true;
+							} else {
+								bAdjustSmaller = false;
+							}
+						} else {
+							bAdjustSmaller = false;
+						}
+					} while ( bAdjustSmaller );
+					
+					final Point ptExtentTitle = gcMsg.textExtent( strTitle );
+					
+					
+					final int iB = 8;
+					
+					final int iX1 = ( iXLimit - ptExtent.x ) / 2; 
+					final int iY1 = ( iYLimit - ptExtent.y ) / 2; 
+
+					gcMsg.setBackground( Theme.get().getColor( 
+									Colors.BACKGROUND_INFO ) );
+					gcMsg.setForeground( Theme.get().getColor( 
+									Colors.TEXT_LIGHT ) );
+					gcMsg.fillRectangle( iX1 - iB, iY1 - iB, 
+								ptExtent.x + 2 * iB, ptExtent.y + 2 * iB );
+					gcMsg.drawRectangle( iX1 - iB, iY1 - iB, 
+							ptExtent.x + 2 * iB, ptExtent.y + 2 * iB );
+
+					gcMsg.setForeground( Theme.get().getColor( 
+							Colors.BACKGROUND ) );
+					gcMsg.drawRectangle( iX1 - iB - 1, iY1 - iB - 1, 
+							ptExtent.x + 2 * iB + 2, ptExtent.y + 2 * iB + 2 );
+
+					gcMsg.setForeground( Theme.get().getColor( 
+									Colors.TEXT_LIGHT ) );
+
+					gcMsg.drawText( strContent, iX1, iY1 );
+					
+
+					gcMsg.setBackground( Theme.get().getColor( 
+									Colors.TEXT_LIGHT ) );
+					
+					gcMsg.fillRectangle( iX1 - iB, iY1 - iB, 
+							ptExtent.x + 2 * iB, ptExtentTitle.y + iB );
+
+					gcMsg.setForeground( Theme.get().getColor( 
+							Colors.BACKGROUND ) );
+					
+					gcMsg.drawText( strTitle, iX1 + 2, iY1 + 1, true );
+					gcMsg.drawText( strTitle, iX1 - 1, iY1 + 1, true );
+
+					gcMsg.setFont( Theme.ThFont._12_M_B.getFont() );
+
+					gcMsg.drawText( strRemain, 
+									iX1 + ptExtent.x - ptExtentTime.x,
+									iY1, 
+									true );
+
+					gcMsg.setFont( fontBody );
+
+					gcMsg.setForeground( Theme.get().getColor( 
+							Colors.TEXT_BOLD ) );
+
+					gcMsg.drawText( strTitle, iX1, iY1, true );
+					gcMsg.drawText( strTitle, iX1 + 1, iY1, true );
+//				} else {
+//					bModalDisplayed = false;
+				}
+				
+				e.gc.drawImage( imageFullBuffer, TRIM_X, TRIM_Y );
+				imageFullBuffer.dispose();
 			}
 		};
 	}

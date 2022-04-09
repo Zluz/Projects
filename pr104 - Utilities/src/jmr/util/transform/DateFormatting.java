@@ -74,12 +74,17 @@ public class DateFormatting {
 			return null;
 		}
 	}
-	
-	public static String getSmallTime( final long ms ) {
+
+	public static String getSmallTime(	final long ms,
+										final boolean bMSAccuracy ) {
 		final long lMinutes = TimeUnit.MILLISECONDS.toMinutes( ms );
 		if ( lMinutes < 2 ) {
 			final long lSeconds = TimeUnit.MILLISECONDS.toSeconds( ms );
-			return "" + lSeconds + " s";
+			if ( lSeconds > 3 || ! bMSAccuracy ) {
+				return "" + lSeconds + " s";
+			} else {
+				return String.format( "%1.1f s", ( (float)ms / 1000 ) );
+			}
 		} else if ( lMinutes < 120 ) {
 			return "" + lMinutes + " m";
 		}
@@ -91,7 +96,11 @@ public class DateFormatting {
 			return "" + lDays + " d";
 		}
 	}
-	
+
+	public static String getSmallTime( final long ms ) {
+		return getSmallTime( ms, false );
+	}
+
 	public static String getSmallTime( final String strLastTime ) {
 		if ( null==strLastTime ) return "null";
 		if ( strLastTime.isEmpty() ) return "empty";

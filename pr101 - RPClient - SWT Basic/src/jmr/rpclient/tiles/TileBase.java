@@ -2,8 +2,10 @@ package jmr.rpclient.tiles;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -14,6 +16,7 @@ import org.eclipse.swt.graphics.Rectangle;
 
 import com.google.gson.JsonObject;
 
+import jmr.rpclient.ModalMessage;
 import jmr.rpclient.screen.TextScreen;
 import jmr.rpclient.swt.ColorCache;
 import jmr.rpclient.swt.S2Button;
@@ -28,6 +31,10 @@ public abstract class TileBase implements Tile {
 
 //	private final List<Button> buttons = new LinkedList<>();
 	private final Map<Integer,S2Button> buttons = new HashMap<>();
+	
+	private final List<InfoRegion> listInfo = new LinkedList<>();
+	
+	public static final String CR = "\n";
 	
 	
 	protected GC gc = null;
@@ -47,6 +54,15 @@ public abstract class TileBase implements Tile {
 	public boolean pressKey( final char c ) {
 		return false;
 	}
+	
+	
+	private static class InfoRegion {
+		Rectangle rect;
+		String strTitle;
+		long lDurationInSeconds;
+		Supplier<String> supContent;
+	}
+	
 	
 	public void paint(	final Image imageBuffer, 
 						final long lNowPaint ) {
@@ -78,8 +94,39 @@ public abstract class TileBase implements Tile {
 	
 	@Override
 	public boolean clickCanvas( final Point point ) {
+		for ( final InfoRegion info : listInfo ) {
+			if ( info.rect.contains( point ) ) {
+				ModalMessage message = new ModalMessage( 
+									info.strTitle, 
+									info.supContent.get(),
+									info.lDurationInSeconds );
+				ModalMessage.add( message );
+			}
+		}
 		return false;
 	}
+	
+	public boolean addInfoRegion(	// final int iX, 
+									// final int iY, 
+									// final int iWidth, 
+									// final int iHeight,
+									final Rectangle rect,
+									final long lDurationInSeconds,
+									final String strTitle,
+									final Supplier<String> supContent ) {
+		final InfoRegion info = new InfoRegion();
+		info.rect = rect;
+		info.supContent = supContent;
+		info.strTitle = strTitle;
+		info.lDurationInSeconds = lDurationInSeconds;
+		listInfo.add( info );
+		return true;
+	}
+	
+	public void clearInfoRegions() {
+		this.listInfo.clear();
+	}
+									
 	
 	
 	@Override

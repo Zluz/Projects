@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,10 +20,12 @@ import jmr.S2Properties;
 import jmr.data.WeatherSymbol;
 import jmr.pr110.ToDo;
 import jmr.pr151.S2ES;
+import jmr.rpclient.ModalMessage;
 import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
 import jmr.util.transform.DateFormatting;
+import jmr.util.transform.JsonUtils;
 import jmr.util.transform.Temperature;
 
 public class WeatherForecastTile2 extends TileBase {
@@ -224,9 +227,10 @@ public class WeatherForecastTile2 extends TileBase {
 		}
 		gc.setFont( Theme.get().getFont( 10 ) );
 
+		final WeatherSymbol symbolNight;
 		if ( iDayWidth > 120 && StringUtils.isNotBlank( strTextNight ) ) {
 //			final String strNight = map.get( Value.FORECAST_NIGHT );
-			final WeatherSymbol symbolNight = 
+			symbolNight = 
 //						WeatherSymbol.getSymbol( strTextNight, strIconNight );
 						WeatherSymbol.getSymbol( null, strIconNight );
 			final Image imageIconNight = symbolNight.getIcon();
@@ -239,8 +243,10 @@ public class WeatherForecastTile2 extends TileBase {
 				listWarning.add( "Not found (icon): " + strIconNight );
 				ToDo.add( "Weather icon not found for: " + strIconNight );
 			}
+		} else {
+			symbolNight = null;
 		}
-
+		
 		
 		if ( gc.textExtent( strText ).x + 10 < iDayWidth ) {
 			gc.drawText( strText, iX, iY );
@@ -318,6 +324,39 @@ public class WeatherForecastTile2 extends TileBase {
 			gc.drawText( "..", iX + 16, 26 );
 		}
 		gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
+		
+		
+
+		super.addInfoRegion( rect, 10, 
+				"Weather Details for " + strDayLong,
+				()-> {
+					final StringBuilder sb = new StringBuilder();
+					sb.append( "[Day]" + CR );
+					sb.append( strTextDay + CR );
+					sb.append( strIconDay + CR );
+					if ( null != symbolDay ) {
+						sb.append( "WeatherSymbol: " + symbolDay.name() + CR );
+					} else {
+						sb.append( "(symbolDay is null)" + CR );
+					}
+//					sb.append( "  Temp: " + strHigh + CR );
+					sb.append( CR );
+					sb.append( "[Night]" + CR );
+					sb.append( strTextNight + CR );
+					sb.append( strIconNight + CR );
+					if ( null != symbolNight ) {
+						sb.append( "WeatherSymbol: " + symbolNight.name() + CR );
+					} else {
+						sb.append( "(symbolNight is null)" + CR );
+					}
+//					sb.append( "  Temp: " + strLow + CR );
+					
+//					final String strJsonMessy = arr[0].toString();
+//					final String strJsonPretty = JsonUtils.getPretty( strJsonMessy );
+//					sb.append( strJsonPretty );
+					return sb.toString().trim();
+		} );
+
 	}
 	
 	
@@ -531,6 +570,20 @@ public class WeatherForecastTile2 extends TileBase {
 	
 	@Override
 	protected void activateButton( final S2Button button ) {}
+
+//	@Override
+//	public boolean clickCanvas( final Point point ) {
+////		final String strBody = String.format( 
+////				"Point clicked on %s: ( %d, %d )\n"
+////				+ "(this message will disappear in 3s)",
+////				WeatherForecastTile2.class.getName(),
+////				point.x,
+////				point.y );
+////		final ModalMessage message = 
+////				new ModalMessage( "Click", strBody, 10000 );
+////		ModalMessage.add( message );
+//		return true;
+//	}
 	
 
 
