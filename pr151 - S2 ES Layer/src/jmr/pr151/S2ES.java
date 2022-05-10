@@ -112,7 +112,6 @@ public class S2ES {
 	}
 
 	
-	
 	public static void main( final String[] args ) {
 		final String strURLBase = "<ES-server>";
 		final S2ES client = new S2ES( strURLBase );
