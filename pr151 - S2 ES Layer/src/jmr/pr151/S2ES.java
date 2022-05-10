@@ -32,6 +32,7 @@ public class S2ES {
 	
 	private final String strURLBase;
 	
+	
 	public S2ES( final String strURLBase ) {
 		this.strURLBase = strURLBase;
 	}
