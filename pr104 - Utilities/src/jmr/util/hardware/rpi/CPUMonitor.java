@@ -103,7 +103,12 @@ public class CPUMonitor {
 	
 	
 	public boolean isHeatWarning() {
-		return ( this.getTemperature() > WARNING_TEMP_HIGH );
+		final Double dTemp = getTemperature();
+		if ( null != dTemp ) {
+			return ( dTemp > WARNING_TEMP_HIGH );
+		} else {
+			return false;
+		}
 	}
 	
 	

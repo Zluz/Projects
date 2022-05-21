@@ -10,6 +10,7 @@ public enum IPCamera {
 	CAM_242,
 	CAM_244,
 	CAM_246,
+	CAM_250,
 	;
 	
 	private static Properties properties;
