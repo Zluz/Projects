@@ -16,7 +16,9 @@ import jmr.rpclient.S2Resource;
 public enum WeatherSymbol {
 
 	// intended icons
-	
+
+	UNKNOWN( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/unknown.png" ) ),
+
 	CLEAR_DAY(
 			"^.+://api.weather.gov/icons/.+/day/skc[,?].*", 
 			S2Resource.resolvePath( "S:/Resources/files/weather/Artboard 33.png" ) ),
@@ -31,23 +33,40 @@ public enum WeatherSymbol {
 			"^.+://api.weather.gov/icons/.+/night/bkn[,?].*", 
 			S2Resource.resolvePath( "S:/Resources/files/weather/Artboard 28.png" ) ),
 
+	MOSTLYCLEAR_DAY( 
+			"^.+://api.weather.gov/icons/.+/day/few[,?].*", 
+			"^.+://api.weather.gov/icons/.+/day/sct[,?].*", 
+			S2Resource.resolvePath( "S:/Resources/files/weather/mostlysunny.png" ) ),
+	MOSTLYCLEAR_NIGHT( 
+			"^.+://api.weather.gov/icons/.+/night/few[,?].*", 
+			"^.+://api.weather.gov/icons/.+/night/sct[,?].*", 
+			S2Resource.resolvePath( "S:/Resources/files/weather/Artboard 30.png" ) ),
+
+	TSTORMS_HIGH_DAY(
+			"^.+://api.weather.gov/icons/.+/day/tsra_hi[,?].*", 
+			"^.+://api.weather.gov/icons/.+/day/tsra_sct[,?].*", 
+			"^.+://api.weather.gov/icons/.+/day/.+/tsra_hi[,?].*", 
+			"^.+://api.weather.gov/icons/.+/day/.+/tsra_sct[,?].*", 
+			S2Resource.resolvePath( "S:/Resources/files/weather/Artboard 38.png" ) ),
+	TSTORMS_HIGH_NIGHT(
+			"^.+://api.weather.gov/icons/.+/night/tsra_hi[,?].*", 
+			"^.+://api.weather.gov/icons/.+/night/tsra_sct[,?].*", 
+			"^.+://api.weather.gov/icons/.+/night/.+/tsra_hi[,?].*", 
+			"^.+://api.weather.gov/icons/.+/night/.+/tsra_sct[,?].*", 
+			S2Resource.resolvePath( "S:/Resources/files/weather/Artboard 48.png" ) ),
+	TSTORMS(
+			"^.+://api.weather.gov/icons/.+/tsra[,?].*", 
+			S2Resource.resolvePath( "S:/Resources/files/weather/Artboard 4.png" ) ),
+	
 	RAIN( 
 			"^.+://api.weather.gov/icons/.+/rain[,?].*", 
 			"^.+://api.weather.gov/icons/.+/rain_showers[,?].*", 
 			S2Resource.resolvePath( "S:/Resources/files/weather/Artboard 10.png" ) ),
 
-	TSTORMS_HIGH_DAY(
-			"^.+://api.weather.gov/icons/.+/day/tsra_hi[,?].*", 
-			"^.+://api.weather.gov/icons/.+/day/tsra_sct[,?].*", 
-			S2Resource.resolvePath( "S:/Resources/files/weather/Artboard 38.png" ) ),
-	TSTORMS_HIGH_NIGHT(
-			"^.+://api.weather.gov/icons/.+/night/tsra_hi[,?].*", 
-			"^.+://api.weather.gov/icons/.+/night/tsra_sct[,?].*", 
-			S2Resource.resolvePath( "S:/Resources/files/weather/Artboard 48.png" ) ),
-	TSTORMS(
-			"^.+://api.weather.gov/icons/.+/tsra[,?].*", 
-			S2Resource.resolvePath( "S:/Resources/files/weather/Artboard 4.png" ) ),
-
+	MOSTLYSUNNY( 
+			"^.+://api.weather.gov/icons/.+/sct[,?].*", 
+			"^.+://api.weather.gov/icons/.+/wind_sct[,?].*", 
+			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/mostlysunny.png" ) ),
 
 	// fallback icons
 
@@ -61,12 +80,29 @@ public enum WeatherSymbol {
 			"^.+://api.weather.gov/icons/.+/wind_ovc[,?].*", 
 //			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/cloudy.png" ) ),
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/Artboard 27" ) ),
+
+	// old icon set, but maybe worth keeping
 	
+	CHANCE_SNOW( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/snow.png" ) ),
+
+	FOG( 	
+			"^.+://api.weather.gov/icons/.+/fog[,?].*", 
+			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/fog.png" ) ),
+
+	HAZY( 	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/hazy.png" ) ),
+	
+	SNOW( 	
+			"^.+://api.weather.gov/icons/.+/snow[,?].*", 
+			"^.+://api.weather.gov/icons/.+/rain_snow[,?].*", 
+			"^.+://api.weather.gov/icons/.+/blizzard[,?].*", 
+			"snow showers", "rain and snow", 
+			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/snow.png" ) ),
+
 	// obsolete icons 
 	
-	CHANCE_FLURRIES( 
+	_CHANCE_FLURRIES( 
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chanceflurries.png" ) ),
-	CHANCE_RAIN(
+	_CHANCE_RAIN(
 //			"^.+:\\/\\/api.weather.gov\\/icons\\/.+\\/rain_showers[,?].*",
 			"^.+://api.weather.gov/icons/.+/rain_showers[,?].*",
 			"scattered showers", //"chance rain showers", 
@@ -78,40 +114,29 @@ public enum WeatherSymbol {
 			"occasional light rain", "^occasional light rain.*", "^occasional rain.*",  
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancerain.png" ) ),
 	
-	CHANCE_SLEET( 
+	_CHANCE_SLEET( 
 //			"^.+://api.weather.gov/icons/.+/sleet,.+",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancesleet.png" ) ),
 	
-	CHANCE_SNOW( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/snow.png" ) ),
-	
-	CHANCE_TSTORMS(	
+	_CHANCE_TSTORMS(	
 			"chance tstorms", "scattered thunderstorms",
 			"^.+://api.weather.gov/icons/.+/tsra_hi[,?].*", 
 			"^chance showers and thunderstorms",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/chancetstorms.png" ) ),
 	
-	FLURRIES( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/flurries.png" ) ),
-	FOG( 	
-			"^.+://api.weather.gov/icons/.+/fog[,?].*", 
-			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/fog.png" ) ),
-	HAZY( 	S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/hazy.png" ) ),
+	_FLURRIES( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/flurries.png" ) ),
 	
-	MOSTLYCLOUDY( 
+	_MOSTLYCLOUDY( 
 			"^.+://api.weather.gov/icons/.+/bkn[,?].*", 
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/mostlycloudy.png" ) ),
 	
-	MOSTLYSUNNY( 
-			"^.+://api.weather.gov/icons/.+/sct[,?].*", 
-			"^.+://api.weather.gov/icons/.+/wind_sct[,?].*", 
-			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/mostlysunny.png" ) ),
-	
-	PARTLYCLOUDY( 
+	_PARTLYCLOUDY( 
 			"^.+://api.weather.gov/icons/.+/few[,?].*", 
 			"^.+://api.weather.gov/icons/.+/wind_few[,?].*", 
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/partlycloudy.png" ) ),
 					
-	PARTLYSUNNY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/partlysunny.png" ) ),
-	RAIN_( 	
+	_PARTLYSUNNY( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/partlysunny.png" ) ),
+	_RAIN( 	
 			"^.+://api.weather.gov/icons/.+/rain[,?].*", 
 			"^.+://api.weather.gov/icons/.+/rain_showers[,?].*", 
 			"showers", "heavy rain", "rain showers",
@@ -120,26 +145,20 @@ public enum WeatherSymbol {
 //			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/rain.svg" ) 
 			),
 	
-	SLEET( 	
+	_SLEET( 	
 			"^.+://api.weather.gov/icons/.+/sleet[,?].*", 
 			"^.+://api.weather.gov/icons/.+/snow_fzra[,?].*", 
 			"^.+://api.weather.gov/icons/.+/rain_fzra[,?].*", // should this be RAIN? 
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sleet.png" ) ),
-	SNOW( 	
-			"^.+://api.weather.gov/icons/.+/snow[,?].*", 
-			"^.+://api.weather.gov/icons/.+/rain_snow[,?].*", 
-			"^.+://api.weather.gov/icons/.+/blizzard[,?].*", 
-			"snow showers", "rain and snow", 
-			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/snow.png" ) ),
 	
-	SUNNY(	
+	_SUNNY(	
 			"^.+://api.weather.gov/icons/.+/sunny[,?].*", 
 			"mostly sunny", 
 			"^.*frost then sunny",
 			"^.*frost then mostly sunny",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/sunny.png" ) ),
 	
-	TSTORMS_( 
+	_TSTORMS( 
 			"^.+://api.weather.gov/icons/.+/tsra[,?].*", 
 			"^.+://api.weather.gov/icons/.+/tsra_sct[,?].*", 
 			"thunderstorms", 
@@ -147,8 +166,6 @@ public enum WeatherSymbol {
 			"^.* and thunderstorms",
 			S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/tstorms.png" ) ),
 	
-	UNKNOWN( S2Resource.resolvePath( "S:/Resources/files/weather/wunderground/unknown.png" ) ),
-
 	/* Query to find previously used weather names
 			SELECT * 
 			FROM s2db.prop
@@ -173,6 +190,7 @@ public enum WeatherSymbol {
 	
 	final String[] arrAliases;
 	final List<String> listMatches;
+	final boolean bOutdated;
 	
 	private WeatherSymbol( final String... aliases ) {
 		this.arrAliases = aliases;
@@ -189,6 +207,8 @@ public enum WeatherSymbol {
 			}
 			listMatches.add( strAlias );
 		}
+		
+		bOutdated = '_' == this.name().charAt( 0 );
 	}
 	
 	
@@ -331,6 +351,11 @@ public enum WeatherSymbol {
 			return getIconUnknown();
 		}
 		return imageIcon;
+	}
+	
+	
+	public boolean isOutdated() {
+		return this.bOutdated;
 	}
 	
 

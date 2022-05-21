@@ -30,10 +30,9 @@ import jmr.util.transform.Temperature;
 
 public class WeatherForecastTile2 extends TileBase {
 
-
 	public final static int NUMBER_OF_DAYS = 1;
 	
-	public final static long MAX_IMPORT_AGE = TimeUnit.HOURS.toMillis( 4 );
+	public final static long MAX_IMPORT_AGE = TimeUnit.HOURS.toMillis( 8 );
 	
 	@SuppressWarnings("serial")
 	final class PageData extends HashMap<String,String> {};
@@ -43,7 +42,8 @@ public class WeatherForecastTile2 extends TileBase {
 //	final private Map<String,EnumMap<Value,String>> mapDays = new HashMap<>();
 //	final private PageData pagedata = new PageData();
 
-	final private S2ES client; // = new S2ES();
+//	final private S2ES client; // = new S2ES();
+//	final private S2ES client = S2ES.get();
 	private JsonNode jnCurrent = null;
 	private Map<String,JsonNode[]> mapCurrent = null;
 	private List<String> listKeysCurrent = null;
@@ -52,10 +52,11 @@ public class WeatherForecastTile2 extends TileBase {
 	
 	
 	public WeatherForecastTile2() {
-		final S2Properties properties = S2Properties.get();
-		final String strESKey = "home.elasticsearch.url";
-		final String strESBase = properties.getProperty( strESKey );
-		client = new S2ES( strESBase );
+//		final S2Properties properties = S2Properties.get();
+//		final String strESKey = "home.elasticsearch.url";
+//		final String strESBase = properties.getProperty( strESKey );
+//		client = new S2ES( strESBase );
+//		client = new S2ES();
 		threadUpdater = new Thread( "WeatherForecastTile Updater" ) {
 			@Override
 			public void run() {
@@ -100,7 +101,7 @@ public class WeatherForecastTile2 extends TileBase {
 //	}
 
 	private void updatePages() {
-		final JsonNode jnNew = client.retrieveLatestWeatherForecast();
+		final JsonNode jnNew = S2ES.get().retrieveLatestWeatherForecast();
 		if ( null != jnNew && jnNew.has( "periods" ) ) {
 			
 			final Map<String,JsonNode[]> mapNew = new HashMap<>();
@@ -216,6 +217,12 @@ public class WeatherForecastTile2 extends TileBase {
 			gc.drawImage( imageIconDay, iX + 2 , iY );
 			iY = 86;
 //			gc.setFont( Theme.get().getFont( 10 ) );
+			
+			if ( symbolDay.isOutdated() ) {
+				ToDo.add( "Using outdated weather icon "
+						+ "(" + symbolDay.name() + ") for: " + strIconDay );
+			}
+			
 		} else {
 			iY = 60;
 //			gc.setFont( Theme.get().getFont( 7 ) );
@@ -237,6 +244,10 @@ public class WeatherForecastTile2 extends TileBase {
 			if ( null != imageIconNight 
 							&& WeatherSymbol.UNKNOWN != symbolNight ) {
 				gc.drawImage( imageIconNight, iX + 60, 26 );
+				if ( symbolNight.isOutdated() ) {
+					ToDo.add( "Using outdated weather icon "
+						+ "(" + symbolNight.name() + ") for: " + strIconNight );
+				}
 			} else {
 //				listWarning.add( "Not found: " + strTextNight );
 				listWarning.add( "Not found (text): " + strTextNight );

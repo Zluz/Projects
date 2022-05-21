@@ -1,6 +1,6 @@
 package jmr.rpclient.tiles;
 
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.swt.graphics.Color;
@@ -71,7 +71,7 @@ public class JobListingTile extends TileBase {
 			iY = iY + 18;
 		}
 		
-		final LinkedList<Job> listing = JobMonitor.get().getListing();
+		final List<Job> listing = JobMonitor.get().getListing();
 //		synchronized ( listing ) {
 			for ( final Job job : listing ) {
 				if ( null!=job ) {

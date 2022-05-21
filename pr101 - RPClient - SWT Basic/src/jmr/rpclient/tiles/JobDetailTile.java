@@ -1,7 +1,7 @@
 package jmr.rpclient.tiles;
 
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -36,7 +36,7 @@ public class JobDetailTile extends TileBase {
 
 		JobMonitor.get().check();
 		
-		final LinkedList<Job> listing = JobMonitor.get().getListing();
+		final List<Job> listing = JobMonitor.get().getListing();
 
 		final Iterator<Job> iterator = listing.iterator();
 		if ( iterator.hasNext() ) {

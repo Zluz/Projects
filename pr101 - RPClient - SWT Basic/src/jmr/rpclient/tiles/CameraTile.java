@@ -380,9 +380,9 @@ public class CameraTile extends TileBase {
 				if ( DisplayMode.SHOW_CONTROLS.equals( this.mode ) ) {
 					this.strMessage += "\n"
 							+ "Image size: " + iRX + " x " + iRY + "\n";
-					this.strMessage += ""
-							+ "bytesPerLine: " 
-							+ imgRaw.getImageData().bytesPerLine + "\n";
+//					this.strMessage += ""
+//							+ "bytesPerLine: " 
+//							+ imgRaw.getImageData().bytesPerLine + "\n";
 					
 					if ( null!=filesession ) {
 						final String strDescription = 

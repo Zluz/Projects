@@ -2,7 +2,6 @@ package jmr.rpclient.tiles;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
@@ -17,6 +16,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.GC;
@@ -26,7 +26,11 @@ import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
+import jmr.S2Path;
 import jmr.S2Properties;
+import jmr.pr151.S2ES;
 import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.S2Button.ButtonState;
 import jmr.rpclient.swt.Theme;
@@ -42,10 +46,13 @@ public class IPCamTile extends TileBase {
 
 	public static enum DisplayMode {
 		SINGLE_FULL,
-		SHOW_CONTROLS,
+		SINGLE_RECENT_MOTION,
+//		SHOW_CONTROLS,
 //		SHOW_ALL,
 		;
 	}
+	
+	private boolean bShowControls = false;
 	
 	private final static Logger 
 				LOGGER = Logger.getLogger( IPCamTile.class.getName() );
@@ -54,6 +61,7 @@ public class IPCamTile extends TileBase {
 	public static final int BUTTON_SHOW_ALL = 1;
 	public static final int BUTTON_SHOW_LOCAL = 2;
 	public static final int BUTTON_CAM_BASE = 10;
+	public static final int BUTTON_CAM_MOTION = 100;
 	
 
 	public static final boolean GRAPHICS_ADVANCED = false;
@@ -83,6 +91,9 @@ public class IPCamTile extends TileBase {
 
 	FileSession filesession = null;
 	
+
+	private Image imageLastMotion = null;
+	private String strLastMotionFilename = null;
 	
 	
 	
@@ -259,6 +270,7 @@ public class IPCamTile extends TileBase {
 							mapClickRegions.put( strKey + "/" + strFull, r );
 							
 						} catch ( final SWTException e ) {
+							e.printStackTrace();
 							final Throwable throwCause = e.getCause();
 							if ( null!=throwCause 
 									&& FileNotFoundException.class.equals( 
@@ -266,11 +278,11 @@ public class IPCamTile extends TileBase {
 								gc.drawText( "FileNotFound..", iX, iY );
 							} else {
 								gc.drawText( "SWT/" + throwCause, iX, iY );
-								e.printStackTrace();
+//								e.printStackTrace();
 							}
 						} catch ( final Exception e ) {
-							gc.drawText( e.toString(), iX, iY );
 							e.printStackTrace();
+							gc.drawText( e.toString(), iX, iY );
 						}
 					} else {
 						strFull = "(outdated)";
@@ -317,58 +329,112 @@ public class IPCamTile extends TileBase {
 		}
 	}
 	
+
+	private Image getRawImage() {
+		
+		if ( DisplayMode.SINGLE_FULL == this.mode ) { 
+			if ( null == this.camera ) return null;
+
+			Image imageRemote = null;
+
+			try {
+				final ImageLoader loader = new ImageLoader();
+				final URL url = this.camera.getURL();
+	//			final URL url = new URL( strURL );
+				if ( null != url ) {
+					final URLConnection c = url.openConnection();
+					c.setReadTimeout( 5000 );
+					c.setConnectTimeout( 5000 );
+		//			try ( final InputStream is = url.openStream() ) {
+					try ( final InputStream is = c.getInputStream() ) {
+						final ImageData[] arrData = loader.load( is );
+						this.lImageAge = System.currentTimeMillis();
+						imageRemote = new Image( UI.display, arrData[0] );
+					}
+				}
+			} catch ( final Exception e ) {
+	//			e.printStackTrace();
+				LOGGER.warning( ()-> String.format( 
+						"While reading image from %s, encountered %s", 
+						camera.name(),
+						e.toString() ) );
+				return null;
+			}
+			return imageRemote;
+			
+		} else if ( DisplayMode.SINGLE_RECENT_MOTION == this.mode ) {
+			final JsonNode jn = S2ES.get().retrieveLatestCamMotion();
+			if ( null == jn ) return this.imageLastMotion;
+			
+			final String strFilenameRaw = 
+					jn.at( "/core" ).at( "/file-image" ).asText();
+			
+			String strFilenameGood = null;
+			if ( null == strFilenameRaw ) {
+				return this.imageLastMotion;
+			} else if ( new File( strFilenameRaw ).canRead() ) {
+				strFilenameGood = strFilenameRaw;
+			} else {
+				final Set<String> set = S2Path.getLocalAlts( strFilenameRaw );
+				for ( final String strFile : set ) {
+					final File file = new File( strFile );
+					if ( file.canRead() ) {
+						strFilenameGood = strFile;
+						break;
+					}
+				}
+				if ( null == strFilenameGood ) {
+					return this.imageLastMotion;
+				}
+			}
+			
+			if ( null != strLastMotionFilename 
+					&& strLastMotionFilename.equals( strFilenameGood ) 
+					&& null != this.imageLastMotion 
+					&& ! this.imageLastMotion.isDisposed() ) {
+				return this.imageLastMotion;
+			}
+			
+			final File file = new File( strFilenameGood );
+			this.lImageAge = file.lastModified();
+//			final ImageLoader il = new ImageLoader();
+//			final ImageData[] id = il.load( strFilename );
+//			final Image image = new Image( UI.display, id );
+			if ( null != imageLastMotion && ! imageLastMotion.isDisposed()) {
+//				imageLastMotion.dispose();
+			}
+			imageLastMotion = new Image( UI.display, file.getAbsolutePath() );
+			this.strLastMotionFilename = strFilenameGood;
+			return imageLastMotion;
+			
+		} else {
+			return null;
+		}
+	}
+	
 	
 	private Image prerenderSingleImage( final boolean bFast ) {
-		if ( null == this.camera ) return null;
+		if ( DisplayMode.SINGLE_FULL == this.mode 
+				&& null == this.camera ) return null;
 
 //		mapClickRegions.clear();
 		clearMapRegions();
-		
-		Image imageRemote = null;
-		
-		try {
-			final ImageLoader loader = new ImageLoader();
-			final URL url = this.camera.getURL();
-//			final URL url = new URL( strURL );
-			if ( null != url ) {
-				final URLConnection c = url.openConnection();
-				c.setReadTimeout( 5000 );
-				c.setConnectTimeout( 5000 );
-	//			try ( final InputStream is = url.openStream() ) {
-				try ( final InputStream is = c.getInputStream() ) {
-					final ImageData[] arrData = loader.load( is );
-					this.lImageAge = System.currentTimeMillis();
-					imageRemote = new Image( UI.display, arrData[0] );
-				}
-			}
-		} catch ( final Exception e ) {
-//			e.printStackTrace();
-			LOGGER.warning( ()-> String.format( 
-					"While reading image from %s, encountered %s", 
-					camera.name(),
-					e.toString() ) );
-			return null;
-		}
-		
-//		final File file = getImageFile( bFast );
-//		if ( null!=fileLastImage ) {
-//			if ( lLastFileModified == file.lastModified() 
-//						&& null!=strLastMessage ) {
-//				this.strMessage = strLastMessage;
-//				return null;
-//			}
-//			
-//			fileLastImage = null;
-//		}
-		
+
+		final Image imageRemote = getRawImage();
+
 //		if ( null!=file ) {
-		if ( null != imageRemote ) {
+		if ( null != imageRemote && ! imageRemote.isDisposed() ) {
 			try {
 
-				this.strMessage = this.camera.name() 
-							+ " - " + this.camera.getTitle();
+				if ( null != this.camera ) {
+					this.strMessage = this.camera.name() 
+								+ " - " + this.camera.getTitle();
+				} else {
+					this.strMessage = "(unknown camera)";
+				}
 
-				if ( DisplayMode.SHOW_CONTROLS.equals( this.mode ) ) {
+				if ( bShowControls ) {
+//				if ( DisplayMode.SHOW_CONTROLS.equals( this.mode ) ) {
 //					this.strMessage += "\n"
 //							+ "" + file.getParent() + "\n"
 //							+ "File size: " + file.length() + "\n";
@@ -397,12 +463,13 @@ public class IPCamTile extends TileBase {
 				final int iRX = imgRaw.getBounds().width;
 				final int iRY = imgRaw.getBounds().height;
 				
-				if ( DisplayMode.SHOW_CONTROLS.equals( this.mode ) ) {
+				if ( bShowControls ) {
+//				if ( DisplayMode.SHOW_CONTROLS.equals( this.mode ) ) {
 					this.strMessage += "\n"
 							+ "Image size: " + iRX + " x " + iRY + "\n";
-					this.strMessage += ""
-							+ "bytesPerLine: " 
-							+ imgRaw.getImageData().bytesPerLine + "\n";
+//					this.strMessage += ""
+//							+ "bytesPerLine: " 
+//							+ imgRaw.getImageData().bytesPerLine + "\n";
 					
 //					if ( null!=filesession ) {
 //						final String strDescription = 
@@ -437,6 +504,7 @@ public class IPCamTile extends TileBase {
 				// just skip.
 				this.strMessage += "\n"
 						+ e.toString();
+				e.printStackTrace();
 			}
 		}
 				
@@ -485,8 +553,8 @@ public class IPCamTile extends TileBase {
 		}
 		
 
+		gc.setFont( UI.FONT_SMALL );
 		if ( null != strMessage ) {
-			gc.setFont( UI.FONT_SMALL );
 
 			int iY = 20;
 			for ( final String strLine : strMessage.split( "\n" ) ) {
@@ -518,8 +586,9 @@ public class IPCamTile extends TileBase {
 			gc.setForeground( UI.COLOR_WHITE );
 			gc.drawText( strLine, iX + 0, iY + 1, true );
 		}
-		
-		if ( DisplayMode.SHOW_CONTROLS.equals( this.mode ) ) {
+
+		if ( bShowControls ) {
+//		if ( DisplayMode.SHOW_CONTROLS.equals( this.mode ) ) {
 			
 //			super.addButton( gc, BUTTON_SHOW_ALL, 
 //							20, r.height - 180, 120, 40, "Show All" );
@@ -529,9 +598,17 @@ public class IPCamTile extends TileBase {
 //			if ( Boolean.FALSE.equals( this.bHasCameraModule ) ) {
 //				btnShowLocal.setState( ButtonState.DISABLED );
 //			}
+
+			int iY = r.height - 300;
+
+			final S2Button btnLatest = super.addButton( 
+					gc, BUTTON_CAM_MOTION, 
+					20, iY, 250, 36, "(Latest motion)" );
+			iY += 4;
 			
-			int iY = r.height - 220;
+			
 			for ( final IPCamera camera : IPCamera.values() ) {
+				iY += 44;
 				
 				final String strTitle = 
 							camera.getHost() + " - " + camera.getTitle();
@@ -539,12 +616,12 @@ public class IPCamTile extends TileBase {
 				
 				final S2Button btn = super.addButton( 
 						gc, BUTTON_CAM_BASE + iIndex, 
-						20, iY, 250, 40, strTitle );
-				if ( this.camera.equals( camera ) ) {
+						20, iY, 250, 36, strTitle );
+				if ( null != this.camera 
+						&& this.camera.equals( camera ) ) {
 					btn.setState( ButtonState.DISABLED );
 				}
 				
-				iY += 50;
 			}
 			
 			
@@ -569,40 +646,45 @@ public class IPCamTile extends TileBase {
 		this.mode = mode;
 		this.filesession = null;
 		
-		switch ( mode ) {
-//			case SHOW_ALL: {
-//				refreshImageData( true );
+		if ( ! bShowControls ) {
+			this.strMessage = null;
+		}
+		refreshImageData( true );
+		
+//		switch ( mode ) {
+////			case SHOW_ALL: {
+////				refreshImageData( true );
+////				break;
+////			}
+//			case SHOW_CONTROLS: {
+////				if ( DisplayMode.SHOW_ALL.equals( modeLast ) ) {
+//					refreshImageData( true );
+////				}
 //				break;
 //			}
-			case SHOW_CONTROLS: {
-//				if ( DisplayMode.SHOW_ALL.equals( modeLast ) ) {
-					refreshImageData( true );
-//				}
-				break;
-			}
-			case SINGLE_FULL: {
-//				if ( DisplayMode.SHOW_ALL.equals( modeLast ) ) {
-					this.strMessage = null;
-					refreshImageData( true );
-//					new Thread() {
-//						public void run() {
-//							try {
-//								Thread.sleep( 200 );
-//								UI.display.asyncExec( new Runnable() {
-//									@Override
-//									public void run() {
-//										refreshImageData( false );
-//									}
-//								});
-//							} catch ( final InterruptedException e ) {
-//								// ignore
-//							}
-//						};
-//					}.start();
-//				}
-				break;
-			}
-		}
+//			case SINGLE_FULL: {
+////				if ( DisplayMode.SHOW_ALL.equals( modeLast ) ) {
+//					this.strMessage = null;
+//					refreshImageData( true );
+////					new Thread() {
+////						public void run() {
+////							try {
+////								Thread.sleep( 200 );
+////								UI.display.asyncExec( new Runnable() {
+////									@Override
+////									public void run() {
+////										refreshImageData( false );
+////									}
+////								});
+////							} catch ( final InterruptedException e ) {
+////								// ignore
+////							}
+////						};
+////					}.start();
+////				}
+//				break;
+//			}
+//		}
 	}
 	
 	
@@ -615,12 +697,17 @@ public class IPCamTile extends TileBase {
 		
 		final int iButtonIndex = button.getIndex();
 		if ( iButtonIndex >= BUTTON_CAM_BASE ) {
-			final int iCamSelected = iButtonIndex - BUTTON_CAM_BASE;
-			final IPCamera cameraNew = IPCamera.values()[ iCamSelected ];
-			this.camera = cameraNew;
+			if ( iButtonIndex == BUTTON_CAM_MOTION ) {
+				this.camera = null;
+				this.setMode( DisplayMode.SINGLE_RECENT_MOTION );
+			} else {
+				final int iCamSelected = iButtonIndex - BUTTON_CAM_BASE;
+				final IPCamera cameraNew = IPCamera.values()[ iCamSelected ];
+				this.camera = cameraNew;
+				this.setMode( DisplayMode.SINGLE_FULL );
+			}
 			
 			this.removeAllButtons();
-			this.setMode( DisplayMode.SINGLE_FULL );
 
 		} else {
 			switch ( button.getIndex() ) {
@@ -656,14 +743,17 @@ public class IPCamTile extends TileBase {
 //			this.ptTouch = point;
 //			return false;
 			
-//		} else 
-		if ( DisplayMode.SHOW_CONTROLS.equals( this.mode ) ) {
+//		} else
+		if ( bShowControls ) {
+//		if ( DisplayMode.SHOW_CONTROLS.equals( this.mode ) ) {
 			this.ptTouch = null;
 			this.removeAllButtons();
+			bShowControls = false;
 			this.setMode( DisplayMode.SINGLE_FULL );
 		} else {
 			this.ptTouch = null;
-			this.setMode( DisplayMode.SHOW_CONTROLS );
+//			this.setMode( DisplayMode.SHOW_CONTROLS );
+			bShowControls = true;
 		}
 		return true;
 	}
