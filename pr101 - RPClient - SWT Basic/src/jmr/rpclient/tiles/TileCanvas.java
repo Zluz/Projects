@@ -255,6 +255,110 @@ public class TileCanvas {
 	}
 
 
+	
+
+	private void drawModalMessage( 	final int iXLimit, 
+									final int iYLimit,
+									final GC gcFull, 
+									final long lTimeNow ) {
+
+//		final ModalMessage message = ModalMessage.getNext( lTimeNow );
+
+		final GC gcMsg = gcFull;
+		
+		final String strTitle = message.getTitle();
+		final String strBody = message.getBody();
+		final String strContent = strTitle + "\n" + strBody;
+		final long lRemain = message.getRemainingMS( lTimeNow );
+//			final String strRemain = "" + lRemain + " ms";
+		final String strRemain = 
+					DateFormatting.getSmallTime( lRemain, true );
+
+		gcMsg.setFont( Theme.ThFont._12_M_B.getFont() );
+		final Point ptExtentTime = gcMsg.stringExtent( strRemain );
+		
+		ThFont themefont = Theme.ThFont._18_SSCM_V;
+		Font fontBody = themefont.getFont();
+		final String strFontName = fontBody.getFontData()[0].getName();
+		Point ptExtent;
+		boolean bAdjustSmaller = false;
+		do {
+			fontBody = themefont.getFont();
+			gcMsg.setFont( fontBody );
+			ptExtent = gcMsg.textExtent( strContent );
+			if ( ptExtent.x + 30 > iXLimit ) {
+				final int iOrd = themefont.ordinal() - 1;
+				ThFont tfSmaller = Theme.ThFont.values()[ iOrd ];
+				final Font fontSmaller = tfSmaller.getFont();
+				if ( strFontName.equals( 
+						fontSmaller.getFontData()[0].getName() ) ) {
+					themefont = tfSmaller;
+					bAdjustSmaller = true;
+				} else {
+					bAdjustSmaller = false;
+				}
+			} else {
+				bAdjustSmaller = false;
+			}
+		} while ( bAdjustSmaller );
+		
+		final Point ptExtentTitle = gcMsg.textExtent( strTitle );
+		
+		
+		final int iB = 8;
+		
+		final int iX1 = ( iXLimit - ptExtent.x ) / 2; 
+		final int iY1 = ( iYLimit - ptExtent.y ) / 2; 
+
+		gcMsg.setBackground( Theme.get().getColor( 
+						Colors.BACKGROUND_INFO ) );
+		gcMsg.setForeground( Theme.get().getColor( 
+						Colors.TEXT_LIGHT ) );
+		gcMsg.fillRectangle( iX1 - iB, iY1 - iB, 
+					ptExtent.x + 2 * iB, ptExtent.y + 2 * iB );
+		gcMsg.drawRectangle( iX1 - iB, iY1 - iB, 
+				ptExtent.x + 2 * iB, ptExtent.y + 2 * iB );
+
+		gcMsg.setForeground( Theme.get().getColor( 
+				Colors.BACKGROUND ) );
+		gcMsg.drawRectangle( iX1 - iB - 1, iY1 - iB - 1, 
+				ptExtent.x + 2 * iB + 2, ptExtent.y + 2 * iB + 2 );
+
+		gcMsg.setForeground( Theme.get().getColor( 
+						Colors.TEXT_LIGHT ) );
+
+		gcMsg.drawText( strContent, iX1, iY1 );
+		
+
+		gcMsg.setBackground( Theme.get().getColor( 
+						Colors.TEXT_LIGHT ) );
+		
+		gcMsg.fillRectangle( iX1 - iB, iY1 - iB, 
+				ptExtent.x + 2 * iB, ptExtentTitle.y + iB );
+
+		gcMsg.setForeground( Theme.get().getColor( 
+				Colors.BACKGROUND ) );
+		
+		gcMsg.drawText( strTitle, iX1 + 2, iY1 + 1, true );
+		gcMsg.drawText( strTitle, iX1 - 1, iY1 + 1, true );
+
+		gcMsg.setFont( Theme.ThFont._12_M_B.getFont() );
+
+		gcMsg.drawText( strRemain, 
+						iX1 + ptExtent.x - ptExtentTime.x,
+						iY1, 
+						true );
+
+		gcMsg.setFont( fontBody );
+
+		gcMsg.setForeground( Theme.get().getColor( 
+				Colors.TEXT_BOLD ) );
+
+		gcMsg.drawText( strTitle, iX1, iY1, true );
+		gcMsg.drawText( strTitle, iX1 + 1, iY1, true );
+	}
+	
+	
 	private PaintListener getPaintListener(	
 									final Display display,
 									final String strInfo,
@@ -357,102 +461,7 @@ public class TileCanvas {
 //				final ModalMessage message = ModalMessage.getNext( lTimeNow );
 				TileCanvas.this.message = ModalMessage.getNext( lTimeNow );
 				if ( null != message ) {
-//					bModalDisplayed = true;
-
-					final GC gcMsg = gcFull;
-					
-					final String strTitle = message.getTitle();
-					final String strBody = message.getBody();
-					final String strContent = strTitle + "\n" + strBody;
-					final long lRemain = message.getRemainingMS( lTimeNow );
-//					final String strRemain = "" + lRemain + " ms";
-					final String strRemain = 
-								DateFormatting.getSmallTime( lRemain, true );
-
-					gcMsg.setFont( Theme.ThFont._12_M_B.getFont() );
-					final Point ptExtentTime = gcMsg.stringExtent( strRemain );
-					
-					ThFont themefont = Theme.ThFont._18_SSCM_V;
-					Font fontBody = themefont.getFont();
-					final String strFontName = fontBody.getFontData()[0].getName();
-					Point ptExtent;
-					boolean bAdjustSmaller = false;
-					do {
-						fontBody = themefont.getFont();
-						gcMsg.setFont( fontBody );
-						ptExtent = gcMsg.textExtent( strContent );
-						if ( ptExtent.x + 30 > iXLimit ) {
-							final int iOrd = themefont.ordinal() - 1;
-							ThFont tfSmaller = Theme.ThFont.values()[ iOrd ];
-							final Font fontSmaller = tfSmaller.getFont();
-							if ( strFontName.equals( 
-									fontSmaller.getFontData()[0].getName() ) ) {
-								themefont = tfSmaller;
-								bAdjustSmaller = true;
-							} else {
-								bAdjustSmaller = false;
-							}
-						} else {
-							bAdjustSmaller = false;
-						}
-					} while ( bAdjustSmaller );
-					
-					final Point ptExtentTitle = gcMsg.textExtent( strTitle );
-					
-					
-					final int iB = 8;
-					
-					final int iX1 = ( iXLimit - ptExtent.x ) / 2; 
-					final int iY1 = ( iYLimit - ptExtent.y ) / 2; 
-
-					gcMsg.setBackground( Theme.get().getColor( 
-									Colors.BACKGROUND_INFO ) );
-					gcMsg.setForeground( Theme.get().getColor( 
-									Colors.TEXT_LIGHT ) );
-					gcMsg.fillRectangle( iX1 - iB, iY1 - iB, 
-								ptExtent.x + 2 * iB, ptExtent.y + 2 * iB );
-					gcMsg.drawRectangle( iX1 - iB, iY1 - iB, 
-							ptExtent.x + 2 * iB, ptExtent.y + 2 * iB );
-
-					gcMsg.setForeground( Theme.get().getColor( 
-							Colors.BACKGROUND ) );
-					gcMsg.drawRectangle( iX1 - iB - 1, iY1 - iB - 1, 
-							ptExtent.x + 2 * iB + 2, ptExtent.y + 2 * iB + 2 );
-
-					gcMsg.setForeground( Theme.get().getColor( 
-									Colors.TEXT_LIGHT ) );
-
-					gcMsg.drawText( strContent, iX1, iY1 );
-					
-
-					gcMsg.setBackground( Theme.get().getColor( 
-									Colors.TEXT_LIGHT ) );
-					
-					gcMsg.fillRectangle( iX1 - iB, iY1 - iB, 
-							ptExtent.x + 2 * iB, ptExtentTitle.y + iB );
-
-					gcMsg.setForeground( Theme.get().getColor( 
-							Colors.BACKGROUND ) );
-					
-					gcMsg.drawText( strTitle, iX1 + 2, iY1 + 1, true );
-					gcMsg.drawText( strTitle, iX1 - 1, iY1 + 1, true );
-
-					gcMsg.setFont( Theme.ThFont._12_M_B.getFont() );
-
-					gcMsg.drawText( strRemain, 
-									iX1 + ptExtent.x - ptExtentTime.x,
-									iY1, 
-									true );
-
-					gcMsg.setFont( fontBody );
-
-					gcMsg.setForeground( Theme.get().getColor( 
-							Colors.TEXT_BOLD ) );
-
-					gcMsg.drawText( strTitle, iX1, iY1, true );
-					gcMsg.drawText( strTitle, iX1 + 1, iY1, true );
-//				} else {
-//					bModalDisplayed = false;
+					drawModalMessage( iXLimit, iYLimit, gcFull, lTimeNow);
 				}
 				
 				e.gc.drawImage( imageFullBuffer, TRIM_X, TRIM_Y );

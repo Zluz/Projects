@@ -1,7 +1,10 @@
 package jmr.rpclient.tiles;
 
+import java.util.TreeMap;
+
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 
 import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
@@ -14,14 +17,38 @@ public class PerformanceMonitorTile extends TileBase {
 //	private static final double TEMP_ALERT_THRESHOLD = 65.0;
 
 
+//	private final static int SAMPLE_COUNT = 260; // 130;
 	private final static int SAMPLE_COUNT = 130;
 
 
 	private final Long[] arrTimes = new Long[ SAMPLE_COUNT ];
 	private final Double[] arrTemp = new Double[ SAMPLE_COUNT ];
+	
+	private final TreeMap<Long,String> mapNotableEvents = new TreeMap<>();
+	
 	private final CPUMonitor cpu = CPUMonitor.get();
 	
 	private int iTimeIndex = 0;
+	private long lLastTime = 0;
+	
+//	private int iNoteHeightIndex = 0;
+	
+	
+	private final static PerformanceMonitorTile 
+								instance = new PerformanceMonitorTile();
+	
+	private PerformanceMonitorTile() {}
+	
+	public static PerformanceMonitorTile getInstance() {
+		return instance;
+	}
+	
+	public void addEvent( final String strNote ) {
+		mapNotableEvents.put( lLastTime, strNote );
+		while ( mapNotableEvents.size() > 4 ) {
+			mapNotableEvents.remove( mapNotableEvents.firstKey() );
+		}
+	}
 	
 	
 	@Override
@@ -29,9 +56,9 @@ public class PerformanceMonitorTile extends TileBase {
 						final Image image ) {
 		
 		try {
-			
+			this.lLastTime = System.nanoTime() / 100000;
 //			arrTimes[ iTimeIndex ] = System.currentTimeMillis();
-			arrTimes[ iTimeIndex ] = System.nanoTime() / 100000;
+			arrTimes[ iTimeIndex ] = this.lLastTime;
 			arrTemp[ iTimeIndex ] = cpu.getTemperature();
 			if ( iTimeIndex<SAMPLE_COUNT-1 ) {
 				iTimeIndex++;
@@ -39,6 +66,7 @@ public class PerformanceMonitorTile extends TileBase {
 				iTimeIndex = 0;
 			}
 			
+			// graph on the right margin (outside of perspective) 
 			final boolean bBar = image.getImageData().width < 100;
 			
 			if ( bBar && cpu.isHeatWarning() ) {
@@ -59,14 +87,38 @@ public class PerformanceMonitorTile extends TileBase {
 			
 			gc.setForeground( UI.COLOR_GREEN );
 			
-			for ( int iX = 0; iX<SAMPLE_COUNT; iX++ ) {
+			int iNoteHeightIndex = 0;
+			
+//			final int iMaxX = Math.min( SAMPLE_COUNT, gc.getClipping().width );
+			final int iMaxX = SAMPLE_COUNT;
+			
+			for ( int iX = 0; iX<iMaxX; iX++ ) {
 				lThisTime = arrTimes[ iXTime ];
+				
 				
 				if ( !bBar ) {
 					if ( iXTime % 20 == 0 ) {
 						gc.setForeground( UI.COLOR_DARK_BLUE );
 						gc.drawLine( 10+iX, 140, 10+iX, 40 );
 						gc.setForeground( UI.COLOR_GREEN );
+					}
+					if ( mapNotableEvents.containsKey( lThisTime ) ) {
+						final String strNote = mapNotableEvents.get( lThisTime );
+						
+						gc.setForeground( UI.COLOR_YELLOW );
+						gc.drawLine( 10+iX, 140, 10+iX, 0 );
+						gc.setForeground( UI.COLOR_GREEN );
+
+						int iY = iNoteHeightIndex * 12 + 40;
+						
+						gc.setFont( Theme.get().getFont( 10 ) );
+						gc.drawText( strNote, 12+iX, iY, true );
+						
+//						if ( iNoteHeightIndex < 4 ) {
+							iNoteHeightIndex++;
+//						} else {
+//							iNoteHeightIndex = 0;
+//						}
 					}
 				}
 				
@@ -85,7 +137,8 @@ public class PerformanceMonitorTile extends TileBase {
 					gc.setForeground( UI.COLOR_GREEN );
 					if ( bBar ) {
 						iXframe = iTimeElapsed * 2/100;
-						iY = 47 + iX;
+						iY = 47 + iX; // for SAMPLE_COUNT = 130
+//						iY = 130 + 47 + iX; // for SAMPLE_COUNT = 260
 						gc.drawLine( 0, iY, iXframe, iY );
 					} else {
 						final float fGraphY = ( iTimeElapsed * 150 / 10000 );
@@ -172,6 +225,13 @@ public class PerformanceMonitorTile extends TileBase {
 		}
 	}
 
+	
+	@Override
+	public boolean clickCanvas( final Point point ) {
+		addEvent( "Click: " + point.toString() );
+		return super.clickCanvas( point );
+	}
+	
 	
 	@Override
 	protected void activateButton( final S2Button button ) {}

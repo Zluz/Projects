@@ -103,7 +103,7 @@ public class SWTBasic {
 	
 
 	// fixed tiles
-	final PerformanceMonitorTile tilePerf = new PerformanceMonitorTile();
+	final PerformanceMonitorTile tilePerf = PerformanceMonitorTile.getInstance();
 	
 	
 	

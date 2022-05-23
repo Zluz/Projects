@@ -208,7 +208,7 @@ public enum Perspective {
 		list.add( new TileGeometry( new CalibrationTile(), 
 						new Rectangle( 4, 0, 1, 1 ) ) ); 
 
-		list.add( new TileGeometry( new PerformanceMonitorTile(), 
+		list.add( new TileGeometry( PerformanceMonitorTile.getInstance(), 
 						new Rectangle( 4, 2, 1, 1 ) ) );
 		
 		list.add( new TileGeometry( new WeatherForecastTile2(), 
@@ -308,7 +308,7 @@ public enum Perspective {
 		list.add( new TileGeometry( new CalibrationTile(), 
 						new Rectangle( 4, 1, 1, 1 ) ) ); 
 
-		list.add( new TileGeometry( new PerformanceMonitorTile(), 
+		list.add( new TileGeometry( PerformanceMonitorTile.getInstance(), 
 						new Rectangle( 3, 1, 1, 1 ) ) );
 
 		list.add( new TileGeometry( new WeatherForecastTile2(), 
@@ -356,7 +356,7 @@ public enum Perspective {
 		list.add( new TileGeometry( new SystemInfoTile(), 
 						new Rectangle( 0, 1, 1, 1 ) ) );
 
-		list.add( new TileGeometry( new PerformanceMonitorTile(), 
+		list.add( new TileGeometry( PerformanceMonitorTile.getInstance(), 
 						new Rectangle( 1, 1, 1, 1 ) ) );
 
 		list.add( new TileGeometry( new CalibrationTile(), 
@@ -369,7 +369,7 @@ public enum Perspective {
 		list.add( new TileGeometry( new SystemInfoTile(), 
 						new Rectangle( 0, 1, 1, 1 ) ) );
 
-		list.add( new TileGeometry( new PerformanceMonitorTile(), 
+		list.add( new TileGeometry( PerformanceMonitorTile.getInstance(), 
 						new Rectangle( 1, 1, 1, 1 ) ) );
 
 		list.add( new TileGeometry( new TeslaTile( Mode.STAMP ), 
@@ -402,7 +402,7 @@ public enum Perspective {
 		
 		list.add( new TileGeometry( new SystemInfoTile(), 
 						new Rectangle( 3, 2, 1, 1 ) ) );
-		list.add( new TileGeometry( new PerformanceMonitorTile(), 
+		list.add( new TileGeometry( PerformanceMonitorTile.getInstance(), 
 						new Rectangle( 4, 2, 1, 1 ) ) );
 //		list.add( new TileGeometry( new CalibrationTile(), 
 //						new Rectangle( 4, 2, 1, 1 ) ) ); 
@@ -490,14 +490,17 @@ public enum Perspective {
 
 		list.add( new TileGeometry( new IPCamTile( IPCamera.CAM_241 ), 
 						new Rectangle( 2, 0, 3, 3 ) ) );
-		
+
+//		list.add( new TileGeometry( new NestTile(), 
+//		new Rectangle( 0, 1, 2, 1 ) ) ); 
+		list.add( new TileGeometry( PerformanceMonitorTile.getInstance(), 
+						new Rectangle( 0, 1, 2, 1 ) ) ); 
+
 //		list.add( new TileGeometry( new TeslaTile(), 
 //						new Rectangle( 0, 1, 2, 1 ) ) );
 		list.add( new TileGeometry( new WeatherForecastTile2(), 
 						new Rectangle( 0, 2, 2, 1 ) ) );
 
-		list.add( new TileGeometry( new NestTile(), 
-						new Rectangle( 0, 1, 2, 1 ) ) ); 
 	}
 	
 
@@ -544,7 +547,7 @@ public enum Perspective {
 		list.add( new TileGeometry( new CalibrationTile(), 
 						new Rectangle( 0, 3, 1, 1 ) ) ); 
 
-		list.add( new TileGeometry( new PerformanceMonitorTile(), 
+		list.add( new TileGeometry( PerformanceMonitorTile.getInstance(), 
 						new Rectangle( 1, 3, 1, 1 ) ) );
 
 		list.add( new TileGeometry( new TeslaTile(), 

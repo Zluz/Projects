@@ -60,7 +60,7 @@ public class ConsoleClient {
 	
 
 	// fixed tiles
-	final PerformanceMonitorTile tilePerf = new PerformanceMonitorTile();
+	final PerformanceMonitorTile tilePerf = PerformanceMonitorTile.getInstance();
 	
 	
 	
