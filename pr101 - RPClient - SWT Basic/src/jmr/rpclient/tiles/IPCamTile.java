@@ -35,6 +35,7 @@ import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.S2Button.ButtonState;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
+import jmr.rpclient.swt.Tracker;
 import jmr.rpclient.swt.UI;
 import jmr.s2fs.FileSession;
 import jmr.s2fs.FileSessionManager;
@@ -95,6 +96,8 @@ public class IPCamTile extends TileBase {
 	private Image imageLastMotion = null;
 	private String strLastMotionFilename = null;
 	
+	private boolean bRequestRefresh = false;
+	
 	
 	
 	public IPCamTile( final IPCamera camera ) {
@@ -115,7 +118,10 @@ public class IPCamTile extends TileBase {
 					try {
 						for (;;) {
 							Thread.sleep( 5000 );
-							refreshImageData( false );
+							if ( bRequestRefresh ) {
+								refreshImageData( false );
+								bRequestRefresh = false;
+							}
 						}
 					} catch ( final InterruptedException e ) {
 						// TODO Auto-generated catch block
@@ -255,7 +261,8 @@ public class IPCamTile extends TileBase {
 						try {
 							final Image imgRaw = new Image( 
 									UI.display, file.getAbsolutePath() );
-	
+							Tracker.get().add( imgRaw );
+
 							int iRX = imgRaw.getBounds().width;
 							int iRY = imgRaw.getBounds().height;
 							
@@ -356,6 +363,7 @@ public class IPCamTile extends TileBase {
 						final ImageData[] arrData = loader.load( is );
 						this.lImageAge = System.currentTimeMillis();
 						imageRemote = new Image( UI.display, arrData[0] );
+						Tracker.get().add( imageRemote );
 					}
 				}
 			} catch ( final Exception e ) {
@@ -381,9 +389,13 @@ public class IPCamTile extends TileBase {
 			if ( null == strFilenameRaw ) {
 				return this.imageLastMotion;
 			}
+			
+			final boolean bChanged = 
+						! strFilenameRaw.equals( strLastMotionFilename );
 
 			PerformanceMonitorTile.getInstance().addEvent( 
-					StringUtils.substringAfter( strScanLabel, "_" ) );
+					StringUtils.substringAfter( strScanLabel, "_" ) 
+					+ ( bChanged ? " <<< New" : "" ) );
 			
 			
 			File fileVerified = null;
@@ -417,10 +429,11 @@ public class IPCamTile extends TileBase {
 			
 			this.lImageAge = fileVerified.lastModified();
 			if ( null != imageLastMotion && ! imageLastMotion.isDisposed()) {
-//				imageLastMotion.dispose();
+				imageLastMotion.dispose();
 			}
 			imageLastMotion = new Image( 
 								UI.display, fileVerified.getAbsolutePath() );
+			Tracker.get().add( imageLastMotion );
 			
 			PerformanceMonitorTile.getInstance().addEvent( 
 							StringUtils.abbreviateMiddle( 
@@ -544,6 +557,7 @@ public class IPCamTile extends TileBase {
 	@Override
 	public void paint(	final GC gc, 
 						final Image image ) {
+		this.bRequestRefresh = true;
 
 		final Rectangle r = image.getBounds();
 		final long lNow = System.currentTimeMillis();
@@ -606,7 +620,7 @@ public class IPCamTile extends TileBase {
 					DisplayMode.SINGLE_RECENT_MOTION.equals( this.mode );
 			
 			if ( bBig ) {
-				gc.setFont( Theme.get().getFont( 20 ) );
+				gc.setFont( Theme.get().getFont( 22 ) );
 			} else {
 				gc.setFont( Theme.get().getFont( 14 ) );
 			}
@@ -614,7 +628,7 @@ public class IPCamTile extends TileBase {
 			final String strLine = DateFormatting.getSmallTime( lElapsed );
 			final Point pt = gc.textExtent( strLine );
 			final int iX = r.width - 20 - pt.x;
-			iY = r.height - 12 - pt.y;
+			iY = r.height - 14 - pt.y;
 			gc.setForeground( UI.COLOR_BLACK );
 			gc.drawText( strLine, iX - 1, iY + 0, true );
 			gc.drawText( strLine, iX + 1, iY + 0, true );
@@ -623,7 +637,7 @@ public class IPCamTile extends TileBase {
 			gc.setForeground( UI.COLOR_WHITE );
 			gc.drawText( strLine, iX + 0, iY + 1, true );
 		} else {
-			iY = r.height - 39;
+			iY = r.height - 41;
 		}
 		
 //		gc.setFont( UI.FONT_SMALL );

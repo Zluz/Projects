@@ -271,8 +271,12 @@ public class TileCanvas {
 		final String strContent = strTitle + "\n" + strBody;
 		final long lRemain = message.getRemainingMS( lTimeNow );
 //			final String strRemain = "" + lRemain + " ms";
-		final String strRemain = 
-					DateFormatting.getSmallTime( lRemain, true );
+		final String strRemain;
+		if ( lRemain > 0 ) {
+			strRemain = DateFormatting.getSmallTime( lRemain, true );
+		} else {
+			strRemain = "-";
+		}
 
 		gcMsg.setFont( Theme.ThFont._12_M_B.getFont() );
 		final Point ptExtentTime = gcMsg.stringExtent( strRemain );

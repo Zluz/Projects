@@ -8,10 +8,10 @@ public class ModalMessage {
 	public final static List<ModalMessage> MESSAGES = new LinkedList<>();
 	
 	
-	final String strTitle;
-	final String strBody;
-	final long lTimeCreated;
-	final long lTimeExpiration;
+	final private String strTitle;
+	final private String strBody;
+	final private long lTimeCreated;
+	final private long lTimeExpiration;
 	boolean bActive;
 
 	
@@ -22,7 +22,11 @@ public class ModalMessage {
 		this.strBody = strBody;
 		this.bActive = true;
 		this.lTimeCreated = System.currentTimeMillis();
-		this.lTimeExpiration = lTimeCreated + 1000 * lDurationInSeconds;
+		if ( lDurationInSeconds > 0 ) {
+			this.lTimeExpiration = lTimeCreated + 1000 * lDurationInSeconds;
+		} else {
+			this.lTimeExpiration = -1;
+		}
 	}
 	
 	public String getTitle() {
@@ -51,6 +55,14 @@ public class ModalMessage {
 		}
 	}
 	
+	
+	private boolean hasExpired( final long lTimeNow ) {
+		if ( this.lTimeExpiration <= 0 ) return false;
+		if ( lTimeNow > this.lTimeExpiration ) return true;
+		return false;
+	}
+	
+	
 	public static ModalMessage getNext( final long lTimeNow ) {
 //		final long lTimeNow = System.currentTimeMillis();
 		synchronized (MESSAGES) {
@@ -61,7 +73,7 @@ public class ModalMessage {
 					final ModalMessage message = MESSAGES.get( 0 );
 					if ( ! message.bActive ) {
 						MESSAGES.remove( message );
-					} else if ( lTimeNow > message.lTimeExpiration ) {
+					} else if ( message.hasExpired( lTimeNow ) ) {
 						message.bActive = false;
 						MESSAGES.remove( message );
 					} else {
