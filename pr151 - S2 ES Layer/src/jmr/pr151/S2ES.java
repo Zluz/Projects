@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Set;
+import java.util.Date;
 
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -18,7 +18,6 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jmr.S2Path;
 import jmr.S2Properties;
 
 
@@ -162,7 +161,7 @@ public class S2ES {
 	}
 
 	
-	public static void main( final String[] args ) {
+	public static void main( final String[] args ) throws Exception {
 //		final String strURLBase = "<ES-server>";
 		
 //		final S2Properties properties = S2Properties.get();
@@ -171,20 +170,27 @@ public class S2ES {
 //		
 //		final S2ES client = new S2ES( strESBase );
 		final S2ES client = S2ES.get();
-//		final JsonNode jn = client.retrieveLatestWeatherForecast();
-		final JsonNode jn = client.retrieveLatestCamMotion();
 		
-		System.out.println( jn.toPrettyString() );
-		
-		final JsonNode jnCore = jn.at( "/core" );
-		final String strImageFile = jnCore.at( "/file-image" ).asText();
-		System.out.println( "   Image filename: " + strImageFile );
-		final String strJSONFile = jnCore.at( "/file-json" ).asText();
-		System.out.println( "    JSON filename: " + strJSONFile );
-		final Set<String> list = S2Path.getLocalAlts( strJSONFile );
-		System.out.println( "Alternates:" );
-		for ( final String strAlt : list ) {
-			System.out.println( "\t" + strAlt );
+		for (;;) {
+			System.out.println( new Date() );
+			
+	//		final JsonNode jn = client.retrieveLatestWeatherForecast();
+			final JsonNode jn = client.retrieveLatestCamMotion();
+			
+			System.out.println( jn.toPrettyString() );
+			
+			final JsonNode jnCore = jn.at( "/core" );
+			final String strImageFile = jnCore.at( "/file-image" ).asText();
+			System.out.println( "   Image filename: " + strImageFile );
+			final String strJSONFile = jnCore.at( "/file-json" ).asText();
+			System.out.println( "    JSON filename: " + strJSONFile );
+	//		final Set<String> list = S2Path.getLocalAlts( strJSONFile );
+	//		System.out.println( "Alternates:" );
+	//		for ( final String strAlt : list ) {
+	//			System.out.println( "\t" + strAlt );
+	//		}
+			
+			Thread.sleep( 30 * 1000 );
 		}
 	}
 

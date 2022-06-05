@@ -8,5 +8,6 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Apache HttpComponents 5.1.3"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/FasterXML Jackson JSON 2.13.1"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pr110 - S2 File Session"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
