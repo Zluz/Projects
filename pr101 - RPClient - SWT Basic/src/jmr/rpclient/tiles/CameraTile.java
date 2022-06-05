@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.Theme;
 import jmr.rpclient.swt.Theme.Colors;
+import jmr.rpclient.swt.Tracker;
 import jmr.rpclient.swt.UI;
 import jmr.rpclient.swt.S2Button.ButtonState;
 import jmr.s2fs.FileSession;
@@ -172,6 +173,7 @@ public class CameraTile extends TileBase {
 				UI.display, 
 				ptDesiredImageSize.x, 
 				ptDesiredImageSize.y );
+		Tracker.get().add( imgScaled );
 		
 		final GC gc = new GC( imgScaled ); // NPE?
 //		if ( !GRAPHICS_ADVANCED ) {

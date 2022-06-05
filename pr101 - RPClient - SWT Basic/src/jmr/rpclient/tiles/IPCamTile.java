@@ -85,6 +85,7 @@ public class IPCamTile extends TileBase {
 	
 //	private final Map<Rectangle,String> mapClickRegions = new HashMap<>();
 	private final Map<String,Rectangle> mapClickRegions = new HashMap<>();
+
 	
 	Long lImageAge = null;
 	
@@ -117,7 +118,7 @@ public class IPCamTile extends TileBase {
 				public void run() {
 					try {
 						for (;;) {
-							Thread.sleep( 5000 );
+							Thread.sleep( 4000 );
 							if ( bRequestRefresh ) {
 								refreshImageData( false );
 								bRequestRefresh = false;
@@ -261,7 +262,7 @@ public class IPCamTile extends TileBase {
 						try {
 							final Image imgRaw = new Image( 
 									UI.display, file.getAbsolutePath() );
-							Tracker.get().add( imgRaw );
+//							Tracker.get().add( imgRaw );
 
 							int iRX = imgRaw.getBounds().width;
 							int iRY = imgRaw.getBounds().height;
@@ -377,7 +378,10 @@ public class IPCamTile extends TileBase {
 			return imageRemote;
 			
 		} else if ( DisplayMode.SINGLE_RECENT_MOTION == this.mode ) {
+			
+			//TODO this is expensive! take off the UI thread!
 			final JsonNode jn = S2ES.get().retrieveLatestCamMotion();
+			
 			if ( null == jn ) return this.imageLastMotion;
 			
 			final String strFilenameRaw = 
@@ -396,6 +400,10 @@ public class IPCamTile extends TileBase {
 			PerformanceMonitorTile.getInstance().addEvent( 
 					StringUtils.substringAfter( strScanLabel, "_" ) 
 					+ ( bChanged ? " <<< New" : "" ) );
+			
+//			if ( ! bChanged ) {
+//				return this.imageLastMotion;
+//			}
 			
 			
 			File fileVerified = null;
@@ -430,10 +438,11 @@ public class IPCamTile extends TileBase {
 			this.lImageAge = fileVerified.lastModified();
 			if ( null != imageLastMotion && ! imageLastMotion.isDisposed()) {
 				imageLastMotion.dispose();
+				imageLastMotion = null;
 			}
 			imageLastMotion = new Image( 
 								UI.display, fileVerified.getAbsolutePath() );
-			Tracker.get().add( imageLastMotion );
+			Tracker.get().addAutoDispose( imageLastMotion );
 			
 			PerformanceMonitorTile.getInstance().addEvent( 
 							StringUtils.abbreviateMiddle( 
@@ -458,11 +467,14 @@ public class IPCamTile extends TileBase {
 //		mapClickRegions.clear();
 		clearMapRegions();
 
-		final Image imageRemote = getRawImage();
+		Image imgRaw = null;
 
 //		if ( null!=file ) {
-		if ( null != imageRemote && ! imageRemote.isDisposed() ) {
-			try {
+		try {
+
+			imgRaw = getRawImage();
+
+			if ( null != imgRaw && ! imgRaw.isDisposed() ) {
 
 				if ( null != this.camera ) {
 					this.strMessage = this.camera.name() 
@@ -484,12 +496,16 @@ public class IPCamTile extends TileBase {
 				
 //				final Image imgRaw = new Image( 
 //						UI.display, file.getAbsolutePath() );
-				final Image imgRaw = imageRemote;
+//				final Image imgRaw = imageRemote;
 				
 				final Image imgScaled = new Image( 
 									UI.display, 
 									ptDesiredImageSize.x, 
 									ptDesiredImageSize.y );
+				
+				//TODO fix the Image management, go back to add()
+				Tracker.get().addAutoDispose( imgScaled );
+				
 				final GC gc;
 				try {
 					gc = new GC( imgScaled ); // NPE?
@@ -529,6 +545,8 @@ public class IPCamTile extends TileBase {
 
 				gc.dispose();
 				imgRaw.dispose();
+				imgRaw = null;
+				
 				
 //				fileLastImage = file;
 //				lLastFileModified = file.lastModified();
@@ -537,17 +555,28 @@ public class IPCamTile extends TileBase {
 				this.strLastMessage = this.strMessage;
 				
 				return imgScaled;
+			}
 				
-			} catch ( final Exception e ) {
-				// may run into FileNotFoundException here
-				// because image file may update during this method.
-				// just skip.
-				this.strMessage += "\n"
-						+ e.toString();
-				e.printStackTrace();
+		} catch ( final Exception e ) {
+
+			// may run into FileNotFoundException here
+			// because image file may update during this method.
+			// just skip.
+			this.strMessage += "\n"
+					+ e.toString();
+			e.printStackTrace();
+		} finally {
+			if ( null != gc && ! gc.isDisposed() ) {
+				gc.dispose();
+				gc = null;
+			}
+			if ( null != imgRaw && ! imgRaw.isDisposed() ) {
+				imgRaw.dispose();
+				imgRaw = null;
 			}
 		}
-				
+
+		
 		this.lImageAge = null;
 		return null;
 	}
@@ -566,7 +595,7 @@ public class IPCamTile extends TileBase {
 			ptDesiredImageSize = new Point( r.width, r.height );
 		}
 		
-		if ( null!=imageStill ) {
+		if ( null!=imageStill && ! imageStill.isDisposed() ) {
 			gc.setFont( Theme.get().getFont( 12 ) );
 			gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 			try {
