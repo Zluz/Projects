@@ -379,15 +379,13 @@ public class IPCamTile extends TileBase {
 			
 		} else if ( DisplayMode.SINGLE_RECENT_MOTION == this.mode ) {
 			
-			//TODO this is expensive! take off the UI thread!
 			final JsonNode jn = S2ES.get().retrieveLatestCamMotion();
 			
 			if ( null == jn ) return this.imageLastMotion;
 			
-			final String strFilenameRaw = 
-					jn.at( "/core" ).at( "/file-image" ).asText();
-			final String strScanLabel = 
-					jn.at( "/core" ).at( "/time-scan-label" ).asText();
+			final JsonNode jnCore = jn.at( "/core" );
+			final String strFilenameRaw = jnCore.at( "/file-image" ).asText();
+			final String strScanLabel = jnCore.at( "/time-scan-label" ).asText();
 			
 			
 			if ( null == strFilenameRaw ) {

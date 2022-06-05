@@ -159,18 +159,19 @@ public class Tracker {
 	public void addAutoDispose( final Resource resource ) {
 		final StackTraceElement frame = 
 				Thread.currentThread().getStackTrace()[2];
+		final long lNow = System.currentTimeMillis();
 		synchronized ( map ) {
 			prune();
 			int iCount[] = { 0 };
-			final long lCutoff = System.currentTimeMillis() - AGE_THRESHOLD;
+			final long lCutoff = lNow - AGE_THRESHOLD;
 			map.values().forEach( record-> {
 				if ( equal( record.frame, frame ) ) {
 					final Resource resourceFound = record.wr.get();
 					if ( null != resourceFound 
 							&& record.lTime < lCutoff ) {
 						resourceFound.dispose();
+						iCount[0]++;
 					}
-					iCount[0]++;
 				}
 			});
 			if ( iCount[0] > 0 ) {
