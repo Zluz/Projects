@@ -30,6 +30,12 @@
 			<version>1.7.5</version>
 		</dependency>
 		
+		<dependency>
+			<groupId>jmr</groupId>
+			<artifactId>jmr.pr110</artifactId>
+	  		<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+	
 	</dependencies>
 	
 <!-- 	<repositories>

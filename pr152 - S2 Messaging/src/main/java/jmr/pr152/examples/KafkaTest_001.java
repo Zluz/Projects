@@ -30,7 +30,7 @@ public class KafkaTest_001 {
 	public static Properties createProperties( final String strGroupName ) {
 
 //      String bootstrapServers="127.0.0.1:9092";
-      String bootstrapServers="192.168.6.20:9092";
+      String bootstrapServers="***";
 //      String grp_id="third_app";
 //      String grp_id="client-test";
       String topic="quickstart-events";
