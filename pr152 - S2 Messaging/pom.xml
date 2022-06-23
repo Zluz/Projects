@@ -1,0 +1,43 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <groupId>jmr</groupId>
+  <artifactId>jmr.pr152</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>pr152 - S2 Messaging</name>
+  
+  <!--see:  https://kafka.apache.org/documentation.html#consumerapi -->
+  
+  	<dependencies>
+		<dependency>
+			<groupId>org.apache.kafka</groupId>
+			<artifactId>kafka-clients</artifactId>
+<!-- 			<version>3.2.0</version> -->
+<!-- 			<version>2.0.1</version> -->
+			<version>2.8.1</version>
+		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/kafka-utils/kafka-utils -->
+<!-- 		<dependency>
+		    <groupId>kafka-utils</groupId>
+		    <artifactId>kafka-utils</artifactId>
+		    <version>0.1.0</version>
+		</dependency> -->
+		
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.7.5</version>
+		</dependency>
+		
+	</dependencies>
+	
+<!-- 	<repositories>
+    	<repository>
+			<id>mvnrepository</id>
+			<name>mvnrepository</name>
+			<url>https://mvnrepository.com/</url>
+	    </repository>
+    </repositories>
+ -->
+</project>
