@@ -1,10 +1,14 @@
 package jmr.pr153;
 
-import java.awt.Image;
+import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,9 +29,12 @@ public class KEF {
 	
 	private Properties properties;
 	
+	private Display display;
+	
 	private KEF() {
 		bActive = true;
 		properties = S2Properties.get();
+		display = Display.getDefault();
 		startMotionListener();
 	}
 	
@@ -44,31 +51,43 @@ public class KEF {
 		
 		final String strServers = properties.getProperty( "kafka.servers" );
 		final String strTopic = properties.getProperty( "kafka.topic.history-file" );
-				
+
 		final MessageConsumerListener consumer = 
-				new MessageConsumerListener( strTopic, strServers, "test" );
-		consumer.addListener( strMessage -> {
+				new MessageConsumerListener( strTopic, strServers );
+		consumer.addListener( ( strMessage, jn ) -> {
 
         	System.out.print( Instant.now().toString() );
         	System.out.print( ": " );
 
-			try {
-				final JsonNode jn = MAPPER.readTree( strMessage );
-	        	System.out.print( jn.toString() );
+        	System.out.print( jn.toString() );
+        	
+        	final String strFilename = jn.at( "/dir-target" ).asText() 
+        			+ jn.at("/filename" ).asText();
+        	if ( strFilename.endsWith( ".jpg" ) ) {
+        		final File file = new File( strFilename );
+        		if ( file.exists() ) {
+        			
+        			final Image fileImageNew =
+        					new Image( display, file.getAbsolutePath() );
+
+        			if ( null != imageLatestMotion ) {
+        				imageLatestMotion.dispose();
+        			}
+        			imageLatestMotion = fileImageNew;
+        		}
+        	}
 	        	
-			} catch ( final IOException e ) {
-				System.out.println( "EXCEPTION" );
-				e.printStackTrace();
-			}
-			
         	System.out.println();
 		});
 		consumer.start();
 	}
 	
 	
+	private Image imageLatestMotion = null;
+	
+	
 	public Image getLatestMotionImage() {
-		return null;
+		return imageLatestMotion;
 	}
 	
 	

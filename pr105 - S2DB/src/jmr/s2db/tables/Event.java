@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.gson.Gson;
 
 import jmr.s2db.DataFormatter;
+import jmr.s2db.Settings;
 import jmr.s2db.comm.ConnectionProvider;
 import jmr.s2db.comm.Notifier;
 import jmr.s2db.event.EventMonitor;
@@ -37,6 +39,8 @@ import jmr.util.transform.JsonUtils;
  */
 public class Event extends TableBase {
 
+//	public static final boolean DISABLED = true;
+	
 	
 	private static final Logger 
 			LOGGER = Logger.getLogger( Event.class.getName() );
@@ -108,6 +112,7 @@ public class Event extends TableBase {
 
 	
 	public static Event getLatestEventFor( final String strSubject ) {
+		if ( ! Settings.SQL_ENABLED ) return null;
 
 		final String strQuery = "SELECT seq FROM Event "
 				+ "WHERE subject = \"" + strSubject + "\" "
@@ -136,6 +141,9 @@ public class Event extends TableBase {
 	
 	
 	public static List<String> getSubjects() {
+		if ( ! Settings.SQL_ENABLED ) {
+			return Collections.emptyList();
+		}
 
 		final String strQuery = "SELECT DISTINCT( subject ) FROM Event;";
 		 

@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -64,6 +63,8 @@ import jmr.s2db.event.EventType;
 import jmr.s2db.event.SystemEvent;
 import jmr.s2db.job.JobManager;
 import jmr.s2db.tables.Event;
+import jmr.s2fs.FileSession;
+import jmr.s2fs.FileSessionManager;
 import jmr.util.Logging;
 import jmr.util.NetUtil;
 import jmr.util.OSUtil;
@@ -263,36 +264,49 @@ public class SWTBasic {
 	    final String strIP = NetUtil.getIPAddress();
 	    final String strClass = SWTBasic.class.getName();
 	    final String strSessionID = NetUtil.getSessionID();
+	    
+	    final String strMAC = NetUtil.getMAC();
+	    final FileSession session = 
+	    		FileSessionManager.getInstance().getFileSession( strMAC );
+	    
+	    
 //		s2db.register( 	NetUtil.getMAC(), strIP, 
 //	    				strSessionID, 
 //	    				strClass, now );
-		final Long seqSession = s2db.register( 
-							ClientType.TILE_GUI, strSessionID, strClass );
-		if ( null!=seqSession ) {
-			LOGGER.info( "Client session " + seqSession );
-		} else {
-			LOGGER.severe( "Failed to initialize client session." );
-		}
+//		final Long seqSession = s2db.register( 
+//							ClientType.TILE_GUI, strSessionID, strClass );
+//		if ( null!=seqSession ) {
+//			LOGGER.info( "Client session " + seqSession );
+//		} else {
+//			LOGGER.severe( "Failed to initialize client session." );
+//		}
 		
-		final String strDeviceName = s2db.getThisDevice().getName();
-		final Map<String,String> 
-						mapOptionsRaw = s2db.getThisDevice().getOptions();
+//		final String strDeviceName = s2db.getThisDevice().getName();
+		final String strDeviceName = session.getDeviceName();
+		
+//		final Map<String,String> 
+//						mapOptionsRaw = s2db.getThisDevice().getOptions();
 
-		final Map<String,String> mapOptionsNorm = new HashMap<>();
+//		final Map<String,String> mapOptionsNorm = new HashMap<>();
 		
 	    LOGGER.info( "Device: \"" + strDeviceName + "\"" );
-	    for ( final Entry<String, String> entry : mapOptionsRaw.entrySet() ) {
-//	    	final String strKey = entry.getKey().trim().toUpperCase();
-	    	final String strKey = entry.getKey().trim();
-	    	final String strValue = entry.getValue();
-	    	if ( ! strValue.isEmpty() ) {
-			    LOGGER.info( "Options entry: \"" + strKey + "\""
-			    		+ " = \"" + strValue + "\"" );
-			    mapOptionsNorm.put( strKey, strValue );
-	    	}
-	    }
+//	    for ( final Entry<String, String> entry : mapOptionsRaw.entrySet() ) {
+////	    	final String strKey = entry.getKey().trim().toUpperCase();
+//	    	final String strKey = entry.getKey().trim();
+//	    	final String strValue = entry.getValue();
+//	    	if ( ! strValue.isEmpty() ) {
+//			    LOGGER.info( "Options entry: \"" + strKey + "\""
+//			    		+ " = \"" + strValue + "\"" );
+//			    mapOptionsNorm.put( strKey, strValue );
+//	    	}
+//	    }
+
+		final Map<String,String> mapOptionsNorm = session.getDeviceOptions();
+
 	    
-	    final String strRemoteName = mapOptionsNorm.get( "remote" );
+//	    final String strRemoteName = mapOptionsNorm.get( "remote" );
+	    final String strRemoteName = session.getRemoteName();
+	    
 	    if ( StringUtils.isNotBlank( strRemoteName ) ) {
 	    	LOGGER.info( ()-> "Registering as remote "
 	    								+ "\"" + strRemoteName + "\"" );
@@ -606,9 +620,11 @@ public class SWTBasic {
 	    mapSessionPage.put( "device.name", strDeviceName );
 	    final String strSessionPath = "/Sessions/" + NetUtil.getSessionID();
 	    try {
-			final long seqSessionPage = s2db.savePage( 
+			final Long seqSessionPage = s2db.savePage( 
 										strSessionPath, mapSessionPage );
-		    s2db.setSessionPage( seqSessionPage );
+			if ( null != seqSessionPage ) {
+				s2db.setSessionPage( seqSessionPage );
+			}
 	    } catch ( final IllegalStateException e ) { 
 	    	if ( DEBUG ) { // no session in debug; ignore
 	    		LOGGER.info( "Ignoring IllegalStateException while in debug." );

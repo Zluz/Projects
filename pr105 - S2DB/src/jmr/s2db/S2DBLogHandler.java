@@ -54,6 +54,7 @@ public class S2DBLogHandler extends Handler {
 	
 	@Override
 	public void publish( final LogRecord record ) {
+		if ( ! Settings.SQL_ENABLED ) return;
 		check();
 		
 		if ( ConnectionProvider.isInLockout() ) {

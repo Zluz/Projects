@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import jmr.pr126.comm.http.HttpListener;
 import jmr.pr126.comm.http.HttpListener.Listener;
 import jmr.s2db.Client.ClientType;
+import jmr.s2db.Settings;
 import jmr.s2db.comm.Notifier;
 import jmr.s2db.tables.Event;
 
@@ -23,6 +24,10 @@ import jmr.s2db.tables.Event;
  * This is unlike the JobMonitor which keeps a listing of recent jobs.
  */
 public class EventMonitor {
+	
+	// migrate away from SQL DB
+//	public final static boolean DISABLE = true;
+	
 	
 	public final static long MONITOR_INTERVAL = TimeUnit.SECONDS.toMillis( 2 );
 
@@ -150,6 +155,7 @@ public class EventMonitor {
 
 	
 	private static void scanNewEvents() {
+		if ( ! Settings.SQL_ENABLED ) return;
 		
 		final List<Event> listNewEvents = 
 				Event.get( "seq>" + seqLastEventScanned, 10 );

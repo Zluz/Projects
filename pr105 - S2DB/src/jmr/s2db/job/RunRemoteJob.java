@@ -23,6 +23,8 @@ import jmr.util.OSUtil;
  */
 public class RunRemoteJob {
 
+	public static final boolean DISABLED = true;
+	
 	private final String strName;
 	private final String strIP;
 	
@@ -30,6 +32,17 @@ public class RunRemoteJob {
 		this.strName = strName;
 		this.strIP = NetUtil.getIPAddress();
 	}
+
+	
+	private void print( final String str ) {
+		if ( DISABLED ) return;
+		System.out.print( str );
+	}
+	private void println( final String str ) {
+		print( str + "\n" );
+	}
+	
+	
 	
 	public boolean isIntendedHere( final Job job ) {
 		if ( null==job ) return false;
@@ -44,7 +57,8 @@ public class RunRemoteJob {
 		if ( strRemoteDest.isEmpty() ) return false;
 		
 //		System.out.println( "isIntendedHere() - strRemoteDest = " + strRemoteDest );
-		System.out.print( // "Job " + job.getJobSeq() + " - "
+		
+		print( // "Job " + job.getJobSeq() + " - "
 								" - dest: " + strRemoteDest );
 		
 		final boolean bMatchIP = this.strIP.equals( strRemoteDest );
@@ -58,12 +72,13 @@ public class RunRemoteJob {
 		
 		return false;
 	}
+
 	
 	
 	public void postRemoteOutput( final Job job ) {
 //		job.setState( JobState.WORKING );
 		
-		System.out.println( "--- RunRemoteJob.postRemoteOutput(), Job: " + job );
+		println( "--- RunRemoteJob.postRemoteOutput(), Job: " + job );
 		
 		RemoteJobMonitor.get().post( job );
 		
@@ -73,7 +88,7 @@ public class RunRemoteJob {
 	
 	public void runRemoteExecute( final Job job ) {
 		
-		System.out.println( "--- RunRemoteJob.runRemoteExecute()" );
+		println( "--- RunRemoteJob.runRemoteExecute()" );
 
 		final Map<String,String> map = job.getJobDetails();
 	
@@ -81,7 +96,7 @@ public class RunRemoteJob {
 
 		final String strCommand = map.get( "command" );
 		
-		System.out.println( "Running command: " + strCommand );
+		println( "Running command: " + strCommand );
 		
 		try {
 			final Process process = 

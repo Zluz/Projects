@@ -162,7 +162,17 @@ public class Client {
 		seqDevice = tDevice.register( strMAC, strName, strIP, mapNICs );
 		
 		final Page tPage = ( (Page)Tables.PAGE.get() );
-		tPage.expireAll( strExpireRegex );
+		
+		// this probably should not be threaded, when the next step is
+		// requesting a session, but all SQL support is going away soon
+		// anyway, so if the db gets weird its no prob. 
+		//TODO drop current SQL support (for now)
+		new Thread( ()-> {
+			System.out.println( "Expiring pages, regex: " + strExpireRegex );
+			tPage.expireAll( strExpireRegex );
+			System.out.println( "Expiring done." );
+		} ).start();
+		
 		
 		final Session tSession = ( (Session)Tables.SESSION.get() );
 		seqSession = tSession.get( seqDevice, now, strIP, strClass );
@@ -231,6 +241,7 @@ public class Client {
 	
 	public Long savePage(	final String strPath,
 							final Map<String,String> map ) {
+		if ( ! Settings.SQL_ENABLED ) return null;
 		if ( null==strPath ) return null;
 		
 		final Date now = new Date();

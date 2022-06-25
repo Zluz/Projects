@@ -1,6 +1,7 @@
 package jmr.rpclient.tiles;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -71,6 +72,8 @@ public class TileCanvas {
 //	private boolean bModalDisplayed = false;
 	private ModalMessage message = null;
 	
+	private final List<TileBase> listAllTiles = new LinkedList<>();
+	
 //	
 //	// fixed tiles
 //	final PerformanceMonitorTile tilePerf = new PerformanceMonitorTile();
@@ -95,6 +98,7 @@ public class TileCanvas {
 	
 	public void setPerspective( final Perspective perspective ) {
 		this.perspective = perspective;
+		listAllTiles.forEach( tile-> tile.setActive( false ) );
 		this.buildUI( this.canvas.getParent() );
 	}
 	
@@ -422,6 +426,8 @@ public class TileCanvas {
 					final int iW = rect.width * 150;
 					final int iH = rect.height * 150;
 					
+					listAllTiles.add( tile );
+					tile.setActive( true );
 					tile.clearInfoRegions();
 					
 					final Image imageBuffer = new Image( e.display, iW, iH );

@@ -17,17 +17,18 @@ public enum Perspective {
 	TESLA( 5, 3, true, false ),
 	GARAGE_ENTRANCE( 5, 3, true, false ),
 	CAMERA_LOCAL( 5, 3, true, false ),
-	CAMERA_REMOTE( 5, 3, true, false ),
 	OFFICE_SILL( 5, 3, true, false ),
+	AUTO_HAT( 5, 3, false, false ),
 	DESKTOP( 5, 6, false, false ),
 	DAILY_ROTATE( 3, 5, true, true ),
-	REMOTE( 6, 2, false, false ),
 	GPIO( 4, 5, false, false ),
-	AUTO_HAT( 5, 3, false, false ),
 	PROC_IMAGE( 8, 3, false, false ),
 	WORKER_IMAGE( 7, 3, false, false ),
 	SURVEILLANCE_STAMP( 5, 2, false, false ),
-	
+
+	CAMERA_REMOTE( 5, 3, true, false ),
+	REMOTE( 6, 2, false, false ),
+
 	TEST( 5, 3, false, false ),
 	;
 	

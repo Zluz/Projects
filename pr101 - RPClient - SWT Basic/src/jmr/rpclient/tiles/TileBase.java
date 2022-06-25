@@ -44,6 +44,9 @@ public abstract class TileBase implements Tile {
 	
 	protected long iNowPaint;
 	private boolean bQueueRemoveButtons = false;
+	
+	
+	protected boolean bActive;
 
 
 	
@@ -61,6 +64,11 @@ public abstract class TileBase implements Tile {
 		String strTitle;
 		long lDurationInSeconds;
 		Supplier<String> supContent;
+	}
+	
+	
+	public void setActive( final boolean bActive ) {
+		this.bActive = bActive;
 	}
 	
 	

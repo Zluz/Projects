@@ -12,14 +12,17 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import jmr.util.FileUtil;
+import jmr.util.NetUtil;
 import jmr.util.transform.JsonUtils;
 
 public class FileSession {
@@ -480,15 +483,18 @@ lrwxrwxrwx 1 root root 12 Jun  1 20:55 usb-Generic_USB2.0_PC_CAMERA-video-index0
 		}
 	}
 	
+	static JsonObject joDeviceConfig = null;
 	
 	public JsonObject getDeviceConfig() {
-		final String strJsonConfig = getFileContents( SessionFile.DEVICE_CONFIG );
-		if ( StringUtils.isNotEmpty( strJsonConfig ) ) {
-			final JsonObject json = JsonUtils.getJsonObjectFor( strJsonConfig );
-			return json;
-		} else {
-			return new JsonObject();
+		if ( null == joDeviceConfig ) {
+			final String strJsonConfig = getFileContents( SessionFile.DEVICE_CONFIG );
+			if ( StringUtils.isNotEmpty( strJsonConfig ) ) {
+				joDeviceConfig = JsonUtils.getJsonObjectFor( strJsonConfig );
+			} else {
+				joDeviceConfig = new JsonObject();
+			}
 		}
+		return joDeviceConfig;
 	}
 
 	public JsonObject getDeviceReport() {
@@ -500,5 +506,60 @@ lrwxrwxrwx 1 root root 12 Jun  1 20:55 usb-Generic_USB2.0_PC_CAMERA-video-index0
 			return new JsonObject();
 		}
 	}
+	
+	
+	
+	//TODO maybe move these out, create a device config class
+	
+	public String getDeviceName() {
+		final JsonObject jo = getDeviceConfig();
+		
+		if ( jo.has( "name" ) ) {
+			final String str = jo.get( "name" ).getAsString();
+			return str;
+		}
+		
+		if ( jo.has( "_" ) ) {
+			final String str = jo.get( "_" ).getAsString();
+			return str;
+		}
+
+		if ( jo.has( "description" ) ) {
+			final String str = jo.get( "description" ).getAsString();
+			return str;
+		}
+
+		return "(device " + NetUtil.getMAC() + ")";
+	}
+	
+	public String getRemoteName() {
+		final JsonObject jo = getDeviceConfig();
+		
+		if ( jo.has( "remote" ) ) {
+			final String str = jo.get( "remote" ).getAsString();
+			return str;
+		}
+		
+//		return "(device-" + NetUtil.getMAC() + ")";
+		return "";
+	}
+	
+	public Map<String,String> getDeviceOptions() {
+		final JsonObject joConfig = getDeviceConfig();
+		final JsonElement jeOptions = joConfig.get( "options" );
+		
+		final Map<String,String> map = new HashMap<>();
+		if ( null != jeOptions && jeOptions.isJsonNull() 
+						&& jeOptions.isJsonObject() ) {
+			final JsonObject jo = jeOptions.getAsJsonObject();
+			for ( final Entry<String, JsonElement> entry : jo.entrySet() ) {
+				final JsonElement je = entry.getValue();
+				map.put( entry.getKey(), je.getAsString() );
+			}
+		}
+		return map;
+	}
+	
+	
 	
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -12,12 +13,14 @@ import java.util.logging.Logger;
 import jmr.pr126.comm.http.HttpListener;
 import jmr.pr126.comm.http.HttpListener.Listener;
 import jmr.s2db.Client;
+import jmr.s2db.Settings;
 import jmr.s2db.Client.ClientType;
 import jmr.s2db.comm.Notifier;
 import jmr.s2db.tables.Job;
 import jmr.s2db.tables.Job.JobState;
 
 public class JobMonitor {
+	
 
 	private final static Logger 
 					LOGGER = Logger.getLogger( JobMonitor.class.getName() );
@@ -53,6 +56,16 @@ public class JobMonitor {
 		this.initializeJobMonitorThread();
 	}
 	
+
+	private void print( final String str ) {
+		if ( ! Settings.SQL_ENABLED ) return;
+		System.out.print( str );
+	}
+	private void println( final String str ) {
+		print( str + "\n" );
+	}
+	
+	
 	public void check() {
 		
 		if ( Client.get().isDebugEnabled() ) {
@@ -76,7 +89,9 @@ public class JobMonitor {
 		return this.strName;
 	}
 	
-	public LinkedList<Job> getListing() {
+	public List<Job> getListing() {
+		if ( ! Settings.SQL_ENABLED ) return Collections.emptyList();
+		
 		synchronized ( listing ) {
 			return new LinkedList<Job>( listing );
 		}
@@ -96,12 +111,12 @@ public class JobMonitor {
 	private Listener listener = new Listener() {
 		@Override
 		public void received( final Map<String, Object> map ) {
-			System.out.println( "--- JobMonitor HttpListener.received()" );
+			println( "--- JobMonitor HttpListener.received()" );
 			if ( Notifier.EVENT_TABLE_UPDATE.equals( map.get( "job" ) ) ) {
 				if ( "event".equals( map.get( "table" ) ) ) {
-					System.out.print( "\tScanning for new jobs..." );
+					print( "\tScanning for new jobs..." );
 					updateListing();
-					System.out.println( "Done." );
+					println( "Done." );
 				}
 			}
 		}
@@ -153,6 +168,7 @@ public class JobMonitor {
 	 * in the Jobs table.
 	 */
 	private void updateListing() {
+		if ( ! Settings.SQL_ENABLED ) return;
 		
 //		System.out.println( "--> updateListing()" );
 
@@ -290,17 +306,17 @@ public class JobMonitor {
 					
 					final boolean bMute;
 					
-					System.out.print( "[" + System.currentTimeMillis() + "] " );
-					System.out.print( "JobMonitor: "
+					print( "[" + System.currentTimeMillis() + "] " );
+					print( "JobMonitor: "
 							+ "(job " + i + " of " + jobs.size() + ") " );
-					System.out.print( "seq " + job.getJobSeq() + " " );
+					print( "seq " + job.getJobSeq() + " " );
 
 					if ( ! type.isRemoteType() ) {
-						System.out.print( " - No remote. " );
+						print( " - No remote. " );
 						bMute = true;
 					} else if ( runner.isIntendedHere( job ) ) {
 						
-						System.out.print( 
+						print( 
 								"Remote job identified to run here. " );
 						
 						job.setState( JobState.WORKING );
@@ -318,19 +334,19 @@ public class JobMonitor {
 
 						bMute = false;
 					} else {
-						System.out.print( "  Not intended here. " );
+						print( "  Not intended here. " );
 						bMute = true;
 					}
 					
 					if ( bMute ) {
-						System.out.print( "Further logging will be muted. " );
+						print( "Further logging will be muted. " );
 						while ( MUTED_JOBS.size() > MAX_MUTED_JOBS ) {
 							MUTED_JOBS.remove( 0 );
 						}
 						MUTED_JOBS.add( job.getJobSeq() );
 					}
 					
-					System.out.println();
+					println( "" );
 				}
 			}
 		};

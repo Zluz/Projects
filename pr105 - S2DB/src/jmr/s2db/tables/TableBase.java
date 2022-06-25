@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import jmr.s2db.Settings;
 import jmr.s2db.comm.ConnectionProvider;
 
 public abstract class TableBase {
@@ -19,6 +20,7 @@ public abstract class TableBase {
 						final String strWhere,
 						final String strInsertNames,
 						final String strInsertValues ) {
+		if ( ! Settings.SQL_ENABLED ) return null;
 		if ( null==strTable ) return null;
 		if ( null==strWhere ) return null;
 		if ( strTable.isEmpty() ) {

@@ -1,23 +1,37 @@
 package jmr.pr152;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MessageConsumerListener {
 
+	public final static Logger LOGGER = 
+			LoggerFactory.getLogger( MessageConsumerListener.class );
+	
+	public static final ObjectMapper MAPPER = new ObjectMapper();
+
 	public static interface Listener {
-		void event( final String strContent );
+		void event( final String strContent,
+					final JsonNode jnContent );
 	}
 	
 	private final String strTopic;
@@ -29,11 +43,16 @@ public class MessageConsumerListener {
     private final List<Listener> listListeners = new LinkedList<>();
     
 	public MessageConsumerListener( final String strTopic,
-							final String strServers,
-							final String strClientName ) {
+									final String strServers,
+									final String strClientName ) {
 		this.strTopic = strTopic;
 		this.strServers = strServers;
 		this.strClientName = strClientName;
+	}
+
+	public MessageConsumerListener( final String strTopic,
+									final String strServers ) {
+		this( strTopic, strServers, UUID.randomUUID().toString() );
 	}
 	
 	
@@ -60,30 +79,45 @@ public class MessageConsumerListener {
 		return props;
 	}
 	
+	private void processRecord( final ConsumerRecord<?,?> record ) {
+		if ( listListeners.isEmpty() ) return;
+
+    	System.out.print( Instant.now().toString() );
+    	System.out.print( ": " + StringUtils.abbreviate( record.toString(), 100 ) );
+
+    	final String strValue = record.value().toString();
+//    	System.out.print( ": " + strValue );
+    	System.out.println();
+    	
+		try {
+			final JsonNode jn = MAPPER.readTree( strValue );
+			if ( null != jn && ! jn.isNull() ) {
+	        	for ( final Listener listener : listListeners ) {
+	        		new Thread( ()-> listener.event( strValue, jn ) ).start();
+	        	}
+			}
+		} catch ( final Exception e ) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void start() {
 		final Properties props = createProperties();
 		this.consumer = new KafkaConsumer<>( props );
         consumer.subscribe( Arrays.asList( strTopic ) );
         
+        bActive = true;
         new Thread( ()-> {
         	Thread.currentThread().setName( "Kafka listener - " + strTopic );
         	while ( bActive ) {
                 final ConsumerRecords<String,String> records = 
-            					consumer.poll( Duration.ofMillis( 1000 ) );
+            					consumer.poll( Duration.ofMillis( 200 ) );
                 
                 for( final ConsumerRecord<?,?> record: records ){
-                	final String strValue = record.value().toString();
-//                	System.out.print( Instant.now().toString() );
-//                	System.out.print( ": " + strValue );
-//                	System.out.println();
-                	
-                	for ( final Listener listener : listListeners ) {
-                		listener.event( strValue );
-                	}
+                	processRecord( record );
                 }
         	}
         } ).start();
-        bActive = true;
 	}
 	
 	

@@ -48,8 +48,10 @@ public class Watcher {
 	
 	
 	public synchronized void addListener( final Listener listener ) {
-		if ( !DATABASE_CHANGE_MONITOR.isAlive() ) {
-			DATABASE_CHANGE_MONITOR.start();
+		if ( Settings.SQL_ENABLED ) {
+			if ( !DATABASE_CHANGE_MONITOR.isAlive() ) {
+				DATABASE_CHANGE_MONITOR.start();
+			}
 		}
 		listListeners.add( listener );
 	}

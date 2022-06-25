@@ -4,11 +4,13 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import jmr.s2db.Settings;
 import jmr.s2db.comm.ConnectionProvider;
 
 public class Path extends TableBase {
@@ -38,6 +40,7 @@ public class Path extends TableBase {
 	 */
 	public Map<String, Long> getChildPages(	final String strParentPath,
 											final boolean bFirstChildrenOnly ) {
+		if ( ! Settings.SQL_ENABLED ) return Collections.emptyMap();
 
 		final String strQuery = 
 				 "SELECT " + 

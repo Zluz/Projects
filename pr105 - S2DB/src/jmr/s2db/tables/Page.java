@@ -119,7 +119,8 @@ public class Page extends TableBase {
 	}
 
 	
-	public Long getNoSession( final long seqPath ) {
+	public Long getNoSession( final Long seqPath ) {
+		if ( null == seqPath ) return null;
 		
 		final Long lSeq = super.get(	"Page", 
 //					"seq_path = " + seqPath + " AND seq_session = " + lSession, 

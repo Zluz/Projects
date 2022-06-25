@@ -12,7 +12,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -31,6 +33,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import jmr.S2Path;
 import jmr.S2Properties;
 import jmr.pr151.S2ES;
+import jmr.pr152.MessageConsumerListener;
+import jmr.pr153.KEF;
+import jmr.rpclient.ModalMessage;
 import jmr.rpclient.swt.S2Button;
 import jmr.rpclient.swt.S2Button.ButtonState;
 import jmr.rpclient.swt.Theme;
@@ -105,6 +110,7 @@ public class IPCamTile extends TileBase {
 		this.camera = camera;
 		
 		IPCamera.setProperties( S2Properties.get() );
+		this.addKafkaListener();
 
 		final boolean bOk = true;
 		
@@ -136,6 +142,47 @@ public class IPCamTile extends TileBase {
 			};
 			thread.start();
 		}
+	}
+		
+	private static MessageConsumerListener.Listener 
+							listener = ( strMessage, jn ) -> {
+								
+		System.out.println( "Kafka event: " + jn.toString() );
+		PerformanceMonitorTile.getInstance().addEvent( "Kafka event" );
+		
+//		if ( this.bActive ) {
+		
+        	final String strFilename = jn.at( "/dir-target" ).asText() 
+        			+ jn.at("/filename" ).asText();
+    		System.out.println( "Filename: " + strFilename );
+
+        	if ( strFilename.endsWith( ".jpg" ) ) {
+        		ModalMessage.add( new ModalMessage( "Motion Detected", 
+        				"Image file: " + strFilename, 6 ));
+        	} else {
+        		ModalMessage.add( new ModalMessage( "Motion Event", 
+        				jn.toString(), 60 ));
+        	}
+//		}
+	};
+	
+		
+	private void addKafkaListener() {
+
+		final Properties properties = S2Properties.get();
+		final String strServers = properties.getProperty( "kafka.servers" );
+		final String strTopic = properties.getProperty( "kafka.topic.history-file" );
+
+		final MessageConsumerListener consumer = 
+				new MessageConsumerListener( strTopic, strServers );
+		consumer.addListener( listener );
+		PerformanceMonitorTile.getInstance().addEvent( "Kafka listener added" ); 
+	}
+	
+	
+	@Override
+	public void setActive( final boolean bActive ) {
+		super.setActive( bActive );
 	}
 	
 	
@@ -354,8 +401,8 @@ public class IPCamTile extends TileBase {
 			try {
 				final ImageLoader loader = new ImageLoader();
 				final URL url = this.camera.getURL();
-	//			final URL url = new URL( strURL );
-				if ( null != url ) {
+
+				if ( null != url && null != url.getHost()  ) {
 					final URLConnection c = url.openConnection();
 					c.setReadTimeout( 5000 );
 					c.setConnectTimeout( 5000 );
@@ -368,11 +415,11 @@ public class IPCamTile extends TileBase {
 					}
 				}
 			} catch ( final Exception e ) {
-	//			e.printStackTrace();
 				LOGGER.warning( ()-> String.format( 
 						"While reading image from %s, encountered %s", 
 						camera,
 						e.toString() ) );
+				e.printStackTrace();
 				return null;
 			}
 			return imageRemote;
@@ -580,11 +627,12 @@ public class IPCamTile extends TileBase {
 	}
 	
 	
-	
 	@Override
 	public void paint(	final GC gc, 
 						final Image image ) {
 		this.bRequestRefresh = true;
+		
+		final StringBuilder sbDebug = new StringBuilder();
 
 		final Rectangle r = image.getBounds();
 		final long lNow = System.currentTimeMillis();
@@ -593,7 +641,20 @@ public class IPCamTile extends TileBase {
 			ptDesiredImageSize = new Point( r.width, r.height );
 		}
 		
-		if ( null!=imageStill && ! imageStill.isDisposed() ) {
+		boolean bImageDrawn = false;
+		
+		if ( DisplayMode.SINGLE_RECENT_MOTION == this.mode ) {
+			final Image imageLatest = KEF.get().getLatestMotionImage();
+			if ( null != imageLatest ) {
+				gc.drawImage( imageLatest, 0, 0 );
+				bImageDrawn = true;
+				sbDebug.append( "KEF" );
+			}
+		}
+		
+		
+		if ( ! bImageDrawn 
+				&& null!=imageStill && ! imageStill.isDisposed() ) {
 			gc.setFont( Theme.get().getFont( 12 ) );
 			gc.setForeground( Theme.get().getColor( Colors.TEXT ) );
 			try {
@@ -605,9 +666,11 @@ public class IPCamTile extends TileBase {
 				synchronized ( imageStill ) {
 					gc.drawImage( imageStill, 0, 0 );
 				}
+				sbDebug.append( "Still" );
 			} catch ( final Exception e ) {
 				e.printStackTrace();
 				gc.drawText( e.toString(), 4, 20 );
+				sbDebug.append( "EXCEPTION" );
 			}
 		} else {
 			gc.setForeground( Theme.get().getColor( Colors.LINE_FAINT ) );
@@ -666,6 +729,13 @@ public class IPCamTile extends TileBase {
 		} else {
 			iY = r.height - 41;
 		}
+		
+		if ( sbDebug.length() > 0 ) {
+			gc.setFont( Theme.get().getFont( 16 ) );
+			iY = iY - 10;
+			gc.drawText( sbDebug.toString(), 10, iY, true );
+		}
+		
 		
 //		gc.setFont( UI.FONT_SMALL );
 //		gc.drawText( this.mode.name(), 15, iY, true );
