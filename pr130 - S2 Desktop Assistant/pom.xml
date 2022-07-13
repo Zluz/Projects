@@ -1,8 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>pr130</groupId>
-  <artifactId>pr128</artifactId>
+  
+  <groupId>jmr</groupId>
+  <artifactId>jmr.pr130</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  
+  
   <build>
     <sourceDirectory>src</sourceDirectory>
     <resources>
@@ -24,8 +27,21 @@
       </plugin>
     </plugins>
   </build>
-  
-  	<dependencies>
+
+  <dependencies>
+
+	<dependency>
+  		<groupId>org.eclipse.swt</groupId>
+  		<artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
+  		<version>4.3</version>
+  		<scope>provided</scope>
+  	</dependency>
+  	
+		<dependency>
+			<groupId>javax.json</groupId>
+			<artifactId>javax.json-api</artifactId>
+			<version>1.1.4</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -57,11 +73,53 @@
 			<version>1.0</version>
 		</dependency>
 		
-				<dependency>
-    <groupId>org.glassfish</groupId>
-    <artifactId>javax.json</artifactId>
-    <version>1.0.4</version>
-</dependency>
+		<dependency>
+		    <groupId>org.glassfish</groupId>
+		    <artifactId>javax.json</artifactId>
+		    <version>1.0.4</version>
+		</dependency>
+		
+		
+		
+		
+		
+		
+		<dependency>
+			<groupId>jmr</groupId>
+			<artifactId>jmr.pr104</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>jmr</groupId>
+			<artifactId>jmr.pr105</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>jmr</groupId>
+			<artifactId>jmr.pr110</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>jmr</groupId>
+			<artifactId>jmr.pr117</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>jmr</groupId>
+			<artifactId>jmr.pr124</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>jmr</groupId>
+			<artifactId>jmr.pr125</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		
 	</dependencies>
-  
+
 </project>

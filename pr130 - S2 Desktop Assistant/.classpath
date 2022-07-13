@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry including="**/*.java|**/*.png" kind="src" output="target/classes" path="src">
+	<classpathentry including="**/*.java" kind="src" output="target/classes" path="src">
 		<attributes>
 			<attribute name="optional" value="true"/>
 			<attribute name="maven.pomderived" value="true"/>
@@ -11,19 +11,10 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/SWT_Win64"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/webcam-capture"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/pr124 - Camera Still Capture"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/pr110 - S2 File Session"/>
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/pr104 - Utilities"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/pr125 - S2 Camera Capture"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/pr105 - S2DB"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/pr117 - S2 - System Tools"/>
-	<classpathentry kind="lib" path="lib/javax.json-api-1.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
