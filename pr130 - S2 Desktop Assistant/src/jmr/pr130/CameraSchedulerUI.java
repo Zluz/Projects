@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.github.sarxos.webcam.Webcam;
+//import com.github.sarxos.webcam.Webcam;
 
 import jmr.SessionPath;
 import jmr.pr124.ImageCapture;
@@ -259,7 +259,7 @@ public class CameraSchedulerUI {
 	}
 	
 	
-	public static boolean capture( final Webcam camera,
+	public static boolean capture( //final Webcam camera,
 								   final File fileTempDir,
 								   final File fileSession,
 								   final int iCameraIndex,
@@ -274,11 +274,11 @@ public class CameraSchedulerUI {
 //		final String strFileThumb = "capture_vid" + i + "-thumb.jpg";
 //		final File fileThumbDest = new File( fileSession, strFileThumb );
 
-		log( "Capturing image from camera: " + camera.getName() );
+//		log( "Capturing image from camera: " + camera.getName() );
 		log( "Capturing to: " + fileSrc.getAbsolutePath() );
 		
 //		final String strName = camera.getName();
-		ImageCapture.capture( camera, fileSrc );
+//		ImageCapture.capture( camera, fileSrc );
 
 		final String strFileFull = "capture_vid" + iCameraIndex + ".jpg";
 		final File fileFullDest = new File( fileSession, strFileFull );

@@ -11,8 +11,8 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FileUtils;
 
-import com.github.sarxos.webcam.Webcam;
-import com.github.sarxos.webcam.WebcamException;
+//import com.github.sarxos.webcam.Webcam;
+//import com.github.sarxos.webcam.WebcamException;
 
 import jmr.util.SelfDestruct;
 import jmr.util.SystemUtil;
@@ -27,8 +27,8 @@ public class ImageCapture {
 		
 		final File file = new File( strName + ".jpg" );
 
-		final Webcam webcam = Webcam.getWebcamByName( strName );
-		capture( webcam, file );
+//		final Webcam webcam = Webcam.getWebcamByName( strName );
+//		capture( webcam, file );
 	}
 	
 	
@@ -48,9 +48,9 @@ public class ImageCapture {
 	}
 	
 
-	public static void capture( final Webcam webcam,
+	public static void capture( // final Webcam webcam,
 								final File fileTarget ) {
-
+/*
 		try {
 			final String strName = webcam.getName();
 			System.out.println( "---\tgetName(): " + strName );
@@ -128,9 +128,10 @@ public class ImageCapture {
 		} finally {
 			webcam.close();
 		}
+		*/
 	}
 	
-	
+	/*
 	public static void main( final String[] args ) 
 							throws IOException, InterruptedException {
 		
@@ -199,5 +200,5 @@ public class ImageCapture {
 		
 //		new OpenIMAJGrabber();
 	}
-	
+*/	
 }
