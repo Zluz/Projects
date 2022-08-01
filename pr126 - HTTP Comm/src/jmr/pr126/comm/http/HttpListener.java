@@ -20,9 +20,10 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
+//import com.sun.net.httpserver.HttpExchange;
+//import com.sun.net.httpserver.HttpHandler;
+//import com.sun.net.httpserver.HttpServer;
+//import com.sun.
 
 
 //from
@@ -46,7 +47,7 @@ public class HttpListener implements HttpCommConstants {
 	private static HttpListener instance;
 	
 
-	private final HttpServer server;
+//	private final HttpServer server;
 	private String strIP;
 	private final int iPort;
 	private final String strEndpoint;
@@ -58,24 +59,24 @@ public class HttpListener implements HttpCommConstants {
 			              final boolean bQuiet ) {
 		this.iPort = iPort;
 		this.strEndpoint = strEndpoint;
-		HttpServer serverCand = null;
+//		HttpServer serverCand = null;
 		try {
 			System.out.println( "Hosting port " + iPort );
 			final InetSocketAddress port = new InetSocketAddress(iPort);
-			serverCand = HttpServer.create(port, 0);
+//			serverCand = HttpServer.create(port, 0);
 
-			final com.sun.net.httpserver.HttpContext context = 
-					serverCand.createContext( strEndpoint, new MessageHandler() );
-			serverCand.setExecutor( null ); // creates a default executor
-			serverCand.start();
+//			final com.sun.net.httpserver.HttpContext context = 
+//					serverCand.createContext( strEndpoint, new MessageHandler() );
+//			serverCand.setExecutor( null ); // creates a default executor
+//			serverCand.start();
 			
-			System.out.println( "getPath(): " + context.getPath() );
-			final HttpHandler handler = context.getHandler();
-			System.out.println( "getHandler(): " + handler );
+//			System.out.println( "getPath(): " + context.getPath() );
+//			final HttpHandler handler = context.getHandler();
+//			System.out.println( "getHandler(): " + handler );
 
 			this.addHostRegistryListener();
 			
-		} catch ( final IOException e ) {
+		} catch ( final Exception e ) {
 			
 			// if ( ! bQuiet ) // ? 
 			if ( e.toString().contains( "already in use: bind" ) ) {
@@ -85,14 +86,15 @@ public class HttpListener implements HttpCommConstants {
 				e.printStackTrace();
 			}
 			
-			serverCand = null;
+//			serverCand = null;
 		}
-		this.server = serverCand;
+//		this.server = serverCand;
 	}
 	
 	
 	public boolean isListening() {
-		return ( null != this.server );
+//		return ( null != this.server );
+		return false;
 	}
 	
 	
@@ -203,7 +205,7 @@ public class HttpListener implements HttpCommConstants {
 		}
 	}
 	
-
+/*
 	static class MessageHandler implements HttpHandler {
 		@Override
 		public void handle(final HttpExchange exchange) throws IOException {
@@ -239,7 +241,7 @@ public class HttpListener implements HttpCommConstants {
 			}
 		}
 	}
-	
+*/
 	
 	
 	public String getHostedURL() {
@@ -266,9 +268,9 @@ public class HttpListener implements HttpCommConstants {
 	}
 	
 	public void close() {
-		if ( null != server ) {
-			this.server.stop( 0 );
-		}
+//		if ( null != server ) {
+//			this.server.stop( 0 );
+//		}
 	}
 	
 	
